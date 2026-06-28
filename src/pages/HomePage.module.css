@@ -1,0 +1,49 @@
+.grid {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.panel {
+  padding: var(--space-6);
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2);
+  box-shadow: var(--shadow-1);
+}
+
+.panelTitle {
+  margin: 0 0 var(--space-4);
+  font-size: 1.25rem;
+}
+
+.definitionList {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.definitionList dt {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.definitionList dd {
+  margin: var(--space-1) 0 0;
+  font-weight: 600;
+}
+
+.list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--color-text);
+}
+
+.logoutButton {
+  height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-1);
+  background: #fff;
+  cursor: pointer;
+}
