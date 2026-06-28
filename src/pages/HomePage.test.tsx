@@ -11,7 +11,7 @@ describe("HomePage", () => {
           name: "Admin",
           email: "admin@my-money.local",
           role: "ADMIN",
-          mesadaEnabled: false
+          allowanceEnabled: false
         }}
       >
         <HomePage />
