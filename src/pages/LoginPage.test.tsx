@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { TestAuthProvider } from "../app/auth/AuthContext";
+import { TestAuthProvider } from "../app/auth/TestAuthProvider";
 import LoginPage from "./LoginPage";
 
 describe("LoginPage", () => {
@@ -10,11 +10,13 @@ describe("LoginPage", () => {
         <TestAuthProvider>
           <LoginPage />
         </TestAuthProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
-    expect(screen.getByRole("heading", { name: "Entrar" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Sign in" }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
-    expect(screen.getByLabelText("Senha")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
 });

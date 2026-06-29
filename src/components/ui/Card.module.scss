@@ -1,0 +1,5 @@
+@use "../../styles/mixins.scss" as mixins;
+
+.root {
+  @include mixins.panel-surface;
+}

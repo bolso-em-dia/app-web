@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import styles from "./AppShell.module.css";
+import styles from "./AppShell.module.scss";
 
 type AppShellProps = {
   title: string;
@@ -8,11 +8,16 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-export default function AppShell({ title, subtitle, actions, children }: AppShellProps) {
+export default function AppShell({
+  title,
+  subtitle,
+  actions,
+  children,
+}: AppShellProps) {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div>
+        <div className={styles.heading}>
           <h1 className={styles.title}>{title}</h1>
           {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
         </div>

@@ -1,10 +1,14 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
 
 type RequestOptions = RequestInit & {
   accessToken?: string | null;
 };
 
-export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function apiRequest<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
   const headers = new Headers(options.headers ?? {});
 
   if (!headers.has("Content-Type") && options.body) {
@@ -18,7 +22,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers,
-    credentials: "include"
+    credentials: "include",
   });
 
   if (!response.ok) {

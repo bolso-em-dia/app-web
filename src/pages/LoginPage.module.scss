@@ -1,0 +1,46 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8);
+  background: linear-gradient(
+    180deg,
+    var(--color-surface) 0%,
+    var(--color-surface-muted) 100%
+  );
+}
+
+.card {
+  width: min(100%, 28rem);
+  padding: var(--space-8);
+}
+
+.heading {
+  margin-bottom: var(--space-6);
+}
+
+.eyebrow {
+  font-size: var(--font-size-100);
+  color: var(--color-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+.title {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-500);
+  line-height: var(--line-height-tight);
+}
+
+.subtitle {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-muted);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.submit {
+  margin-top: var(--space-2);
+}

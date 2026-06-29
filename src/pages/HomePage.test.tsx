@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import HomePage from "./HomePage";
-import { TestAuthProvider } from "../app/auth/AuthContext";
+import { TestAuthProvider } from "../app/auth/TestAuthProvider";
 
 describe("HomePage", () => {
   it("renders the home skeleton", () => {
@@ -11,11 +11,11 @@ describe("HomePage", () => {
           name: "Admin",
           email: "admin@my-money.local",
           role: "ADMIN",
-          allowanceEnabled: false
+          allowanceEnabled: false,
         }}
       >
         <HomePage />
-      </TestAuthProvider>
+      </TestAuthProvider>,
     );
 
     expect(screen.getByRole("heading", { name: "Home" })).toBeInTheDocument();

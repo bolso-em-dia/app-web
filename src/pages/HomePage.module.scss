@@ -1,0 +1,36 @@
+.grid {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.panel {
+  padding: var(--space-6);
+}
+
+.panelTitle {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-300);
+}
+
+.definitionList {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+
+  dt {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-100);
+  }
+
+  dd {
+    margin: var(--space-1) 0 0;
+    font-weight: var(--font-weight-semibold);
+  }
+}
+
+.list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--color-text);
+}

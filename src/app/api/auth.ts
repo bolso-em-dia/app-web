@@ -17,25 +17,25 @@ export type AuthResponse = {
 export function login(email: string, password: string) {
   return apiRequest<AuthResponse>("/api/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password }),
   });
 }
 
 export function refresh() {
   return apiRequest<AuthResponse>("/api/auth/refresh", {
-    method: "POST"
+    method: "POST",
   });
 }
 
 export function me(accessToken: string) {
   return apiRequest<AuthUser>("/api/auth/me", {
     method: "GET",
-    accessToken
+    accessToken,
   });
 }
 
 export function logout() {
   return apiRequest<void>("/api/auth/logout", {
-    method: "POST"
+    method: "POST",
   });
 }

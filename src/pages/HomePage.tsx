@@ -1,6 +1,8 @@
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import AppShell from "../components/layout/AppShell";
-import { useAuth } from "../app/auth/AuthContext";
-import styles from "./HomePage.module.css";
+import { useAuth } from "../app/auth/useAuth";
+import styles from "./HomePage.module.scss";
 
 export default function HomePage() {
   const { user, logout } = useAuth();
@@ -8,19 +10,19 @@ export default function HomePage() {
   return (
     <AppShell
       title="Home"
-      subtitle="Esqueleto inicial do painel web"
+      subtitle="Initial web application skeleton"
       actions={
-        <button className={styles.logoutButton} onClick={() => void logout()} type="button">
-          Sair
-        </button>
+        <Button onClick={() => void logout()} type="button" variant="secondary">
+          Sign out
+        </Button>
       }
     >
       <section className={styles.grid}>
-        <article className={styles.panel}>
+        <Card className={styles.panel}>
           <h2 className={styles.panelTitle}>Sessão</h2>
           <dl className={styles.definitionList}>
             <div>
-              <dt>Nome</dt>
+              <dt>Name</dt>
               <dd>{user?.name}</dd>
             </div>
             <div>
@@ -28,20 +30,20 @@ export default function HomePage() {
               <dd>{user?.email}</dd>
             </div>
             <div>
-              <dt>Papel</dt>
+              <dt>Role</dt>
               <dd>{user?.role}</dd>
             </div>
           </dl>
-        </article>
+        </Card>
 
-        <article className={styles.panel}>
-          <h2 className={styles.panelTitle}>Próximos passos</h2>
+        <Card className={styles.panel}>
+          <h2 className={styles.panelTitle}>Next steps</h2>
           <ul className={styles.list}>
-            <li>Conectar o dashboard real.</li>
-            <li>Adicionar navegação das entidades da fase 1.</li>
-            <li>Expandir autenticação e sessões.</li>
+            <li>Connect the real dashboard API.</li>
+            <li>Add navigation for the phase 1 entities.</li>
+            <li>Expand authentication and session flows.</li>
           </ul>
-        </article>
+        </Card>
       </section>
     </AppShell>
   );

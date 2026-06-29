@@ -1,0 +1,8 @@
+.root {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid rgba(180, 35, 24, 0.16);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}

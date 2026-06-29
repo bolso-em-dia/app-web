@@ -1,0 +1,47 @@
+@use "../../styles/mixins.scss" as mixins;
+
+.root {
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-semibold);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    box-shadow 120ms ease;
+  cursor: pointer;
+
+  &:focus-visible {
+    @include mixins.focus-ring;
+  }
+
+  &:disabled {
+    opacity: 0.72;
+    cursor: wait;
+  }
+}
+
+.primary {
+  background: var(--color-accent);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--color-accent-strong);
+  }
+}
+
+.secondary {
+  background: var(--color-panel);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+
+  &:hover:not(:disabled) {
+    background: var(--color-panel-muted);
+  }
+}
+
+.fullWidth {
+  width: 100%;
+}
