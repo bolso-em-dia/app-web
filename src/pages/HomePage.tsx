@@ -1,25 +1,19 @@
-import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import AppShell from "../components/layout/AppShell";
 import { useAuth } from "../app/auth/useAuth";
 import styles from "./HomePage.module.scss";
 
 export default function HomePage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <AppShell
-      title="Home"
-      subtitle="Initial web application skeleton"
-      actions={
-        <Button onClick={() => void logout()} type="button" variant="secondary">
-          Sign out
-        </Button>
-      }
+      title="Dashboard"
+      subtitle="Authenticated workspace shell for the phase 1 finance modules."
     >
       <section className={styles.grid}>
         <Card className={styles.panel}>
-          <h2 className={styles.panelTitle}>Sessão</h2>
+          <h2 className={styles.panelTitle}>Session</h2>
           <dl className={styles.definitionList}>
             <div>
               <dt>Name</dt>
@@ -37,11 +31,11 @@ export default function HomePage() {
         </Card>
 
         <Card className={styles.panel}>
-          <h2 className={styles.panelTitle}>Next steps</h2>
+          <h2 className={styles.panelTitle}>Shell status</h2>
           <ul className={styles.list}>
-            <li>Connect the real dashboard API.</li>
-            <li>Add navigation for the phase 1 entities.</li>
-            <li>Expand authentication and session flows.</li>
+            <li>Navigation for the phase 1 areas is in place.</li>
+            <li>The authenticated shell is ready for feature pages.</li>
+            <li>The next logical step is the real dashboard integration.</li>
           </ul>
         </Card>
       </section>

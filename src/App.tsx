@@ -3,6 +3,7 @@ import { useAuth } from "./app/auth/useAuth";
 import Spinner from "./components/feedback/Spinner";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import PlaceholderPage from "./pages/shared/PlaceholderPage";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -18,11 +19,78 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <HomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/family"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              title="Family"
+              subtitle="Manage family members, roles, and visibility."
+            />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/categories"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              title="Categories"
+              subtitle="Manage the categories used by transactions and budgets."
+            />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accounts"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              title="Accounts"
+              subtitle="Manage bank accounts, savings, and cards."
+            />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/envelopes"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              title="Envelopes"
+              subtitle="Manage family budgets and allowance envelopes."
+            />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/fixed-expenses"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              title="Fixed expenses"
+              subtitle="Manage recurring transaction templates."
+            />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/transactions"
+        element={
+          <ProtectedRoute>
+            <PlaceholderPage
+              title="Transactions"
+              subtitle="Review and manage the monthly transaction history."
+            />
           </ProtectedRoute>
         }
       />
