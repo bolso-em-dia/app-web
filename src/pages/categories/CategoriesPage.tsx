@@ -11,10 +11,11 @@ import {
   updateCategory,
 } from "../../app/api/categories";
 import { useAuth } from "../../app/auth/useAuth";
-import AppShell from "../../components/layout/AppShell";
 import Spinner from "../../components/feedback/Spinner";
+import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
@@ -39,6 +40,10 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [options, setOptions] = useState<CategoryOption[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "ARCHIVED"
+  >("ALL");
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -79,17 +84,12 @@ export default function CategoriesPage() {
 
       setCategories(categoriesResponse);
       setOptions(optionsResponse);
-
-      if (categoriesResponse.length > 0) {
-        setSelectedId((current) =>
-          current &&
-          categoriesResponse.some((category) => category.id === current)
-            ? current
-            : categoriesResponse[0].id,
-        );
-      } else {
-        setSelectedId(null);
-      }
+      setSelectedId((current) =>
+        current &&
+        categoriesResponse.some((category) => category.id === current)
+          ? current
+          : null,
+      );
     } catch {
       setError("Unable to load categories.");
     } finally {
@@ -217,15 +217,36 @@ export default function CategoriesPage() {
 
   function handleCancelCreate() {
     setIsCreating(false);
+    setSelectedId(null);
     setError(null);
-    if (categories[0]) {
-      setSelectedId(categories[0].id);
-    }
+  }
+
+  function handleCloseDrawer() {
+    setIsCreating(false);
+    setSelectedId(null);
+    setError(null);
   }
 
   const archiveOptions = options.filter(
     (option) => option.id !== selectedCategory?.id,
   );
+
+  const filteredCategories = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    return categories.filter((category) => {
+      const matchesSearch =
+        normalizedSearch.length === 0 ||
+        category.name.toLowerCase().includes(normalizedSearch);
+
+      const matchesStatus =
+        statusFilter === "ALL" ||
+        (statusFilter === "ACTIVE" && !category.archivedFromMonth) ||
+        (statusFilter === "ARCHIVED" && Boolean(category.archivedFromMonth));
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [categories, search, statusFilter]);
 
   return (
     <AppShell
@@ -242,193 +263,222 @@ export default function CategoriesPage() {
           <Spinner label="Loading categories" />
         </Card>
       ) : (
-        <section className={styles.layout}>
-          <Card className={styles.listPanel}>
-            <div className={styles.listHeader}>
-              <h2 className={styles.panelTitle}>Categories</h2>
-              <span className={styles.count}>{categories.length}</span>
-            </div>
+        <>
+          <section className={styles.stack}>
+            <Card className={styles.toolbarPanel}>
+              <div className={styles.toolbar}>
+                <div className={styles.filterGroup}>
+                  <Field htmlFor="category-search" label="Search">
+                    <Input
+                      id="category-search"
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder="Search categories"
+                      value={search}
+                    />
+                  </Field>
 
-            <div className={styles.categoryList}>
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  type="button"
-                  className={
-                    category.id === selectedId && !isCreating
-                      ? `${styles.categoryItem} ${styles.categoryItemActive}`
-                      : styles.categoryItem
-                  }
-                  onClick={() => {
-                    setIsCreating(false);
-                    setSelectedId(category.id);
-                    setError(null);
-                  }}
-                >
-                  <div>
-                    <strong>{category.name}</strong>
-                    <p className={styles.categoryMeta}>
-                      {category.icon || "No icon"} ·{" "}
-                      {category.color || "No color"}
-                    </p>
-                  </div>
-                  <div className={styles.categoryBadges}>
-                    <span
-                      className={
-                        category.archivedFromMonth
-                          ? `${styles.badge} ${styles.badgeMuted}`
-                          : `${styles.badge} ${styles.badgeSuccess}`
+                  <Field htmlFor="category-status-filter" label="Status">
+                    <Select
+                      id="category-status-filter"
+                      onChange={(event) =>
+                        setStatusFilter(
+                          event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
+                        )
                       }
+                      value={statusFilter}
                     >
-                      {category.archivedFromMonth ? "Archived" : "Active"}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </Card>
-
-          <div className={styles.sidePanels}>
-            <Card className={styles.formPanel}>
-              <div className={styles.formHeader}>
-                <div>
-                  <h2 className={styles.panelTitle}>
-                    {isCreating ? "New category" : "Category details"}
-                  </h2>
-                  <p className={styles.formSubtitle}>
-                    {isCreating
-                      ? "Create a category with display metadata."
-                      : "Update the category fields used across the app."}
-                  </p>
+                      <option value="ALL">All</option>
+                      <option value="ACTIVE">Active</option>
+                      <option value="ARCHIVED">Archived</option>
+                    </Select>
+                  </Field>
                 </div>
+                <span className={styles.count}>
+                  {filteredCategories.length}
+                </span>
               </div>
-
-              <form
-                className={styles.form}
-                onSubmit={form.handleSubmit(onSubmit)}
-                noValidate
-              >
-                <Field
-                  label="Name"
-                  htmlFor="category-name"
-                  error={form.formState.errors.name?.message}
-                >
-                  <Input
-                    id="category-name"
-                    hasError={Boolean(form.formState.errors.name)}
-                    {...form.register("name")}
-                  />
-                </Field>
-
-                <Field
-                  label="Icon"
-                  htmlFor="category-icon"
-                  error={form.formState.errors.icon?.message}
-                >
-                  <Input
-                    id="category-icon"
-                    hasError={Boolean(form.formState.errors.icon)}
-                    {...form.register("icon")}
-                  />
-                </Field>
-
-                <Field
-                  label="Color"
-                  htmlFor="category-color"
-                  error={form.formState.errors.color?.message}
-                >
-                  <Input
-                    id="category-color"
-                    placeholder="#2254d1"
-                    hasError={Boolean(form.formState.errors.color)}
-                    {...form.register("color")}
-                  />
-                </Field>
-
-                <FormError>{error}</FormError>
-
-                <div className={styles.formActions}>
-                  <Button type="submit" loading={isSaving}>
-                    {isCreating ? "Create category" : "Save changes"}
-                  </Button>
-                  {isCreating ? (
-                    <Button
-                      onClick={handleCancelCreate}
-                      type="button"
-                      variant="secondary"
-                    >
-                      Cancel
-                    </Button>
-                  ) : null}
-                </div>
-              </form>
             </Card>
 
-            {!isCreating && selectedCategory ? (
-              <Card className={styles.archivePanel}>
-                <div className={styles.formHeader}>
-                  <div>
-                    <h2 className={styles.panelTitle}>Archive category</h2>
-                    <p className={styles.formSubtitle}>
-                      Archived categories require a replacement for future use.
-                    </p>
-                  </div>
-                </div>
+            <section className={styles.categoryGrid}>
+              {filteredCategories.map((category) => (
+                <Card key={category.id} className={styles.categoryCard}>
+                  <button
+                    className={styles.categoryButton}
+                    onClick={() => {
+                      setIsCreating(false);
+                      setSelectedId(category.id);
+                      setError(null);
+                    }}
+                    type="button"
+                  >
+                    <div className={styles.categoryCardHeader}>
+                      <div>
+                        <strong>{category.name}</strong>
+                        <p className={styles.categoryMeta}>
+                          {category.icon || "No icon"} ·{" "}
+                          {category.color || "No color"}
+                        </p>
+                      </div>
+                      <div className={styles.categoryBadges}>
+                        <span
+                          className={
+                            category.archivedFromMonth
+                              ? `${styles.badge} ${styles.badgeMuted}`
+                              : `${styles.badge} ${styles.badgeSuccess}`
+                          }
+                        >
+                          {category.archivedFromMonth ? "Archived" : "Active"}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                </Card>
+              ))}
+            </section>
+          </section>
 
+          {isCreating || selectedCategory ? (
+            <Drawer
+              description={
+                isCreating
+                  ? "Create a category with display metadata."
+                  : "Update the category fields used across the app."
+              }
+              onClose={handleCloseDrawer}
+              title={isCreating ? "New category" : "Category details"}
+            >
+              <div className={styles.drawerStack}>
                 <form
                   className={styles.form}
-                  onSubmit={archiveForm.handleSubmit(onArchive)}
+                  onSubmit={form.handleSubmit(onSubmit)}
                   noValidate
                 >
                   <Field
-                    label="Archive month"
-                    htmlFor="archive-month"
-                    error={
-                      archiveForm.formState.errors.archivedFromMonth?.message
-                    }
+                    error={form.formState.errors.name?.message}
+                    htmlFor="category-name"
+                    label="Name"
                   >
                     <Input
-                      id="archive-month"
-                      type="date"
-                      hasError={Boolean(
-                        archiveForm.formState.errors.archivedFromMonth,
-                      )}
-                      {...archiveForm.register("archivedFromMonth")}
+                      hasError={Boolean(form.formState.errors.name)}
+                      id="category-name"
+                      {...form.register("name")}
                     />
                   </Field>
 
                   <Field
-                    label="Replacement category"
-                    htmlFor="replacement-category"
-                    error={
-                      archiveForm.formState.errors.replacementCategoryId
-                        ?.message
-                    }
+                    error={form.formState.errors.icon?.message}
+                    htmlFor="category-icon"
+                    label="Icon"
                   >
-                    <Select
-                      id="replacement-category"
-                      hasError={Boolean(
-                        archiveForm.formState.errors.replacementCategoryId,
-                      )}
-                      {...archiveForm.register("replacementCategoryId")}
-                    >
-                      <option value="">Select a replacement</option>
-                      {archiveOptions.map((option) => (
-                        <option key={option.id} value={option.id}>
-                          {option.name}
-                        </option>
-                      ))}
-                    </Select>
+                    <Input
+                      hasError={Boolean(form.formState.errors.icon)}
+                      id="category-icon"
+                      {...form.register("icon")}
+                    />
                   </Field>
 
-                  <Button type="submit" loading={isArchiving}>
-                    Archive category
-                  </Button>
+                  <Field
+                    error={form.formState.errors.color?.message}
+                    htmlFor="category-color"
+                    label="Color"
+                  >
+                    <Input
+                      hasError={Boolean(form.formState.errors.color)}
+                      id="category-color"
+                      placeholder="#2254d1"
+                      {...form.register("color")}
+                    />
+                  </Field>
+
+                  {error ? <FormError>{error}</FormError> : null}
+
+                  <div className={styles.formActions}>
+                    <Button loading={isSaving} type="submit">
+                      {isCreating ? "Create category" : "Save changes"}
+                    </Button>
+                    {isCreating ? (
+                      <Button
+                        onClick={handleCancelCreate}
+                        type="button"
+                        variant="secondary"
+                      >
+                        Cancel
+                      </Button>
+                    ) : null}
+                  </div>
                 </form>
-              </Card>
-            ) : null}
-          </div>
-        </section>
+
+                {!isCreating && selectedCategory ? (
+                  <Card className={styles.archivePanel}>
+                    <div className={styles.formHeader}>
+                      <div>
+                        <h3 className={styles.sectionTitle}>
+                          Archive category
+                        </h3>
+                        <p className={styles.formSubtitle}>
+                          Archived categories require a replacement for future
+                          use.
+                        </p>
+                      </div>
+                    </div>
+
+                    <form
+                      className={styles.form}
+                      onSubmit={archiveForm.handleSubmit(onArchive)}
+                      noValidate
+                    >
+                      <Field
+                        error={
+                          archiveForm.formState.errors.archivedFromMonth
+                            ?.message
+                        }
+                        htmlFor="archive-month"
+                        label="Archive month"
+                      >
+                        <Input
+                          hasError={Boolean(
+                            archiveForm.formState.errors.archivedFromMonth,
+                          )}
+                          id="archive-month"
+                          type="date"
+                          {...archiveForm.register("archivedFromMonth")}
+                        />
+                      </Field>
+
+                      <Field
+                        error={
+                          archiveForm.formState.errors.replacementCategoryId
+                            ?.message
+                        }
+                        htmlFor="replacement-category"
+                        label="Replacement category"
+                      >
+                        <Select
+                          hasError={Boolean(
+                            archiveForm.formState.errors.replacementCategoryId,
+                          )}
+                          id="replacement-category"
+                          {...archiveForm.register("replacementCategoryId")}
+                        >
+                          <option value="">Select a replacement</option>
+                          {archiveOptions.map((option) => (
+                            <option key={option.id} value={option.id}>
+                              {option.name}
+                            </option>
+                          ))}
+                        </Select>
+                      </Field>
+
+                      <Button loading={isArchiving} type="submit">
+                        Archive category
+                      </Button>
+                    </form>
+                  </Card>
+                ) : null}
+              </div>
+            </Drawer>
+          ) : null}
+        </>
       )}
     </AppShell>
   );

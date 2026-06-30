@@ -3,10 +3,12 @@ import { useAuth } from "./app/auth/useAuth";
 import Spinner from "./components/feedback/Spinner";
 import AccountsPage from "./pages/accounts/AccountsPage";
 import CategoriesPage from "./pages/categories/CategoriesPage";
+import EnvelopesPage from "./pages/envelopes/EnvelopesPage";
 import FamilyPage from "./pages/family/FamilyPage";
+import FixedExpensesPage from "./pages/fixed-expenses/FixedExpensesPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import PlaceholderPage from "./pages/shared/PlaceholderPage";
+import TransactionsPage from "./pages/transactions/TransactionsPage";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -59,10 +61,7 @@ export default function App() {
         path="/envelopes"
         element={
           <ProtectedRoute>
-            <PlaceholderPage
-              title="Envelopes"
-              subtitle="Manage family budgets and allowance envelopes."
-            />
+            <EnvelopesPage />
           </ProtectedRoute>
         }
       />
@@ -70,10 +69,7 @@ export default function App() {
         path="/fixed-expenses"
         element={
           <ProtectedRoute>
-            <PlaceholderPage
-              title="Fixed expenses"
-              subtitle="Manage recurring transaction templates."
-            />
+            <FixedExpensesPage />
           </ProtectedRoute>
         }
       />
@@ -81,10 +77,7 @@ export default function App() {
         path="/transactions"
         element={
           <ProtectedRoute>
-            <PlaceholderPage
-              title="Transactions"
-              subtitle="Review and manage the monthly transaction history."
-            />
+            <TransactionsPage />
           </ProtectedRoute>
         }
       />

@@ -1,0 +1,203 @@
+.layout {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+}
+
+.sidePanels {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.loadingCard {
+  padding: var(--space-6);
+}
+
+.listPanel,
+.formPanel,
+.detailPanel,
+.archivePanel {
+  padding: var(--space-6);
+}
+
+.listHeader,
+.formHeader,
+.detailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--font-size-300);
+}
+
+.formSubtitle,
+.envelopeMeta,
+.detailSubtitle,
+.listMeta,
+.itemMeta,
+.helperText {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-round);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+.envelopeList,
+.detailList,
+.transactionList {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.envelopeItem {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  text-align: left;
+  cursor: pointer;
+}
+
+.envelopeItem:hover {
+  background: var(--color-panel-muted);
+}
+
+.envelopeItemActive {
+  border-color: rgb(34 84 209 / 24%);
+  background: var(--color-accent-soft);
+}
+
+.envelopeTop,
+.detailRow,
+.transactionRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.badgeRow,
+.categoryList,
+.checkboxList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-round);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: var(--font-size-100);
+  font-weight: var(--font-weight-semibold);
+}
+
+.badgeMuted {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+
+.summaryGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.summaryCard {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel-muted);
+}
+
+.summaryLabel {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.summaryValue {
+  font-size: var(--font-size-300);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.sectionBlock {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.checkboxGroup {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel-muted);
+}
+
+.detailSection {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.emptyState {
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+}
+
+.body {
+  margin: 0;
+}
+
+@media (width <= 72rem) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (width <= 40rem) {
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .envelopeTop,
+  .detailRow,
+  .transactionRow {
+    flex-direction: column;
+  }
+}

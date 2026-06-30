@@ -64,6 +64,8 @@ describe("CategoriesPage", () => {
     expect(await screen.findByText("Groceries")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "New category" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
     fireEvent.change(screen.getByLabelText("Name"), {
       target: { value: "" },
     });
