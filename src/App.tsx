@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./app/auth/useAuth";
 import Spinner from "./components/feedback/Spinner";
+import AccountsPage from "./pages/accounts/AccountsPage";
 import CategoriesPage from "./pages/categories/CategoriesPage";
 import FamilyPage from "./pages/family/FamilyPage";
 import HomePage from "./pages/HomePage";
@@ -50,10 +51,7 @@ export default function App() {
         path="/accounts"
         element={
           <ProtectedRoute>
-            <PlaceholderPage
-              title="Accounts"
-              subtitle="Manage bank accounts, savings, and cards."
-            />
+            <AccountsPage />
           </ProtectedRoute>
         }
       />
