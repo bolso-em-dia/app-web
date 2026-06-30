@@ -16,12 +16,19 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
+import IconSelect from "../../components/ui/IconSelect";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
+import {
+  COLOR_OPTIONS,
+  getIconPreview,
+  ICON_OPTIONS,
+} from "../../lib/uiOptions";
 import {
   archiveCategorySchema,
   categorySchema,
@@ -246,6 +253,8 @@ export default function CategoriesPage() {
   const archiveOptions = options.filter(
     (option) => option.id !== selectedCategory?.id,
   );
+  const iconValue = form.watch("icon");
+  const colorValue = form.watch("color");
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
     totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
@@ -323,8 +332,9 @@ export default function CategoriesPage() {
                       <div>
                         <strong>{category.name}</strong>
                         <p className={styles.categoryMeta}>
-                          {category.icon || t("categories.noIcon")} ·{" "}
-                          {category.color || t("categories.noColor")}
+                          {getIconPreview(category.icon) ??
+                            t("categories.iconPreviewNone")}{" "}
+                          · {category.color || t("categories.noColor")}
                         </p>
                       </div>
                       <div className={styles.categoryBadges}>
@@ -447,10 +457,18 @@ export default function CategoriesPage() {
                     htmlFor="category-icon"
                     label={t("categories.icon")}
                   >
-                    <Input
-                      hasError={Boolean(form.formState.errors.icon)}
+                    <IconSelect
+                      clearLabel={t("common.clearSelection")}
                       id="category-icon"
-                      {...form.register("icon")}
+                      onChange={(value) =>
+                        form.setValue("icon", value, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                          shouldValidate: true,
+                        })
+                      }
+                      options={ICON_OPTIONS}
+                      value={iconValue}
                     />
                   </Field>
 
@@ -459,11 +477,18 @@ export default function CategoriesPage() {
                     htmlFor="category-color"
                     label={t("categories.color")}
                   >
-                    <Input
-                      hasError={Boolean(form.formState.errors.color)}
+                    <ColorSwatchSelect
+                      clearLabel={t("common.clearSelection")}
                       id="category-color"
-                      placeholder="#2254d1"
-                      {...form.register("color")}
+                      onChange={(value) =>
+                        form.setValue("color", value, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                          shouldValidate: true,
+                        })
+                      }
+                      options={COLOR_OPTIONS}
+                      value={colorValue}
                     />
                   </Field>
 

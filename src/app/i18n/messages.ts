@@ -39,6 +39,7 @@ export const ptBRMessages = {
   "common.selectAccount": "Selecione uma conta",
   "common.selectCategory": "Selecione uma categoria",
   "common.selectMember": "Selecione um membro",
+  "common.clearSelection": "Limpar seleção",
   "common.allTypes": "Todos os tipos",
   "common.allAccounts": "Todas as contas",
   "common.allCategories": "Todas as categorias",
@@ -89,6 +90,7 @@ export const ptBRMessages = {
   "categories.empty": "Nenhuma categoria encontrada para os filtros atuais.",
   "categories.noIcon": "Sem ícone",
   "categories.noColor": "Sem cor",
+  "categories.iconPreviewNone": "Sem preview",
   "categories.newDescription": "Crie uma categoria com metadados de exibição.",
   "categories.editDescription":
     "Atualize os campos da categoria usados no aplicativo.",

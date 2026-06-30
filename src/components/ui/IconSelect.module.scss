@@ -1,0 +1,63 @@
+.stack {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.clearButton {
+  justify-self: start;
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.option {
+  display: grid;
+}
+
+.radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 3.25rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  cursor: pointer;
+}
+
+.selected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.preview {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-panel-muted);
+  font-size: 1rem;
+}
+
+.label {
+  font-size: var(--font-size-100);
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (width <= 40rem) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

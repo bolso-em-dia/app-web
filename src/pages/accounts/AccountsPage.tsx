@@ -17,6 +17,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
@@ -26,6 +27,7 @@ import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
+import { COLOR_OPTIONS } from "../../lib/uiOptions";
 import {
   accountSchema,
   archiveAccountSchema,
@@ -508,11 +510,18 @@ export default function AccountsPage() {
                       htmlFor="account-color"
                       label={t("accounts.color")}
                     >
-                      <Input
+                      <ColorSwatchSelect
+                        clearLabel={t("common.clearSelection")}
                         id="account-color"
-                        {...form.register("color")}
-                        hasError={Boolean(form.formState.errors.color)}
-                        placeholder="#2254d1"
+                        onChange={(value) =>
+                          form.setValue("color", value, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: true,
+                          })
+                        }
+                        options={COLOR_OPTIONS}
+                        value={colorValue}
                       />
                     </Field>
                   </div>
