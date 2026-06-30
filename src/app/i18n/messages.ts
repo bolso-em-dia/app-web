@@ -101,6 +101,7 @@ export const ptBRMessages = {
   "categories.archiveTitle": "Arquivar categoria",
   "categories.archiveSubtitle":
     "Categorias arquivadas exigem uma substituta para uso futuro.",
+  "categories.archiveAction": "Arquivar categoria",
   "categories.replacementCategory": "Categoria substituta",
   "categories.selectReplacement": "Selecione uma substituta",
   "family.title": "Família",

@@ -10,14 +10,14 @@ type I18nContextValue = {
 };
 
 function translate(key: MessageKey, params?: TranslateParams) {
-  let message = ptBRMessages[key];
+  let message: string = ptBRMessages[key];
 
   if (!params) {
     return message;
   }
 
   for (const [paramKey, value] of Object.entries(params)) {
-    message = message.replaceAll(`{{${paramKey}}}`, String(value));
+    message = message.split(`{{${paramKey}}}`).join(String(value));
   }
 
   return message;
