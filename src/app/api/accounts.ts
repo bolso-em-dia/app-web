@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+import { apiRequest, type PageResponse } from "./client";
 
 export type AccountType = "CHECKING" | "SAVINGS" | "CREDIT_CARD" | "INVESTMENT";
 
@@ -29,11 +29,51 @@ export type ArchiveAccountPayload = {
   archivedFromMonth: string;
 };
 
-export function listAccounts(accessToken: string) {
-  return apiRequest<Account[]>("/api/accounts", {
-    method: "GET",
-    accessToken,
+export type AccountListParams = {
+  page: number;
+  size: number;
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "ARCHIVED";
+  type?: AccountType;
+};
+
+export function listAccountPage(
+  { page, size, search, status = "ALL", type }: AccountListParams,
+  accessToken: string,
+) {
+  const query = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+    status,
   });
+
+  if (search?.trim()) {
+    query.set("search", search.trim());
+  }
+
+  if (type) {
+    query.set("type", type);
+  }
+
+  return apiRequest<PageResponse<Account>>(
+    `/api/accounts?${query.toString()}`,
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
+}
+
+export async function listAccounts(accessToken: string) {
+  const response = await apiRequest<PageResponse<Account> | Account[]>(
+    "/api/accounts?page=0&size=200&status=ALL",
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
+
+  return Array.isArray(response) ? response : response.items;
 }
 
 export type AccountOption = {
@@ -53,6 +93,13 @@ export function listAccountOptions(
       accessToken,
     },
   );
+}
+
+export function getAccountById(id: string, accessToken: string) {
+  return apiRequest<Account>(`/api/accounts/${id}`, {
+    method: "GET",
+    accessToken,
+  });
 }
 
 export function createAccount(payload: AccountPayload, accessToken: string) {

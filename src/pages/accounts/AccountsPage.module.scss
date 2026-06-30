@@ -1,81 +1,65 @@
-.layout {
+.stack {
   display: grid;
-  gap: var(--space-6);
-  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
-}
-
-.sidePanels {
-  display: grid;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
 .loadingCard {
   padding: var(--space-6);
 }
 
-.listPanel,
-.formPanel,
-.archivePanel {
-  padding: var(--space-6);
+.toolbarPanel,
+.footerPanel {
+  padding: var(--space-4);
 }
 
-.listHeader,
-.formHeader {
+.toolbar {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-5);
 }
 
-.panelTitle {
-  margin: 0;
-  font-size: var(--font-size-300);
-}
-
-.formSubtitle,
-.accountMeta {
-  margin: var(--space-1) 0 0;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-100);
-}
-
-.count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 2rem;
-  min-height: 2rem;
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-round);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-weight: var(--font-weight-semibold);
-}
-
-.accountList {
+.filterGroup {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(100%, 56rem);
 }
 
-.accountItem {
+.accountGrid {
   display: grid;
-  gap: var(--space-3);
-  width: 100%;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.accountCard,
+.emptyState,
+.archivePanel {
   padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-panel);
+}
+
+.accountButton {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
   text-align: left;
   cursor: pointer;
 }
 
-.accountItem:hover {
-  background: var(--color-panel-muted);
+.accountHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
 }
 
-.accountItemActive {
-  border-color: rgb(34 84 209 / 24%);
-  background: var(--color-accent-soft);
+.accountMeta,
+.archiveSubtitle {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
 }
 
 .accountBadges {
@@ -87,7 +71,7 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  min-height: 1.75rem;
+  min-height: 1.625rem;
   padding: 0 var(--space-3);
   border-radius: var(--radius-round);
   background: var(--color-accent-soft);
@@ -99,6 +83,65 @@
 .badgeMuted {
   background: var(--color-surface-muted);
   color: var(--color-text-muted);
+}
+
+.badgeSuccess {
+  background: rgb(35 126 84 / 10%);
+  color: rgb(35 126 84);
+}
+
+.badgeInfo {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+
+.emptyState {
+  color: var(--color-text-muted);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.rangeLabel {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.rowsControl {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.rowsControl select {
+  min-width: 4.5rem;
+}
+
+.paginationButtons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.drawerStack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
 }
 
 .typeGrid {
@@ -117,18 +160,16 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
 }
 
 .swatchDot {
   width: 0.875rem;
   height: 0.875rem;
+  flex: 0 0 auto;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-round);
-}
-
-.form {
-  display: grid;
-  gap: var(--space-5);
 }
 
 .formActions {
@@ -136,9 +177,25 @@
   gap: var(--space-3);
 }
 
-@media (width <= 72rem) {
-  .layout {
+.archiveHeader {
+  margin-bottom: var(--space-4);
+}
+
+.archiveTitle {
+  margin: 0;
+  font-size: var(--font-size-200);
+}
+
+@media (width <= 60rem) {
+  .filterGroup {
     grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .footer,
+  .paginationControls {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
@@ -146,5 +203,10 @@
   .typeGrid,
   .cardFields {
     grid-template-columns: 1fr;
+  }
+
+  .formActions,
+  .paginationButtons {
+    flex-direction: column;
   }
 }
