@@ -24,9 +24,10 @@ import IconSelect from "../../components/ui/IconSelect";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
+import { getStoredIcon } from "../../lib/icons";
 import {
   COLOR_OPTIONS,
-  getIconPreview,
+  getIconLabel,
   ICON_OPTIONS,
 } from "../../lib/uiOptions";
 import {
@@ -332,9 +333,17 @@ export default function CategoriesPage() {
                       <div>
                         <strong>{category.name}</strong>
                         <p className={styles.categoryMeta}>
-                          {getIconPreview(category.icon) ??
-                            t("categories.iconPreviewNone")}{" "}
-                          · {category.color || t("categories.noColor")}
+                          {(() => {
+                            const Icon = getStoredIcon(category.icon);
+
+                            return Icon ? (
+                              <Icon
+                                aria-hidden="true"
+                                className={styles.categoryMetaIcon}
+                              />
+                            ) : null;
+                          })()}{" "}
+                          {getIconLabel(category.icon) ?? t("categories.noIcon")} · {category.color || t("categories.noColor")}
                         </p>
                       </div>
                       <div className={styles.categoryBadges}>

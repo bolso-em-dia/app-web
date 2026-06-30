@@ -27,7 +27,7 @@ import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
-import { COLOR_OPTIONS } from "../../lib/uiOptions";
+import { COLOR_OPTIONS, getColorLabel } from "../../lib/uiOptions";
 import {
   accountSchema,
   archiveAccountSchema,
@@ -581,7 +581,7 @@ export default function AccountsPage() {
                         className={styles.swatchDot}
                         style={{ backgroundColor: colorValue }}
                       />
-                      <span>{colorValue}</span>
+                      <span>{getColorLabel(colorValue) || t("common.clearSelection")}</span>
                     </div>
                   ) : null}
 

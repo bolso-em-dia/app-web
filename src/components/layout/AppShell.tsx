@@ -6,6 +6,7 @@ import {
   managementNavigation,
   operationalNavigation,
 } from "../../app/navigation/navigation";
+import { getNavigationIcon } from "../../lib/icons";
 import Button from "../ui/Button";
 import styles from "./AppShell.module.scss";
 
@@ -39,38 +40,52 @@ export default function AppShell({
 
         <nav className={styles.navigation} aria-label={t("navigation.aria")}>
           <div className={styles.navSection}>
-            {operationalNavigation.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  isActive
-                    ? `${styles.navItem} ${styles.navItemActive}`
-                    : styles.navItem
-                }
-              >
-                <span className={styles.navLabel}>{t(item.labelKey)}</span>
-              </NavLink>
-            ))}
+            {operationalNavigation.map((item) => {
+              const Icon = getNavigationIcon(item.iconId);
+
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    isActive
+                      ? `${styles.navItem} ${styles.navItemActive}`
+                      : styles.navItem
+                  }
+                >
+                  <span className={styles.navLead}>
+                    <Icon aria-hidden="true" className={styles.navIcon} />
+                    <span className={styles.navLabel}>{t(item.labelKey)}</span>
+                  </span>
+                </NavLink>
+              );
+            })}
           </div>
 
           <div className={styles.navSection}>
             <span className={styles.navSectionTitle}>
               {t("navigation.management")}
             </span>
-            {managementNavigation.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  isActive
-                    ? `${styles.navItem} ${styles.navItemActive}`
-                    : styles.navItem
-                }
-              >
-                <span className={styles.navLabel}>{t(item.labelKey)}</span>
-              </NavLink>
-            ))}
+            {managementNavigation.map((item) => {
+              const Icon = getNavigationIcon(item.iconId);
+
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    isActive
+                      ? `${styles.navItem} ${styles.navItemActive}`
+                      : styles.navItem
+                  }
+                >
+                  <span className={styles.navLead}>
+                    <Icon aria-hidden="true" className={styles.navIcon} />
+                    <span className={styles.navLabel}>{t(item.labelKey)}</span>
+                  </span>
+                </NavLink>
+              );
+            })}
           </div>
         </nav>
 

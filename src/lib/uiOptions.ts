@@ -1,12 +1,13 @@
+import type { StoredIconId } from "./icons";
+
 export type ColorOption = {
   value: string;
   label: string;
 };
 
 export type IconOption = {
-  value: string;
+  value: StoredIconId;
   label: string;
-  preview: string;
 };
 
 export const COLOR_OPTIONS: ColorOption[] = [
@@ -33,24 +34,28 @@ export const COLOR_OPTIONS: ColorOption[] = [
 ];
 
 export const ICON_OPTIONS: IconOption[] = [
-  { value: "shopping-cart", label: "Compras", preview: "🛒" },
-  { value: "car", label: "Transporte", preview: "🚗" },
-  { value: "home", label: "Casa", preview: "🏠" },
-  { value: "heart", label: "Saúde", preview: "❤️" },
-  { value: "briefcase", label: "Trabalho", preview: "💼" },
-  { value: "credit-card", label: "Pagamento", preview: "💳" },
-  { value: "plane", label: "Viagem", preview: "✈️" },
-  { value: "gift", label: "Presentes", preview: "🎁" },
-  { value: "book", label: "Educação", preview: "📚" },
-  { value: "coffee", label: "Lazer", preview: "☕" },
-  { value: "smartphone", label: "Tecnologia", preview: "📱" },
-  { value: "gamepad", label: "Jogos", preview: "🎮" },
-  { value: "shirt", label: "Roupas", preview: "👕" },
-  { value: "school", label: "Escola", preview: "🏫" },
-  { value: "dumbbell", label: "Fitness", preview: "🏋️" },
-  { value: "pill", label: "Farmácia", preview: "💊" },
+  { value: "shopping-cart", label: "Compras" },
+  { value: "car", label: "Transporte" },
+  { value: "home", label: "Casa" },
+  { value: "heart", label: "Saúde" },
+  { value: "briefcase", label: "Trabalho" },
+  { value: "credit-card", label: "Pagamento" },
+  { value: "plane", label: "Viagem" },
+  { value: "gift", label: "Presentes" },
+  { value: "book", label: "Educação" },
+  { value: "coffee", label: "Lazer" },
+  { value: "smartphone", label: "Tecnologia" },
+  { value: "gamepad", label: "Jogos" },
+  { value: "shirt", label: "Roupas" },
+  { value: "school", label: "Escola" },
+  { value: "dumbbell", label: "Fitness" },
+  { value: "pill", label: "Farmácia" },
 ];
 
-export function getIconPreview(value: string | null | undefined) {
-  return ICON_OPTIONS.find((option) => option.value === value)?.preview ?? null;
+export function getColorLabel(value: string | null | undefined) {
+  return COLOR_OPTIONS.find((option) => option.value === value)?.label ?? null;
+}
+
+export function getIconLabel(value: string | null | undefined) {
+  return ICON_OPTIONS.find((option) => option.value === value)?.label ?? null;
 }

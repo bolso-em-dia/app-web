@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { X } from "lucide-react";
 import { useI18n } from "../../app/i18n/I18nContext";
 import Button from "./Button";
 import styles from "./Drawer.module.scss";
@@ -42,12 +43,13 @@ export default function Drawer({
             ) : null}
           </div>
           <Button
+            aria-label={t("common.closeDrawer")}
             className={styles.closeButton}
             onClick={onClose}
             type="button"
             variant="secondary"
           >
-            {t("common.closeDrawer")}
+            <X aria-hidden="true" className={styles.closeIcon} />
           </Button>
         </header>
         <div className={styles.body}>{children}</div>
