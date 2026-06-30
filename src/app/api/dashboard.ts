@@ -1,0 +1,73 @@
+import { apiRequest } from "./client";
+
+export type DashboardSummary = {
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+};
+
+export type DashboardTransaction = {
+  id: string;
+  type: string;
+  ownershipType: string;
+  sourceType: string;
+  description: string;
+  amount: number;
+  transactionDate: string;
+  referenceMonth: string;
+  accountId: string;
+  accountName: string;
+  categoryId: string;
+  categoryName: string;
+  memberId: string | null;
+  memberName: string | null;
+  installmentGroupId: string | null;
+  installmentNumber: number | null;
+  installmentTotal: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type DashboardEnvelope = {
+  id: string;
+  name: string;
+  type: string;
+  ownerMemberId: string | null;
+  ownerMemberName: string | null;
+  monthlyLimit: number;
+  consumedAmount: number;
+  remainingAmount: number;
+  createdInMonth: string;
+  archivedFromMonth: string | null;
+  active: boolean;
+  categories: Array<{
+    id: string;
+    name: string;
+    color: string | null;
+  }>;
+  transactions: DashboardTransaction[];
+};
+
+export type DashboardCategoryBreakdown = {
+  categoryId: string;
+  categoryName: string;
+  amount: number;
+};
+
+export type DashboardResponse = {
+  referenceMonth: string;
+  summary: DashboardSummary;
+  envelopes: DashboardEnvelope[];
+  recentTransactions: DashboardTransaction[];
+  categoryBreakdown: DashboardCategoryBreakdown[];
+};
+
+export function getDashboard(referenceMonth: string, accessToken: string) {
+  return apiRequest<DashboardResponse>(
+    `/api/dashboard?referenceMonth=${referenceMonth}`,
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
+}
