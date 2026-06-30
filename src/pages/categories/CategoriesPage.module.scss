@@ -1,0 +1,123 @@
+.layout {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+}
+
+.sidePanels {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.loadingCard {
+  padding: var(--space-6);
+}
+
+.listPanel,
+.formPanel,
+.archivePanel {
+  padding: var(--space-6);
+}
+
+.listHeader,
+.formHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--font-size-300);
+}
+
+.formSubtitle,
+.categoryMeta {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-round);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+.categoryList {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.categoryItem {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  text-align: left;
+  cursor: pointer;
+}
+
+.categoryItem:hover {
+  background: var(--color-panel-muted);
+}
+
+.categoryItemActive {
+  border-color: rgba(34, 84, 209, 24%);
+  background: var(--color-accent-soft);
+}
+
+.categoryBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-round);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: var(--font-size-100);
+  font-weight: var(--font-weight-semibold);
+}
+
+.badgeSuccess {
+  background: #ecfdf3;
+  color: var(--color-success);
+}
+
+.badgeMuted {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+@media (width <= 72rem) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

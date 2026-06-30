@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./app/auth/useAuth";
 import Spinner from "./components/feedback/Spinner";
+import CategoriesPage from "./pages/categories/CategoriesPage";
 import FamilyPage from "./pages/family/FamilyPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -41,10 +42,7 @@ export default function App() {
         path="/categories"
         element={
           <ProtectedRoute>
-            <PlaceholderPage
-              title="Categories"
-              subtitle="Manage the categories used by transactions and budgets."
-            />
+            <CategoriesPage />
           </ProtectedRoute>
         }
       />
