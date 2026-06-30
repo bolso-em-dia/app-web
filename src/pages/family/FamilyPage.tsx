@@ -59,6 +59,7 @@ export default function FamilyPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +101,7 @@ export default function FamilyPage() {
         setError(t("family.error"));
       } finally {
         setIsLoading(false);
+        setHasLoadedOnce(true);
       }
     },
     [accessToken, t],
@@ -221,6 +223,7 @@ export default function FamilyPage() {
     setError(null);
   }
 
+  const showInitialLoading = isLoading && !hasLoadedOnce;
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
     totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
@@ -237,7 +240,7 @@ export default function FamilyPage() {
         </Button>
       }
     >
-      {isLoading ? (
+      {showInitialLoading ? (
         <Card className={styles.loadingCard}>
           <Spinner label={t("family.loading")} />
         </Card>

@@ -42,8 +42,9 @@
   gap: var(--space-4);
   width: 100%;
   border: 0;
+  border-inline-start: 0.25rem solid transparent;
   background: transparent;
-  padding: 0;
+  padding: 0 0 0 var(--space-1);
   text-align: left;
   cursor: pointer;
 }
@@ -53,6 +54,12 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.accountTitleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .accountMeta,

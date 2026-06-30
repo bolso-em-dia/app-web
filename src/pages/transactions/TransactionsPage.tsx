@@ -114,6 +114,7 @@ export default function TransactionsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -186,6 +187,7 @@ export default function TransactionsPage() {
       setError(t("transactions.error"));
     } finally {
       setIsLoading(false);
+      setHasLoadedOnce(true);
     }
   }, [accessToken, filters, page, pageSize, t]);
 
@@ -326,6 +328,7 @@ export default function TransactionsPage() {
     setError(null);
   }
 
+  const showInitialLoading = isLoading && !hasLoadedOnce;
   const supportsGroupedDelete = Boolean(
     selectedTransaction?.installmentGroupId,
   );
@@ -345,7 +348,7 @@ export default function TransactionsPage() {
         </Button>
       }
     >
-      {isLoading ? (
+      {showInitialLoading ? (
         <Card className={styles.loadingCard}>
           <Spinner label={t("transactions.loading")} />
         </Card>

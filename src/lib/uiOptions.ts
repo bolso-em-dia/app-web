@@ -50,6 +50,11 @@ export const ICON_OPTIONS: IconOption[] = [
   { value: "school", label: "Escola" },
   { value: "dumbbell", label: "Fitness" },
   { value: "pill", label: "Farmácia" },
+  { value: "sparkles", label: "Cuidados pessoais" },
+  { value: "hand-coins", label: "Empréstimos" },
+  { value: "shopping-basket", label: "Mercado" },
+  { value: "paw-print", label: "Pets" },
+  { value: "wrench", label: "Serviços" },
 ];
 
 export function getColorLabel(value: string | null | undefined) {

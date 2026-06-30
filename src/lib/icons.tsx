@@ -9,20 +9,25 @@ import {
   Dumbbell,
   Gamepad2,
   Gift,
+  HandCoins,
   HeartPulse,
   House,
   Landmark,
   LayoutDashboard,
+  PawPrint,
   Pill,
   Plane,
   ReceiptText,
   School,
+  ShoppingBasket,
   ShoppingCart,
   Shirt,
   Smartphone,
+  Sparkles,
   Tag,
   Users,
   Wallet,
+  Wrench,
 } from "lucide-react";
 
 export type StoredIconId =
@@ -41,7 +46,12 @@ export type StoredIconId =
   | "shirt"
   | "school"
   | "dumbbell"
-  | "pill";
+  | "pill"
+  | "sparkles"
+  | "hand-coins"
+  | "shopping-basket"
+  | "paw-print"
+  | "wrench";
 
 export type NavigationIconId =
   | "dashboard"
@@ -69,6 +79,11 @@ export const storedIconMap: Record<StoredIconId, LucideIcon> = {
   school: School,
   dumbbell: Dumbbell,
   pill: Pill,
+  sparkles: Sparkles,
+  "hand-coins": HandCoins,
+  "shopping-basket": ShoppingBasket,
+  "paw-print": PawPrint,
+  wrench: Wrench,
 };
 
 export const navigationIconMap: Record<NavigationIconId, LucideIcon> = {

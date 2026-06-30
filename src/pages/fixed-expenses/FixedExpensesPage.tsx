@@ -88,6 +88,7 @@ export default function FixedExpensesPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,6 +144,7 @@ export default function FixedExpensesPage() {
         setError(t("fixedExpenses.error"));
       } finally {
         setIsLoading(false);
+        setHasLoadedOnce(true);
       }
     },
     [accessToken, referenceMonth, t],
@@ -271,6 +273,7 @@ export default function FixedExpensesPage() {
     setError(null);
   }
 
+  const showInitialLoading = isLoading && !hasLoadedOnce;
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
     totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
@@ -287,7 +290,7 @@ export default function FixedExpensesPage() {
         </Button>
       }
     >
-      {isLoading ? (
+      {showInitialLoading ? (
         <Card className={styles.loadingCard}>
           <Spinner label={t("fixedExpenses.loading")} />
         </Card>

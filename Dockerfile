@@ -4,12 +4,12 @@ WORKDIR /app
 ARG VITE_API_BASE_URL=http://localhost:8080
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
-COPY package.json .
+COPY package.json package-lock.json ./
 COPY tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts eslint.config.js ./
 COPY index.html .
 COPY src ./src
 
-RUN npm install
+RUN npm ci
 RUN npm run build
 
 FROM nginx:1.27-alpine

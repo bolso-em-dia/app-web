@@ -6,8 +6,26 @@ import CategoriesPage from "./CategoriesPage";
 
 describe("CategoriesPage", () => {
   beforeEach(() => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
+    vi.mocked(fetch).mockImplementation((input) => {
+      const url = String(input);
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+            },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
         ok: true,
         status: 200,
         json: async () => ({
@@ -30,20 +48,8 @@ describe("CategoriesPage", () => {
           totalPages: 1,
         }),
         text: async () => "",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => [
-          {
-            id: "cat-1",
-            name: "Groceries",
-            icon: "shopping-cart",
-            color: "#2254d1",
-          },
-        ],
-        text: async () => "",
       } as Response);
+    });
   });
 
   afterEach(() => {
@@ -82,5 +88,43 @@ describe("CategoriesPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Nome é obrigatório.")).toBeInTheDocument();
     });
+  });
+
+  it("keeps the search field focused during filtering and removes icon/color text from the card", async () => {
+    render(
+      <MemoryRouter initialEntries={["/categories"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <CategoriesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Groceries")).toBeInTheDocument();
+
+    const searchInput = screen.getByRole("textbox", { name: "Buscar" });
+    searchInput.focus();
+
+    fireEvent.change(searchInput, { target: { value: "Gro" } });
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(4);
+    });
+
+    expect(searchInput).toHaveFocus();
+    expect(screen.queryByText("Compras")).not.toBeInTheDocument();
+    expect(screen.queryByText("#2254d1")).not.toBeInTheDocument();
+    const categoryButton = screen.getByRole("button", { name: /Groceries/ });
+    const categoryIcon = categoryButton.querySelector('span[style]');
+
+    expect(categoryIcon).not.toBeNull();
+    expect(categoryIcon).toHaveStyle({ color: "rgb(34, 84, 209)" });
   });
 });

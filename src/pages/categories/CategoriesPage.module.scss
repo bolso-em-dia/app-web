@@ -44,17 +44,10 @@
   font-size: var(--font-size-200);
 }
 
-.formSubtitle,
-.categoryMeta {
+.formSubtitle {
   margin: var(--space-1) 0 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-100);
-}
-
-.categoryMeta {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
 }
 
 .categoryMetaIcon {
@@ -119,6 +112,7 @@
   width: 100%;
   padding: var(--space-5);
   border: 0;
+  border-inline-start: 0.25rem solid transparent;
   border-radius: inherit;
   background: transparent;
   text-align: left;
@@ -134,6 +128,19 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.categoryTitleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.categoryTitleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
 }
 
 .categoryBadges {

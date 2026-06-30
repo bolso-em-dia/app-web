@@ -82,6 +82,7 @@ export default function AccountsPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,6 +133,7 @@ export default function AccountsPage() {
         setError(t("accounts.error"));
       } finally {
         setIsLoading(false);
+        setHasLoadedOnce(true);
       }
     },
     [accessToken, t],
@@ -257,6 +259,7 @@ export default function AccountsPage() {
     setError(null);
   }
 
+  const showInitialLoading = isLoading && !hasLoadedOnce;
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
     totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
@@ -273,7 +276,7 @@ export default function AccountsPage() {
         </Button>
       }
     >
-      {isLoading ? (
+      {showInitialLoading ? (
         <Card className={styles.loadingCard}>
           <Spinner label={t("accounts.loading")} />
         </Card>
@@ -355,23 +358,30 @@ export default function AccountsPage() {
                       setSelectedId(account.id);
                       setError(null);
                     }}
+                    style={
+                      account.color
+                        ? { borderInlineStartColor: account.color }
+                        : undefined
+                    }
                     type="button"
                   >
                     <div className={styles.accountHeader}>
                       <div>
-                        <strong>{account.name}</strong>
+                        <div className={styles.accountTitleRow}>
+                          {account.color ? (
+                            <span
+                              aria-hidden="true"
+                              className={styles.swatchDot}
+                              style={{ backgroundColor: account.color }}
+                            />
+                          ) : null}
+                          <strong>{account.name}</strong>
+                        </div>
                         <p className={styles.accountMeta}>
                           {t(`accountTypes.${account.type}` as const)}
                           {account.brand ? ` · ${account.brand}` : ""}
                         </p>
                       </div>
-                      {account.color ? (
-                        <span
-                          aria-hidden="true"
-                          className={styles.swatchDot}
-                          style={{ backgroundColor: account.color }}
-                        />
-                      ) : null}
                     </div>
 
                     <div className={styles.accountBadges}>

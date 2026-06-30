@@ -12,7 +12,7 @@ import AccountsPage from "./AccountsPage";
 
 describe("AccountsPage", () => {
   beforeEach(() => {
-    vi.mocked(fetch).mockResolvedValueOnce({
+    vi.mocked(fetch).mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({
@@ -91,5 +91,42 @@ describe("AccountsPage", () => {
         ),
       ).toBeInTheDocument();
     });
+  });
+
+  it("keeps the search field focused during filtering and uses the configured card color visually", async () => {
+    render(
+      <MemoryRouter initialEntries={["/accounts"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+
+    const searchInput = screen.getByRole("textbox", { name: "Buscar" });
+    searchInput.focus();
+
+    fireEvent.change(searchInput, { target: { value: "Main" } });
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
+    expect(searchInput).toHaveFocus();
+    expect(screen.queryByText("#2254d1")).not.toBeInTheDocument();
+    const accountButton = screen.getByRole("button", { name: /Main checking/ });
+    const accountSwatch = accountButton.querySelector('span[style]');
+
+    expect(accountSwatch).not.toBeNull();
+    expect(accountSwatch).toHaveStyle({ backgroundColor: "rgb(34, 84, 209)" });
   });
 });

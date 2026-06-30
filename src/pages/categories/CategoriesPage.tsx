@@ -25,11 +25,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { getStoredIcon } from "../../lib/icons";
-import {
-  COLOR_OPTIONS,
-  getIconLabel,
-  ICON_OPTIONS,
-} from "../../lib/uiOptions";
+import { COLOR_OPTIONS, ICON_OPTIONS } from "../../lib/uiOptions";
 import {
   archiveCategorySchema,
   categorySchema,
@@ -62,6 +58,7 @@ export default function CategoriesPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,6 +112,7 @@ export default function CategoriesPage() {
         setError(t("categories.error"));
       } finally {
         setIsLoading(false);
+        setHasLoadedOnce(true);
       }
     },
     [accessToken, t],
@@ -251,6 +249,7 @@ export default function CategoriesPage() {
     setError(null);
   }
 
+  const showInitialLoading = isLoading && !hasLoadedOnce;
   const archiveOptions = options.filter(
     (option) => option.id !== selectedCategory?.id,
   );
@@ -272,7 +271,7 @@ export default function CategoriesPage() {
         </Button>
       }
     >
-      {isLoading ? (
+      {showInitialLoading ? (
         <Card className={styles.loadingCard}>
           <Spinner label={t("categories.loading")} />
         </Card>
@@ -318,51 +317,61 @@ export default function CategoriesPage() {
             </Card>
 
             <section className={styles.categoryGrid}>
-              {categories.map((category) => (
-                <Card key={category.id} className={styles.categoryCard}>
-                  <button
-                    className={styles.categoryButton}
-                    onClick={() => {
-                      setIsCreating(false);
-                      setSelectedId(category.id);
-                      setError(null);
-                    }}
-                    type="button"
-                  >
-                    <div className={styles.categoryCardHeader}>
-                      <div>
-                        <strong>{category.name}</strong>
-                        <p className={styles.categoryMeta}>
-                          {(() => {
-                            const Icon = getStoredIcon(category.icon);
+              {categories.map((category) => {
+                const Icon = getStoredIcon(category.icon);
 
-                            return Icon ? (
-                              <Icon
-                                aria-hidden="true"
-                                className={styles.categoryMetaIcon}
-                              />
-                            ) : null;
-                          })()}{" "}
-                          {getIconLabel(category.icon) ?? t("categories.noIcon")} · {category.color || t("categories.noColor")}
-                        </p>
+                return (
+                  <Card key={category.id} className={styles.categoryCard}>
+                    <button
+                      className={styles.categoryButton}
+                      onClick={() => {
+                        setIsCreating(false);
+                        setSelectedId(category.id);
+                        setError(null);
+                      }}
+                      style={
+                        category.color
+                          ? { borderInlineStartColor: category.color }
+                          : undefined
+                      }
+                      type="button"
+                    >
+                      <div className={styles.categoryCardHeader}>
+                        <div className={styles.categoryTitleRow}>
+                          {Icon ? (
+                            <span
+                              aria-hidden="true"
+                              className={styles.categoryTitleIcon}
+                              style={
+                                category.color
+                                  ? { color: category.color }
+                                  : undefined
+                              }
+                            >
+                              <Icon className={styles.categoryMetaIcon} />
+                            </span>
+                          ) : null}
+                          <strong>{category.name}</strong>
+                        </div>
+
+                        <div className={styles.categoryBadges}>
+                          <span
+                            className={
+                              category.archivedFromMonth
+                                ? `${styles.badge} ${styles.badgeMuted}`
+                                : `${styles.badge} ${styles.badgeSuccess}`
+                            }
+                          >
+                            {category.archivedFromMonth
+                              ? t("common.archived")
+                              : t("common.active")}
+                          </span>
+                        </div>
                       </div>
-                      <div className={styles.categoryBadges}>
-                        <span
-                          className={
-                            category.archivedFromMonth
-                              ? `${styles.badge} ${styles.badgeMuted}`
-                              : `${styles.badge} ${styles.badgeSuccess}`
-                          }
-                        >
-                          {category.archivedFromMonth
-                            ? t("common.archived")
-                            : t("common.active")}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                </Card>
-              ))}
+                    </button>
+                  </Card>
+                );
+              })}
             </section>
 
             <Card className={styles.footerPanel}>
