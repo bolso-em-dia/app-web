@@ -1,17 +1,15 @@
-.layout {
+.stack {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
 .loadingCard {
   padding: var(--space-6);
 }
 
-.filtersPanel,
-.listPanel,
-.formPanel,
-.deletePanel {
-  padding: var(--space-6);
+.toolbarPanel,
+.footerPanel {
+  padding: var(--space-4);
 }
 
 .filtersGrid {
@@ -20,70 +18,26 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
-.contentGrid {
+.transactionGrid {
   display: grid;
-  gap: var(--space-6);
-  grid-template-columns: minmax(20rem, 28rem) minmax(0, 1fr);
-}
-
-.listHeader,
-.formHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-5);
 }
 
-.panelTitle {
-  margin: 0;
-  font-size: var(--font-size-300);
-}
-
-.panelSubtitle,
-.transactionMeta,
-.helperText {
-  margin: var(--space-1) 0 0;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-100);
-}
-
-.count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 2rem;
-  min-height: 2rem;
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-round);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-weight: var(--font-weight-semibold);
-}
-
-.transactionList {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.transactionItem {
-  display: grid;
-  gap: var(--space-3);
-  width: 100%;
+.transactionCard,
+.emptyState,
+.deletePanel {
   padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-panel);
+}
+
+.transactionButton {
+  display: grid;
+  gap: var(--space-4);
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
   text-align: left;
   cursor: pointer;
-}
-
-.transactionItem:hover {
-  background: var(--color-panel-muted);
-}
-
-.transactionItemActive {
-  border-color: rgb(34 84 209 / 24%);
-  background: var(--color-accent-soft);
 }
 
 .transactionTop {
@@ -91,6 +45,13 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.transactionMeta,
+.helperText {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
 }
 
 .badgeRow {
@@ -102,7 +63,7 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  min-height: 1.75rem;
+  min-height: 1.625rem;
   padding: 0 var(--space-3);
   border-radius: var(--radius-round);
   background: var(--color-accent-soft);
@@ -116,14 +77,73 @@
   color: var(--color-text-muted);
 }
 
+.emptyState {
+  color: var(--color-text-muted);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.rangeLabel {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.rowsControl {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.rowsControl select {
+  min-width: 4.5rem;
+}
+
+.paginationButtons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.drawerStack {
+  display: grid;
+  gap: var(--space-4);
+}
+
 .form {
   display: grid;
   gap: var(--space-5);
 }
 
+.dateGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .formActions {
   display: flex;
   gap: var(--space-3);
+}
+
+.deleteHeader {
+  margin-bottom: var(--space-4);
+}
+
+.deleteTitle {
+  margin: 0;
+  font-size: var(--font-size-200);
 }
 
 .deleteSection {
@@ -135,18 +155,25 @@
   .filtersGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
-  .contentGrid {
-    grid-template-columns: 1fr;
+@media (width <= 60rem) {
+  .footer,
+  .paginationControls {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
 @media (width <= 40rem) {
-  .filtersGrid {
+  .filtersGrid,
+  .dateGrid {
     grid-template-columns: 1fr;
   }
 
-  .transactionTop {
+  .transactionTop,
+  .formActions,
+  .paginationButtons {
     flex-direction: column;
   }
 }

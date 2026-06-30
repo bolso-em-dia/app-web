@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
@@ -10,49 +16,61 @@ describe("TransactionsPage", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => [
-          {
-            id: "tx-1",
-            type: "EXPENSE",
-            ownershipType: "SHARED",
-            sourceType: "MANUAL",
-            description: "Groceries",
-            amount: 125.5,
-            transactionDate: "2026-06-10",
-            referenceMonth: "2026-06-01",
-            accountId: "account-1",
-            accountName: "Main checking",
-            categoryId: "cat-1",
-            categoryName: "Groceries",
-            memberId: null,
-            memberName: null,
-            installmentGroupId: null,
-            installmentNumber: null,
-            installmentTotal: null,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
+        json: async () => ({
+          items: [
+            {
+              id: "tx-1",
+              type: "EXPENSE",
+              ownershipType: "SHARED",
+              sourceType: "MANUAL",
+              description: "Groceries",
+              amount: 125.5,
+              transactionDate: "2026-06-10",
+              referenceMonth: "2026-06-01",
+              accountId: "account-1",
+              accountName: "Main checking",
+              categoryId: "cat-1",
+              categoryName: "Groceries",
+              memberId: null,
+              memberName: null,
+              installmentGroupId: null,
+              installmentNumber: null,
+              installmentTotal: null,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        }),
         text: async () => "",
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => [
-          {
-            id: "account-1",
-            name: "Main checking",
-            type: "CHECKING",
-            brand: null,
-            color: "#2254d1",
-            closingDay: null,
-            dueDay: null,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
+        json: async () => ({
+          items: [
+            {
+              id: "account-1",
+              name: "Main checking",
+              type: "CHECKING",
+              brand: null,
+              color: "#2254d1",
+              closingDay: null,
+              dueDay: null,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 200,
+          totalItems: 1,
+          totalPages: 1,
+        }),
         text: async () => "",
       } as Response)
       .mockResolvedValueOnce({
@@ -71,18 +89,24 @@ describe("TransactionsPage", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => [
-          {
-            id: "member-1",
-            name: "Taylor",
-            email: "taylor@my-money.local",
-            role: "USER",
-            active: true,
-            allowanceEnabled: true,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
+        json: async () => ({
+          items: [
+            {
+              id: "member-1",
+              name: "Taylor",
+              email: "taylor@my-money.local",
+              role: "USER",
+              active: true,
+              allowanceEnabled: true,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 200,
+          totalItems: 1,
+          totalPages: 1,
+        }),
         text: async () => "",
       } as Response);
   });
@@ -111,16 +135,19 @@ describe("TransactionsPage", () => {
     expect(
       await screen.findByRole("button", { name: /Groceries/i }),
     ).toBeInTheDocument();
+    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "New transaction" }));
-    fireEvent.change(screen.getByLabelText("Description"), {
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText("Description"), {
       target: { value: "Allowance purchase" },
     });
-    fireEvent.change(screen.getByLabelText("Amount"), {
+    fireEvent.change(within(drawer).getByLabelText("Amount"), {
       target: { value: "45" },
     });
     fireEvent.change(
-      screen.getByLabelText("Account", {
+      within(drawer).getByLabelText("Account", {
         selector: "#transaction-account",
       }),
       {
@@ -128,7 +155,7 @@ describe("TransactionsPage", () => {
       },
     );
     fireEvent.change(
-      screen.getByLabelText("Category", {
+      within(drawer).getByLabelText("Category", {
         selector: "#transaction-category",
       }),
       {
@@ -136,7 +163,7 @@ describe("TransactionsPage", () => {
       },
     );
     fireEvent.change(
-      screen.getByLabelText("Ownership", {
+      within(drawer).getByLabelText("Ownership", {
         selector: "#transaction-ownership",
       }),
       {
@@ -144,7 +171,9 @@ describe("TransactionsPage", () => {
       },
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Create transaction" }));
+    fireEvent.click(
+      within(drawer).getByRole("button", { name: "Create transaction" }),
+    );
 
     await waitFor(() => {
       expect(

@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+import { apiRequest, type PageResponse } from "./client";
 
 export type TransactionType = "INCOME" | "EXPENSE";
 export type OwnershipType = "SHARED" | "INDIVIDUAL";
@@ -48,9 +48,16 @@ export type TransactionFilters = {
   memberId?: string;
 };
 
-function buildQuery(filters: TransactionFilters) {
+export type TransactionListParams = TransactionFilters & {
+  page: number;
+  size: number;
+};
+
+function buildQuery(filters: TransactionListParams) {
   const searchParams = new URLSearchParams({
     referenceMonth: filters.referenceMonth,
+    page: String(filters.page),
+    size: String(filters.size),
   });
 
   if (filters.type) {
@@ -77,13 +84,16 @@ function buildQuery(filters: TransactionFilters) {
 }
 
 export function listTransactions(
-  filters: TransactionFilters,
+  filters: TransactionListParams,
   accessToken: string,
 ) {
-  return apiRequest<Transaction[]>(`/api/transactions?${buildQuery(filters)}`, {
-    method: "GET",
-    accessToken,
-  });
+  return apiRequest<PageResponse<Transaction>>(
+    `/api/transactions?${buildQuery(filters)}`,
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
 }
 
 export function createTransaction(

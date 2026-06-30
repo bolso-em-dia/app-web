@@ -24,6 +24,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
@@ -52,6 +53,7 @@ const DEFAULT_VALUES: TransactionFormValues = {
   memberId: "",
   installmentCount: 1,
 };
+const DEFAULT_PAGE_SIZE = 12;
 
 const TYPE_LABELS: Record<TransactionType, string> = {
   INCOME: "Income",
@@ -123,6 +125,10 @@ export default function TransactionsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteScope, setDeleteScope] = useState<DeleteScope>("SINGLE");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [filters, setFilters] = useState<TransactionFilters>({
     referenceMonth: initialReferenceMonth,
   });
@@ -161,33 +167,34 @@ export default function TransactionsPage() {
         categoriesResponse,
         membersResponse,
       ] = await Promise.all([
-        listTransactions(filters, accessToken),
+        listTransactions({ ...filters, page, size: pageSize }, accessToken),
         listAccounts(accessToken),
         listCategoryOptions(filters.referenceMonth, accessToken),
         listFamilyMembers(accessToken),
       ]);
 
-      setTransactions(transactionsResponse);
+      setTransactions(transactionsResponse.items);
+      setPage(transactionsResponse.page);
+      setPageSize(transactionsResponse.size);
+      setTotalItems(transactionsResponse.totalItems);
+      setTotalPages(transactionsResponse.totalPages);
       setAccounts(accountsResponse);
       setCategoryOptions(categoriesResponse);
       setMembers(membersResponse);
-
-      if (transactionsResponse.length > 0) {
-        setSelectedId((current) =>
-          current &&
-          transactionsResponse.some((transaction) => transaction.id === current)
-            ? current
-            : transactionsResponse[0].id,
-        );
-      } else {
-        setSelectedId(null);
-      }
+      setSelectedId((current) =>
+        current &&
+        transactionsResponse.items.some(
+          (transaction) => transaction.id === current,
+        )
+          ? current
+          : null,
+      );
     } catch {
       setError("Unable to load transactions.");
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, filters]);
+  }, [accessToken, filters, page, pageSize]);
 
   useEffect(() => {
     void loadPageData();
@@ -264,6 +271,11 @@ export default function TransactionsPage() {
         );
         if (created[0]) {
           setSelectedId(created[0].id);
+          setPage(0);
+          setFilters((current) => ({
+            ...current,
+            referenceMonth: created[0].referenceMonth,
+          }));
         }
         setIsCreating(false);
       } else if (selectedTransaction) {
@@ -272,11 +284,8 @@ export default function TransactionsPage() {
           mapFormValuesToUpdatePayload(values),
           accessToken,
         );
-        setTransactions((current) =>
-          current.map((transaction) =>
-            transaction.id === updated.id ? updated : transaction,
-          ),
-        );
+        setSelectedId(updated.id);
+        setPage(0);
       }
 
       await loadPageData();
@@ -297,6 +306,7 @@ export default function TransactionsPage() {
 
     try {
       await deleteTransaction(selectedTransaction.id, deleteScope, accessToken);
+      setSelectedId(null);
       await loadPageData();
     } catch {
       setError("Unable to delete the transaction.");
@@ -313,15 +323,24 @@ export default function TransactionsPage() {
 
   function handleCancelCreate() {
     setIsCreating(false);
+    setSelectedId(null);
     setError(null);
-    if (transactions[0]) {
-      setSelectedId(transactions[0].id);
-    }
+  }
+
+  function handleCloseDrawer() {
+    setIsCreating(false);
+    setSelectedId(null);
+    setError(null);
   }
 
   const supportsGroupedDelete = Boolean(
     selectedTransaction?.installmentGroupId,
   );
+  const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
+  const rangeEnd =
+    totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
+  const hasPreviousPage = page > 0;
+  const hasNextPage = page + 1 < totalPages;
 
   return (
     <AppShell
@@ -338,45 +357,38 @@ export default function TransactionsPage() {
           <Spinner label="Loading transactions" />
         </Card>
       ) : (
-        <section className={styles.layout}>
-          <Card className={styles.filtersPanel}>
-            <div className={styles.listHeader}>
-              <div>
-                <h2 className={styles.panelTitle}>Filters</h2>
-                <p className={styles.panelSubtitle}>
-                  Narrow the monthly transaction list.
-                </p>
-              </div>
-            </div>
-
+        <section className={styles.stack}>
+          <Card className={styles.toolbarPanel}>
             <div className={styles.filtersGrid}>
               <Field label="Reference month" htmlFor="transaction-filter-month">
                 <Input
                   id="transaction-filter-month"
-                  type="month"
-                  value={toMonthInputValue(filters.referenceMonth)}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setFilters((current) => ({
                       ...current,
                       referenceMonth: fromMonthInputValue(event.target.value),
-                    }))
-                  }
+                    }));
+                    setPage(0);
+                  }}
+                  type="month"
+                  value={toMonthInputValue(filters.referenceMonth)}
                 />
               </Field>
 
               <Field label="Type" htmlFor="transaction-filter-type">
                 <Select
                   id="transaction-filter-type"
-                  value={filters.type ?? ""}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setFilters((current) => ({
                       ...current,
                       type:
                         event.target.value.length > 0
                           ? (event.target.value as TransactionType)
                           : undefined,
-                    }))
-                  }
+                    }));
+                    setPage(0);
+                  }}
+                  value={filters.type ?? ""}
                 >
                   <option value="">All types</option>
                   <option value="INCOME">Income</option>
@@ -387,16 +399,17 @@ export default function TransactionsPage() {
               <Field label="Ownership" htmlFor="transaction-filter-ownership">
                 <Select
                   id="transaction-filter-ownership"
-                  value={filters.ownershipType ?? ""}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setFilters((current) => ({
                       ...current,
                       ownershipType:
                         event.target.value.length > 0
                           ? (event.target.value as OwnershipType)
                           : undefined,
-                    }))
-                  }
+                    }));
+                    setPage(0);
+                  }}
+                  value={filters.ownershipType ?? ""}
                 >
                   <option value="">All ownerships</option>
                   <option value="SHARED">Shared</option>
@@ -407,13 +420,14 @@ export default function TransactionsPage() {
               <Field label="Account" htmlFor="transaction-filter-account">
                 <Select
                   id="transaction-filter-account"
-                  value={filters.accountId ?? ""}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setFilters((current) => ({
                       ...current,
                       accountId: event.target.value || undefined,
-                    }))
-                  }
+                    }));
+                    setPage(0);
+                  }}
+                  value={filters.accountId ?? ""}
                 >
                   <option value="">All accounts</option>
                   {accounts.map((account) => (
@@ -427,13 +441,14 @@ export default function TransactionsPage() {
               <Field label="Category" htmlFor="transaction-filter-category">
                 <Select
                   id="transaction-filter-category"
-                  value={filters.categoryId ?? ""}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setFilters((current) => ({
                       ...current,
                       categoryId: event.target.value || undefined,
-                    }))
-                  }
+                    }));
+                    setPage(0);
+                  }}
+                  value={filters.categoryId ?? ""}
                 >
                   <option value="">All categories</option>
                   {categoryOptions.map((category) => (
@@ -447,13 +462,14 @@ export default function TransactionsPage() {
               <Field label="Member" htmlFor="transaction-filter-member">
                 <Select
                   id="transaction-filter-member"
-                  value={filters.memberId ?? ""}
-                  onChange={(event) =>
+                  onChange={(event) => {
                     setFilters((current) => ({
                       ...current,
                       memberId: event.target.value || undefined,
-                    }))
-                  }
+                    }));
+                    setPage(0);
+                  }}
+                  value={filters.memberId ?? ""}
                 >
                   <option value="">All members</option>
                   {allowanceMembers.map((member) => (
@@ -466,33 +482,22 @@ export default function TransactionsPage() {
             </div>
           </Card>
 
-          <div className={styles.contentGrid}>
-            <Card className={styles.listPanel}>
-              <div className={styles.listHeader}>
-                <div>
-                  <h2 className={styles.panelTitle}>Transactions</h2>
-                  <p className={styles.panelSubtitle}>
-                    {formatReferenceMonth(filters.referenceMonth)}
-                  </p>
-                </div>
-                <span className={styles.count}>{transactions.length}</span>
-              </div>
-
-              <div className={styles.transactionList}>
-                {transactions.map((transaction) => (
+          <section className={styles.transactionGrid}>
+            {transactions.length === 0 ? (
+              <Card className={styles.emptyState}>
+                <p>No transactions found for the current filters.</p>
+              </Card>
+            ) : (
+              transactions.map((transaction) => (
+                <Card key={transaction.id} className={styles.transactionCard}>
                   <button
-                    key={transaction.id}
-                    type="button"
-                    className={
-                      transaction.id === selectedId && !isCreating
-                        ? `${styles.transactionItem} ${styles.transactionItemActive}`
-                        : styles.transactionItem
-                    }
+                    className={styles.transactionButton}
                     onClick={() => {
                       setIsCreating(false);
                       setSelectedId(transaction.id);
                       setError(null);
                     }}
+                    type="button"
                   >
                     <div className={styles.transactionTop}>
                       <div>
@@ -529,34 +534,75 @@ export default function TransactionsPage() {
                       ) : null}
                     </div>
                   </button>
-                ))}
-              </div>
-            </Card>
+                </Card>
+              ))
+            )}
+          </section>
 
-            <div className={styles.layout}>
-              <Card className={styles.formPanel}>
-                <div className={styles.formHeader}>
-                  <div>
-                    <h2 className={styles.panelTitle}>
-                      {isCreating ? "New transaction" : "Transaction details"}
-                    </h2>
-                    <p className={styles.panelSubtitle}>
-                      {isCreating
-                        ? "Create a monthly transaction with optional installments."
-                        : "Update the selected transaction."}
-                    </p>
-                  </div>
+          <Card className={styles.footerPanel}>
+            <div className={styles.footer}>
+              <span className={styles.rangeLabel}>
+                {rangeStart}-{rangeEnd} of {totalItems}
+              </span>
+
+              <div className={styles.paginationControls}>
+                <label className={styles.rowsControl}>
+                  <span>Rows</span>
+                  <Select
+                    onChange={(event) => {
+                      setPageSize(Number(event.target.value));
+                      setPage(0);
+                    }}
+                    value={String(pageSize)}
+                  >
+                    <option value="12">12</option>
+                    <option value="24">24</option>
+                    <option value="48">48</option>
+                  </Select>
+                </label>
+
+                <div className={styles.paginationButtons}>
+                  <Button
+                    disabled={!hasPreviousPage}
+                    onClick={() => setPage((current) => current - 1)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    disabled={!hasNextPage}
+                    onClick={() => setPage((current) => current + 1)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Next
+                  </Button>
                 </div>
+              </div>
+            </div>
+          </Card>
 
+          {isCreating || selectedTransaction ? (
+            <Drawer
+              description={
+                isCreating
+                  ? "Create a monthly transaction with optional installments."
+                  : `Update the transaction for ${formatReferenceMonth(filters.referenceMonth)}.`
+              }
+              onClose={handleCloseDrawer}
+              title={isCreating ? "New transaction" : "Transaction details"}
+            >
+              <div className={styles.drawerStack}>
                 <form
                   className={styles.form}
                   onSubmit={form.handleSubmit(onSubmit)}
                   noValidate
                 >
                   <Field
-                    label="Type"
-                    htmlFor="transaction-type"
                     error={form.formState.errors.type?.message}
+                    htmlFor="transaction-type"
+                    label="Type"
                   >
                     <Select
                       id="transaction-type"
@@ -569,9 +615,9 @@ export default function TransactionsPage() {
                   </Field>
 
                   <Field
-                    label="Ownership"
-                    htmlFor="transaction-ownership"
                     error={form.formState.errors.ownershipType?.message}
+                    htmlFor="transaction-ownership"
+                    label="Ownership"
                   >
                     <Select
                       id="transaction-ownership"
@@ -584,9 +630,9 @@ export default function TransactionsPage() {
                   </Field>
 
                   <Field
-                    label="Description"
-                    htmlFor="transaction-description"
                     error={form.formState.errors.description?.message}
+                    htmlFor="transaction-description"
+                    label="Description"
                   >
                     <Input
                       id="transaction-description"
@@ -596,50 +642,54 @@ export default function TransactionsPage() {
                   </Field>
 
                   <Field
-                    label="Amount"
-                    htmlFor="transaction-amount"
                     error={form.formState.errors.amount?.message}
+                    htmlFor="transaction-amount"
+                    label="Amount"
                   >
                     <Input
                       id="transaction-amount"
-                      type="number"
+                      hasError={Boolean(form.formState.errors.amount)}
                       min="0.01"
                       step="0.01"
-                      hasError={Boolean(form.formState.errors.amount)}
+                      type="number"
                       {...form.register("amount")}
                     />
                   </Field>
 
-                  <Field
-                    label="Transaction date"
-                    htmlFor="transaction-date"
-                    error={form.formState.errors.transactionDate?.message}
-                  >
-                    <Input
-                      id="transaction-date"
-                      type="date"
-                      hasError={Boolean(form.formState.errors.transactionDate)}
-                      {...form.register("transactionDate")}
-                    />
-                  </Field>
+                  <div className={styles.dateGrid}>
+                    <Field
+                      error={form.formState.errors.transactionDate?.message}
+                      htmlFor="transaction-date"
+                      label="Transaction date"
+                    >
+                      <Input
+                        id="transaction-date"
+                        hasError={Boolean(
+                          form.formState.errors.transactionDate,
+                        )}
+                        type="date"
+                        {...form.register("transactionDate")}
+                      />
+                    </Field>
+
+                    <Field
+                      error={form.formState.errors.referenceMonth?.message}
+                      htmlFor="transaction-reference-month"
+                      label="Reference month"
+                    >
+                      <Input
+                        id="transaction-reference-month"
+                        hasError={Boolean(form.formState.errors.referenceMonth)}
+                        type="date"
+                        {...form.register("referenceMonth")}
+                      />
+                    </Field>
+                  </div>
 
                   <Field
-                    label="Reference month"
-                    htmlFor="transaction-reference-month"
-                    error={form.formState.errors.referenceMonth?.message}
-                  >
-                    <Input
-                      id="transaction-reference-month"
-                      type="date"
-                      hasError={Boolean(form.formState.errors.referenceMonth)}
-                      {...form.register("referenceMonth")}
-                    />
-                  </Field>
-
-                  <Field
-                    label="Account"
-                    htmlFor="transaction-account"
                     error={form.formState.errors.accountId?.message}
+                    htmlFor="transaction-account"
+                    label="Account"
                   >
                     <Select
                       id="transaction-account"
@@ -656,9 +706,9 @@ export default function TransactionsPage() {
                   </Field>
 
                   <Field
-                    label="Category"
-                    htmlFor="transaction-category"
                     error={form.formState.errors.categoryId?.message}
+                    htmlFor="transaction-category"
+                    label="Category"
                   >
                     <Select
                       id="transaction-category"
@@ -676,9 +726,9 @@ export default function TransactionsPage() {
 
                   {ownershipType === "INDIVIDUAL" ? (
                     <Field
-                      label="Member"
-                      htmlFor="transaction-member"
                       error={form.formState.errors.memberId?.message}
+                      htmlFor="transaction-member"
+                      label="Member"
                     >
                       <Select
                         id="transaction-member"
@@ -697,25 +747,25 @@ export default function TransactionsPage() {
 
                   {isCreating && transactionType === "EXPENSE" ? (
                     <Field
-                      label="Installment count"
-                      htmlFor="transaction-installment-count"
                       error={form.formState.errors.installmentCount?.message}
+                      htmlFor="transaction-installment-count"
+                      label="Installment count"
                     >
                       <Input
                         id="transaction-installment-count"
-                        type="number"
-                        min="1"
-                        max="120"
-                        step="1"
                         hasError={Boolean(
                           form.formState.errors.installmentCount,
                         )}
+                        max="120"
+                        min="1"
+                        step="1"
+                        type="number"
                         {...form.register("installmentCount")}
                       />
                     </Field>
                   ) : null}
 
-                  {error ? <FormError>{error}</FormError> : null}
+                  <FormError>{error}</FormError>
 
                   <div className={styles.formActions}>
                     <Button loading={isSaving} type="submit">
@@ -732,59 +782,61 @@ export default function TransactionsPage() {
                     ) : null}
                   </div>
                 </form>
-              </Card>
 
-              {!isCreating && selectedTransaction ? (
-                <Card className={styles.deletePanel}>
-                  <div className={styles.formHeader}>
-                    <div>
-                      <h2 className={styles.panelTitle}>Delete transaction</h2>
-                      <p className={styles.panelSubtitle}>
+                {!isCreating && selectedTransaction ? (
+                  <Card className={styles.deletePanel}>
+                    <div className={styles.deleteHeader}>
+                      <h3 className={styles.deleteTitle}>Delete transaction</h3>
+                      <p className={styles.helperText}>
                         Remove the selected transaction or the remaining
                         installments in its group.
                       </p>
                     </div>
-                  </div>
 
-                  <div className={styles.deleteSection}>
-                    {supportsGroupedDelete ? (
-                      <Field
-                        label="Delete scope"
-                        htmlFor="transaction-delete-scope"
-                      >
-                        <Select
-                          id="transaction-delete-scope"
-                          value={deleteScope}
-                          onChange={(event) =>
-                            setDeleteScope(event.target.value as DeleteScope)
-                          }
+                    <div className={styles.deleteSection}>
+                      {supportsGroupedDelete ? (
+                        <Field
+                          htmlFor="transaction-delete-scope"
+                          label="Delete scope"
                         >
-                          <option value="SINGLE">Only this installment</option>
-                          <option value="FUTURE">
-                            This and future installments
-                          </option>
-                          <option value="ALL">Entire installment group</option>
-                        </Select>
-                      </Field>
-                    ) : (
-                      <p className={styles.helperText}>
-                        This transaction is not part of an installment group.
-                      </p>
-                    )}
+                          <Select
+                            id="transaction-delete-scope"
+                            onChange={(event) =>
+                              setDeleteScope(event.target.value as DeleteScope)
+                            }
+                            value={deleteScope}
+                          >
+                            <option value="SINGLE">
+                              Only this installment
+                            </option>
+                            <option value="FUTURE">
+                              This and future installments
+                            </option>
+                            <option value="ALL">
+                              Entire installment group
+                            </option>
+                          </Select>
+                        </Field>
+                      ) : (
+                        <p className={styles.helperText}>
+                          This transaction is not part of an installment group.
+                        </p>
+                      )}
 
-                    <Button
-                      loading={isDeleting}
-                      onClick={() => void handleDelete()}
-                      type="button"
-                      variant="secondary"
-                    >
-                      Delete transaction
-                    </Button>
-                  </div>
-                </Card>
-              ) : null}
-            </div>
-          </div>
+                      <Button
+                        loading={isDeleting}
+                        onClick={() => void handleDelete()}
+                        type="button"
+                        variant="secondary"
+                      >
+                        Delete transaction
+                      </Button>
+                    </div>
+                  </Card>
+                ) : null}
+              </div>
+            </Drawer>
+          ) : null}
         </section>
       )}
     </AppShell>
