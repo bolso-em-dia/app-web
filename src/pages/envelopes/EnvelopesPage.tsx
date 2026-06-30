@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   listCategoryOptions,
   type CategoryOption,
@@ -26,6 +26,7 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Checkbox from "../../components/ui/Checkbox";
 import Drawer from "../../components/ui/Drawer";
+import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
@@ -618,13 +619,19 @@ export default function EnvelopesPage() {
                     htmlFor="envelope-monthly-limit"
                     label={t("envelopes.monthlyLimit")}
                   >
-                    <Input
-                      id="envelope-monthly-limit"
-                      hasError={Boolean(form.formState.errors.monthlyLimit)}
-                      min="0.01"
-                      step="0.01"
-                      type="number"
-                      {...form.register("monthlyLimit")}
+                    <Controller
+                      control={form.control}
+                      name="monthlyLimit"
+                      render={({ field }) => (
+                        <CurrencyInput
+                          hasError={Boolean(form.formState.errors.monthlyLimit)}
+                          id="envelope-monthly-limit"
+                          onBlur={field.onBlur}
+                          onValueChange={field.onChange}
+                          ref={field.ref}
+                          value={field.value}
+                        />
+                      )}
                     />
                   </Field>
 

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { listAccounts, type Account } from "../../app/api/accounts";
 import {
   listCategoryOptions,
@@ -25,6 +25,7 @@ import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
+import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
@@ -677,13 +678,19 @@ export default function TransactionsPage() {
                     htmlFor="transaction-amount"
                     label={t("transactions.amount")}
                   >
-                    <Input
-                      id="transaction-amount"
-                      hasError={Boolean(form.formState.errors.amount)}
-                      min="0.01"
-                      step="0.01"
-                      type="number"
-                      {...form.register("amount")}
+                    <Controller
+                      control={form.control}
+                      name="amount"
+                      render={({ field }) => (
+                        <CurrencyInput
+                          hasError={Boolean(form.formState.errors.amount)}
+                          id="transaction-amount"
+                          onBlur={field.onBlur}
+                          onValueChange={field.onChange}
+                          ref={field.ref}
+                          value={field.value}
+                        />
+                      )}
                     />
                   </Field>
 
