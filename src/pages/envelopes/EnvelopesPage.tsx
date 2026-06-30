@@ -1,7 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import type { CategoryOption } from "../../app/api/categories";
+import {
+  listCategoryOptions,
+  type CategoryOption,
+} from "../../app/api/categories";
 import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
 import {
   archiveEnvelope,
@@ -12,16 +15,17 @@ import {
   updateEnvelope,
   type Envelope,
   type EnvelopeCategoryBreakdown,
+  type EnvelopeListParams,
   type EnvelopePayload,
   type EnvelopeType,
 } from "../../app/api/envelopes";
-import { listCategoryOptions } from "../../app/api/categories";
 import { useAuth } from "../../app/auth/useAuth";
 import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Checkbox from "../../components/ui/Checkbox";
+import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
@@ -47,6 +51,7 @@ const DEFAULT_VALUES: EnvelopeFormValues = {
   categoryIds: [],
   monthlyLimit: 0,
 };
+const DEFAULT_PAGE_SIZE = 12;
 
 const ENVELOPE_TYPE_LABELS: Record<EnvelopeType, string> = {
   GLOBAL: "Global",
@@ -76,7 +81,8 @@ function mapFormValuesToPayload(values: EnvelopeFormValues): EnvelopePayload {
 
 export default function EnvelopesPage() {
   const { accessToken } = useAuth();
-  const referenceMonth = useMemo(() => getCurrentReferenceMonth(), []);
+  const initialReferenceMonth = useMemo(() => getCurrentReferenceMonth(), []);
+  const [referenceMonth, setReferenceMonth] = useState(initialReferenceMonth);
   const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [members, setMembers] = useState<FamilyMember[]>([]);
@@ -87,6 +93,15 @@ export default function EnvelopesPage() {
   const [categoryBreakdown, setCategoryBreakdown] = useState<
     EnvelopeCategoryBreakdown[]
   >([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "ARCHIVED"
+  >("ACTIVE");
+  const [typeFilter, setTypeFilter] = useState<"" | EnvelopeType>("");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
@@ -119,42 +134,44 @@ export default function EnvelopesPage() {
     [members],
   );
 
-  const loadEnvelopesData = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
+  const loadEnvelopesData = useCallback(
+    async (params: EnvelopeListParams) => {
+      if (!accessToken) {
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const [envelopesResponse, categoryOptionsResponse, membersResponse] =
-        await Promise.all([
-          listEnvelopes(referenceMonth, accessToken),
-          listCategoryOptions(referenceMonth, accessToken),
-          listFamilyMembers(accessToken),
-        ]);
+      try {
+        const [envelopesResponse, categoryOptionsResponse, membersResponse] =
+          await Promise.all([
+            listEnvelopes(params, accessToken),
+            listCategoryOptions(params.referenceMonth, accessToken),
+            listFamilyMembers(accessToken),
+          ]);
 
-      setEnvelopes(envelopesResponse);
-      setCategoryOptions(categoryOptionsResponse);
-      setMembers(membersResponse);
-
-      if (envelopesResponse.length > 0) {
+        setEnvelopes(envelopesResponse.items);
+        setPage(envelopesResponse.page);
+        setPageSize(envelopesResponse.size);
+        setTotalItems(envelopesResponse.totalItems);
+        setTotalPages(envelopesResponse.totalPages);
+        setCategoryOptions(categoryOptionsResponse);
+        setMembers(membersResponse);
         setSelectedId((current) =>
           current &&
-          envelopesResponse.some((envelope) => envelope.id === current)
+          envelopesResponse.items.some((envelope) => envelope.id === current)
             ? current
-            : envelopesResponse[0].id,
+            : null,
         );
-      } else {
-        setSelectedId(null);
+      } catch {
+        setError("Unable to load envelopes.");
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      setError("Unable to load envelopes.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken, referenceMonth]);
+    },
+    [accessToken],
+  );
 
   const loadEnvelopeDetails = useCallback(async () => {
     if (!accessToken || !selectedId || isCreating) {
@@ -182,8 +199,23 @@ export default function EnvelopesPage() {
   }, [accessToken, isCreating, referenceMonth, selectedId]);
 
   useEffect(() => {
-    void loadEnvelopesData();
-  }, [loadEnvelopesData]);
+    void loadEnvelopesData({
+      referenceMonth,
+      page,
+      size: pageSize,
+      search,
+      status: statusFilter,
+      type: typeFilter || undefined,
+    });
+  }, [
+    loadEnvelopesData,
+    page,
+    pageSize,
+    referenceMonth,
+    search,
+    statusFilter,
+    typeFilter,
+  ]);
 
   useEffect(() => {
     void loadEnvelopeDetails();
@@ -250,22 +282,25 @@ export default function EnvelopesPage() {
           mapFormValuesToPayload(values),
           accessToken,
         );
-        setEnvelopes((current) => [created, ...current]);
         setSelectedId(created.id);
         setIsCreating(false);
+        setSearch(created.name);
+        setStatusFilter("ALL");
+        setTypeFilter(created.type);
+        setPage(0);
       } else if (selectedEnvelopeSummary) {
         const updated = await updateEnvelope(
           selectedEnvelopeSummary.id,
           mapFormValuesToPayload(values),
           accessToken,
         );
-        setEnvelopes((current) =>
-          current.map((envelope) =>
-            envelope.id === updated.id ? updated : envelope,
-          ),
+        setSelectedId(updated.id);
+        setSearch((current) =>
+          current.trim().length === 0 ? current : updated.name,
         );
+        setTypeFilter((current) => (current === "" ? current : updated.type));
+        setPage(0);
       }
-      await loadEnvelopesData();
     } catch {
       setError("Unable to save the envelope.");
     } finally {
@@ -293,12 +328,8 @@ export default function EnvelopesPage() {
         },
         accessToken,
       );
-      setEnvelopes((current) =>
-        current.map((envelope) =>
-          envelope.id === archived.id ? archived : envelope,
-        ),
-      );
-      await loadEnvelopesData();
+      setSelectedId(archived.id);
+      setPage(0);
     } catch {
       setError("Unable to archive the envelope.");
     } finally {
@@ -316,11 +347,23 @@ export default function EnvelopesPage() {
 
   function handleCancelCreate() {
     setIsCreating(false);
+    setSelectedId(null);
     setError(null);
-    if (envelopes[0]) {
-      setSelectedId(envelopes[0].id);
-    }
   }
+
+  function handleCloseDrawer() {
+    setIsCreating(false);
+    setSelectedId(null);
+    setSelectedEnvelope(null);
+    setCategoryBreakdown([]);
+    setError(null);
+  }
+
+  const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
+  const rangeEnd =
+    totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
+  const hasPreviousPage = page > 0;
+  const hasNextPage = page + 1 < totalPages;
 
   return (
     <AppShell
@@ -337,356 +380,480 @@ export default function EnvelopesPage() {
           <Spinner label="Loading envelopes" />
         </Card>
       ) : (
-        <section className={styles.layout}>
-          <Card className={styles.listPanel}>
-            <div className={styles.listHeader}>
-              <div>
-                <h2 className={styles.panelTitle}>Envelopes</h2>
-                <p className={styles.listMeta}>
-                  {formatReferenceMonth(referenceMonth)}
-                </p>
-              </div>
-              <span className={styles.count}>{envelopes.length}</span>
-            </div>
-
-            <div className={styles.envelopeList}>
-              {envelopes.map((envelope) => (
-                <button
-                  key={envelope.id}
-                  type="button"
-                  className={
-                    envelope.id === selectedId && !isCreating
-                      ? `${styles.envelopeItem} ${styles.envelopeItemActive}`
-                      : styles.envelopeItem
-                  }
-                  onClick={() => {
-                    setIsCreating(false);
-                    setSelectedId(envelope.id);
-                    setError(null);
-                  }}
-                >
-                  <div className={styles.envelopeTop}>
-                    <div>
-                      <strong>{envelope.name}</strong>
-                      <p className={styles.envelopeMeta}>
-                        {envelope.type === "ALLOWANCE" &&
-                        envelope.ownerMemberName
-                          ? `Allowance for ${envelope.ownerMemberName}`
-                          : `${envelope.categories.length} linked categories`}
-                      </p>
-                    </div>
-                    <strong>{formatCurrency(envelope.remainingAmount)}</strong>
-                  </div>
-
-                  <div className={styles.badgeRow}>
-                    <span className={styles.badge}>
-                      {ENVELOPE_TYPE_LABELS[envelope.type]}
-                    </span>
-                    {envelope.archivedFromMonth ? (
-                      <span className={`${styles.badge} ${styles.badgeMuted}`}>
-                        Archived from{" "}
-                        {formatReferenceMonth(envelope.archivedFromMonth)}
-                      </span>
-                    ) : null}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </Card>
-
-          <div className={styles.sidePanels}>
-            <Card className={styles.formPanel}>
-              <div className={styles.formHeader}>
-                <div>
-                  <h2 className={styles.panelTitle}>
-                    {isCreating ? "New envelope" : "Envelope details"}
-                  </h2>
-                  <p className={styles.formSubtitle}>
-                    {isCreating
-                      ? "Create a global budget or allowance envelope."
-                      : "Update limits, owner, and linked categories."}
-                  </p>
-                </div>
-              </div>
-
-              <form
-                className={styles.form}
-                onSubmit={form.handleSubmit(onSubmit)}
-                noValidate
-              >
-                <Field
-                  label="Name"
-                  htmlFor="envelope-name"
-                  error={form.formState.errors.name?.message}
-                >
+        <section className={styles.stack}>
+          <Card className={styles.toolbarPanel}>
+            <div className={styles.toolbar}>
+              <div className={styles.filterGroup}>
+                <Field htmlFor="envelope-reference-month" label="Month">
                   <Input
-                    id="envelope-name"
-                    hasError={Boolean(form.formState.errors.name)}
-                    {...form.register("name")}
+                    id="envelope-reference-month"
+                    onChange={(event) => {
+                      setReferenceMonth(
+                        fromMonthInputValue(event.target.value),
+                      );
+                      setPage(0);
+                    }}
+                    type="month"
+                    value={toMonthInputValue(referenceMonth)}
                   />
                 </Field>
 
-                <Field
-                  label="Type"
-                  htmlFor="envelope-type"
-                  error={form.formState.errors.type?.message}
-                >
+                <Field htmlFor="envelope-search" label="Search">
+                  <Input
+                    id="envelope-search"
+                    onChange={(event) => {
+                      setSearch(event.target.value);
+                      setPage(0);
+                    }}
+                    placeholder="Search envelopes"
+                    value={search}
+                  />
+                </Field>
+
+                <Field htmlFor="envelope-status-filter" label="Status">
                   <Select
-                    id="envelope-type"
-                    hasError={Boolean(form.formState.errors.type)}
-                    {...form.register("type")}
+                    id="envelope-status-filter"
+                    onChange={(event) => {
+                      setStatusFilter(
+                        event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
+                      );
+                      setPage(0);
+                    }}
+                    value={statusFilter}
                   >
+                    <option value="ALL">All</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="ARCHIVED">Archived</option>
+                  </Select>
+                </Field>
+
+                <Field htmlFor="envelope-type-filter" label="Type">
+                  <Select
+                    id="envelope-type-filter"
+                    onChange={(event) => {
+                      setTypeFilter(event.target.value as "" | EnvelopeType);
+                      setPage(0);
+                    }}
+                    value={typeFilter}
+                  >
+                    <option value="">All types</option>
                     <option value="GLOBAL">Global</option>
                     <option value="ALLOWANCE">Allowance</option>
                   </Select>
                 </Field>
+              </div>
+            </div>
+          </Card>
 
-                <Field
-                  label="Monthly limit"
-                  htmlFor="envelope-monthly-limit"
-                  error={form.formState.errors.monthlyLimit?.message}
-                >
-                  <Input
-                    id="envelope-monthly-limit"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    hasError={Boolean(form.formState.errors.monthlyLimit)}
-                    {...form.register("monthlyLimit")}
-                  />
-                </Field>
-
-                {envelopeType === "ALLOWANCE" ? (
-                  <Field
-                    label="Owner member"
-                    htmlFor="envelope-owner-member"
-                    error={form.formState.errors.ownerMemberId?.message}
+          <section className={styles.envelopeGrid}>
+            {envelopes.length === 0 ? (
+              <Card className={styles.emptyState}>
+                <p>No envelopes found for the current filters.</p>
+              </Card>
+            ) : (
+              envelopes.map((envelope) => (
+                <Card key={envelope.id} className={styles.envelopeCard}>
+                  <button
+                    className={styles.envelopeButton}
+                    onClick={() => {
+                      setIsCreating(false);
+                      setSelectedId(envelope.id);
+                      setError(null);
+                    }}
+                    type="button"
                   >
-                    <Select
-                      id="envelope-owner-member"
-                      hasError={Boolean(form.formState.errors.ownerMemberId)}
-                      {...form.register("ownerMemberId")}
-                    >
-                      <option value="">Select a member</option>
-                      {availableAllowanceMembers.map((member) => (
-                        <option key={member.id} value={member.id}>
-                          {member.name}
-                        </option>
-                      ))}
-                    </Select>
-                  </Field>
-                ) : (
-                  <div className={styles.sectionBlock}>
-                    <span className={styles.panelTitle}>Linked categories</span>
-                    <div className={styles.checkboxGroup}>
-                      <div className={styles.checkboxList}>
-                        {categoryOptions.map((category) => (
-                          <Checkbox
-                            key={category.id}
-                            checked={selectedCategoryIds.includes(category.id)}
-                            label={category.name}
-                            onChange={(event) =>
-                              handleToggleCategory(
-                                category.id,
-                                event.currentTarget.checked,
-                              )
-                            }
-                          />
-                        ))}
+                    <div className={styles.envelopeHeader}>
+                      <div>
+                        <strong>{envelope.name}</strong>
+                        <p className={styles.envelopeMeta}>
+                          {envelope.type === "ALLOWANCE" &&
+                          envelope.ownerMemberName
+                            ? `Allowance for ${envelope.ownerMemberName}`
+                            : `${envelope.categories.length} linked categories`}
+                        </p>
                       </div>
-                      <p className={styles.helperText}>
-                        Global envelopes consume shared expense categories.
-                      </p>
+                      <strong>
+                        {formatCurrency(envelope.remainingAmount)}
+                      </strong>
                     </div>
-                    {form.formState.errors.categoryIds?.message ? (
-                      <FormError>
-                        {form.formState.errors.categoryIds.message}
-                      </FormError>
-                    ) : null}
-                  </div>
-                )}
 
-                {error ? <FormError>{error}</FormError> : null}
+                    <div className={styles.badgeRow}>
+                      <span className={styles.badge}>
+                        {ENVELOPE_TYPE_LABELS[envelope.type]}
+                      </span>
+                      <span
+                        className={
+                          envelope.archivedFromMonth
+                            ? `${styles.badge} ${styles.badgeMuted}`
+                            : `${styles.badge} ${styles.badgeSuccess}`
+                        }
+                      >
+                        {envelope.archivedFromMonth
+                          ? `Archived from ${formatReferenceMonth(envelope.archivedFromMonth)}`
+                          : "Active"}
+                      </span>
+                    </div>
+                  </button>
+                </Card>
+              ))
+            )}
+          </section>
 
-                <div className={styles.formActions}>
-                  <Button loading={isSaving} type="submit">
-                    {isCreating ? "Create envelope" : "Save changes"}
+          <Card className={styles.footerPanel}>
+            <div className={styles.footer}>
+              <span className={styles.rangeLabel}>
+                {rangeStart}-{rangeEnd} of {totalItems}
+              </span>
+
+              <div className={styles.paginationControls}>
+                <label className={styles.rowsControl}>
+                  <span>Rows</span>
+                  <Select
+                    onChange={(event) => {
+                      setPageSize(Number(event.target.value));
+                      setPage(0);
+                    }}
+                    value={String(pageSize)}
+                  >
+                    <option value="12">12</option>
+                    <option value="24">24</option>
+                    <option value="48">48</option>
+                  </Select>
+                </label>
+
+                <div className={styles.paginationButtons}>
+                  <Button
+                    disabled={!hasPreviousPage}
+                    onClick={() => setPage((current) => current - 1)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Previous
                   </Button>
-                  {isCreating ? (
-                    <Button
-                      onClick={handleCancelCreate}
-                      type="button"
-                      variant="secondary"
-                    >
-                      Cancel
-                    </Button>
-                  ) : null}
-                </div>
-              </form>
-            </Card>
-
-            <Card className={styles.detailPanel}>
-              <div className={styles.detailHeader}>
-                <div>
-                  <h2 className={styles.panelTitle}>Current month impact</h2>
-                  <p className={styles.detailSubtitle}>
-                    Consumption and matching transactions for{" "}
-                    {formatReferenceMonth(referenceMonth)}.
-                  </p>
+                  <Button
+                    disabled={!hasNextPage}
+                    onClick={() => setPage((current) => current + 1)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Next
+                  </Button>
                 </div>
               </div>
+            </div>
+          </Card>
 
-              {isDetailLoading ? (
-                <Spinner label="Loading envelope details" />
-              ) : selectedEnvelope ? (
-                <div className={styles.detailSection}>
-                  <section className={styles.summaryGrid}>
-                    <div className={styles.summaryCard}>
-                      <span className={styles.summaryLabel}>Limit</span>
-                      <strong className={styles.summaryValue}>
-                        {formatCurrency(selectedEnvelope.monthlyLimit)}
-                      </strong>
-                    </div>
-                    <div className={styles.summaryCard}>
-                      <span className={styles.summaryLabel}>Consumed</span>
-                      <strong className={styles.summaryValue}>
-                        {formatCurrency(selectedEnvelope.consumedAmount)}
-                      </strong>
-                    </div>
-                    <div className={styles.summaryCard}>
-                      <span className={styles.summaryLabel}>Remaining</span>
-                      <strong className={styles.summaryValue}>
-                        {formatCurrency(selectedEnvelope.remainingAmount)}
-                      </strong>
-                    </div>
-                  </section>
-
-                  <section className={styles.detailSection}>
-                    <h3 className={styles.panelTitle}>Category breakdown</h3>
-                    {categoryBreakdown.length > 0 ? (
-                      <div className={styles.detailList}>
-                        {categoryBreakdown.map((item) => (
-                          <div
-                            key={item.categoryId}
-                            className={styles.detailRow}
-                          >
-                            <strong>{item.categoryName}</strong>
-                            <strong>{formatCurrency(item.amount)}</strong>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className={styles.emptyState}>
-                        No category consumption for this envelope in the current
-                        month.
-                      </div>
-                    )}
-                  </section>
-
-                  <section className={styles.detailSection}>
-                    <h3 className={styles.panelTitle}>Matched transactions</h3>
-                    {selectedEnvelope.transactions.length > 0 ? (
-                      <div className={styles.transactionList}>
-                        {selectedEnvelope.transactions.map((transaction) => (
-                          <div
-                            key={transaction.id}
-                            className={styles.transactionRow}
-                          >
-                            <div>
-                              <strong>{transaction.description}</strong>
-                              <p className={styles.itemMeta}>
-                                {transaction.categoryName} ·{" "}
-                                {transaction.accountName} ·{" "}
-                                {formatDay(transaction.transactionDate)}
-                              </p>
-                            </div>
-                            <strong>
-                              {formatCurrency(transaction.amount)}
-                            </strong>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className={styles.emptyState}>
-                        No transactions matched this envelope for the current
-                        month.
-                      </div>
-                    )}
-                  </section>
-
-                  <section className={styles.detailSection}>
-                    <h3 className={styles.panelTitle}>Linked categories</h3>
-                    {selectedEnvelope.categories.length > 0 ? (
-                      <div className={styles.categoryList}>
-                        {selectedEnvelope.categories.map((category) => (
-                          <span key={category.id} className={styles.badge}>
-                            {category.name}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className={styles.emptyState}>
-                        This allowance envelope does not use shared categories.
-                      </div>
-                    )}
-                  </section>
-                </div>
-              ) : (
-                <p className={styles.body}>
-                  Select an envelope to review its current month details.
-                </p>
-              )}
-            </Card>
-
-            {!isCreating && selectedEnvelopeSummary ? (
-              <Card className={styles.archivePanel}>
-                <div className={styles.formHeader}>
-                  <div>
-                    <h2 className={styles.panelTitle}>Archive envelope</h2>
-                    <p className={styles.formSubtitle}>
-                      Stop using this envelope from a future reference month.
-                    </p>
-                  </div>
-                </div>
-
+          {isCreating || selectedEnvelopeSummary ? (
+            <Drawer
+              description={
+                isCreating
+                  ? "Create a global budget or allowance envelope."
+                  : `Review and update the envelope for ${formatReferenceMonth(referenceMonth)}.`
+              }
+              onClose={handleCloseDrawer}
+              title={isCreating ? "New envelope" : "Envelope details"}
+            >
+              <div className={styles.drawerStack}>
                 <form
                   className={styles.form}
-                  onSubmit={archiveForm.handleSubmit(onArchive)}
+                  onSubmit={form.handleSubmit(onSubmit)}
                   noValidate
                 >
                   <Field
-                    label="Archive month"
-                    htmlFor="envelope-archive-month"
-                    error={
-                      archiveForm.formState.errors.archivedFromMonth?.message
-                    }
+                    error={form.formState.errors.name?.message}
+                    htmlFor="envelope-name"
+                    label="Name"
                   >
                     <Input
-                      id="envelope-archive-month"
-                      type="month"
-                      hasError={Boolean(
-                        archiveForm.formState.errors.archivedFromMonth,
-                      )}
-                      {...archiveForm.register("archivedFromMonth")}
+                      id="envelope-name"
+                      hasError={Boolean(form.formState.errors.name)}
+                      {...form.register("name")}
                     />
                   </Field>
 
-                  <Button
-                    loading={isArchiving}
-                    type="submit"
-                    variant="secondary"
-                    disabled={Boolean(
-                      selectedEnvelopeSummary.archivedFromMonth,
-                    )}
+                  <Field
+                    error={form.formState.errors.type?.message}
+                    htmlFor="envelope-type"
+                    label="Type"
                   >
-                    {selectedEnvelopeSummary.archivedFromMonth
-                      ? "Envelope archived"
-                      : "Archive envelope"}
-                  </Button>
+                    <Select
+                      id="envelope-type"
+                      hasError={Boolean(form.formState.errors.type)}
+                      {...form.register("type")}
+                    >
+                      <option value="GLOBAL">Global</option>
+                      <option value="ALLOWANCE">Allowance</option>
+                    </Select>
+                  </Field>
+
+                  <Field
+                    error={form.formState.errors.monthlyLimit?.message}
+                    htmlFor="envelope-monthly-limit"
+                    label="Monthly limit"
+                  >
+                    <Input
+                      id="envelope-monthly-limit"
+                      hasError={Boolean(form.formState.errors.monthlyLimit)}
+                      min="0.01"
+                      step="0.01"
+                      type="number"
+                      {...form.register("monthlyLimit")}
+                    />
+                  </Field>
+
+                  {envelopeType === "ALLOWANCE" ? (
+                    <Field
+                      error={form.formState.errors.ownerMemberId?.message}
+                      htmlFor="envelope-owner-member"
+                      label="Owner member"
+                    >
+                      <Select
+                        id="envelope-owner-member"
+                        hasError={Boolean(form.formState.errors.ownerMemberId)}
+                        {...form.register("ownerMemberId")}
+                      >
+                        <option value="">Select a member</option>
+                        {availableAllowanceMembers.map((member) => (
+                          <option key={member.id} value={member.id}>
+                            {member.name}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                  ) : (
+                    <div className={styles.sectionBlock}>
+                      <span className={styles.sectionTitle}>
+                        Linked categories
+                      </span>
+                      <div className={styles.checkboxGroup}>
+                        <div className={styles.checkboxList}>
+                          {categoryOptions.map((category) => (
+                            <Checkbox
+                              key={category.id}
+                              checked={selectedCategoryIds.includes(
+                                category.id,
+                              )}
+                              label={category.name}
+                              onChange={(event) =>
+                                handleToggleCategory(
+                                  category.id,
+                                  event.currentTarget.checked,
+                                )
+                              }
+                            />
+                          ))}
+                        </div>
+                        <p className={styles.helperText}>
+                          Global envelopes consume shared expense categories.
+                        </p>
+                      </div>
+                      {form.formState.errors.categoryIds?.message ? (
+                        <FormError>
+                          {form.formState.errors.categoryIds.message}
+                        </FormError>
+                      ) : null}
+                    </div>
+                  )}
+
+                  <FormError>{error}</FormError>
+
+                  <div className={styles.formActions}>
+                    <Button loading={isSaving} type="submit">
+                      {isCreating ? "Create envelope" : "Save changes"}
+                    </Button>
+                    {isCreating ? (
+                      <Button
+                        onClick={handleCancelCreate}
+                        type="button"
+                        variant="secondary"
+                      >
+                        Cancel
+                      </Button>
+                    ) : null}
+                  </div>
                 </form>
-              </Card>
-            ) : null}
-          </div>
+
+                {!isCreating ? (
+                  <Card className={styles.detailPanel}>
+                    <div className={styles.detailHeader}>
+                      <h3 className={styles.detailTitle}>
+                        Current month impact
+                      </h3>
+                      <p className={styles.detailSubtitle}>
+                        Consumption and matching transactions for{" "}
+                        {formatReferenceMonth(referenceMonth)}.
+                      </p>
+                    </div>
+
+                    {isDetailLoading ? (
+                      <Spinner label="Loading envelope details" />
+                    ) : selectedEnvelope ? (
+                      <div className={styles.detailSection}>
+                        <section className={styles.summaryGrid}>
+                          <div className={styles.summaryCard}>
+                            <span className={styles.summaryLabel}>Limit</span>
+                            <strong className={styles.summaryValue}>
+                              {formatCurrency(selectedEnvelope.monthlyLimit)}
+                            </strong>
+                          </div>
+                          <div className={styles.summaryCard}>
+                            <span className={styles.summaryLabel}>
+                              Consumed
+                            </span>
+                            <strong className={styles.summaryValue}>
+                              {formatCurrency(selectedEnvelope.consumedAmount)}
+                            </strong>
+                          </div>
+                          <div className={styles.summaryCard}>
+                            <span className={styles.summaryLabel}>
+                              Remaining
+                            </span>
+                            <strong className={styles.summaryValue}>
+                              {formatCurrency(selectedEnvelope.remainingAmount)}
+                            </strong>
+                          </div>
+                        </section>
+
+                        <section className={styles.sectionBlock}>
+                          <h4 className={styles.sectionTitle}>
+                            Category breakdown
+                          </h4>
+                          {categoryBreakdown.length > 0 ? (
+                            <div className={styles.detailList}>
+                              {categoryBreakdown.map((item) => (
+                                <div
+                                  key={item.categoryId}
+                                  className={styles.detailRow}
+                                >
+                                  <strong>{item.categoryName}</strong>
+                                  <strong>{formatCurrency(item.amount)}</strong>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className={styles.emptyStateInline}>
+                              No category consumption for this envelope in the
+                              current month.
+                            </div>
+                          )}
+                        </section>
+
+                        <section className={styles.sectionBlock}>
+                          <h4 className={styles.sectionTitle}>
+                            Matched transactions
+                          </h4>
+                          {selectedEnvelope.transactions.length > 0 ? (
+                            <div className={styles.transactionList}>
+                              {selectedEnvelope.transactions.map(
+                                (transaction) => (
+                                  <div
+                                    key={transaction.id}
+                                    className={styles.transactionRow}
+                                  >
+                                    <div>
+                                      <strong>{transaction.description}</strong>
+                                      <p className={styles.itemMeta}>
+                                        {transaction.categoryName} ·{" "}
+                                        {transaction.accountName} ·{" "}
+                                        {formatDay(transaction.transactionDate)}
+                                      </p>
+                                    </div>
+                                    <strong>
+                                      {formatCurrency(transaction.amount)}
+                                    </strong>
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          ) : (
+                            <div className={styles.emptyStateInline}>
+                              No transactions matched this envelope for the
+                              current month.
+                            </div>
+                          )}
+                        </section>
+
+                        <section className={styles.sectionBlock}>
+                          <h4 className={styles.sectionTitle}>
+                            Linked categories
+                          </h4>
+                          {selectedEnvelope.categories.length > 0 ? (
+                            <div className={styles.categoryList}>
+                              {selectedEnvelope.categories.map((category) => (
+                                <span
+                                  key={category.id}
+                                  className={styles.badge}
+                                >
+                                  {category.name}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className={styles.emptyStateInline}>
+                              This allowance envelope does not use shared
+                              categories.
+                            </div>
+                          )}
+                        </section>
+                      </div>
+                    ) : (
+                      <p className={styles.detailSubtitle}>
+                        Select an envelope to review its current month details.
+                      </p>
+                    )}
+                  </Card>
+                ) : null}
+
+                {!isCreating && selectedEnvelopeSummary ? (
+                  <Card className={styles.archivePanel}>
+                    <div className={styles.archiveHeader}>
+                      <h3 className={styles.detailTitle}>Archive envelope</h3>
+                      <p className={styles.detailSubtitle}>
+                        Stop using this envelope from a future reference month.
+                      </p>
+                    </div>
+
+                    <form
+                      className={styles.form}
+                      onSubmit={archiveForm.handleSubmit(onArchive)}
+                      noValidate
+                    >
+                      <Field
+                        error={
+                          archiveForm.formState.errors.archivedFromMonth
+                            ?.message
+                        }
+                        htmlFor="envelope-archive-month"
+                        label="Archive month"
+                      >
+                        <Input
+                          id="envelope-archive-month"
+                          hasError={Boolean(
+                            archiveForm.formState.errors.archivedFromMonth,
+                          )}
+                          type="month"
+                          {...archiveForm.register("archivedFromMonth")}
+                        />
+                      </Field>
+
+                      <Button
+                        disabled={Boolean(
+                          selectedEnvelopeSummary.archivedFromMonth,
+                        )}
+                        loading={isArchiving}
+                        type="submit"
+                        variant="secondary"
+                      >
+                        {selectedEnvelopeSummary.archivedFromMonth
+                          ? "Envelope archived"
+                          : "Archive envelope"}
+                      </Button>
+                    </form>
+                  </Card>
+                ) : null}
+              </div>
+            </Drawer>
+          ) : null}
         </section>
       )}
     </AppShell>

@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
@@ -10,29 +16,35 @@ describe("EnvelopesPage", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => [
-          {
-            id: "env-1",
-            name: "Household",
-            type: "GLOBAL",
-            ownerMemberId: null,
-            ownerMemberName: null,
-            monthlyLimit: 1200,
-            consumedAmount: 320,
-            remainingAmount: 880,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            active: true,
-            categories: [
-              {
-                id: "cat-1",
-                name: "Groceries",
-                color: "#2254d1",
-              },
-            ],
-            transactions: [],
-          },
-        ],
+        json: async () => ({
+          items: [
+            {
+              id: "env-1",
+              name: "Household",
+              type: "GLOBAL",
+              ownerMemberId: null,
+              ownerMemberName: null,
+              monthlyLimit: 1200,
+              consumedAmount: 320,
+              remainingAmount: 880,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              active: true,
+              categories: [
+                {
+                  id: "cat-1",
+                  name: "Groceries",
+                  color: "#2254d1",
+                },
+              ],
+              transactions: [],
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        }),
         text: async () => "",
       } as Response)
       .mockResolvedValueOnce({
@@ -57,18 +69,24 @@ describe("EnvelopesPage", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => [
-          {
-            id: "member-1",
-            name: "Taylor",
-            email: "taylor@my-money.local",
-            role: "USER",
-            active: true,
-            allowanceEnabled: true,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
+        json: async () => ({
+          items: [
+            {
+              id: "member-1",
+              name: "Taylor",
+              email: "taylor@my-money.local",
+              role: "USER",
+              active: true,
+              allowanceEnabled: true,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 200,
+          totalItems: 1,
+          totalPages: 1,
+        }),
         text: async () => "",
       } as Response)
       .mockResolvedValueOnce({
@@ -133,20 +151,24 @@ describe("EnvelopesPage", () => {
     );
 
     expect(await screen.findByText("Household")).toBeInTheDocument();
+    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "New envelope" }));
+    const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(screen.getByLabelText("Name"), {
+    fireEvent.change(within(drawer).getByLabelText("Name"), {
       target: { value: "Allowance envelope" },
     });
-    fireEvent.change(screen.getByLabelText("Monthly limit"), {
+    fireEvent.change(within(drawer).getByLabelText("Monthly limit"), {
       target: { value: "450" },
     });
-    fireEvent.change(screen.getByLabelText("Type"), {
+    fireEvent.change(within(drawer).getByLabelText("Type"), {
       target: { value: "ALLOWANCE" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Create envelope" }));
+    fireEvent.click(
+      within(drawer).getByRole("button", { name: "Create envelope" }),
+    );
 
     await waitFor(() => {
       expect(

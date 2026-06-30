@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+import { apiRequest, type PageResponse } from "./client";
 import type { CategoryOption } from "./categories";
 import type { TransactionType } from "./transactions";
 
@@ -66,9 +66,43 @@ export type ArchiveEnvelopePayload = {
   archivedFromMonth: string;
 };
 
-export function listEnvelopes(referenceMonth: string, accessToken: string) {
-  return apiRequest<Envelope[]>(
-    `/api/envelopes?referenceMonth=${referenceMonth}`,
+export type EnvelopeListParams = {
+  referenceMonth: string;
+  page: number;
+  size: number;
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "ARCHIVED";
+  type?: EnvelopeType;
+};
+
+export function listEnvelopes(
+  {
+    referenceMonth,
+    page,
+    size,
+    search,
+    status = "ACTIVE",
+    type,
+  }: EnvelopeListParams,
+  accessToken: string,
+) {
+  const query = new URLSearchParams({
+    referenceMonth,
+    page: String(page),
+    size: String(size),
+    status,
+  });
+
+  if (search?.trim()) {
+    query.set("search", search.trim());
+  }
+
+  if (type) {
+    query.set("type", type);
+  }
+
+  return apiRequest<PageResponse<Envelope>>(
+    `/api/envelopes?${query.toString()}`,
     {
       method: "GET",
       accessToken,
