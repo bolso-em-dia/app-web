@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
@@ -9,18 +15,24 @@ describe("FamilyPage", () => {
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => [
-        {
-          id: "member-1",
-          name: "Admin",
-          email: "admin@my-money.local",
-          role: "ADMIN",
-          active: true,
-          allowanceEnabled: false,
-          createdAt: "2026-06-01T10:00:00Z",
-          updatedAt: "2026-06-01T10:00:00Z",
-        },
-      ],
+      json: async () => ({
+        items: [
+          {
+            id: "member-1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            active: true,
+            allowanceEnabled: false,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
       text: async () => "",
     } as Response);
   });
@@ -47,19 +59,24 @@ describe("FamilyPage", () => {
     );
 
     expect(await screen.findByText("Admin")).toBeInTheDocument();
+    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "New member" }));
-    fireEvent.change(screen.getByLabelText("Name"), {
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText("Name"), {
       target: { value: "" },
     });
-    fireEvent.change(screen.getByLabelText("Email"), {
+    fireEvent.change(within(drawer).getByLabelText("Email"), {
       target: { value: "invalid-email" },
     });
-    fireEvent.change(screen.getByLabelText("Password"), {
+    fireEvent.change(within(drawer).getByLabelText("Password"), {
       target: { value: "123" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Create member" }));
+    fireEvent.click(
+      within(drawer).getByRole("button", { name: "Create member" }),
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Name is required.")).toBeInTheDocument();

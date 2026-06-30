@@ -4,9 +4,11 @@ import { useForm } from "react-hook-form";
 import {
   archiveFamilyMember,
   createFamilyMember,
-  listFamilyMembers,
+  getFamilyMemberById,
+  listFamilyMemberPage,
   restoreFamilyMember,
   type FamilyMember,
+  type FamilyMemberListParams,
   type FamilyRole,
   updateFamilyMember,
 } from "../../app/api/family";
@@ -16,6 +18,7 @@ import Spinner from "../../components/feedback/Spinner";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Checkbox from "../../components/ui/Checkbox";
+import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
@@ -38,11 +41,20 @@ const DEFAULT_VALUES: CreateFamilyMemberFormValues = {
   role: "USER",
   allowanceEnabled: false,
 };
+const DEFAULT_PAGE_SIZE = 12;
 
 export default function FamilyPage() {
   const { accessToken } = useAuth();
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "ARCHIVED"
+  >("ALL");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -61,37 +73,44 @@ export default function FamilyPage() {
     defaultValues: DEFAULT_VALUES,
   });
 
-  const loadMembers = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await listFamilyMembers(accessToken);
-      setMembers(response);
-
-      if (response.length > 0) {
-        setSelectedId((current) =>
-          current && response.some((member) => member.id === current)
-            ? current
-            : response[0].id,
-        );
-      } else {
-        setSelectedId(null);
+  const loadMembers = useCallback(
+    async (params: FamilyMemberListParams) => {
+      if (!accessToken) {
+        return;
       }
-    } catch {
-      setError("Unable to load family members.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken]);
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await listFamilyMemberPage(params, accessToken);
+        setMembers(response.items);
+        setPage(response.page);
+        setPageSize(response.size);
+        setTotalItems(response.totalItems);
+        setTotalPages(response.totalPages);
+        setSelectedId((current) =>
+          current && response.items.some((member) => member.id === current)
+            ? current
+            : null,
+        );
+      } catch {
+        setError("Unable to load family members.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [accessToken],
+  );
 
   useEffect(() => {
-    void loadMembers();
-  }, [loadMembers]);
+    void loadMembers({
+      page,
+      size: pageSize,
+      search,
+      status: statusFilter,
+    });
+  }, [loadMembers, page, pageSize, search, statusFilter]);
 
   useEffect(() => {
     if (isCreating) {
@@ -130,9 +149,12 @@ export default function FamilyPage() {
           },
           accessToken,
         );
-        setMembers((current) => [created, ...current]);
-        setSelectedId(created.id);
+        const detailed = await getFamilyMemberById(created.id, accessToken);
+        setSelectedId(detailed.id);
         setIsCreating(false);
+        setSearch(detailed.name);
+        setStatusFilter("ALL");
+        setPage(0);
       } else if (selectedMember) {
         const updated = await updateFamilyMember(
           selectedMember.id,
@@ -145,11 +167,11 @@ export default function FamilyPage() {
           },
           accessToken,
         );
-        setMembers((current) =>
-          current.map((member) =>
-            member.id === updated.id ? updated : member,
-          ),
+        setSelectedId(updated.id);
+        setSearch((current) =>
+          current.trim().length === 0 ? current : updated.name,
         );
+        setPage(0);
       }
     } catch {
       setError("Unable to save the family member.");
@@ -170,10 +192,8 @@ export default function FamilyPage() {
       const updated = selectedMember.active
         ? await archiveFamilyMember(selectedMember.id, accessToken)
         : await restoreFamilyMember(selectedMember.id, accessToken);
-
-      setMembers((current) =>
-        current.map((member) => (member.id === updated.id ? updated : member)),
-      );
+      setSelectedId(updated.id);
+      setPage(0);
     } catch {
       setError("Unable to update the member status.");
     } finally {
@@ -189,11 +209,21 @@ export default function FamilyPage() {
 
   function handleCancelCreate() {
     setIsCreating(false);
+    setSelectedId(null);
     setError(null);
-    if (members[0]) {
-      setSelectedId(members[0].id);
-    }
   }
+
+  function handleCloseDrawer() {
+    setIsCreating(false);
+    setSelectedId(null);
+    setError(null);
+  }
+
+  const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
+  const rangeEnd =
+    totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
+  const hasPreviousPage = page > 0;
+  const hasNextPage = page + 1 < totalPages;
 
   return (
     <AppShell
@@ -210,160 +240,250 @@ export default function FamilyPage() {
           <Spinner label="Loading family members" />
         </Card>
       ) : (
-        <section className={styles.layout}>
-          <Card className={styles.listPanel}>
-            <div className={styles.listHeader}>
-              <h2 className={styles.panelTitle}>Members</h2>
-              <span className={styles.count}>{members.length}</span>
-            </div>
+        <section className={styles.stack}>
+          <Card className={styles.toolbarPanel}>
+            <div className={styles.toolbar}>
+              <div className={styles.filterGroup}>
+                <Field htmlFor="family-search" label="Search">
+                  <Input
+                    id="family-search"
+                    onChange={(event) => {
+                      setSearch(event.target.value);
+                      setPage(0);
+                    }}
+                    placeholder="Search by name or email"
+                    value={search}
+                  />
+                </Field>
 
-            <div className={styles.memberList}>
-              {members.map((member) => (
-                <button
-                  key={member.id}
-                  type="button"
-                  className={
-                    member.id === selectedId && !isCreating
-                      ? `${styles.memberItem} ${styles.memberItemActive}`
-                      : styles.memberItem
-                  }
-                  onClick={() => {
-                    setIsCreating(false);
-                    setSelectedId(member.id);
-                    setError(null);
-                  }}
-                >
-                  <div>
-                    <strong>{member.name}</strong>
-                    <p className={styles.memberMeta}>
-                      {member.email} · {member.role}
-                    </p>
-                  </div>
-                  <div className={styles.memberBadges}>
-                    <span
-                      className={
-                        member.active
-                          ? `${styles.badge} ${styles.badgeSuccess}`
-                          : `${styles.badge} ${styles.badgeMuted}`
-                      }
-                    >
-                      {member.active ? "Active" : "Archived"}
-                    </span>
-                    {member.allowanceEnabled ? (
-                      <span className={styles.badge}>Allowance</span>
-                    ) : null}
-                  </div>
-                </button>
-              ))}
+                <Field htmlFor="family-status-filter" label="Status">
+                  <Select
+                    id="family-status-filter"
+                    onChange={(event) => {
+                      setStatusFilter(
+                        event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
+                      );
+                      setPage(0);
+                    }}
+                    value={statusFilter}
+                  >
+                    <option value="ALL">All</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="ARCHIVED">Archived</option>
+                  </Select>
+                </Field>
+              </div>
             </div>
           </Card>
 
-          <Card className={styles.formPanel}>
-            <div className={styles.formHeader}>
-              <div>
-                <h2 className={styles.panelTitle}>
-                  {isCreating ? "New member" : "Member details"}
-                </h2>
-                <p className={styles.formSubtitle}>
-                  {isCreating
-                    ? "Create a family member with role and allowance settings."
-                    : "Update the member information and access level."}
-                </p>
-              </div>
+          <section className={styles.memberGrid}>
+            {members.length === 0 ? (
+              <Card className={styles.emptyState}>
+                <p>No family members found for the current filters.</p>
+              </Card>
+            ) : (
+              members.map((member) => (
+                <Card key={member.id} className={styles.memberCard}>
+                  <button
+                    className={styles.memberButton}
+                    onClick={() => {
+                      setIsCreating(false);
+                      setSelectedId(member.id);
+                      setError(null);
+                    }}
+                    type="button"
+                  >
+                    <div className={styles.memberHeader}>
+                      <div>
+                        <strong>{member.name}</strong>
+                        <p className={styles.memberMeta}>
+                          {member.email} · {member.role}
+                        </p>
+                      </div>
+                    </div>
 
-              {!isCreating && selectedMember ? (
-                <Button
-                  onClick={() => void handleArchiveToggle()}
-                  type="button"
-                  variant="secondary"
-                  loading={isArchiving}
-                >
-                  {selectedMember.active ? "Archive" : "Restore"}
-                </Button>
-              ) : null}
-            </div>
+                    <div className={styles.memberBadges}>
+                      <span
+                        className={
+                          member.active
+                            ? `${styles.badge} ${styles.badgeSuccess}`
+                            : `${styles.badge} ${styles.badgeMuted}`
+                        }
+                      >
+                        {member.active ? "Active" : "Archived"}
+                      </span>
+                      <span className={styles.badge}>{member.role}</span>
+                      {member.allowanceEnabled ? (
+                        <span className={styles.badge}>Allowance</span>
+                      ) : null}
+                    </div>
+                  </button>
+                </Card>
+              ))
+            )}
+          </section>
 
-            <form
-              className={styles.form}
-              onSubmit={form.handleSubmit(onSubmit)}
-              noValidate
-            >
-              <Field
-                label="Name"
-                htmlFor="family-name"
-                error={form.formState.errors.name?.message}
-              >
-                <Input
-                  id="family-name"
-                  hasError={Boolean(form.formState.errors.name)}
-                  {...form.register("name")}
-                />
-              </Field>
+          <Card className={styles.footerPanel}>
+            <div className={styles.footer}>
+              <span className={styles.rangeLabel}>
+                {rangeStart}-{rangeEnd} of {totalItems}
+              </span>
 
-              <Field
-                label="Email"
-                htmlFor="family-email"
-                error={form.formState.errors.email?.message}
-              >
-                <Input
-                  id="family-email"
-                  type="email"
-                  hasError={Boolean(form.formState.errors.email)}
-                  {...form.register("email")}
-                />
-              </Field>
+              <div className={styles.paginationControls}>
+                <label className={styles.rowsControl}>
+                  <span>Rows</span>
+                  <Select
+                    onChange={(event) => {
+                      setPageSize(Number(event.target.value));
+                      setPage(0);
+                    }}
+                    value={String(pageSize)}
+                  >
+                    <option value="12">12</option>
+                    <option value="24">24</option>
+                    <option value="48">48</option>
+                  </Select>
+                </label>
 
-              <Field
-                label={isCreating ? "Password" : "Password (optional)"}
-                htmlFor="family-password"
-                error={form.formState.errors.password?.message}
-              >
-                <Input
-                  id="family-password"
-                  type="password"
-                  hasError={Boolean(form.formState.errors.password)}
-                  {...form.register("password")}
-                />
-              </Field>
-
-              <Field
-                label="Role"
-                htmlFor="family-role"
-                error={form.formState.errors.role?.message}
-              >
-                <Select
-                  id="family-role"
-                  hasError={Boolean(form.formState.errors.role)}
-                  {...form.register("role")}
-                >
-                  <option value="USER">User</option>
-                  <option value="ADMIN">Admin</option>
-                </Select>
-              </Field>
-
-              <Checkbox
-                label="Allowance enabled"
-                {...form.register("allowanceEnabled")}
-              />
-
-              <FormError>{error}</FormError>
-
-              <div className={styles.formActions}>
-                <Button type="submit" loading={isSaving}>
-                  {isCreating ? "Create member" : "Save changes"}
-                </Button>
-                {isCreating ? (
+                <div className={styles.paginationButtons}>
                   <Button
-                    onClick={handleCancelCreate}
+                    disabled={!hasPreviousPage}
+                    onClick={() => setPage((current) => current - 1)}
                     type="button"
                     variant="secondary"
                   >
-                    Cancel
+                    Previous
                   </Button>
+                  <Button
+                    disabled={!hasNextPage}
+                    onClick={() => setPage((current) => current + 1)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {isCreating || selectedMember ? (
+            <Drawer
+              description={
+                isCreating
+                  ? "Create a family member with role and allowance settings."
+                  : "Update member details, permissions, and active status."
+              }
+              onClose={handleCloseDrawer}
+              title={isCreating ? "New member" : "Member details"}
+            >
+              <div className={styles.drawerStack}>
+                <form
+                  className={styles.form}
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  noValidate
+                >
+                  <Field
+                    error={form.formState.errors.name?.message}
+                    htmlFor="family-name"
+                    label="Name"
+                  >
+                    <Input
+                      id="family-name"
+                      hasError={Boolean(form.formState.errors.name)}
+                      {...form.register("name")}
+                    />
+                  </Field>
+
+                  <Field
+                    error={form.formState.errors.email?.message}
+                    htmlFor="family-email"
+                    label="Email"
+                  >
+                    <Input
+                      id="family-email"
+                      hasError={Boolean(form.formState.errors.email)}
+                      type="email"
+                      {...form.register("email")}
+                    />
+                  </Field>
+
+                  <Field
+                    error={form.formState.errors.password?.message}
+                    htmlFor="family-password"
+                    label={isCreating ? "Password" : "Password (optional)"}
+                  >
+                    <Input
+                      id="family-password"
+                      hasError={Boolean(form.formState.errors.password)}
+                      type="password"
+                      {...form.register("password")}
+                    />
+                  </Field>
+
+                  <Field
+                    error={form.formState.errors.role?.message}
+                    htmlFor="family-role"
+                    label="Role"
+                  >
+                    <Select
+                      id="family-role"
+                      hasError={Boolean(form.formState.errors.role)}
+                      {...form.register("role")}
+                    >
+                      <option value="USER">User</option>
+                      <option value="ADMIN">Admin</option>
+                    </Select>
+                  </Field>
+
+                  <Checkbox
+                    label="Allowance enabled"
+                    {...form.register("allowanceEnabled")}
+                  />
+
+                  <FormError>{error}</FormError>
+
+                  <div className={styles.formActions}>
+                    <Button loading={isSaving} type="submit">
+                      {isCreating ? "Create member" : "Save changes"}
+                    </Button>
+                    {isCreating ? (
+                      <Button
+                        onClick={handleCancelCreate}
+                        type="button"
+                        variant="secondary"
+                      >
+                        Cancel
+                      </Button>
+                    ) : null}
+                  </div>
+                </form>
+
+                {!isCreating && selectedMember ? (
+                  <Card className={styles.archivePanel}>
+                    <div className={styles.archiveHeader}>
+                      <h3 className={styles.archiveTitle}>Member status</h3>
+                      <p className={styles.archiveSubtitle}>
+                        Archive the member to disable access, or restore access
+                        later.
+                      </p>
+                    </div>
+
+                    <Button
+                      loading={isArchiving}
+                      onClick={() => void handleArchiveToggle()}
+                      type="button"
+                      variant="secondary"
+                    >
+                      {selectedMember.active
+                        ? "Archive member"
+                        : "Restore member"}
+                    </Button>
+                  </Card>
                 ) : null}
               </div>
-            </form>
-          </Card>
+            </Drawer>
+          ) : null}
         </section>
       )}
     </AppShell>

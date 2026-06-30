@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+import { apiRequest, type PageResponse } from "./client";
 
 export type FamilyRole = "ADMIN" | "USER";
 
@@ -29,8 +29,49 @@ export type UpdateFamilyMemberRequest = {
   allowanceEnabled: boolean;
 };
 
-export function listFamilyMembers(accessToken: string) {
-  return apiRequest<FamilyMember[]>("/api/family-members", {
+export type FamilyMemberListParams = {
+  page: number;
+  size: number;
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "ARCHIVED";
+};
+
+export function listFamilyMemberPage(
+  { page, size, search, status = "ALL" }: FamilyMemberListParams,
+  accessToken: string,
+) {
+  const query = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+    status,
+  });
+
+  if (search?.trim()) {
+    query.set("search", search.trim());
+  }
+
+  return apiRequest<PageResponse<FamilyMember>>(
+    `/api/family-members?${query.toString()}`,
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
+}
+
+export async function listFamilyMembers(accessToken: string) {
+  const response = await apiRequest<
+    PageResponse<FamilyMember> | FamilyMember[]
+  >("/api/family-members?page=0&size=200&status=ALL", {
+    method: "GET",
+    accessToken,
+  });
+
+  return Array.isArray(response) ? response : response.items;
+}
+
+export function getFamilyMemberById(id: string, accessToken: string) {
+  return apiRequest<FamilyMember>(`/api/family-members/${id}`, {
     method: "GET",
     accessToken,
   });
