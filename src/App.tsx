@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./app/auth/useAuth";
 import Spinner from "./components/feedback/Spinner";
+import FamilyPage from "./pages/family/FamilyPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import PlaceholderPage from "./pages/shared/PlaceholderPage";
@@ -32,10 +33,7 @@ export default function App() {
         path="/family"
         element={
           <ProtectedRoute>
-            <PlaceholderPage
-              title="Family"
-              subtitle="Manage family members, roles, and visibility."
-            />
+            <FamilyPage />
           </ProtectedRoute>
         }
       />

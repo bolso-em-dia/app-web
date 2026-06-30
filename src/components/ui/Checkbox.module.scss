@@ -1,0 +1,23 @@
+@use "../../styles/mixins.scss" as mixins;
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--color-accent);
+
+  &:focus-visible {
+    @include mixins.focus-ring;
+  }
+}
+
+.label {
+  color: var(--color-text);
+}
