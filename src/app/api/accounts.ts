@@ -36,6 +36,25 @@ export function listAccounts(accessToken: string) {
   });
 }
 
+export type AccountOption = {
+  id: string;
+  name: string;
+  type: AccountType;
+};
+
+export function listAccountOptions(
+  referenceMonth: string,
+  accessToken: string,
+) {
+  return apiRequest<AccountOption[]>(
+    `/api/accounts/options?referenceMonth=${referenceMonth}`,
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
+}
+
 export function createAccount(payload: AccountPayload, accessToken: string) {
   return apiRequest<Account>("/api/accounts", {
     method: "POST",

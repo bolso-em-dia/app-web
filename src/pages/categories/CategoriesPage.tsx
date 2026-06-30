@@ -6,6 +6,7 @@ import {
   createCategory,
   listCategories,
   listCategoryOptions,
+  type CategoryListParams,
   type Category,
   type CategoryOption,
   updateCategory,
@@ -34,6 +35,7 @@ const DEFAULT_VALUES: CategoryFormValues = {
   icon: "",
   color: "",
 };
+const DEFAULT_PAGE_SIZE = 12;
 
 export default function CategoriesPage() {
   const { accessToken } = useAuth();
@@ -44,6 +46,10 @@ export default function CategoriesPage() {
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "ACTIVE" | "ARCHIVED"
   >("ALL");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -68,38 +74,50 @@ export default function CategoriesPage() {
     },
   });
 
-  const loadCategories = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
+  const loadCategories = useCallback(
+    async (params: CategoryListParams) => {
+      if (!accessToken) {
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const [categoriesResponse, optionsResponse] = await Promise.all([
-        listCategories(accessToken),
-        listCategoryOptions(getCurrentReferenceMonth(), accessToken),
-      ]);
+      try {
+        const [categoriesResponse, optionsResponse] = await Promise.all([
+          listCategories(params, accessToken),
+          listCategoryOptions(getCurrentReferenceMonth(), accessToken),
+        ]);
 
-      setCategories(categoriesResponse);
-      setOptions(optionsResponse);
-      setSelectedId((current) =>
-        current &&
-        categoriesResponse.some((category) => category.id === current)
-          ? current
-          : null,
-      );
-    } catch {
-      setError("Unable to load categories.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken]);
+        setCategories(categoriesResponse.items);
+        setPage(categoriesResponse.page);
+        setPageSize(categoriesResponse.size);
+        setTotalItems(categoriesResponse.totalItems);
+        setTotalPages(categoriesResponse.totalPages);
+        setOptions(optionsResponse);
+        setSelectedId((current) =>
+          current &&
+          categoriesResponse.items.some((category) => category.id === current)
+            ? current
+            : null,
+        );
+      } catch {
+        setError("Unable to load categories.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [accessToken],
+  );
 
   useEffect(() => {
-    void loadCategories();
-  }, [loadCategories]);
+    void loadCategories({
+      page,
+      size: pageSize,
+      search,
+      status: statusFilter,
+    });
+  }, [loadCategories, page, pageSize, search, statusFilter]);
 
   useEffect(() => {
     if (isCreating) {
@@ -154,10 +172,11 @@ export default function CategoriesPage() {
           },
           accessToken,
         );
-        setCategories((current) => [created, ...current]);
         setSelectedId(created.id);
         setIsCreating(false);
-        await loadCategories();
+        setSearch(created.name);
+        setStatusFilter("ALL");
+        setPage(0);
       } else if (selectedCategory) {
         const updated = await updateCategory(
           selectedCategory.id,
@@ -168,12 +187,11 @@ export default function CategoriesPage() {
           },
           accessToken,
         );
-        setCategories((current) =>
-          current.map((category) =>
-            category.id === updated.id ? updated : category,
-          ),
+        setSelectedId(updated.id);
+        setSearch((current) =>
+          current.trim().length === 0 ? current : updated.name,
         );
-        await loadCategories();
+        setPage(0);
       }
     } catch {
       setError("Unable to save the category.");
@@ -196,12 +214,8 @@ export default function CategoriesPage() {
         values,
         accessToken,
       );
-      setCategories((current) =>
-        current.map((category) =>
-          category.id === archived.id ? archived : category,
-        ),
-      );
-      await loadCategories();
+      setSelectedId(archived.id);
+      setPage(0);
     } catch {
       setError("Unable to archive the category.");
     } finally {
@@ -230,23 +244,11 @@ export default function CategoriesPage() {
   const archiveOptions = options.filter(
     (option) => option.id !== selectedCategory?.id,
   );
-
-  const filteredCategories = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return categories.filter((category) => {
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        category.name.toLowerCase().includes(normalizedSearch);
-
-      const matchesStatus =
-        statusFilter === "ALL" ||
-        (statusFilter === "ACTIVE" && !category.archivedFromMonth) ||
-        (statusFilter === "ARCHIVED" && Boolean(category.archivedFromMonth));
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [categories, search, statusFilter]);
+  const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
+  const rangeEnd =
+    totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
+  const hasPreviousPage = page > 0;
+  const hasNextPage = page + 1 < totalPages;
 
   return (
     <AppShell
@@ -271,7 +273,10 @@ export default function CategoriesPage() {
                   <Field htmlFor="category-search" label="Search">
                     <Input
                       id="category-search"
-                      onChange={(event) => setSearch(event.target.value)}
+                      onChange={(event) => {
+                        setSearch(event.target.value);
+                        setPage(0);
+                      }}
                       placeholder="Search categories"
                       value={search}
                     />
@@ -280,11 +285,12 @@ export default function CategoriesPage() {
                   <Field htmlFor="category-status-filter" label="Status">
                     <Select
                       id="category-status-filter"
-                      onChange={(event) =>
+                      onChange={(event) => {
                         setStatusFilter(
                           event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                        )
-                      }
+                        );
+                        setPage(0);
+                      }}
                       value={statusFilter}
                     >
                       <option value="ALL">All</option>
@@ -293,14 +299,11 @@ export default function CategoriesPage() {
                     </Select>
                   </Field>
                 </div>
-                <span className={styles.count}>
-                  {filteredCategories.length}
-                </span>
               </div>
             </Card>
 
             <section className={styles.categoryGrid}>
-              {filteredCategories.map((category) => (
+              {categories.map((category) => (
                 <Card key={category.id} className={styles.categoryCard}>
                   <button
                     className={styles.categoryButton}
@@ -335,6 +338,60 @@ export default function CategoriesPage() {
                 </Card>
               ))}
             </section>
+
+            <Card className={styles.footerPanel}>
+              <div className={styles.footerBar}>
+                <p className={styles.resultSummary}>
+                  {totalItems === 0
+                    ? "No categories found"
+                    : `${rangeStart}-${rangeEnd} of ${totalItems}`}
+                </p>
+
+                <div className={styles.paginationControls}>
+                  <label
+                    className={styles.pageSizeControl}
+                    htmlFor="category-page-size"
+                  >
+                    <span className={styles.pageSizeLabel}>Rows</span>
+                    <Select
+                      className={styles.pageSizeSelect}
+                      id="category-page-size"
+                      onChange={(event) => {
+                        setPageSize(Number(event.target.value));
+                        setPage(0);
+                      }}
+                      value={String(pageSize)}
+                    >
+                      <option value="12">12</option>
+                      <option value="24">24</option>
+                      <option value="48">48</option>
+                    </Select>
+                  </label>
+
+                  <div className={styles.pageButtons}>
+                    <Button
+                      disabled={!hasPreviousPage}
+                      onClick={() => setPage((current) => current - 1)}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Previous
+                    </Button>
+                    <span className={styles.pageIndicator}>
+                      Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
+                    </span>
+                    <Button
+                      disabled={!hasNextPage}
+                      onClick={() => setPage((current) => current + 1)}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
           </section>
 
           {isCreating || selectedCategory ? (

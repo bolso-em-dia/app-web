@@ -5,13 +5,15 @@ import {
   listCategoryOptions,
   type CategoryOption,
 } from "../../app/api/categories";
-import { listAccounts, type Account } from "../../app/api/accounts";
+import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import {
   archiveFixedExpenseTemplate,
   createFixedExpenseTemplate,
+  listFixedExpenseTemplateById,
   listFixedExpenseTemplates,
   updateFixedExpenseTemplate,
   type FixedExpenseTemplate,
+  type FixedExpenseTemplateListParams,
   type FixedExpenseTemplatePayload,
 } from "../../app/api/fixedExpenses";
 import { useAuth } from "../../app/auth/useAuth";
@@ -19,6 +21,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
@@ -43,6 +46,7 @@ const DEFAULT_VALUES: FixedExpenseFormValues = {
   accountId: "",
   dueDay: 1,
 };
+const DEFAULT_PAGE_SIZE = 12;
 
 function toMonthInputValue(value: string) {
   return value.slice(0, 7);
@@ -69,8 +73,16 @@ export default function FixedExpensesPage() {
   const referenceMonth = getCurrentReferenceMonth();
   const [templates, setTemplates] = useState<FixedExpenseTemplate[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "ALL" | "ACTIVE" | "ARCHIVED"
+  >("ALL");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -94,46 +106,53 @@ export default function FixedExpensesPage() {
     },
   });
 
-  const loadTemplates = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
+  const loadTemplates = useCallback(
+    async (params: FixedExpenseTemplateListParams) => {
+      if (!accessToken) {
+        return;
+      }
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const [templatesResponse, categoriesResponse, accountsResponse] =
-        await Promise.all([
-          listFixedExpenseTemplates(accessToken),
-          listCategoryOptions(referenceMonth, accessToken),
-          listAccounts(accessToken),
-        ]);
+      try {
+        const [templatesResponse, categoriesResponse, accountsResponse] =
+          await Promise.all([
+            listFixedExpenseTemplates(params, accessToken),
+            listCategoryOptions(referenceMonth, accessToken),
+            listAccountOptions(referenceMonth, accessToken),
+          ]);
 
-      setTemplates(templatesResponse);
-      setCategoryOptions(categoriesResponse);
-      setAccounts(accountsResponse);
-
-      if (templatesResponse.length > 0) {
+        setTemplates(templatesResponse.items);
+        setPage(templatesResponse.page);
+        setPageSize(templatesResponse.size);
+        setTotalItems(templatesResponse.totalItems);
+        setTotalPages(templatesResponse.totalPages);
+        setCategoryOptions(categoriesResponse);
+        setAccountOptions(accountsResponse);
         setSelectedId((current) =>
           current &&
-          templatesResponse.some((template) => template.id === current)
+          templatesResponse.items.some((template) => template.id === current)
             ? current
-            : templatesResponse[0].id,
+            : null,
         );
-      } else {
-        setSelectedId(null);
+      } catch {
+        setError("Unable to load fixed expense templates.");
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      setError("Unable to load fixed expense templates.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken, referenceMonth]);
+    },
+    [accessToken, referenceMonth],
+  );
 
   useEffect(() => {
-    void loadTemplates();
-  }, [loadTemplates]);
+    void loadTemplates({
+      page,
+      size: pageSize,
+      search,
+      status: statusFilter,
+    });
+  }, [loadTemplates, page, pageSize, search, statusFilter]);
 
   useEffect(() => {
     if (isCreating) {
@@ -174,20 +193,26 @@ export default function FixedExpensesPage() {
           mapFormValuesToPayload(values),
           accessToken,
         );
-        setTemplates((current) => [created, ...current]);
-        setSelectedId(created.id);
+        const detailed = await listFixedExpenseTemplateById(
+          created.id,
+          accessToken,
+        );
+        setSelectedId(detailed.id);
         setIsCreating(false);
+        setSearch(detailed.name);
+        setStatusFilter("ALL");
+        setPage(0);
       } else if (selectedTemplate) {
         const updated = await updateFixedExpenseTemplate(
           selectedTemplate.id,
           mapFormValuesToPayload(values),
           accessToken,
         );
-        setTemplates((current) =>
-          current.map((template) =>
-            template.id === updated.id ? updated : template,
-          ),
+        setSelectedId(updated.id);
+        setSearch((current) =>
+          current.trim().length === 0 ? current : updated.name,
         );
+        setPage(0);
       }
     } catch {
       setError("Unable to save the fixed expense template.");
@@ -216,11 +241,8 @@ export default function FixedExpensesPage() {
         },
         accessToken,
       );
-      setTemplates((current) =>
-        current.map((template) =>
-          template.id === archived.id ? archived : template,
-        ),
-      );
+      setSelectedId(archived.id);
+      setPage(0);
     } catch {
       setError("Unable to archive the fixed expense template.");
     } finally {
@@ -236,11 +258,21 @@ export default function FixedExpensesPage() {
 
   function handleCancelCreate() {
     setIsCreating(false);
+    setSelectedId(null);
     setError(null);
-    if (templates[0]) {
-      setSelectedId(templates[0].id);
-    }
   }
+
+  function handleCloseDrawer() {
+    setIsCreating(false);
+    setSelectedId(null);
+    setError(null);
+  }
+
+  const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
+  const rangeEnd =
+    totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
+  const hasPreviousPage = page > 0;
+  const hasNextPage = page + 1 < totalPages;
 
   return (
     <AppShell
@@ -257,28 +289,53 @@ export default function FixedExpensesPage() {
           <Spinner label="Loading fixed expense templates" />
         </Card>
       ) : (
-        <section className={styles.layout}>
-          <Card className={styles.listPanel}>
-            <div className={styles.listHeader}>
-              <h2 className={styles.panelTitle}>Templates</h2>
-              <span className={styles.count}>{templates.length}</span>
-            </div>
+        <section className={styles.stack}>
+          <Card className={styles.toolbarPanel}>
+            <div className={styles.toolbar}>
+              <div className={styles.filterGroup}>
+                <Field htmlFor="fixed-expense-search" label="Search">
+                  <Input
+                    id="fixed-expense-search"
+                    onChange={(event) => {
+                      setSearch(event.target.value);
+                      setPage(0);
+                    }}
+                    placeholder="Search templates"
+                    value={search}
+                  />
+                </Field>
 
-            <div className={styles.templateList}>
-              {templates.map((template) => (
+                <Field htmlFor="fixed-expense-status-filter" label="Status">
+                  <Select
+                    id="fixed-expense-status-filter"
+                    onChange={(event) => {
+                      setStatusFilter(
+                        event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
+                      );
+                      setPage(0);
+                    }}
+                    value={statusFilter}
+                  >
+                    <option value="ALL">All</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="ARCHIVED">Archived</option>
+                  </Select>
+                </Field>
+              </div>
+            </div>
+          </Card>
+
+          <section className={styles.templateGrid}>
+            {templates.map((template) => (
+              <Card key={template.id} className={styles.templateCard}>
                 <button
-                  key={template.id}
-                  type="button"
-                  className={
-                    template.id === selectedId && !isCreating
-                      ? `${styles.templateItem} ${styles.templateItemActive}`
-                      : styles.templateItem
-                  }
+                  className={styles.templateButton}
                   onClick={() => {
                     setIsCreating(false);
                     setSelectedId(template.id);
                     setError(null);
                   }}
+                  type="button"
                 >
                   <div className={styles.templateHeader}>
                     <div>
@@ -294,212 +351,247 @@ export default function FixedExpensesPage() {
                     <span className={styles.badge}>
                       Due day {template.dueDay}
                     </span>
-                    {template.archivedFromMonth ? (
-                      <span className={`${styles.badge} ${styles.badgeMuted}`}>
-                        Archived from{" "}
-                        {formatReferenceMonth(template.archivedFromMonth)}
-                      </span>
-                    ) : null}
+                    <span
+                      className={
+                        template.archivedFromMonth
+                          ? `${styles.badge} ${styles.badgeMuted}`
+                          : `${styles.badge} ${styles.badgeSuccess}`
+                      }
+                    >
+                      {template.archivedFromMonth
+                        ? `Archived from ${formatReferenceMonth(
+                            template.archivedFromMonth,
+                          )}`
+                        : "Active"}
+                    </span>
                   </div>
                 </button>
-              ))}
+              </Card>
+            ))}
+          </section>
+
+          <Card className={styles.footerPanel}>
+            <div className={styles.footerBar}>
+              <p className={styles.resultSummary}>
+                {totalItems === 0
+                  ? "No fixed expense templates found"
+                  : `${rangeStart}-${rangeEnd} of ${totalItems}`}
+              </p>
+
+              <div className={styles.paginationControls}>
+                <label
+                  className={styles.pageSizeControl}
+                  htmlFor="fixed-expense-page-size"
+                >
+                  <span className={styles.pageSizeLabel}>Rows</span>
+                  <Select
+                    className={styles.pageSizeSelect}
+                    id="fixed-expense-page-size"
+                    onChange={(event) => {
+                      setPageSize(Number(event.target.value));
+                      setPage(0);
+                    }}
+                    value={String(pageSize)}
+                  >
+                    <option value="12">12</option>
+                    <option value="24">24</option>
+                    <option value="48">48</option>
+                  </Select>
+                </label>
+
+                <div className={styles.pageButtons}>
+                  <Button
+                    disabled={!hasPreviousPage}
+                    onClick={() => setPage((current) => current - 1)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Previous
+                  </Button>
+                  <span className={styles.pageIndicator}>
+                    Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
+                  </span>
+                  <Button
+                    disabled={!hasNextPage}
+                    onClick={() => setPage((current) => current + 1)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
             </div>
           </Card>
 
-          <div className={styles.sidePanels}>
-            <Card className={styles.formPanel}>
-              <div className={styles.formHeader}>
-                <div>
-                  <h2 className={styles.panelTitle}>
-                    {isCreating ? "New template" : "Template details"}
-                  </h2>
-                  <p className={styles.formSubtitle}>
-                    {isCreating
-                      ? "Create a recurring expense template."
-                      : "Update recurring expense name, amount, category, account, and due day."}
-                  </p>
-                </div>
-              </div>
-
-              <form
-                className={styles.form}
-                onSubmit={form.handleSubmit(onSubmit)}
-                noValidate
-              >
-                <Field
-                  label="Name"
-                  htmlFor="fixed-expense-name"
-                  error={form.formState.errors.name?.message}
+          {isCreating || selectedTemplate ? (
+            <Drawer
+              description={
+                isCreating
+                  ? "Create a recurring expense template."
+                  : "Update recurring expense name, amount, category, account, and due day."
+              }
+              onClose={handleCloseDrawer}
+              title={isCreating ? "New template" : "Template details"}
+            >
+              <div className={styles.drawerStack}>
+                <form
+                  className={styles.form}
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  noValidate
                 >
-                  <Input
-                    id="fixed-expense-name"
-                    hasError={Boolean(form.formState.errors.name)}
-                    {...form.register("name")}
-                  />
-                </Field>
-
-                <Field
-                  label="Amount"
-                  htmlFor="fixed-expense-amount"
-                  error={form.formState.errors.amount?.message}
-                >
-                  <Input
-                    id="fixed-expense-amount"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    hasError={Boolean(form.formState.errors.amount)}
-                    {...form.register("amount")}
-                  />
-                </Field>
-
-                <Field
-                  label="Category"
-                  htmlFor="fixed-expense-category"
-                  error={form.formState.errors.categoryId?.message}
-                >
-                  <Select
-                    id="fixed-expense-category"
-                    hasError={Boolean(form.formState.errors.categoryId)}
-                    {...form.register("categoryId")}
+                  <Field
+                    error={form.formState.errors.name?.message}
+                    htmlFor="fixed-expense-name"
+                    label="Name"
                   >
-                    <option value="">Select a category</option>
-                    {categoryOptions.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
+                    <Input
+                      hasError={Boolean(form.formState.errors.name)}
+                      id="fixed-expense-name"
+                      {...form.register("name")}
+                    />
+                  </Field>
 
-                <Field
-                  label="Account"
-                  htmlFor="fixed-expense-account"
-                  error={form.formState.errors.accountId?.message}
-                >
-                  <Select
-                    id="fixed-expense-account"
-                    hasError={Boolean(form.formState.errors.accountId)}
-                    {...form.register("accountId")}
+                  <Field
+                    error={form.formState.errors.amount?.message}
+                    htmlFor="fixed-expense-amount"
+                    label="Amount"
                   >
-                    <option value="">Select an account</option>
-                    {accounts.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.name}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
+                    <Input
+                      hasError={Boolean(form.formState.errors.amount)}
+                      id="fixed-expense-amount"
+                      min="0.01"
+                      step="0.01"
+                      type="number"
+                      {...form.register("amount")}
+                    />
+                  </Field>
 
-                <Field
-                  label="Due day"
-                  htmlFor="fixed-expense-due-day"
-                  error={form.formState.errors.dueDay?.message}
-                >
-                  <Input
-                    id="fixed-expense-due-day"
-                    type="number"
-                    min="1"
-                    max="31"
-                    step="1"
-                    hasError={Boolean(form.formState.errors.dueDay)}
-                    {...form.register("dueDay")}
-                  />
-                </Field>
-
-                {error ? <FormError>{error}</FormError> : null}
-
-                <div className={styles.formActions}>
-                  <Button loading={isSaving} type="submit">
-                    {isCreating ? "Create template" : "Save changes"}
-                  </Button>
-                  {isCreating ? (
-                    <Button
-                      onClick={handleCancelCreate}
-                      type="button"
-                      variant="secondary"
+                  <Field
+                    error={form.formState.errors.categoryId?.message}
+                    htmlFor="fixed-expense-category"
+                    label="Category"
+                  >
+                    <Select
+                      hasError={Boolean(form.formState.errors.categoryId)}
+                      id="fixed-expense-category"
+                      {...form.register("categoryId")}
                     >
-                      Cancel
+                      <option value="">Select a category</option>
+                      {categoryOptions.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+
+                  <Field
+                    error={form.formState.errors.accountId?.message}
+                    htmlFor="fixed-expense-account"
+                    label="Account"
+                  >
+                    <Select
+                      hasError={Boolean(form.formState.errors.accountId)}
+                      id="fixed-expense-account"
+                      {...form.register("accountId")}
+                    >
+                      <option value="">Select an account</option>
+                      {accountOptions.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {account.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+
+                  <Field
+                    error={form.formState.errors.dueDay?.message}
+                    htmlFor="fixed-expense-due-day"
+                    label="Due day"
+                  >
+                    <Input
+                      hasError={Boolean(form.formState.errors.dueDay)}
+                      id="fixed-expense-due-day"
+                      max="31"
+                      min="1"
+                      step="1"
+                      type="number"
+                      {...form.register("dueDay")}
+                    />
+                  </Field>
+
+                  {error ? <FormError>{error}</FormError> : null}
+
+                  <div className={styles.formActions}>
+                    <Button loading={isSaving} type="submit">
+                      {isCreating ? "Create template" : "Save changes"}
                     </Button>
-                  ) : null}
-                </div>
-              </form>
-            </Card>
-
-            {selectedTemplate && !isCreating ? (
-              <>
-                <Card className={styles.detailPanel}>
-                  <div className={styles.detailCard}>
-                    <span className={styles.detailLabel}>Monthly amount</span>
-                    <strong className={styles.detailValue}>
-                      {formatCurrency(selectedTemplate.amount)}
-                    </strong>
+                    {isCreating ? (
+                      <Button
+                        onClick={handleCancelCreate}
+                        type="button"
+                        variant="secondary"
+                      >
+                        Cancel
+                      </Button>
+                    ) : null}
                   </div>
-                  <div className={styles.detailList}>
-                    <span className={styles.badge}>
-                      Category: {selectedTemplate.categoryName}
-                    </span>
-                    <span className={styles.badge}>
-                      Account: {selectedTemplate.accountName}
-                    </span>
-                    <span className={styles.badge}>
-                      Due day: {selectedTemplate.dueDay}
-                    </span>
-                    <span className={styles.badge}>
-                      Created:{" "}
-                      {formatReferenceMonth(selectedTemplate.createdInMonth)}
-                    </span>
-                  </div>
-                </Card>
+                </form>
 
-                <Card className={styles.archivePanel}>
-                  <div className={styles.formHeader}>
-                    <div>
-                      <h2 className={styles.panelTitle}>Archive template</h2>
-                      <p className={styles.formSubtitle}>
-                        Stop generating this recurring expense from a specific
-                        month onward.
-                      </p>
+                {!isCreating && selectedTemplate ? (
+                  <Card className={styles.archivePanel}>
+                    <div className={styles.formHeader}>
+                      <div>
+                        <h3 className={styles.sectionTitle}>
+                          Archive template
+                        </h3>
+                        <p className={styles.formSubtitle}>
+                          Stop generating this recurring expense from a specific
+                          month onward.
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <form
-                    className={styles.form}
-                    onSubmit={archiveForm.handleSubmit(onArchive)}
-                    noValidate
-                  >
-                    <Field
-                      label="Archive month"
-                      htmlFor="fixed-expense-archive-month"
-                      error={
-                        archiveForm.formState.errors.archivedFromMonth?.message
-                      }
+                    <form
+                      className={styles.form}
+                      onSubmit={archiveForm.handleSubmit(onArchive)}
+                      noValidate
                     >
-                      <Input
-                        id="fixed-expense-archive-month"
-                        type="month"
-                        hasError={Boolean(
-                          archiveForm.formState.errors.archivedFromMonth,
-                        )}
-                        {...archiveForm.register("archivedFromMonth")}
-                      />
-                    </Field>
+                      <Field
+                        error={
+                          archiveForm.formState.errors.archivedFromMonth
+                            ?.message
+                        }
+                        htmlFor="fixed-expense-archive-month"
+                        label="Archive month"
+                      >
+                        <Input
+                          hasError={Boolean(
+                            archiveForm.formState.errors.archivedFromMonth,
+                          )}
+                          id="fixed-expense-archive-month"
+                          type="month"
+                          {...archiveForm.register("archivedFromMonth")}
+                        />
+                      </Field>
 
-                    <Button
-                      loading={isArchiving}
-                      type="submit"
-                      variant="secondary"
-                      disabled={Boolean(selectedTemplate.archivedFromMonth)}
-                    >
-                      {selectedTemplate.archivedFromMonth
-                        ? "Template archived"
-                        : "Archive template"}
-                    </Button>
-                  </form>
-                </Card>
-              </>
-            ) : null}
-          </div>
+                      <Button
+                        disabled={Boolean(selectedTemplate.archivedFromMonth)}
+                        loading={isArchiving}
+                        type="submit"
+                        variant="secondary"
+                      >
+                        {selectedTemplate.archivedFromMonth
+                          ? "Template archived"
+                          : "Archive template"}
+                      </Button>
+                    </form>
+                  </Card>
+                ) : null}
+              </div>
+            </Drawer>
+          ) : null}
         </section>
       )}
     </AppShell>

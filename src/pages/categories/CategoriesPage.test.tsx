@@ -10,19 +10,25 @@ describe("CategoriesPage", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => [
-          {
-            id: "cat-1",
-            name: "Groceries",
-            icon: "shopping-cart",
-            color: "#2254d1",
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            replacementCategoryId: null,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
+        json: async () => ({
+          items: [
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              replacementCategoryId: null,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        }),
         text: async () => "",
       } as Response)
       .mockResolvedValueOnce({
@@ -62,6 +68,7 @@ describe("CategoriesPage", () => {
     );
 
     expect(await screen.findByText("Groceries")).toBeInTheDocument();
+    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "New category" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();

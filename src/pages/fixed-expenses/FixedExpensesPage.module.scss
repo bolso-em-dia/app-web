@@ -1,10 +1,4 @@
-.layout {
-  display: grid;
-  gap: var(--space-6);
-  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
-}
-
-.sidePanels {
+.stack {
   display: grid;
   gap: var(--space-6);
 }
@@ -13,13 +7,18 @@
   padding: var(--space-6);
 }
 
-.listPanel,
-.formPanel,
-.archivePanel {
+.toolbarPanel,
+.templateCard,
+.archivePanel,
+.footerPanel {
   padding: var(--space-6);
 }
 
-.listHeader,
+.footerPanel {
+  padding: var(--space-4) var(--space-5);
+}
+
+.toolbar,
 .formHeader {
   display: flex;
   align-items: flex-start;
@@ -28,9 +27,21 @@
   margin-bottom: var(--space-5);
 }
 
+.filterGroup {
+  display: grid;
+  flex: 1;
+  gap: var(--space-4);
+  grid-template-columns: minmax(16rem, 1fr) minmax(10rem, 12rem);
+}
+
 .panelTitle {
   margin: 0;
   font-size: var(--font-size-300);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: var(--font-size-200);
 }
 
 .formSubtitle,
@@ -40,42 +51,29 @@
   font-size: var(--font-size-100);
 }
 
-.count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 2rem;
-  min-height: 2rem;
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-round);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-weight: var(--font-weight-semibold);
+.templateGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
 }
 
-.templateList {
-  display: grid;
-  gap: var(--space-3);
+.templateCard {
+  padding: 0;
 }
 
-.templateItem {
+.templateButton {
   display: grid;
-  gap: var(--space-3);
   width: 100%;
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-panel);
+  padding: var(--space-5);
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
   text-align: left;
   cursor: pointer;
 }
 
-.templateItem:hover {
+.templateButton:hover {
   background: var(--color-panel-muted);
-}
-
-.templateItemActive {
-  border-color: rgb(34 84 209 / 24%);
-  background: var(--color-accent-soft);
 }
 
 .templateHeader {
@@ -85,11 +83,11 @@
   gap: var(--space-4);
 }
 
-.templateBadges,
-.detailList {
+.templateBadges {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 .badge {
@@ -104,9 +102,60 @@
   font-weight: var(--font-weight-semibold);
 }
 
+.badgeSuccess {
+  background: #ecfdf3;
+  color: var(--color-success);
+}
+
 .badgeMuted {
   background: var(--color-surface-muted);
   color: var(--color-text-muted);
+}
+
+.footerBar,
+.paginationControls,
+.pageButtons,
+.pageSizeControl {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.footerBar {
+  justify-content: space-between;
+}
+
+.paginationControls {
+  margin-left: auto;
+}
+
+.pageSizeControl {
+  gap: var(--space-2);
+}
+
+.resultSummary,
+.pageIndicator,
+.pageSizeLabel {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+}
+
+.pageSizeSelect {
+  width: auto;
+  min-width: 4.5rem;
+  min-height: 2.25rem;
+  padding: 0 var(--space-3);
+}
+
+.pageIndicator {
+  min-width: 6.5rem;
+  text-align: center;
+}
+
+.drawerStack {
+  display: grid;
+  gap: var(--space-6);
 }
 
 .form {
@@ -119,31 +168,21 @@
   gap: var(--space-3);
 }
 
-.detailPanel {
-  display: grid;
-  gap: var(--space-4);
-}
+@media (width <= 48rem) {
+  .toolbar,
+  .footerBar,
+  .paginationControls,
+  .pageButtons {
+    flex-direction: column;
+  }
 
-.detailCard {
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-panel-muted);
-}
-
-.detailLabel {
-  display: block;
-  margin-bottom: var(--space-2);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-100);
-}
-
-.detailValue {
-  font-size: var(--font-size-300);
-}
-
-@media (width <= 72rem) {
-  .layout {
+  .filterGroup {
+    width: 100%;
     grid-template-columns: 1fr;
+  }
+
+  .paginationControls {
+    width: 100%;
+    margin-left: 0;
   }
 }

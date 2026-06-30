@@ -10,23 +10,29 @@ describe("FixedExpensesPage", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => [
-          {
-            id: "template-1",
-            name: "Rent",
-            amount: 1800,
-            categoryId: "cat-1",
-            categoryName: "Housing",
-            accountId: "account-1",
-            accountName: "Main checking",
-            dueDay: 5,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            active: true,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
+        json: async () => ({
+          items: [
+            {
+              id: "template-1",
+              name: "Rent",
+              amount: 1800,
+              categoryId: "cat-1",
+              categoryName: "Housing",
+              accountId: "account-1",
+              accountName: "Main checking",
+              dueDay: 5,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              active: true,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        }),
         text: async () => "",
       } as Response)
       .mockResolvedValueOnce({
@@ -50,14 +56,6 @@ describe("FixedExpensesPage", () => {
             id: "account-1",
             name: "Main checking",
             type: "CHECKING",
-            brand: null,
-            color: "#2254d1",
-            closingDay: null,
-            dueDay: null,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
           },
         ],
         text: async () => "",
@@ -86,8 +84,10 @@ describe("FixedExpensesPage", () => {
     );
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
+    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "New template" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Name"), {
       target: { value: "Water bill" },
     });

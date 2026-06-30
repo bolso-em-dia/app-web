@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+import { apiRequest, type PageResponse } from "./client";
 
 export type Category = {
   id: string;
@@ -30,11 +30,34 @@ export type ArchiveCategoryPayload = {
   replacementCategoryId: string;
 };
 
-export function listCategories(accessToken: string) {
-  return apiRequest<Category[]>("/api/categories", {
-    method: "GET",
-    accessToken,
+export type CategoryListParams = {
+  page: number;
+  size: number;
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "ARCHIVED";
+};
+
+export function listCategories(
+  { page, size, search, status = "ALL" }: CategoryListParams,
+  accessToken: string,
+) {
+  const query = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+    status,
   });
+
+  if (search?.trim()) {
+    query.set("search", search.trim());
+  }
+
+  return apiRequest<PageResponse<Category>>(
+    `/api/categories?${query.toString()}`,
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
 }
 
 export function createCategory(payload: CategoryPayload, accessToken: string) {

@@ -1,4 +1,4 @@
-import { apiRequest } from "./client";
+import { apiRequest, type PageResponse } from "./client";
 
 export type FixedExpenseTemplate = {
   id: string;
@@ -28,11 +28,44 @@ export type ArchiveFixedExpenseTemplatePayload = {
   archivedFromMonth: string;
 };
 
-export function listFixedExpenseTemplates(accessToken: string) {
-  return apiRequest<FixedExpenseTemplate[]>("/api/fixed-expense-templates", {
-    method: "GET",
-    accessToken,
+export type FixedExpenseTemplateListParams = {
+  page: number;
+  size: number;
+  search?: string;
+  status?: "ALL" | "ACTIVE" | "ARCHIVED";
+};
+
+export function listFixedExpenseTemplates(
+  { page, size, search, status = "ALL" }: FixedExpenseTemplateListParams,
+  accessToken: string,
+) {
+  const query = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+    status,
   });
+
+  if (search?.trim()) {
+    query.set("search", search.trim());
+  }
+
+  return apiRequest<PageResponse<FixedExpenseTemplate>>(
+    `/api/fixed-expense-templates?${query.toString()}`,
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
+}
+
+export function listFixedExpenseTemplateById(id: string, accessToken: string) {
+  return apiRequest<FixedExpenseTemplate>(
+    `/api/fixed-expense-templates/${id}`,
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
 }
 
 export function createFixedExpenseTemplate(

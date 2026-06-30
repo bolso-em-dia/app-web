@@ -5,6 +5,14 @@ type RequestOptions = RequestInit & {
   accessToken?: string | null;
 };
 
+export type PageResponse<T> = {
+  items: T[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+};
+
 export async function apiRequest<T>(
   path: string,
   options: RequestOptions = {},
