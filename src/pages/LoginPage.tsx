@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../app/auth/useAuth";
+import { useI18n } from "../app/i18n/I18nContext";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Field from "../components/ui/Field";
@@ -17,6 +18,7 @@ import styles from "./LoginPage.module.scss";
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const {
     register,
@@ -37,7 +39,7 @@ export default function LoginPage() {
       await login(values.email, values.password);
       navigate("/", { replace: true });
     } catch {
-      setError("Unable to sign in. Check your email and password.");
+      setError(t("login.error"));
     }
   }
 
@@ -46,10 +48,8 @@ export default function LoginPage() {
       <Card className={styles.card}>
         <div className={styles.heading}>
           <span className={styles.eyebrow}>My Money</span>
-          <h1 className={styles.title}>Sign in</h1>
-          <p className={styles.subtitle}>
-            Use the initial administrative account to access the system.
-          </p>
+          <h1 className={styles.title}>{t("login.title")}</h1>
+          <p className={styles.subtitle}>{t("login.subtitle")}</p>
         </div>
 
         <form
@@ -57,7 +57,11 @@ export default function LoginPage() {
           onSubmit={handleSubmit(onSubmit)}
           noValidate
         >
-          <Field label="Email" error={errors.email?.message} htmlFor="email">
+          <Field
+            label={t("common.email")}
+            error={errors.email?.message}
+            htmlFor="email"
+          >
             <Input
               id="email"
               type="email"
@@ -68,7 +72,7 @@ export default function LoginPage() {
           </Field>
 
           <Field
-            label="Password"
+            label={t("family.password")}
             error={errors.password?.message}
             htmlFor="password"
           >
@@ -89,7 +93,7 @@ export default function LoginPage() {
             loading={isSubmitting}
             fullWidth
           >
-            Sign in
+            {t("login.submit")}
           </Button>
         </form>
       </Card>

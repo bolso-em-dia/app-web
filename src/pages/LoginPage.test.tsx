@@ -13,10 +13,8 @@ describe("LoginPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      screen.getByRole("heading", { name: "Sign in" }),
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText("Email")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Entrar" })).toBeInTheDocument();
+    expect(screen.getByLabelText("E-mail")).toBeInTheDocument();
+    expect(screen.getByLabelText("Senha")).toBeInTheDocument();
   });
 });

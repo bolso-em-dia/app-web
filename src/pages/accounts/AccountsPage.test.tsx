@@ -62,29 +62,33 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
+    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "New account" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
     const drawer = screen.getByRole("dialog");
     expect(drawer).toBeInTheDocument();
 
-    fireEvent.change(within(drawer).getByLabelText("Type"), {
+    fireEvent.change(within(drawer).getByLabelText("Tipo"), {
       target: { value: "CREDIT_CARD" },
     });
 
     fireEvent.click(
-      within(drawer).getByRole("button", { name: "Create account" }),
+      within(drawer).getByRole("button", { name: "Criar conta" }),
     );
 
     await waitFor(() => {
       expect(
-        screen.getByText("Brand is required for credit cards."),
+        screen.getByText("A bandeira é obrigatória para cartões de crédito."),
       ).toBeInTheDocument();
       expect(
-        screen.getByText("Closing day is required for credit cards."),
+        screen.getByText(
+          "O dia de fechamento é obrigatório para cartões de crédito.",
+        ),
       ).toBeInTheDocument();
       expect(
-        screen.getByText("Due day is required for credit cards."),
+        screen.getByText(
+          "O dia de vencimento é obrigatório para cartões de crédito.",
+        ),
       ).toBeInTheDocument();
     });
   });

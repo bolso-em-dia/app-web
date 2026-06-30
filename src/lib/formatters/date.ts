@@ -1,9 +1,9 @@
-const MONTH_FORMATTER = new Intl.DateTimeFormat("en-US", {
+const MONTH_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   month: "long",
   year: "numeric",
 });
 
-const DAY_FORMATTER = new Intl.DateTimeFormat("en-US", {
+const DAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
   month: "short",
 });

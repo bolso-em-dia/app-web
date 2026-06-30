@@ -135,19 +135,19 @@ describe("TransactionsPage", () => {
     expect(
       await screen.findByRole("button", { name: /Groceries/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
+    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "New transaction" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
     const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(within(drawer).getByLabelText("Description"), {
+    fireEvent.change(within(drawer).getByLabelText("Descrição"), {
       target: { value: "Allowance purchase" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Amount"), {
+    fireEvent.change(within(drawer).getByLabelText("Valor"), {
       target: { value: "45" },
     });
     fireEvent.change(
-      within(drawer).getByLabelText("Account", {
+      within(drawer).getByLabelText("Conta", {
         selector: "#transaction-account",
       }),
       {
@@ -155,7 +155,7 @@ describe("TransactionsPage", () => {
       },
     );
     fireEvent.change(
-      within(drawer).getByLabelText("Category", {
+      within(drawer).getByLabelText("Categoria", {
         selector: "#transaction-category",
       }),
       {
@@ -163,7 +163,7 @@ describe("TransactionsPage", () => {
       },
     );
     fireEvent.change(
-      within(drawer).getByLabelText("Ownership", {
+      within(drawer).getByLabelText("Titularidade", {
         selector: "#transaction-ownership",
       }),
       {
@@ -172,12 +172,12 @@ describe("TransactionsPage", () => {
     );
 
     fireEvent.click(
-      within(drawer).getByRole("button", { name: "Create transaction" }),
+      within(drawer).getByRole("button", { name: "Criar transação" }),
     );
 
     await waitFor(() => {
       expect(
-        screen.getByText("Member is required for individual transactions."),
+        screen.getByText("O membro é obrigatório para transações individuais."),
       ).toBeInTheDocument();
     });
   });

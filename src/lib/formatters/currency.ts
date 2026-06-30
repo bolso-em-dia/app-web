@@ -1,4 +1,4 @@
-const BRL_FORMATTER = new Intl.NumberFormat("en-US", {
+const BRL_FORMATTER = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
   minimumFractionDigits: 2,

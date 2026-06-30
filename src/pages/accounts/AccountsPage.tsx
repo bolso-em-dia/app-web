@@ -32,6 +32,7 @@ import {
   type AccountFormValues,
   type ArchiveAccountFormValues,
 } from "../../lib/validation/accountSchema";
+import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./AccountsPage.module.scss";
 
 const DEFAULT_VALUES: AccountFormValues = {
@@ -43,13 +44,6 @@ const DEFAULT_VALUES: AccountFormValues = {
   dueDay: undefined,
 };
 const DEFAULT_PAGE_SIZE = 12;
-
-const ACCOUNT_TYPE_LABELS: Record<Account["type"], string> = {
-  CHECKING: "Checking",
-  SAVINGS: "Savings",
-  CREDIT_CARD: "Credit card",
-  INVESTMENT: "Investment",
-};
 
 function toMonthInputValue(value: string) {
   return value.slice(0, 7);
@@ -72,6 +66,7 @@ function mapFormValuesToPayload(values: AccountFormValues): AccountPayload {
 
 export default function AccountsPage() {
   const { accessToken } = useAuth();
+  const { t } = useI18n();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -132,12 +127,12 @@ export default function AccountsPage() {
             : null,
         );
       } catch {
-        setError("Unable to load accounts.");
+        setError(t("accounts.error"));
       } finally {
         setIsLoading(false);
       }
     },
-    [accessToken],
+    [accessToken, t],
   );
 
   useEffect(() => {
@@ -211,7 +206,7 @@ export default function AccountsPage() {
         setPage(0);
       }
     } catch {
-      setError("Unable to save the account.");
+      setError(t("accounts.saveError"));
     } finally {
       setIsSaving(false);
     }
@@ -236,7 +231,7 @@ export default function AccountsPage() {
       setSelectedId(archived.id);
       setPage(0);
     } catch {
-      setError("Unable to archive the account.");
+      setError(t("accounts.archiveError"));
     } finally {
       setIsArchiving(false);
     }
@@ -268,36 +263,39 @@ export default function AccountsPage() {
 
   return (
     <AppShell
-      title="Accounts"
-      subtitle="Manage bank accounts, investments, and credit cards."
+      title={t("accounts.title")}
+      subtitle={t("accounts.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
-          New account
+          {t("accounts.new")}
         </Button>
       }
     >
       {isLoading ? (
         <Card className={styles.loadingCard}>
-          <Spinner label="Loading accounts" />
+          <Spinner label={t("accounts.loading")} />
         </Card>
       ) : (
         <section className={styles.stack}>
           <Card className={styles.toolbarPanel}>
             <div className={styles.toolbar}>
               <div className={styles.filterGroup}>
-                <Field htmlFor="account-search" label="Search">
+                <Field htmlFor="account-search" label={t("common.search")}>
                   <Input
                     id="account-search"
                     onChange={(event) => {
                       setSearch(event.target.value);
                       setPage(0);
                     }}
-                    placeholder="Search accounts"
+                    placeholder={t("accounts.searchPlaceholder")}
                     value={search}
                   />
                 </Field>
 
-                <Field htmlFor="account-status-filter" label="Status">
+                <Field
+                  htmlFor="account-status-filter"
+                  label={t("common.status")}
+                >
                   <Select
                     id="account-status-filter"
                     onChange={(event) => {
@@ -308,13 +306,13 @@ export default function AccountsPage() {
                     }}
                     value={statusFilter}
                   >
-                    <option value="ALL">All</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="ARCHIVED">Archived</option>
+                    <option value="ALL">{t("common.all")}</option>
+                    <option value="ACTIVE">{t("common.active")}</option>
+                    <option value="ARCHIVED">{t("common.archived")}</option>
                   </Select>
                 </Field>
 
-                <Field htmlFor="account-type-filter" label="Type">
+                <Field htmlFor="account-type-filter" label={t("common.type")}>
                   <Select
                     id="account-type-filter"
                     onChange={(event) => {
@@ -323,11 +321,17 @@ export default function AccountsPage() {
                     }}
                     value={typeFilter}
                   >
-                    <option value="">All types</option>
-                    <option value="CHECKING">Checking</option>
-                    <option value="SAVINGS">Savings</option>
-                    <option value="CREDIT_CARD">Credit card</option>
-                    <option value="INVESTMENT">Investment</option>
+                    <option value="">{t("common.allTypes")}</option>
+                    <option value="CHECKING">
+                      {t("accountTypes.CHECKING")}
+                    </option>
+                    <option value="SAVINGS">{t("accountTypes.SAVINGS")}</option>
+                    <option value="CREDIT_CARD">
+                      {t("accountTypes.CREDIT_CARD")}
+                    </option>
+                    <option value="INVESTMENT">
+                      {t("accountTypes.INVESTMENT")}
+                    </option>
                   </Select>
                 </Field>
               </div>
@@ -337,7 +341,7 @@ export default function AccountsPage() {
           <section className={styles.accountGrid}>
             {accounts.length === 0 ? (
               <Card className={styles.emptyState}>
-                <p>No accounts found for the current filters.</p>
+                <p>{t("accounts.empty")}</p>
               </Card>
             ) : (
               accounts.map((account) => (
@@ -355,7 +359,7 @@ export default function AccountsPage() {
                       <div>
                         <strong>{account.name}</strong>
                         <p className={styles.accountMeta}>
-                          {ACCOUNT_TYPE_LABELS[account.type]}
+                          {t(`accountTypes.${account.type}` as const)}
                           {account.brand ? ` · ${account.brand}` : ""}
                         </p>
                       </div>
@@ -370,11 +374,11 @@ export default function AccountsPage() {
 
                     <div className={styles.accountBadges}>
                       <span className={styles.badge}>
-                        {ACCOUNT_TYPE_LABELS[account.type]}
+                        {t(`accountTypes.${account.type}` as const)}
                       </span>
                       {account.closingDay && account.dueDay ? (
                         <span className={`${styles.badge} ${styles.badgeInfo}`}>
-                          Closes {account.closingDay} · Due {account.dueDay}
+                          Fecha {account.closingDay} · Vence {account.dueDay}
                         </span>
                       ) : null}
                       <span
@@ -385,8 +389,8 @@ export default function AccountsPage() {
                         }
                       >
                         {account.archivedFromMonth
-                          ? `Archived from ${formatReferenceMonth(account.archivedFromMonth)}`
-                          : "Active"}
+                          ? `Arquivado a partir de ${formatReferenceMonth(account.archivedFromMonth)}`
+                          : t("common.active")}
                       </span>
                     </div>
                   </button>
@@ -398,12 +402,16 @@ export default function AccountsPage() {
           <Card className={styles.footerPanel}>
             <div className={styles.footer}>
               <span className={styles.rangeLabel}>
-                {rangeStart}-{rangeEnd} of {totalItems}
+                {t("common.range", {
+                  start: rangeStart,
+                  end: rangeEnd,
+                  total: totalItems,
+                })}
               </span>
 
               <div className={styles.paginationControls}>
                 <label className={styles.rowsControl}>
-                  <span>Rows</span>
+                  <span>{t("common.rows")}</span>
                   <Select
                     onChange={(event) => {
                       setPageSize(Number(event.target.value));
@@ -424,7 +432,7 @@ export default function AccountsPage() {
                     type="button"
                     variant="secondary"
                   >
-                    Previous
+                    {t("common.previous")}
                   </Button>
                   <Button
                     disabled={!hasNextPage}
@@ -432,7 +440,7 @@ export default function AccountsPage() {
                     type="button"
                     variant="secondary"
                   >
-                    Next
+                    {t("common.next")}
                   </Button>
                 </div>
               </div>
@@ -443,11 +451,13 @@ export default function AccountsPage() {
             <Drawer
               description={
                 isCreating
-                  ? "Add a new financial account or credit card."
-                  : "Update account details and archive it when needed."
+                  ? t("accounts.newDescription")
+                  : t("accounts.editDescription")
               }
               onClose={handleCloseDrawer}
-              title={isCreating ? "New account" : "Account details"}
+              title={
+                isCreating ? t("accounts.newTitle") : t("accounts.detailsTitle")
+              }
             >
               <div className={styles.drawerStack}>
                 <form
@@ -457,13 +467,13 @@ export default function AccountsPage() {
                   <Field
                     error={form.formState.errors.name?.message}
                     htmlFor="account-name"
-                    label="Name"
+                    label={t("common.name")}
                   >
                     <Input
                       id="account-name"
                       {...form.register("name")}
                       hasError={Boolean(form.formState.errors.name)}
-                      placeholder="Main checking"
+                      placeholder={t("accounts.placeholder")}
                     />
                   </Field>
 
@@ -471,24 +481,32 @@ export default function AccountsPage() {
                     <Field
                       error={form.formState.errors.type?.message}
                       htmlFor="account-type"
-                      label="Type"
+                      label={t("common.type")}
                     >
                       <Select
                         id="account-type"
                         {...form.register("type")}
                         hasError={Boolean(form.formState.errors.type)}
                       >
-                        <option value="CHECKING">Checking</option>
-                        <option value="SAVINGS">Savings</option>
-                        <option value="CREDIT_CARD">Credit card</option>
-                        <option value="INVESTMENT">Investment</option>
+                        <option value="CHECKING">
+                          {t("accountTypes.CHECKING")}
+                        </option>
+                        <option value="SAVINGS">
+                          {t("accountTypes.SAVINGS")}
+                        </option>
+                        <option value="CREDIT_CARD">
+                          {t("accountTypes.CREDIT_CARD")}
+                        </option>
+                        <option value="INVESTMENT">
+                          {t("accountTypes.INVESTMENT")}
+                        </option>
                       </Select>
                     </Field>
 
                     <Field
                       error={form.formState.errors.color?.message}
                       htmlFor="account-color"
-                      label="Color"
+                      label={t("accounts.color")}
                     >
                       <Input
                         id="account-color"
@@ -504,7 +522,7 @@ export default function AccountsPage() {
                       <Field
                         error={form.formState.errors.brand?.message}
                         htmlFor="account-brand"
-                        label="Brand"
+                        label={t("accounts.brand")}
                       >
                         <Input
                           id="account-brand"
@@ -517,7 +535,7 @@ export default function AccountsPage() {
                       <Field
                         error={form.formState.errors.closingDay?.message}
                         htmlFor="account-closing-day"
-                        label="Closing day"
+                        label={t("accounts.closingDay")}
                       >
                         <Input
                           id="account-closing-day"
@@ -533,7 +551,7 @@ export default function AccountsPage() {
                       <Field
                         error={form.formState.errors.dueDay?.message}
                         htmlFor="account-due-day"
-                        label="Due day"
+                        label={t("accounts.dueDay")}
                       >
                         <Input
                           id="account-due-day"
@@ -562,7 +580,9 @@ export default function AccountsPage() {
 
                   <div className={styles.formActions}>
                     <Button disabled={isSaving} type="submit">
-                      {isCreating ? "Create account" : "Save changes"}
+                      {isCreating
+                        ? t("accounts.create")
+                        : t("common.saveChanges")}
                     </Button>
                     {isCreating ? (
                       <Button
@@ -570,7 +590,7 @@ export default function AccountsPage() {
                         type="button"
                         variant="secondary"
                       >
-                        Cancel
+                        {t("common.cancel")}
                       </Button>
                     ) : null}
                   </div>
@@ -581,9 +601,11 @@ export default function AccountsPage() {
                 !isCreating ? (
                   <Card className={styles.archivePanel}>
                     <div className={styles.archiveHeader}>
-                      <h3 className={styles.archiveTitle}>Archive account</h3>
+                      <h3 className={styles.archiveTitle}>
+                        {t("accounts.archiveTitle")}
+                      </h3>
                       <p className={styles.archiveSubtitle}>
-                        Stop using this account from a specific month onward.
+                        Pare de usar esta conta a partir de um mês específico.
                       </p>
                     </div>
 
@@ -597,7 +619,7 @@ export default function AccountsPage() {
                             ?.message
                         }
                         htmlFor="account-archive-month"
-                        label="Archive month"
+                        label={t("accounts.archiveMonth")}
                       >
                         <Input
                           id="account-archive-month"
@@ -614,7 +636,7 @@ export default function AccountsPage() {
                         type="submit"
                         variant="secondary"
                       >
-                        Archive account
+                        {t("accounts.archiveAction")}
                       </Button>
                     </form>
                   </Card>

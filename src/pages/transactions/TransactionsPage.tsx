@@ -39,6 +39,7 @@ import {
   transactionSchema,
   type TransactionFormValues,
 } from "../../lib/validation/transactionSchema";
+import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./TransactionsPage.module.scss";
 
 const DEFAULT_VALUES: TransactionFormValues = {
@@ -54,16 +55,6 @@ const DEFAULT_VALUES: TransactionFormValues = {
   installmentCount: 1,
 };
 const DEFAULT_PAGE_SIZE = 12;
-
-const TYPE_LABELS: Record<TransactionType, string> = {
-  INCOME: "Income",
-  EXPENSE: "Expense",
-};
-
-const OWNERSHIP_LABELS: Record<OwnershipType, string> = {
-  SHARED: "Shared",
-  INDIVIDUAL: "Individual",
-};
 
 function toMonthInputValue(value: string) {
   return value.slice(0, 7);
@@ -113,6 +104,7 @@ function mapFormValuesToUpdatePayload(
 
 export default function TransactionsPage() {
   const { accessToken } = useAuth();
+  const { t } = useI18n();
   const initialReferenceMonth = useMemo(() => getCurrentReferenceMonth(), []);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -190,11 +182,11 @@ export default function TransactionsPage() {
           : null,
       );
     } catch {
-      setError("Unable to load transactions.");
+      setError(t("transactions.error"));
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, filters, page, pageSize]);
+  }, [accessToken, filters, page, pageSize, t]);
 
   useEffect(() => {
     void loadPageData();
@@ -248,12 +240,12 @@ export default function TransactionsPage() {
         );
         setCategoryOptions(response);
       } catch {
-        setError("Unable to refresh category options.");
+        setError(t("transactions.categoryRefreshError"));
       }
     };
 
     void updateCategories();
-  }, [accessToken, currentReferenceMonth, filters.referenceMonth]);
+  }, [accessToken, currentReferenceMonth, filters.referenceMonth, t]);
 
   async function onSubmit(values: TransactionFormValues) {
     if (!accessToken) {
@@ -290,7 +282,7 @@ export default function TransactionsPage() {
 
       await loadPageData();
     } catch {
-      setError("Unable to save the transaction.");
+      setError(t("transactions.saveError"));
     } finally {
       setIsSaving(false);
     }
@@ -309,7 +301,7 @@ export default function TransactionsPage() {
       setSelectedId(null);
       await loadPageData();
     } catch {
-      setError("Unable to delete the transaction.");
+      setError(t("transactions.deleteError"));
     } finally {
       setIsDeleting(false);
     }
@@ -344,23 +336,26 @@ export default function TransactionsPage() {
 
   return (
     <AppShell
-      title="Transactions"
-      subtitle="Review, filter, create, edit, and delete monthly transactions."
+      title={t("transactions.title")}
+      subtitle={t("transactions.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
-          New transaction
+          {t("transactions.new")}
         </Button>
       }
     >
       {isLoading ? (
         <Card className={styles.loadingCard}>
-          <Spinner label="Loading transactions" />
+          <Spinner label={t("transactions.loading")} />
         </Card>
       ) : (
         <section className={styles.stack}>
           <Card className={styles.toolbarPanel}>
             <div className={styles.filtersGrid}>
-              <Field label="Reference month" htmlFor="transaction-filter-month">
+              <Field
+                label={t("common.referenceMonth")}
+                htmlFor="transaction-filter-month"
+              >
                 <Input
                   id="transaction-filter-month"
                   onChange={(event) => {
@@ -375,7 +370,7 @@ export default function TransactionsPage() {
                 />
               </Field>
 
-              <Field label="Type" htmlFor="transaction-filter-type">
+              <Field label={t("common.type")} htmlFor="transaction-filter-type">
                 <Select
                   id="transaction-filter-type"
                   onChange={(event) => {
@@ -390,13 +385,18 @@ export default function TransactionsPage() {
                   }}
                   value={filters.type ?? ""}
                 >
-                  <option value="">All types</option>
-                  <option value="INCOME">Income</option>
-                  <option value="EXPENSE">Expense</option>
+                  <option value="">{t("common.allTypes")}</option>
+                  <option value="INCOME">{t("transactionTypes.INCOME")}</option>
+                  <option value="EXPENSE">
+                    {t("transactionTypes.EXPENSE")}
+                  </option>
                 </Select>
               </Field>
 
-              <Field label="Ownership" htmlFor="transaction-filter-ownership">
+              <Field
+                label={t("common.ownership")}
+                htmlFor="transaction-filter-ownership"
+              >
                 <Select
                   id="transaction-filter-ownership"
                   onChange={(event) => {
@@ -411,13 +411,18 @@ export default function TransactionsPage() {
                   }}
                   value={filters.ownershipType ?? ""}
                 >
-                  <option value="">All ownerships</option>
-                  <option value="SHARED">Shared</option>
-                  <option value="INDIVIDUAL">Individual</option>
+                  <option value="">{t("common.allOwnerships")}</option>
+                  <option value="SHARED">{t("ownershipTypes.SHARED")}</option>
+                  <option value="INDIVIDUAL">
+                    {t("ownershipTypes.INDIVIDUAL")}
+                  </option>
                 </Select>
               </Field>
 
-              <Field label="Account" htmlFor="transaction-filter-account">
+              <Field
+                label={t("common.account")}
+                htmlFor="transaction-filter-account"
+              >
                 <Select
                   id="transaction-filter-account"
                   onChange={(event) => {
@@ -429,7 +434,7 @@ export default function TransactionsPage() {
                   }}
                   value={filters.accountId ?? ""}
                 >
-                  <option value="">All accounts</option>
+                  <option value="">{t("common.allAccounts")}</option>
                   {accounts.map((account) => (
                     <option key={account.id} value={account.id}>
                       {account.name}
@@ -438,7 +443,10 @@ export default function TransactionsPage() {
                 </Select>
               </Field>
 
-              <Field label="Category" htmlFor="transaction-filter-category">
+              <Field
+                label={t("common.category")}
+                htmlFor="transaction-filter-category"
+              >
                 <Select
                   id="transaction-filter-category"
                   onChange={(event) => {
@@ -450,7 +458,7 @@ export default function TransactionsPage() {
                   }}
                   value={filters.categoryId ?? ""}
                 >
-                  <option value="">All categories</option>
+                  <option value="">{t("common.allCategories")}</option>
                   {categoryOptions.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
@@ -459,7 +467,10 @@ export default function TransactionsPage() {
                 </Select>
               </Field>
 
-              <Field label="Member" htmlFor="transaction-filter-member">
+              <Field
+                label={t("common.member")}
+                htmlFor="transaction-filter-member"
+              >
                 <Select
                   id="transaction-filter-member"
                   onChange={(event) => {
@@ -471,7 +482,7 @@ export default function TransactionsPage() {
                   }}
                   value={filters.memberId ?? ""}
                 >
-                  <option value="">All members</option>
+                  <option value="">{t("common.allMembers")}</option>
                   {allowanceMembers.map((member) => (
                     <option key={member.id} value={member.id}>
                       {member.name}
@@ -485,7 +496,7 @@ export default function TransactionsPage() {
           <section className={styles.transactionGrid}>
             {transactions.length === 0 ? (
               <Card className={styles.emptyState}>
-                <p>No transactions found for the current filters.</p>
+                <p>{t("transactions.empty")}</p>
               </Card>
             ) : (
               transactions.map((transaction) => (
@@ -512,10 +523,12 @@ export default function TransactionsPage() {
 
                     <div className={styles.badgeRow}>
                       <span className={styles.badge}>
-                        {TYPE_LABELS[transaction.type]}
+                        {t(`transactionTypes.${transaction.type}` as const)}
                       </span>
                       <span className={styles.badge}>
-                        {OWNERSHIP_LABELS[transaction.ownershipType]}
+                        {t(
+                          `ownershipTypes.${transaction.ownershipType}` as const,
+                        )}
                       </span>
                       {transaction.memberName ? (
                         <span
@@ -542,12 +555,16 @@ export default function TransactionsPage() {
           <Card className={styles.footerPanel}>
             <div className={styles.footer}>
               <span className={styles.rangeLabel}>
-                {rangeStart}-{rangeEnd} of {totalItems}
+                {t("common.range", {
+                  start: rangeStart,
+                  end: rangeEnd,
+                  total: totalItems,
+                })}
               </span>
 
               <div className={styles.paginationControls}>
                 <label className={styles.rowsControl}>
-                  <span>Rows</span>
+                  <span>{t("common.rows")}</span>
                   <Select
                     onChange={(event) => {
                       setPageSize(Number(event.target.value));
@@ -568,7 +585,7 @@ export default function TransactionsPage() {
                     type="button"
                     variant="secondary"
                   >
-                    Previous
+                    {t("common.previous")}
                   </Button>
                   <Button
                     disabled={!hasNextPage}
@@ -576,7 +593,7 @@ export default function TransactionsPage() {
                     type="button"
                     variant="secondary"
                   >
-                    Next
+                    {t("common.next")}
                   </Button>
                 </div>
               </div>
@@ -587,11 +604,17 @@ export default function TransactionsPage() {
             <Drawer
               description={
                 isCreating
-                  ? "Create a monthly transaction with optional installments."
-                  : `Update the transaction for ${formatReferenceMonth(filters.referenceMonth)}.`
+                  ? t("transactions.newDescription")
+                  : t("transactions.editDescription", {
+                      month: formatReferenceMonth(filters.referenceMonth),
+                    })
               }
               onClose={handleCloseDrawer}
-              title={isCreating ? "New transaction" : "Transaction details"}
+              title={
+                isCreating
+                  ? t("transactions.newTitle")
+                  : t("transactions.detailsTitle")
+              }
             >
               <div className={styles.drawerStack}>
                 <form
@@ -602,37 +625,45 @@ export default function TransactionsPage() {
                   <Field
                     error={form.formState.errors.type?.message}
                     htmlFor="transaction-type"
-                    label="Type"
+                    label={t("common.type")}
                   >
                     <Select
                       id="transaction-type"
                       hasError={Boolean(form.formState.errors.type)}
                       {...form.register("type")}
                     >
-                      <option value="EXPENSE">Expense</option>
-                      <option value="INCOME">Income</option>
+                      <option value="EXPENSE">
+                        {t("transactionTypes.EXPENSE")}
+                      </option>
+                      <option value="INCOME">
+                        {t("transactionTypes.INCOME")}
+                      </option>
                     </Select>
                   </Field>
 
                   <Field
                     error={form.formState.errors.ownershipType?.message}
                     htmlFor="transaction-ownership"
-                    label="Ownership"
+                    label={t("common.ownership")}
                   >
                     <Select
                       id="transaction-ownership"
                       hasError={Boolean(form.formState.errors.ownershipType)}
                       {...form.register("ownershipType")}
                     >
-                      <option value="SHARED">Shared</option>
-                      <option value="INDIVIDUAL">Individual</option>
+                      <option value="SHARED">
+                        {t("ownershipTypes.SHARED")}
+                      </option>
+                      <option value="INDIVIDUAL">
+                        {t("ownershipTypes.INDIVIDUAL")}
+                      </option>
                     </Select>
                   </Field>
 
                   <Field
                     error={form.formState.errors.description?.message}
                     htmlFor="transaction-description"
-                    label="Description"
+                    label={t("transactions.description")}
                   >
                     <Input
                       id="transaction-description"
@@ -644,7 +675,7 @@ export default function TransactionsPage() {
                   <Field
                     error={form.formState.errors.amount?.message}
                     htmlFor="transaction-amount"
-                    label="Amount"
+                    label={t("transactions.amount")}
                   >
                     <Input
                       id="transaction-amount"
@@ -660,7 +691,7 @@ export default function TransactionsPage() {
                     <Field
                       error={form.formState.errors.transactionDate?.message}
                       htmlFor="transaction-date"
-                      label="Transaction date"
+                      label={t("transactions.transactionDate")}
                     >
                       <Input
                         id="transaction-date"
@@ -675,7 +706,7 @@ export default function TransactionsPage() {
                     <Field
                       error={form.formState.errors.referenceMonth?.message}
                       htmlFor="transaction-reference-month"
-                      label="Reference month"
+                      label={t("common.referenceMonth")}
                     >
                       <Input
                         id="transaction-reference-month"
@@ -689,14 +720,14 @@ export default function TransactionsPage() {
                   <Field
                     error={form.formState.errors.accountId?.message}
                     htmlFor="transaction-account"
-                    label="Account"
+                    label={t("common.account")}
                   >
                     <Select
                       id="transaction-account"
                       hasError={Boolean(form.formState.errors.accountId)}
                       {...form.register("accountId")}
                     >
-                      <option value="">Select an account</option>
+                      <option value="">{t("common.selectAccount")}</option>
                       {accounts.map((account) => (
                         <option key={account.id} value={account.id}>
                           {account.name}
@@ -708,14 +739,14 @@ export default function TransactionsPage() {
                   <Field
                     error={form.formState.errors.categoryId?.message}
                     htmlFor="transaction-category"
-                    label="Category"
+                    label={t("common.category")}
                   >
                     <Select
                       id="transaction-category"
                       hasError={Boolean(form.formState.errors.categoryId)}
                       {...form.register("categoryId")}
                     >
-                      <option value="">Select a category</option>
+                      <option value="">{t("common.selectCategory")}</option>
                       {categoryOptions.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.name}
@@ -728,14 +759,14 @@ export default function TransactionsPage() {
                     <Field
                       error={form.formState.errors.memberId?.message}
                       htmlFor="transaction-member"
-                      label="Member"
+                      label={t("common.member")}
                     >
                       <Select
                         id="transaction-member"
                         hasError={Boolean(form.formState.errors.memberId)}
                         {...form.register("memberId")}
                       >
-                        <option value="">Select a member</option>
+                        <option value="">{t("common.selectMember")}</option>
                         {allowanceMembers.map((member) => (
                           <option key={member.id} value={member.id}>
                             {member.name}
@@ -749,7 +780,7 @@ export default function TransactionsPage() {
                     <Field
                       error={form.formState.errors.installmentCount?.message}
                       htmlFor="transaction-installment-count"
-                      label="Installment count"
+                      label={t("transactions.installmentCount")}
                     >
                       <Input
                         id="transaction-installment-count"
@@ -769,7 +800,9 @@ export default function TransactionsPage() {
 
                   <div className={styles.formActions}>
                     <Button loading={isSaving} type="submit">
-                      {isCreating ? "Create transaction" : "Save changes"}
+                      {isCreating
+                        ? t("transactions.create")
+                        : t("common.saveChanges")}
                     </Button>
                     {isCreating ? (
                       <Button
@@ -777,7 +810,7 @@ export default function TransactionsPage() {
                         type="button"
                         variant="secondary"
                       >
-                        Cancel
+                        {t("common.cancel")}
                       </Button>
                     ) : null}
                   </div>
@@ -786,10 +819,11 @@ export default function TransactionsPage() {
                 {!isCreating && selectedTransaction ? (
                   <Card className={styles.deletePanel}>
                     <div className={styles.deleteHeader}>
-                      <h3 className={styles.deleteTitle}>Delete transaction</h3>
+                      <h3 className={styles.deleteTitle}>
+                        {t("transactions.deleteTitle")}
+                      </h3>
                       <p className={styles.helperText}>
-                        Remove the selected transaction or the remaining
-                        installments in its group.
+                        {t("transactions.deleteSubtitle")}
                       </p>
                     </div>
 
@@ -797,7 +831,7 @@ export default function TransactionsPage() {
                       {supportsGroupedDelete ? (
                         <Field
                           htmlFor="transaction-delete-scope"
-                          label="Delete scope"
+                          label={t("transactions.deleteScope")}
                         >
                           <Select
                             id="transaction-delete-scope"
@@ -807,19 +841,19 @@ export default function TransactionsPage() {
                             value={deleteScope}
                           >
                             <option value="SINGLE">
-                              Only this installment
+                              {t("transactions.deleteScope.single")}
                             </option>
                             <option value="FUTURE">
-                              This and future installments
+                              {t("transactions.deleteScope.future")}
                             </option>
                             <option value="ALL">
-                              Entire installment group
+                              {t("transactions.deleteScope.all")}
                             </option>
                           </Select>
                         </Field>
                       ) : (
                         <p className={styles.helperText}>
-                          This transaction is not part of an installment group.
+                          {t("transactions.noInstallmentGroup")}
                         </p>
                       )}
 
@@ -829,7 +863,7 @@ export default function TransactionsPage() {
                         type="button"
                         variant="secondary"
                       >
-                        Delete transaction
+                        {t("transactions.deleteAction")}
                       </Button>
                     </div>
                   </Card>

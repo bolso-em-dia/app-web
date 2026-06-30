@@ -1,46 +1,45 @@
 export type NavigationItem = {
-  label: string;
+  labelKey:
+    | "navigation.dashboard"
+    | "navigation.envelopes"
+    | "navigation.fixedExpenses"
+    | "navigation.transactions"
+    | "navigation.family"
+    | "navigation.categories"
+    | "navigation.accounts";
   path: string;
-  description: string;
 };
 
-export const primaryNavigation: NavigationItem[] = [
+export const operationalNavigation: NavigationItem[] = [
   {
-    label: "Dashboard",
+    labelKey: "navigation.dashboard",
     path: "/dashboard",
-    description: "Monthly overview",
+  },
+  {
+    labelKey: "navigation.envelopes",
+    path: "/envelopes",
+  },
+  {
+    labelKey: "navigation.fixedExpenses",
+    path: "/fixed-expenses",
+  },
+  {
+    labelKey: "navigation.transactions",
+    path: "/transactions",
   },
 ];
 
 export const managementNavigation: NavigationItem[] = [
   {
-    label: "Family",
+    labelKey: "navigation.family",
     path: "/family",
-    description: "Members and roles",
   },
   {
-    label: "Categories",
+    labelKey: "navigation.categories",
     path: "/categories",
-    description: "Expense classification",
   },
   {
-    label: "Accounts",
+    labelKey: "navigation.accounts",
     path: "/accounts",
-    description: "Cash and cards",
-  },
-  {
-    label: "Envelopes",
-    path: "/envelopes",
-    description: "Budgets and allowance",
-  },
-  {
-    label: "Fixed expenses",
-    path: "/fixed-expenses",
-    description: "Recurring entries",
-  },
-  {
-    label: "Transactions",
-    path: "/transactions",
-    description: "Monthly activity",
   },
 ];

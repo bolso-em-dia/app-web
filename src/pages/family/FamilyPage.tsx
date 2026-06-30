@@ -29,6 +29,7 @@ import {
   type UpdateFamilyMemberFormValues,
   updateFamilyMemberSchema,
 } from "../../lib/validation/familyMemberSchema";
+import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./FamilyPage.module.scss";
 
 type FamilyFormValues =
@@ -45,6 +46,7 @@ const DEFAULT_PAGE_SIZE = 12;
 
 export default function FamilyPage() {
   const { accessToken } = useAuth();
+  const { t } = useI18n();
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -95,12 +97,12 @@ export default function FamilyPage() {
             : null,
         );
       } catch {
-        setError("Unable to load family members.");
+        setError(t("family.error"));
       } finally {
         setIsLoading(false);
       }
     },
-    [accessToken],
+    [accessToken, t],
   );
 
   useEffect(() => {
@@ -174,7 +176,7 @@ export default function FamilyPage() {
         setPage(0);
       }
     } catch {
-      setError("Unable to save the family member.");
+      setError(t("family.saveError"));
     } finally {
       setIsSaving(false);
     }
@@ -195,7 +197,7 @@ export default function FamilyPage() {
       setSelectedId(updated.id);
       setPage(0);
     } catch {
-      setError("Unable to update the member status.");
+      setError(t("family.statusError"));
     } finally {
       setIsArchiving(false);
     }
@@ -227,36 +229,39 @@ export default function FamilyPage() {
 
   return (
     <AppShell
-      title="Family"
-      subtitle="Manage members, permissions, and allowance eligibility."
+      title={t("family.title")}
+      subtitle={t("family.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
-          New member
+          {t("family.new")}
         </Button>
       }
     >
       {isLoading ? (
         <Card className={styles.loadingCard}>
-          <Spinner label="Loading family members" />
+          <Spinner label={t("family.loading")} />
         </Card>
       ) : (
         <section className={styles.stack}>
           <Card className={styles.toolbarPanel}>
             <div className={styles.toolbar}>
               <div className={styles.filterGroup}>
-                <Field htmlFor="family-search" label="Search">
+                <Field htmlFor="family-search" label={t("common.search")}>
                   <Input
                     id="family-search"
                     onChange={(event) => {
                       setSearch(event.target.value);
                       setPage(0);
                     }}
-                    placeholder="Search by name or email"
+                    placeholder={t("family.searchPlaceholder")}
                     value={search}
                   />
                 </Field>
 
-                <Field htmlFor="family-status-filter" label="Status">
+                <Field
+                  htmlFor="family-status-filter"
+                  label={t("common.status")}
+                >
                   <Select
                     id="family-status-filter"
                     onChange={(event) => {
@@ -267,9 +272,9 @@ export default function FamilyPage() {
                     }}
                     value={statusFilter}
                   >
-                    <option value="ALL">All</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="ARCHIVED">Archived</option>
+                    <option value="ALL">{t("common.all")}</option>
+                    <option value="ACTIVE">{t("common.active")}</option>
+                    <option value="ARCHIVED">{t("common.archived")}</option>
                   </Select>
                 </Field>
               </div>
@@ -279,7 +284,7 @@ export default function FamilyPage() {
           <section className={styles.memberGrid}>
             {members.length === 0 ? (
               <Card className={styles.emptyState}>
-                <p>No family members found for the current filters.</p>
+                <p>{t("family.empty")}</p>
               </Card>
             ) : (
               members.map((member) => (
@@ -297,7 +302,12 @@ export default function FamilyPage() {
                       <div>
                         <strong>{member.name}</strong>
                         <p className={styles.memberMeta}>
-                          {member.email} · {member.role}
+                          {member.email} ·{" "}
+                          {t(
+                            member.role === "ADMIN"
+                              ? "roles.ADMIN"
+                              : "roles.USER",
+                          )}
                         </p>
                       </div>
                     </div>
@@ -310,11 +320,21 @@ export default function FamilyPage() {
                             : `${styles.badge} ${styles.badgeMuted}`
                         }
                       >
-                        {member.active ? "Active" : "Archived"}
+                        {member.active
+                          ? t("common.active")
+                          : t("common.archived")}
                       </span>
-                      <span className={styles.badge}>{member.role}</span>
+                      <span className={styles.badge}>
+                        {t(
+                          member.role === "ADMIN"
+                            ? "roles.ADMIN"
+                            : "roles.USER",
+                        )}
+                      </span>
                       {member.allowanceEnabled ? (
-                        <span className={styles.badge}>Allowance</span>
+                        <span className={styles.badge}>
+                          {t("family.allowance")}
+                        </span>
                       ) : null}
                     </div>
                   </button>
@@ -326,12 +346,16 @@ export default function FamilyPage() {
           <Card className={styles.footerPanel}>
             <div className={styles.footer}>
               <span className={styles.rangeLabel}>
-                {rangeStart}-{rangeEnd} of {totalItems}
+                {t("common.range", {
+                  start: rangeStart,
+                  end: rangeEnd,
+                  total: totalItems,
+                })}
               </span>
 
               <div className={styles.paginationControls}>
                 <label className={styles.rowsControl}>
-                  <span>Rows</span>
+                  <span>{t("common.rows")}</span>
                   <Select
                     onChange={(event) => {
                       setPageSize(Number(event.target.value));
@@ -352,7 +376,7 @@ export default function FamilyPage() {
                     type="button"
                     variant="secondary"
                   >
-                    Previous
+                    {t("common.previous")}
                   </Button>
                   <Button
                     disabled={!hasNextPage}
@@ -360,7 +384,7 @@ export default function FamilyPage() {
                     type="button"
                     variant="secondary"
                   >
-                    Next
+                    {t("common.next")}
                   </Button>
                 </div>
               </div>
@@ -371,11 +395,13 @@ export default function FamilyPage() {
             <Drawer
               description={
                 isCreating
-                  ? "Create a family member with role and allowance settings."
-                  : "Update member details, permissions, and active status."
+                  ? t("family.newDescription")
+                  : t("family.editDescription")
               }
               onClose={handleCloseDrawer}
-              title={isCreating ? "New member" : "Member details"}
+              title={
+                isCreating ? t("family.newTitle") : t("family.detailsTitle")
+              }
             >
               <div className={styles.drawerStack}>
                 <form
@@ -386,7 +412,7 @@ export default function FamilyPage() {
                   <Field
                     error={form.formState.errors.name?.message}
                     htmlFor="family-name"
-                    label="Name"
+                    label={t("common.name")}
                   >
                     <Input
                       id="family-name"
@@ -398,7 +424,7 @@ export default function FamilyPage() {
                   <Field
                     error={form.formState.errors.email?.message}
                     htmlFor="family-email"
-                    label="Email"
+                    label={t("common.email")}
                   >
                     <Input
                       id="family-email"
@@ -411,7 +437,11 @@ export default function FamilyPage() {
                   <Field
                     error={form.formState.errors.password?.message}
                     htmlFor="family-password"
-                    label={isCreating ? "Password" : "Password (optional)"}
+                    label={
+                      isCreating
+                        ? t("family.password")
+                        : t("family.passwordOptional")
+                    }
                   >
                     <Input
                       id="family-password"
@@ -424,20 +454,20 @@ export default function FamilyPage() {
                   <Field
                     error={form.formState.errors.role?.message}
                     htmlFor="family-role"
-                    label="Role"
+                    label={t("common.role")}
                   >
                     <Select
                       id="family-role"
                       hasError={Boolean(form.formState.errors.role)}
                       {...form.register("role")}
                     >
-                      <option value="USER">User</option>
-                      <option value="ADMIN">Admin</option>
+                      <option value="USER">{t("roles.USER")}</option>
+                      <option value="ADMIN">{t("roles.ADMIN")}</option>
                     </Select>
                   </Field>
 
                   <Checkbox
-                    label="Allowance enabled"
+                    label={t("family.allowanceEnabled")}
                     {...form.register("allowanceEnabled")}
                   />
 
@@ -445,7 +475,9 @@ export default function FamilyPage() {
 
                   <div className={styles.formActions}>
                     <Button loading={isSaving} type="submit">
-                      {isCreating ? "Create member" : "Save changes"}
+                      {isCreating
+                        ? t("family.create")
+                        : t("common.saveChanges")}
                     </Button>
                     {isCreating ? (
                       <Button
@@ -453,7 +485,7 @@ export default function FamilyPage() {
                         type="button"
                         variant="secondary"
                       >
-                        Cancel
+                        {t("common.cancel")}
                       </Button>
                     ) : null}
                   </div>
@@ -462,10 +494,12 @@ export default function FamilyPage() {
                 {!isCreating && selectedMember ? (
                   <Card className={styles.archivePanel}>
                     <div className={styles.archiveHeader}>
-                      <h3 className={styles.archiveTitle}>Member status</h3>
+                      <h3 className={styles.archiveTitle}>
+                        {t("family.memberStatus")}
+                      </h3>
                       <p className={styles.archiveSubtitle}>
-                        Archive the member to disable access, or restore access
-                        later.
+                        Arquive o membro para desabilitar o acesso ou reative
+                        depois.
                       </p>
                     </div>
 
@@ -476,8 +510,8 @@ export default function FamilyPage() {
                       variant="secondary"
                     >
                       {selectedMember.active
-                        ? "Archive member"
-                        : "Restore member"}
+                        ? t("family.archiveMember")
+                        : t("family.restoreMember")}
                     </Button>
                   </Card>
                 ) : null}

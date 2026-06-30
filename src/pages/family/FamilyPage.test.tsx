@@ -59,32 +59,30 @@ describe("FamilyPage", () => {
     );
 
     expect(await screen.findByText("Admin")).toBeInTheDocument();
-    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
+    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "New member" }));
+    fireEvent.click(screen.getByRole("button", { name: "Novo membro" }));
     const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(within(drawer).getByLabelText("Name"), {
+    fireEvent.change(within(drawer).getByLabelText("Nome"), {
       target: { value: "" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Email"), {
+    fireEvent.change(within(drawer).getByLabelText("E-mail"), {
       target: { value: "invalid-email" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Password"), {
+    fireEvent.change(within(drawer).getByLabelText("Senha"), {
       target: { value: "123" },
     });
 
     fireEvent.click(
-      within(drawer).getByRole("button", { name: "Create member" }),
+      within(drawer).getByRole("button", { name: "Criar membro" }),
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Name is required.")).toBeInTheDocument();
+      expect(screen.getByText("Nome é obrigatório.")).toBeInTheDocument();
+      expect(screen.getByText("Informe um e-mail válido.")).toBeInTheDocument();
       expect(
-        screen.getByText("Enter a valid email address."),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Password must have at least 8 characters."),
+        screen.getByText("A senha deve ter pelo menos 8 caracteres."),
       ).toBeInTheDocument();
     });
   });

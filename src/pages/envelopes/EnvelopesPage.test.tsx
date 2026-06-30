@@ -151,28 +151,30 @@ describe("EnvelopesPage", () => {
     );
 
     expect(await screen.findByText("Household")).toBeInTheDocument();
-    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
+    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "New envelope" }));
+    fireEvent.click(screen.getByRole("button", { name: "Novo envelope" }));
     const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(within(drawer).getByLabelText("Name"), {
+    fireEvent.change(within(drawer).getByLabelText("Nome"), {
       target: { value: "Allowance envelope" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Monthly limit"), {
+    fireEvent.change(within(drawer).getByLabelText("Limite mensal"), {
       target: { value: "450" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Type"), {
+    fireEvent.change(within(drawer).getByLabelText("Tipo"), {
       target: { value: "ALLOWANCE" },
     });
 
     fireEvent.click(
-      within(drawer).getByRole("button", { name: "Create envelope" }),
+      within(drawer).getByRole("button", { name: "Criar envelope" }),
     );
 
     await waitFor(() => {
       expect(
-        screen.getByText("Owner member is required for allowance envelopes."),
+        screen.getByText(
+          "O membro dono é obrigatório para envelopes de mesada.",
+        ),
       ).toBeInTheDocument();
     });
   });

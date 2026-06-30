@@ -84,25 +84,27 @@ describe("FixedExpensesPage", () => {
     );
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
-    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
+    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "New template" }));
+    fireEvent.click(screen.getByRole("button", { name: "Novo modelo" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Name"), {
+    fireEvent.change(screen.getByLabelText("Nome"), {
       target: { value: "Water bill" },
     });
-    fireEvent.change(screen.getByLabelText("Amount"), {
+    fireEvent.change(screen.getByLabelText("Valor"), {
       target: { value: "150" },
     });
-    fireEvent.change(screen.getByLabelText("Due day"), {
+    fireEvent.change(screen.getByLabelText("Dia de vencimento"), {
       target: { value: "12" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Create template" }));
+    fireEvent.click(screen.getByRole("button", { name: "Criar modelo" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Category is required.")).toBeInTheDocument();
-      expect(screen.getByText("Account is required.")).toBeInTheDocument();
+      expect(
+        screen.getByText("A categoria é obrigatória."),
+      ).toBeInTheDocument();
+      expect(screen.getByText("A conta é obrigatória.")).toBeInTheDocument();
     });
   });
 });

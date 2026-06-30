@@ -16,32 +16,32 @@ const OWNERSHIP_TYPE_VALUES = [
 export const transactionSchema = z
   .object({
     type: z.enum(TRANSACTION_TYPE_VALUES, {
-      errorMap: () => ({ message: "Type is required." }),
+      errorMap: () => ({ message: "O tipo é obrigatório." }),
     }),
     ownershipType: z.enum(OWNERSHIP_TYPE_VALUES, {
-      errorMap: () => ({ message: "Ownership type is required." }),
+      errorMap: () => ({ message: "A titularidade é obrigatória." }),
     }),
     description: z
       .string()
       .trim()
-      .min(1, "Description is required.")
-      .max(160, "Description must have at most 160 characters."),
+      .min(1, "A descrição é obrigatória.")
+      .max(160, "A descrição deve ter no máximo 160 caracteres."),
     amount: z.preprocess(
       (value) => (value === "" ? undefined : value),
-      z.coerce.number().positive("Amount must be greater than zero."),
+      z.coerce.number().positive("O valor deve ser maior que zero."),
     ),
-    transactionDate: z.string().min(1, "Transaction date is required."),
-    referenceMonth: z.string().min(1, "Reference month is required."),
-    accountId: z.string().min(1, "Account is required."),
-    categoryId: z.string().min(1, "Category is required."),
+    transactionDate: z.string().min(1, "A data da transação é obrigatória."),
+    referenceMonth: z.string().min(1, "O mês de referência é obrigatório."),
+    accountId: z.string().min(1, "A conta é obrigatória."),
+    categoryId: z.string().min(1, "A categoria é obrigatória."),
     memberId: z.string(),
     installmentCount: z.preprocess(
       (value) => (value === "" ? undefined : value),
       z.coerce
         .number()
-        .int("Installment count must be a whole number.")
-        .min(1, "Installment count must be between 1 and 120.")
-        .max(120, "Installment count must be between 1 and 120.")
+        .int("A quantidade de parcelas deve ser um número inteiro.")
+        .min(1, "A quantidade de parcelas deve estar entre 1 e 120.")
+        .max(120, "A quantidade de parcelas deve estar entre 1 e 120.")
         .optional(),
     ),
   })
@@ -53,7 +53,7 @@ export const transactionSchema = z
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["memberId"],
-        message: "Member is required for individual transactions.",
+        message: "O membro é obrigatório para transações individuais.",
       });
     }
   });

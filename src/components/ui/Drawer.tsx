@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useI18n } from "../../app/i18n/I18nContext";
 import Button from "./Button";
 import styles from "./Drawer.module.scss";
 
@@ -15,10 +16,12 @@ export default function Drawer({
   onClose,
   children,
 }: DrawerProps) {
+  const { t } = useI18n();
+
   return (
     <>
       <button
-        aria-label="Close drawer overlay"
+        aria-label={t("common.closeDrawer")}
         className={styles.backdrop}
         onClick={onClose}
         type="button"
@@ -44,7 +47,7 @@ export default function Drawer({
             type="button"
             variant="secondary"
           >
-            Close
+            {t("common.closeDrawer")}
           </Button>
         </header>
         <div className={styles.body}>{children}</div>

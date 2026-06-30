@@ -68,19 +68,19 @@ describe("CategoriesPage", () => {
     );
 
     expect(await screen.findByText("Groceries")).toBeInTheDocument();
-    expect(screen.getByText("1-1 of 1")).toBeInTheDocument();
+    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "New category" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova categoria" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Name"), {
+    fireEvent.change(screen.getByLabelText("Nome"), {
       target: { value: "" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Create category" }));
+    fireEvent.click(screen.getByRole("button", { name: "Criar categoria" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Name is required.")).toBeInTheDocument();
+      expect(screen.getByText("Nome é obrigatório.")).toBeInTheDocument();
     });
   });
 });

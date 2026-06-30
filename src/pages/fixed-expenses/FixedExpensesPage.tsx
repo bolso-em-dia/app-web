@@ -37,6 +37,7 @@ import {
   type ArchiveFixedExpenseFormValues,
   type FixedExpenseFormValues,
 } from "../../lib/validation/fixedExpenseSchema";
+import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./FixedExpensesPage.module.scss";
 
 const DEFAULT_VALUES: FixedExpenseFormValues = {
@@ -70,6 +71,7 @@ function mapFormValuesToPayload(
 
 export default function FixedExpensesPage() {
   const { accessToken } = useAuth();
+  const { t } = useI18n();
   const referenceMonth = getCurrentReferenceMonth();
   const [templates, setTemplates] = useState<FixedExpenseTemplate[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
@@ -137,12 +139,12 @@ export default function FixedExpensesPage() {
             : null,
         );
       } catch {
-        setError("Unable to load fixed expense templates.");
+        setError(t("fixedExpenses.error"));
       } finally {
         setIsLoading(false);
       }
     },
-    [accessToken, referenceMonth],
+    [accessToken, referenceMonth, t],
   );
 
   useEffect(() => {
@@ -215,7 +217,7 @@ export default function FixedExpensesPage() {
         setPage(0);
       }
     } catch {
-      setError("Unable to save the fixed expense template.");
+      setError(t("fixedExpenses.saveError"));
     } finally {
       setIsSaving(false);
     }
@@ -244,7 +246,7 @@ export default function FixedExpensesPage() {
       setSelectedId(archived.id);
       setPage(0);
     } catch {
-      setError("Unable to archive the fixed expense template.");
+      setError(t("fixedExpenses.archiveError"));
     } finally {
       setIsArchiving(false);
     }
@@ -276,36 +278,42 @@ export default function FixedExpensesPage() {
 
   return (
     <AppShell
-      title="Fixed expenses"
-      subtitle="Manage recurring transaction templates."
+      title={t("fixedExpenses.title")}
+      subtitle={t("fixedExpenses.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
-          New template
+          {t("fixedExpenses.new")}
         </Button>
       }
     >
       {isLoading ? (
         <Card className={styles.loadingCard}>
-          <Spinner label="Loading fixed expense templates" />
+          <Spinner label={t("fixedExpenses.loading")} />
         </Card>
       ) : (
         <section className={styles.stack}>
           <Card className={styles.toolbarPanel}>
             <div className={styles.toolbar}>
               <div className={styles.filterGroup}>
-                <Field htmlFor="fixed-expense-search" label="Search">
+                <Field
+                  htmlFor="fixed-expense-search"
+                  label={t("common.search")}
+                >
                   <Input
                     id="fixed-expense-search"
                     onChange={(event) => {
                       setSearch(event.target.value);
                       setPage(0);
                     }}
-                    placeholder="Search templates"
+                    placeholder={t("fixedExpenses.searchPlaceholder")}
                     value={search}
                   />
                 </Field>
 
-                <Field htmlFor="fixed-expense-status-filter" label="Status">
+                <Field
+                  htmlFor="fixed-expense-status-filter"
+                  label={t("common.status")}
+                >
                   <Select
                     id="fixed-expense-status-filter"
                     onChange={(event) => {
@@ -316,9 +324,9 @@ export default function FixedExpensesPage() {
                     }}
                     value={statusFilter}
                   >
-                    <option value="ALL">All</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="ARCHIVED">Archived</option>
+                    <option value="ALL">{t("common.all")}</option>
+                    <option value="ACTIVE">{t("common.active")}</option>
+                    <option value="ARCHIVED">{t("common.archived")}</option>
                   </Select>
                 </Field>
               </div>
@@ -349,7 +357,7 @@ export default function FixedExpensesPage() {
 
                   <div className={styles.templateBadges}>
                     <span className={styles.badge}>
-                      Due day {template.dueDay}
+                      Vence no dia {template.dueDay}
                     </span>
                     <span
                       className={
@@ -359,10 +367,10 @@ export default function FixedExpensesPage() {
                       }
                     >
                       {template.archivedFromMonth
-                        ? `Archived from ${formatReferenceMonth(
+                        ? `Arquivado a partir de ${formatReferenceMonth(
                             template.archivedFromMonth,
                           )}`
-                        : "Active"}
+                        : t("common.active")}
                     </span>
                   </div>
                 </button>
@@ -374,8 +382,12 @@ export default function FixedExpensesPage() {
             <div className={styles.footerBar}>
               <p className={styles.resultSummary}>
                 {totalItems === 0
-                  ? "No fixed expense templates found"
-                  : `${rangeStart}-${rangeEnd} of ${totalItems}`}
+                  ? t("fixedExpenses.empty")
+                  : t("common.range", {
+                      start: rangeStart,
+                      end: rangeEnd,
+                      total: totalItems,
+                    })}
               </p>
 
               <div className={styles.paginationControls}>
@@ -383,7 +395,9 @@ export default function FixedExpensesPage() {
                   className={styles.pageSizeControl}
                   htmlFor="fixed-expense-page-size"
                 >
-                  <span className={styles.pageSizeLabel}>Rows</span>
+                  <span className={styles.pageSizeLabel}>
+                    {t("common.rows")}
+                  </span>
                   <Select
                     className={styles.pageSizeSelect}
                     id="fixed-expense-page-size"
@@ -406,10 +420,13 @@ export default function FixedExpensesPage() {
                     type="button"
                     variant="secondary"
                   >
-                    Previous
+                    {t("common.previous")}
                   </Button>
                   <span className={styles.pageIndicator}>
-                    Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
+                    {t("common.pageOf", {
+                      page: totalPages === 0 ? 0 : page + 1,
+                      total: totalPages,
+                    })}
                   </span>
                   <Button
                     disabled={!hasNextPage}
@@ -417,7 +434,7 @@ export default function FixedExpensesPage() {
                     type="button"
                     variant="secondary"
                   >
-                    Next
+                    {t("common.next")}
                   </Button>
                 </div>
               </div>
@@ -428,11 +445,15 @@ export default function FixedExpensesPage() {
             <Drawer
               description={
                 isCreating
-                  ? "Create a recurring expense template."
-                  : "Update recurring expense name, amount, category, account, and due day."
+                  ? t("fixedExpenses.newDescription")
+                  : t("fixedExpenses.editDescription")
               }
               onClose={handleCloseDrawer}
-              title={isCreating ? "New template" : "Template details"}
+              title={
+                isCreating
+                  ? t("fixedExpenses.newTitle")
+                  : t("fixedExpenses.detailsTitle")
+              }
             >
               <div className={styles.drawerStack}>
                 <form
@@ -443,7 +464,7 @@ export default function FixedExpensesPage() {
                   <Field
                     error={form.formState.errors.name?.message}
                     htmlFor="fixed-expense-name"
-                    label="Name"
+                    label={t("common.name")}
                   >
                     <Input
                       hasError={Boolean(form.formState.errors.name)}
@@ -455,7 +476,7 @@ export default function FixedExpensesPage() {
                   <Field
                     error={form.formState.errors.amount?.message}
                     htmlFor="fixed-expense-amount"
-                    label="Amount"
+                    label={t("fixedExpenses.amount")}
                   >
                     <Input
                       hasError={Boolean(form.formState.errors.amount)}
@@ -470,14 +491,14 @@ export default function FixedExpensesPage() {
                   <Field
                     error={form.formState.errors.categoryId?.message}
                     htmlFor="fixed-expense-category"
-                    label="Category"
+                    label={t("common.category")}
                   >
                     <Select
                       hasError={Boolean(form.formState.errors.categoryId)}
                       id="fixed-expense-category"
                       {...form.register("categoryId")}
                     >
-                      <option value="">Select a category</option>
+                      <option value="">{t("common.selectCategory")}</option>
                       {categoryOptions.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.name}
@@ -489,14 +510,14 @@ export default function FixedExpensesPage() {
                   <Field
                     error={form.formState.errors.accountId?.message}
                     htmlFor="fixed-expense-account"
-                    label="Account"
+                    label={t("common.account")}
                   >
                     <Select
                       hasError={Boolean(form.formState.errors.accountId)}
                       id="fixed-expense-account"
                       {...form.register("accountId")}
                     >
-                      <option value="">Select an account</option>
+                      <option value="">{t("common.selectAccount")}</option>
                       {accountOptions.map((account) => (
                         <option key={account.id} value={account.id}>
                           {account.name}
@@ -508,7 +529,7 @@ export default function FixedExpensesPage() {
                   <Field
                     error={form.formState.errors.dueDay?.message}
                     htmlFor="fixed-expense-due-day"
-                    label="Due day"
+                    label={t("accounts.dueDay")}
                   >
                     <Input
                       hasError={Boolean(form.formState.errors.dueDay)}
@@ -525,7 +546,9 @@ export default function FixedExpensesPage() {
 
                   <div className={styles.formActions}>
                     <Button loading={isSaving} type="submit">
-                      {isCreating ? "Create template" : "Save changes"}
+                      {isCreating
+                        ? t("fixedExpenses.create")
+                        : t("common.saveChanges")}
                     </Button>
                     {isCreating ? (
                       <Button
@@ -533,7 +556,7 @@ export default function FixedExpensesPage() {
                         type="button"
                         variant="secondary"
                       >
-                        Cancel
+                        {t("common.cancel")}
                       </Button>
                     ) : null}
                   </div>
@@ -544,11 +567,11 @@ export default function FixedExpensesPage() {
                     <div className={styles.formHeader}>
                       <div>
                         <h3 className={styles.sectionTitle}>
-                          Archive template
+                          {t("fixedExpenses.archiveAction")}
                         </h3>
                         <p className={styles.formSubtitle}>
-                          Stop generating this recurring expense from a specific
-                          month onward.
+                          Pare de gerar esta despesa recorrente a partir de um
+                          mês específico.
                         </p>
                       </div>
                     </div>
@@ -564,7 +587,7 @@ export default function FixedExpensesPage() {
                             ?.message
                         }
                         htmlFor="fixed-expense-archive-month"
-                        label="Archive month"
+                        label={t("fixedExpenses.archiveMonth")}
                       >
                         <Input
                           hasError={Boolean(
@@ -583,8 +606,8 @@ export default function FixedExpensesPage() {
                         variant="secondary"
                       >
                         {selectedTemplate.archivedFromMonth
-                          ? "Template archived"
-                          : "Archive template"}
+                          ? t("fixedExpenses.archived")
+                          : t("fixedExpenses.archiveAction")}
                       </Button>
                     </form>
                   </Card>

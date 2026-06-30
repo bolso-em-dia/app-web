@@ -4,12 +4,12 @@ export const loginSchema = z.object({
   email: z
     .string()
     .trim()
-    .min(1, "Email is required.")
-    .email("Enter a valid email address."),
+    .min(1, "E-mail é obrigatório.")
+    .email("Informe um e-mail válido."),
   password: z
     .string()
-    .min(1, "Password is required.")
-    .min(8, "Password must have at least 8 characters."),
+    .min(1, "Senha é obrigatória.")
+    .min(8, "A senha deve ter pelo menos 8 caracteres."),
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;

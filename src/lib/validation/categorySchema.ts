@@ -4,15 +4,17 @@ export const categorySchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "Name is required.")
-    .max(120, "Name must have at most 120 characters."),
-  icon: z.string().trim().max(80, "Icon must have at most 80 characters."),
-  color: z.string().trim().max(20, "Color must have at most 20 characters."),
+    .min(1, "Nome é obrigatório.")
+    .max(120, "O nome deve ter no máximo 120 caracteres."),
+  icon: z.string().trim().max(80, "O ícone deve ter no máximo 80 caracteres."),
+  color: z.string().trim().max(20, "A cor deve ter no máximo 20 caracteres."),
 });
 
 export const archiveCategorySchema = z.object({
-  archivedFromMonth: z.string().min(1, "Archive month is required."),
-  replacementCategoryId: z.string().min(1, "Replacement category is required."),
+  archivedFromMonth: z.string().min(1, "O mês de arquivamento é obrigatório."),
+  replacementCategoryId: z
+    .string()
+    .min(1, "A categoria substituta é obrigatória."),
 });
 
 export type CategoryFormValues = z.infer<typeof categorySchema>;

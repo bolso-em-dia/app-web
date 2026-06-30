@@ -92,7 +92,7 @@ describe("HomePage", () => {
     expect(
       screen.getByRole("heading", { name: "Dashboard" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Family")).toBeInTheDocument();
+    expect(screen.getByText("Família")).toBeInTheDocument();
     expect(await screen.findByText("Family Essentials")).toBeInTheDocument();
     expect(await screen.findByText("Market")).toBeInTheDocument();
   });

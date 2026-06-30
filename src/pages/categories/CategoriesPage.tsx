@@ -28,6 +28,7 @@ import {
   type ArchiveCategoryFormValues,
   type CategoryFormValues,
 } from "../../lib/validation/categorySchema";
+import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./CategoriesPage.module.scss";
 
 const DEFAULT_VALUES: CategoryFormValues = {
@@ -39,6 +40,7 @@ const DEFAULT_PAGE_SIZE = 12;
 
 export default function CategoriesPage() {
   const { accessToken } = useAuth();
+  const { t } = useI18n();
   const [categories, setCategories] = useState<Category[]>([]);
   const [options, setOptions] = useState<CategoryOption[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -102,12 +104,12 @@ export default function CategoriesPage() {
             : null,
         );
       } catch {
-        setError("Unable to load categories.");
+        setError(t("categories.error"));
       } finally {
         setIsLoading(false);
       }
     },
-    [accessToken],
+    [accessToken, t],
   );
 
   useEffect(() => {
@@ -194,7 +196,7 @@ export default function CategoriesPage() {
         setPage(0);
       }
     } catch {
-      setError("Unable to save the category.");
+      setError(t("categories.saveError"));
     } finally {
       setIsSaving(false);
     }
@@ -217,7 +219,7 @@ export default function CategoriesPage() {
       setSelectedId(archived.id);
       setPage(0);
     } catch {
-      setError("Unable to archive the category.");
+      setError(t("categories.archiveError"));
     } finally {
       setIsArchiving(false);
     }
@@ -252,17 +254,17 @@ export default function CategoriesPage() {
 
   return (
     <AppShell
-      title="Categories"
-      subtitle="Manage transaction categories and archive replacements."
+      title={t("categories.title")}
+      subtitle={t("categories.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
-          New category
+          {t("categories.new")}
         </Button>
       }
     >
       {isLoading ? (
         <Card className={styles.loadingCard}>
-          <Spinner label="Loading categories" />
+          <Spinner label={t("categories.loading")} />
         </Card>
       ) : (
         <>
@@ -270,19 +272,22 @@ export default function CategoriesPage() {
             <Card className={styles.toolbarPanel}>
               <div className={styles.toolbar}>
                 <div className={styles.filterGroup}>
-                  <Field htmlFor="category-search" label="Search">
+                  <Field htmlFor="category-search" label={t("common.search")}>
                     <Input
                       id="category-search"
                       onChange={(event) => {
                         setSearch(event.target.value);
                         setPage(0);
                       }}
-                      placeholder="Search categories"
+                      placeholder={t("categories.searchPlaceholder")}
                       value={search}
                     />
                   </Field>
 
-                  <Field htmlFor="category-status-filter" label="Status">
+                  <Field
+                    htmlFor="category-status-filter"
+                    label={t("common.status")}
+                  >
                     <Select
                       id="category-status-filter"
                       onChange={(event) => {
@@ -293,9 +298,9 @@ export default function CategoriesPage() {
                       }}
                       value={statusFilter}
                     >
-                      <option value="ALL">All</option>
-                      <option value="ACTIVE">Active</option>
-                      <option value="ARCHIVED">Archived</option>
+                      <option value="ALL">{t("common.all")}</option>
+                      <option value="ACTIVE">{t("common.active")}</option>
+                      <option value="ARCHIVED">{t("common.archived")}</option>
                     </Select>
                   </Field>
                 </div>
@@ -318,8 +323,8 @@ export default function CategoriesPage() {
                       <div>
                         <strong>{category.name}</strong>
                         <p className={styles.categoryMeta}>
-                          {category.icon || "No icon"} ·{" "}
-                          {category.color || "No color"}
+                          {category.icon || t("categories.noIcon")} ·{" "}
+                          {category.color || t("categories.noColor")}
                         </p>
                       </div>
                       <div className={styles.categoryBadges}>
@@ -330,7 +335,9 @@ export default function CategoriesPage() {
                               : `${styles.badge} ${styles.badgeSuccess}`
                           }
                         >
-                          {category.archivedFromMonth ? "Archived" : "Active"}
+                          {category.archivedFromMonth
+                            ? t("common.archived")
+                            : t("common.active")}
                         </span>
                       </div>
                     </div>
@@ -343,8 +350,12 @@ export default function CategoriesPage() {
               <div className={styles.footerBar}>
                 <p className={styles.resultSummary}>
                   {totalItems === 0
-                    ? "No categories found"
-                    : `${rangeStart}-${rangeEnd} of ${totalItems}`}
+                    ? t("categories.empty")
+                    : t("common.range", {
+                        start: rangeStart,
+                        end: rangeEnd,
+                        total: totalItems,
+                      })}
                 </p>
 
                 <div className={styles.paginationControls}>
@@ -352,7 +363,9 @@ export default function CategoriesPage() {
                     className={styles.pageSizeControl}
                     htmlFor="category-page-size"
                   >
-                    <span className={styles.pageSizeLabel}>Rows</span>
+                    <span className={styles.pageSizeLabel}>
+                      {t("common.rows")}
+                    </span>
                     <Select
                       className={styles.pageSizeSelect}
                       id="category-page-size"
@@ -375,10 +388,13 @@ export default function CategoriesPage() {
                       type="button"
                       variant="secondary"
                     >
-                      Previous
+                      {t("common.previous")}
                     </Button>
                     <span className={styles.pageIndicator}>
-                      Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
+                      {t("common.pageOf", {
+                        page: totalPages === 0 ? 0 : page + 1,
+                        total: totalPages,
+                      })}
                     </span>
                     <Button
                       disabled={!hasNextPage}
@@ -386,7 +402,7 @@ export default function CategoriesPage() {
                       type="button"
                       variant="secondary"
                     >
-                      Next
+                      {t("common.next")}
                     </Button>
                   </div>
                 </div>
@@ -398,11 +414,15 @@ export default function CategoriesPage() {
             <Drawer
               description={
                 isCreating
-                  ? "Create a category with display metadata."
-                  : "Update the category fields used across the app."
+                  ? t("categories.newDescription")
+                  : t("categories.editDescription")
               }
               onClose={handleCloseDrawer}
-              title={isCreating ? "New category" : "Category details"}
+              title={
+                isCreating
+                  ? t("categories.newTitle")
+                  : t("categories.detailsTitle")
+              }
             >
               <div className={styles.drawerStack}>
                 <form
@@ -413,7 +433,7 @@ export default function CategoriesPage() {
                   <Field
                     error={form.formState.errors.name?.message}
                     htmlFor="category-name"
-                    label="Name"
+                    label={t("common.name")}
                   >
                     <Input
                       hasError={Boolean(form.formState.errors.name)}
@@ -425,7 +445,7 @@ export default function CategoriesPage() {
                   <Field
                     error={form.formState.errors.icon?.message}
                     htmlFor="category-icon"
-                    label="Icon"
+                    label={t("categories.icon")}
                   >
                     <Input
                       hasError={Boolean(form.formState.errors.icon)}
@@ -437,7 +457,7 @@ export default function CategoriesPage() {
                   <Field
                     error={form.formState.errors.color?.message}
                     htmlFor="category-color"
-                    label="Color"
+                    label={t("categories.color")}
                   >
                     <Input
                       hasError={Boolean(form.formState.errors.color)}
@@ -451,7 +471,9 @@ export default function CategoriesPage() {
 
                   <div className={styles.formActions}>
                     <Button loading={isSaving} type="submit">
-                      {isCreating ? "Create category" : "Save changes"}
+                      {isCreating
+                        ? t("categories.create")
+                        : t("common.saveChanges")}
                     </Button>
                     {isCreating ? (
                       <Button
@@ -459,7 +481,7 @@ export default function CategoriesPage() {
                         type="button"
                         variant="secondary"
                       >
-                        Cancel
+                        {t("common.cancel")}
                       </Button>
                     ) : null}
                   </div>
@@ -470,11 +492,10 @@ export default function CategoriesPage() {
                     <div className={styles.formHeader}>
                       <div>
                         <h3 className={styles.sectionTitle}>
-                          Archive category
+                          {t("categories.archiveTitle")}
                         </h3>
                         <p className={styles.formSubtitle}>
-                          Archived categories require a replacement for future
-                          use.
+                          {t("categories.archiveSubtitle")}
                         </p>
                       </div>
                     </div>
@@ -490,7 +511,7 @@ export default function CategoriesPage() {
                             ?.message
                         }
                         htmlFor="archive-month"
-                        label="Archive month"
+                        label={t("categories.archiveMonth")}
                       >
                         <Input
                           hasError={Boolean(
@@ -508,7 +529,7 @@ export default function CategoriesPage() {
                             ?.message
                         }
                         htmlFor="replacement-category"
-                        label="Replacement category"
+                        label={t("categories.replacementCategory")}
                       >
                         <Select
                           hasError={Boolean(
@@ -517,7 +538,9 @@ export default function CategoriesPage() {
                           id="replacement-category"
                           {...archiveForm.register("replacementCategoryId")}
                         >
-                          <option value="">Select a replacement</option>
+                          <option value="">
+                            {t("categories.selectReplacement")}
+                          </option>
                           {archiveOptions.map((option) => (
                             <option key={option.id} value={option.id}>
                               {option.name}
@@ -527,7 +550,7 @@ export default function CategoriesPage() {
                       </Field>
 
                       <Button loading={isArchiving} type="submit">
-                        Archive category
+                        {t("categories.archiveAction")}
                       </Button>
                     </form>
                   </Card>

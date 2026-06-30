@@ -13,13 +13,16 @@ export const accountSchema = z
     name: z
       .string()
       .trim()
-      .min(1, "Name is required.")
-      .max(120, "Name must have at most 120 characters."),
+      .min(1, "Nome é obrigatório.")
+      .max(120, "O nome deve ter no máximo 120 caracteres."),
     type: z.enum(ACCOUNT_TYPE_VALUES, {
-      errorMap: () => ({ message: "Type is required." }),
+      errorMap: () => ({ message: "O tipo é obrigatório." }),
     }),
-    brand: z.string().trim().max(80, "Brand must have at most 80 characters."),
-    color: z.string().trim().max(20, "Color must have at most 20 characters."),
+    brand: z
+      .string()
+      .trim()
+      .max(80, "A bandeira deve ter no máximo 80 caracteres."),
+    color: z.string().trim().max(20, "A cor deve ter no máximo 20 caracteres."),
     closingDay: z.preprocess(
       (value) => (value === "" ? undefined : value),
       z.coerce.number().int().min(1).max(31).optional(),
@@ -35,7 +38,7 @@ export const accountSchema = z
         context.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["brand"],
-          message: "Brand is required for credit cards.",
+          message: "A bandeira é obrigatória para cartões de crédito.",
         });
       }
 
@@ -43,7 +46,7 @@ export const accountSchema = z
         context.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["closingDay"],
-          message: "Closing day is required for credit cards.",
+          message: "O dia de fechamento é obrigatório para cartões de crédito.",
         });
       }
 
@@ -51,14 +54,14 @@ export const accountSchema = z
         context.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["dueDay"],
-          message: "Due day is required for credit cards.",
+          message: "O dia de vencimento é obrigatório para cartões de crédito.",
         });
       }
     }
   });
 
 export const archiveAccountSchema = z.object({
-  archivedFromMonth: z.string().min(1, "Archive month is required."),
+  archivedFromMonth: z.string().min(1, "O mês de arquivamento é obrigatório."),
 });
 
 export type AccountFormValues = z.infer<typeof accountSchema>;

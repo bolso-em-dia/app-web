@@ -4,26 +4,26 @@ export const fixedExpenseSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "Name is required.")
-    .max(120, "Name must have at most 120 characters."),
+    .min(1, "Nome é obrigatório.")
+    .max(120, "O nome deve ter no máximo 120 caracteres."),
   amount: z.preprocess(
     (value) => (value === "" ? undefined : value),
-    z.coerce.number().positive("Amount must be greater than zero."),
+    z.coerce.number().positive("O valor deve ser maior que zero."),
   ),
-  categoryId: z.string().min(1, "Category is required."),
-  accountId: z.string().min(1, "Account is required."),
+  categoryId: z.string().min(1, "A categoria é obrigatória."),
+  accountId: z.string().min(1, "A conta é obrigatória."),
   dueDay: z.preprocess(
     (value) => (value === "" ? undefined : value),
     z.coerce
       .number()
-      .int("Due day must be a whole number.")
-      .min(1, "Due day must be between 1 and 31.")
-      .max(31, "Due day must be between 1 and 31."),
+      .int("O dia de vencimento deve ser um número inteiro.")
+      .min(1, "O dia de vencimento deve estar entre 1 e 31.")
+      .max(31, "O dia de vencimento deve estar entre 1 e 31."),
   ),
 });
 
 export const archiveFixedExpenseSchema = z.object({
-  archivedFromMonth: z.string().min(1, "Archive month is required."),
+  archivedFromMonth: z.string().min(1, "O mês de arquivamento é obrigatório."),
 });
 
 export type FixedExpenseFormValues = z.infer<typeof fixedExpenseSchema>;

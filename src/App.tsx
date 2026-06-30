@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./app/auth/useAuth";
+import { useI18n } from "./app/i18n/I18nContext";
 import Spinner from "./components/feedback/Spinner";
 import AccountsPage from "./pages/accounts/AccountsPage";
 import CategoriesPage from "./pages/categories/CategoriesPage";
@@ -12,9 +13,10 @@ import TransactionsPage from "./pages/transactions/TransactionsPage";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useI18n();
 
   if (isLoading) {
-    return <Spinner label="Loading session" fullScreen />;
+    return <Spinner label={t("app.loadingSession")} fullScreen />;
   }
 
   return isAuthenticated ? children : <Navigate to="/login" replace />;

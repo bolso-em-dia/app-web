@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
+import { useI18n } from "../../app/i18n/I18nContext";
 import clsx from "./clsx";
 import styles from "./Button.module.scss";
 
@@ -17,6 +18,8 @@ export default function Button({
   disabled,
   ...props
 }: ButtonProps) {
+  const { t } = useI18n();
+
   return (
     <button
       className={clsx(
@@ -28,7 +31,7 @@ export default function Button({
       disabled={disabled || loading}
       {...props}
     >
-      {loading ? "Loading..." : children}
+      {loading ? t("common.loading") : children}
     </button>
   );
 }
