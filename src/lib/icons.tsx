@@ -55,7 +55,7 @@ export type StoredIconId =
 
 export type NavigationIconId =
   | "dashboard"
-  | "envelopes"
+  | "budgets"
   | "fixed-expenses"
   | "transactions"
   | "family"
@@ -88,7 +88,7 @@ export const storedIconMap: Record<StoredIconId, LucideIcon> = {
 
 export const navigationIconMap: Record<NavigationIconId, LucideIcon> = {
   dashboard: LayoutDashboard,
-  envelopes: Wallet,
+  budgets: Wallet,
   "fixed-expenses": ReceiptText,
   transactions: ArrowRightLeft,
   family: Users,

@@ -6,6 +6,7 @@ import AppShell from "../components/layout/AppShell";
 import { useAuth } from "../app/auth/useAuth";
 import Spinner from "../components/feedback/Spinner";
 import Button from "../components/ui/Button";
+import Switch from "../components/ui/Switch";
 import { formatCurrency } from "../lib/formatters/currency";
 import {
   formatDay,
@@ -14,12 +15,22 @@ import {
 } from "../lib/formatters/date";
 import styles from "./HomePage.module.scss";
 
+function getBudgetConsumptionPercent(consumedAmount: number, monthlyLimit: number) {
+  if (monthlyLimit <= 0) {
+    return 0;
+  }
+
+  return Math.min(Math.max((consumedAmount / monthlyLimit) * 100, 0), 100);
+}
+
 export default function HomePage() {
   const { accessToken, user } = useAuth();
   const { t } = useI18n();
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [considerBudgetsInBalance, setConsiderBudgetsInBalance] =
+    useState(true);
 
   const loadDashboard = useCallback(async () => {
     if (!accessToken) {
@@ -47,8 +58,31 @@ export default function HomePage() {
     void loadDashboard();
   }, [loadDashboard]);
 
+  const displayedBalance = considerBudgetsInBalance
+    ? (dashboard?.summary.availableBalance ?? 0)
+    : (dashboard?.summary.balance ?? 0);
+
+  const balanceLabel = considerBudgetsInBalance
+    ? t("home.availableBalance")
+    : t("home.balance");
+
   return (
     <AppShell title={t("home.title")} subtitle={t("home.subtitle")}>
+      <section className={styles.summaryHeader}>
+        <Card className={styles.balanceModeCard}>
+          <Switch
+            checked={considerBudgetsInBalance}
+            label={t("home.considerBudgetsInBalance")}
+            onChange={(event) =>
+              setConsiderBudgetsInBalance(event.currentTarget.checked)
+            }
+          />
+          <span className={styles.balanceModeMeta}>
+            {t("home.reservedBudgetAmount")}: {formatCurrency(dashboard?.summary.reservedBudgetAmount ?? 0)}
+          </span>
+        </Card>
+      </section>
+
       <section className={styles.summaryGrid}>
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>
@@ -73,9 +107,9 @@ export default function HomePage() {
           </strong>
         </Card>
         <Card className={styles.summaryCard}>
-          <span className={styles.summaryLabel}>{t("home.balance")}</span>
+          <span className={styles.summaryLabel}>{balanceLabel}</span>
           <strong className={styles.summaryValue}>
-            {formatCurrency(dashboard?.summary.balance ?? 0)}
+            {formatCurrency(displayedBalance)}
           </strong>
         </Card>
       </section>
@@ -121,32 +155,51 @@ export default function HomePage() {
           </Card>
 
           <Card className={styles.panel}>
-            <h2 className={styles.panelTitle}>{t("home.envelopes")}</h2>
+            <h2 className={styles.panelTitle}>{t("home.budgets")}</h2>
             <ul className={styles.itemList}>
-              {dashboard.envelopes.map((envelope) => (
-                <li key={envelope.id} className={styles.itemRow}>
-                  <div>
-                    <strong>{envelope.name}</strong>
-                    <p className={styles.itemMeta}>
-                      {envelope.type === "ALLOWANCE" && envelope.ownerMemberName
-                        ? t("home.allowanceFor", {
-                            name: envelope.ownerMemberName,
-                          })
-                        : t("home.linkedCategories", {
-                            count: envelope.categories.length,
-                          })}
-                    </p>
-                  </div>
-                  <div className={styles.itemAmountBlock}>
-                    <strong>{formatCurrency(envelope.remainingAmount)}</strong>
-                    <span className={styles.itemMeta}>
-                      {t("home.usedAmount", {
-                        amount: formatCurrency(envelope.consumedAmount),
-                      })}
-                    </span>
-                  </div>
-                </li>
-              ))}
+              {dashboard.budgets.map((budget) => {
+                const consumptionPercent = getBudgetConsumptionPercent(
+                  budget.consumedAmount,
+                  budget.monthlyLimit,
+                );
+
+                return (
+                  <li key={budget.id} className={styles.itemRow}>
+                    <div className={styles.itemContent}>
+                      <div>
+                        <strong>{budget.name}</strong>
+                        <p className={styles.itemMeta}>
+                          {budget.type === "ALLOWANCE" && budget.ownerMemberName
+                            ? t("home.allowanceFor", {
+                                name: budget.ownerMemberName,
+                              })
+                            : t("home.linkedCategories", {
+                                count: budget.categories.length,
+                              })}
+                        </p>
+                      </div>
+                      <div
+                        aria-hidden="true"
+                        className={styles.progressTrack}
+                      >
+                        <span
+                          className={styles.progressFill}
+                          style={{ width: `${consumptionPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.itemAmountBlock}>
+                      <strong>{formatCurrency(budget.remainingAmount)}</strong>
+                      <span className={styles.itemMeta}>
+                        {t("home.usedOfLimit", {
+                          used: formatCurrency(budget.consumedAmount),
+                          limit: formatCurrency(budget.monthlyLimit),
+                        })}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </Card>
 
@@ -160,7 +213,7 @@ export default function HomePage() {
                   <div>
                     <strong>{transaction.description}</strong>
                     <p className={styles.itemMeta}>
-                      {transaction.categoryName} · {transaction.accountName} ·{" "}
+                      {transaction.categoryName} · {transaction.accountName} ·{' '}
                       {formatDay(transaction.transactionDate)}
                     </p>
                   </div>

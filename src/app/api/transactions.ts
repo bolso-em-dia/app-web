@@ -95,6 +95,25 @@ export function listTransactions(
   );
 }
 
+export function listTransactionDescriptionSuggestions(
+  query: string,
+  accessToken: string,
+  limit = 8,
+) {
+  const searchParams = new URLSearchParams({
+    query,
+    limit: String(limit),
+  });
+
+  return apiRequest<string[]>(
+    `/api/transactions/descriptions?${searchParams.toString()}`,
+    {
+      method: "GET",
+      accessToken,
+    },
+  );
+}
+
 export function createTransaction(
   payload: TransactionPayload,
   accessToken: string,

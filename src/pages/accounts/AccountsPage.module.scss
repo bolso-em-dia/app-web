@@ -37,16 +37,25 @@
   padding: var(--space-4);
 }
 
+.accountCard {
+  padding: 0;
+}
+
 .accountButton {
   display: grid;
   gap: var(--space-4);
   width: 100%;
   border: 0;
   border-inline-start: 0.25rem solid transparent;
+  border-radius: inherit;
   background: transparent;
-  padding: 0 0 0 var(--space-1);
+  padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) - var(--space-1));
   text-align: left;
   cursor: pointer;
+}
+
+.accountButton:hover {
+  background: var(--color-panel-muted);
 }
 
 .accountHeader {

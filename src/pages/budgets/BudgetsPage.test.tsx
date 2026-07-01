@@ -8,9 +8,9 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import EnvelopesPage from "./EnvelopesPage";
+import BudgetsPage from "./BudgetsPage";
 
-describe("EnvelopesPage", () => {
+describe("BudgetsPage", () => {
   beforeEach(() => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
@@ -133,9 +133,9 @@ describe("EnvelopesPage", () => {
     vi.clearAllMocks();
   });
 
-  it("loads envelopes and validates envelope-specific fields", async () => {
+  it("loads budgets and validates budget-specific fields", async () => {
     render(
-      <MemoryRouter initialEntries={["/envelopes"]}>
+      <MemoryRouter initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -145,7 +145,7 @@ describe("EnvelopesPage", () => {
             allowanceEnabled: false,
           }}
         >
-          <EnvelopesPage />
+          <BudgetsPage />
         </TestAuthProvider>
       </MemoryRouter>,
     );
@@ -153,11 +153,11 @@ describe("EnvelopesPage", () => {
     expect(await screen.findByText("Household")).toBeInTheDocument();
     expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Novo envelope" }));
+    fireEvent.click(screen.getByRole("button", { name: "Novo orçamento" }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.change(within(drawer).getByLabelText("Nome"), {
-      target: { value: "Allowance envelope" },
+      target: { value: "Allowance budget" },
     });
     fireEvent.change(within(drawer).getByLabelText("Limite mensal"), {
       target: { value: "450" },
@@ -167,13 +167,13 @@ describe("EnvelopesPage", () => {
     });
 
     fireEvent.click(
-      within(drawer).getByRole("button", { name: "Criar envelope" }),
+      within(drawer).getByRole("button", { name: "Criar orçamento" }),
     );
 
     await waitFor(() => {
       expect(
         screen.getByText(
-          "O membro dono é obrigatório para envelopes de mesada.",
+          "O membro dono é obrigatório para budgets de mesada.",
         ),
       ).toBeInTheDocument();
     });

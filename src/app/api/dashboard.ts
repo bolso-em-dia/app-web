@@ -4,6 +4,8 @@ export type DashboardSummary = {
   totalIncome: number;
   totalExpense: number;
   balance: number;
+  availableBalance: number;
+  reservedBudgetAmount: number;
 };
 
 export type DashboardTransaction = {
@@ -28,7 +30,7 @@ export type DashboardTransaction = {
   updatedAt: string;
 };
 
-export type DashboardEnvelope = {
+export type DashboardBudget = {
   id: string;
   name: string;
   type: string;
@@ -57,7 +59,7 @@ export type DashboardCategoryBreakdown = {
 export type DashboardResponse = {
   referenceMonth: string;
   summary: DashboardSummary;
-  envelopes: DashboardEnvelope[];
+  budgets: DashboardBudget[];
   recentTransactions: DashboardTransaction[];
   categoryBreakdown: DashboardCategoryBreakdown[];
 };

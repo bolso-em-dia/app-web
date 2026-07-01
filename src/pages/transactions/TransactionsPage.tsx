@@ -11,6 +11,7 @@ import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
 import {
   createTransaction,
   deleteTransaction,
+  listTransactionDescriptionSuggestions,
   listTransactions,
   updateTransaction,
   type DeleteScope,
@@ -119,6 +120,7 @@ export default function TransactionsPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [members, setMembers] = useState<FamilyMember[]>([]);
+  const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -148,6 +150,7 @@ export default function TransactionsPage() {
 
   const transactionType = form.watch("type");
   const ownershipType = form.watch("ownershipType");
+  const descriptionValue = form.watch("description");
   const transactionDate = form.watch("transactionDate");
   const isInstallment = form.watch("isInstallment");
   const currentReferenceMonth = useMemo(
@@ -261,6 +264,44 @@ export default function TransactionsPage() {
 
     void updateCategories();
   }, [accessToken, currentReferenceMonth, filters.referenceMonth, t]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      return;
+    }
+
+    const normalizedQuery = descriptionValue.trim();
+    if (normalizedQuery.length < 2) {
+      setDescriptionSuggestions([]);
+      return;
+    }
+
+    let isActive = true;
+
+    const loadSuggestions = async () => {
+      try {
+        const suggestions = await listTransactionDescriptionSuggestions(
+          normalizedQuery,
+          accessToken,
+        );
+        if (!isActive) {
+          return;
+        }
+        setDescriptionSuggestions(suggestions);
+      } catch {
+        if (!isActive) {
+          return;
+        }
+        setDescriptionSuggestions([]);
+      }
+    };
+
+    void loadSuggestions();
+
+    return () => {
+      isActive = false;
+    };
+  }, [accessToken, descriptionValue]);
 
   function resetForNextCreate(values: TransactionFormValues) {
     form.reset({
@@ -669,15 +710,29 @@ export default function TransactionsPage() {
                     htmlFor="transaction-description"
                     label={t("transactions.description")}
                   >
-                    <Input
-                      id="transaction-description"
-                      hasError={Boolean(form.formState.errors.description)}
-                      {...form.register("description")}
-                      ref={(element) => {
-                        form.register("description").ref(element);
-                        descriptionInputRef.current = element;
-                      }}
-                    />
+                    <>
+                      <Input
+                        id="transaction-description"
+                        autoComplete="off"
+                        hasError={Boolean(form.formState.errors.description)}
+                        list="transaction-description-suggestions"
+                        {...form.register("description")}
+                        ref={(element) => {
+                          form.register("description").ref(element);
+                          descriptionInputRef.current = element;
+                        }}
+                      />
+                      <datalist
+                        data-testid="transaction-description-suggestions"
+                        id="transaction-description-suggestions"
+                      >
+                        {descriptionSuggestions.map((suggestion) => (
+                          <option key={suggestion} value={suggestion}>
+                            {suggestion}
+                          </option>
+                        ))}
+                      </datalist>
+                    </>
                   </Field>
 
                   <Field
@@ -716,21 +771,48 @@ export default function TransactionsPage() {
 
                   <Field
                     error={form.formState.errors.type?.message}
-                    htmlFor="transaction-type"
+                    htmlFor="transaction-type-expense"
                     label={t("common.type")}
                   >
-                    <Select
-                      id="transaction-type"
-                      hasError={Boolean(form.formState.errors.type)}
-                      {...form.register("type")}
-                    >
-                      <option value="EXPENSE">
-                        {t("transactionTypes.EXPENSE")}
-                      </option>
-                      <option value="INCOME">
-                        {t("transactionTypes.INCOME")}
-                      </option>
-                    </Select>
+                    <Controller
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <div
+                          aria-label={t("common.type")}
+                          className={styles.segmentedControl}
+                          role="radiogroup"
+                        >
+                          {(["EXPENSE", "INCOME"] as const).map((typeOption) => {
+                            const toneClass =
+                              typeOption === "INCOME"
+                                ? styles.segmentButtonIncome
+                                : styles.segmentButtonExpense;
+                            const activeClass =
+                              field.value === typeOption
+                                ? typeOption === "INCOME"
+                                  ? styles.segmentButtonIncomeActive
+                                  : styles.segmentButtonExpenseActive
+                                : "";
+
+                            return (
+                              <button
+                                aria-checked={field.value === typeOption}
+                                className={`${styles.segmentButton} ${toneClass} ${activeClass}`.trim()}
+                                id={`transaction-type-${typeOption.toLowerCase()}`}
+                                key={typeOption}
+                                onBlur={field.onBlur}
+                                onClick={() => field.onChange(typeOption)}
+                                role="radio"
+                                type="button"
+                              >
+                                {t(`transactionTypes.${typeOption}` as const)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    />
                   </Field>
 
                   <div className={styles.switchGrid}>

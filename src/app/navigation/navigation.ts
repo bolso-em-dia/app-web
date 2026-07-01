@@ -3,7 +3,7 @@ import type { NavigationIconId } from "../../lib/icons";
 export type NavigationItem = {
   labelKey:
     | "navigation.dashboard"
-    | "navigation.envelopes"
+    | "navigation.budgets"
     | "navigation.fixedExpenses"
     | "navigation.transactions"
     | "navigation.family"
@@ -20,9 +20,9 @@ export const operationalNavigation: NavigationItem[] = [
     iconId: "dashboard",
   },
   {
-    labelKey: "navigation.envelopes",
-    path: "/envelopes",
-    iconId: "envelopes",
+    labelKey: "navigation.budgets",
+    path: "/budgets",
+    iconId: "budgets",
   },
   {
     labelKey: "navigation.fixedExpenses",

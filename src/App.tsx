@@ -4,7 +4,7 @@ import { useI18n } from "./app/i18n/I18nContext";
 import Spinner from "./components/feedback/Spinner";
 import AccountsPage from "./pages/accounts/AccountsPage";
 import CategoriesPage from "./pages/categories/CategoriesPage";
-import EnvelopesPage from "./pages/envelopes/EnvelopesPage";
+import BudgetsPage from "./pages/budgets/BudgetsPage";
 import FamilyPage from "./pages/family/FamilyPage";
 import FixedExpensesPage from "./pages/fixed-expenses/FixedExpensesPage";
 import HomePage from "./pages/HomePage";
@@ -60,10 +60,10 @@ export default function App() {
         }
       />
       <Route
-        path="/envelopes"
+        path="/budgets"
         element={
           <ProtectedRoute>
-            <EnvelopesPage />
+            <BudgetsPage />
           </ProtectedRoute>
         }
       />

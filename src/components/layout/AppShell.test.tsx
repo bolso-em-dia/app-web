@@ -28,7 +28,7 @@ describe("AppShell", () => {
     });
 
     expect(within(navigation).getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: "Envelopes" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Orçamentos" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Gastos fixos" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Transações" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Família" })).toBeInTheDocument();

@@ -2,15 +2,15 @@ import { apiRequest, type PageResponse } from "./client";
 import type { CategoryOption } from "./categories";
 import type { TransactionType } from "./transactions";
 
-export type EnvelopeType = "GLOBAL" | "ALLOWANCE";
+export type BudgetType = "GLOBAL" | "ALLOWANCE";
 
-export type EnvelopeCategory = {
+export type BudgetCategory = {
   id: string;
   name: string;
   color: string | null;
 };
 
-export type EnvelopeTransaction = {
+export type BudgetTransaction = {
   id: string;
   type: TransactionType;
   ownershipType: string;
@@ -32,10 +32,10 @@ export type EnvelopeTransaction = {
   updatedAt: string;
 };
 
-export type Envelope = {
+export type Budget = {
   id: string;
   name: string;
-  type: EnvelopeType;
+  type: BudgetType;
   ownerMemberId: string | null;
   ownerMemberName: string | null;
   monthlyLimit: number;
@@ -44,34 +44,34 @@ export type Envelope = {
   createdInMonth: string;
   archivedFromMonth: string | null;
   active: boolean;
-  categories: EnvelopeCategory[];
-  transactions: EnvelopeTransaction[];
+  categories: BudgetCategory[];
+  transactions: BudgetTransaction[];
 };
 
-export type EnvelopeCategoryBreakdown = {
+export type BudgetCategoryBreakdown = {
   categoryId: string;
   categoryName: string;
   amount: number;
 };
 
-export type EnvelopePayload = {
+export type BudgetPayload = {
   name: string;
-  type: EnvelopeType;
+  type: BudgetType;
   ownerMemberId?: string;
   categoryIds?: string[];
   monthlyLimit: number;
 };
 
-export type EnvelopeListParams = {
+export type BudgetListParams = {
   referenceMonth: string;
   page: number;
   size: number;
   search?: string;
   status?: "ALL" | "ACTIVE" | "ARCHIVED";
-  type?: EnvelopeType;
+  type?: BudgetType;
 };
 
-export function listEnvelopes(
+export function listBudgets(
   {
     referenceMonth,
     page,
@@ -79,7 +79,7 @@ export function listEnvelopes(
     search,
     status = "ACTIVE",
     type,
-  }: EnvelopeListParams,
+  }: BudgetListParams,
   accessToken: string,
 ) {
   const query = new URLSearchParams({
@@ -97,8 +97,8 @@ export function listEnvelopes(
     query.set("type", type);
   }
 
-  return apiRequest<PageResponse<Envelope>>(
-    `/api/envelopes?${query.toString()}`,
+  return apiRequest<PageResponse<Budget>>(
+    `/api/budgets?${query.toString()}`,
     {
       method: "GET",
       accessToken,
@@ -106,13 +106,13 @@ export function listEnvelopes(
   );
 }
 
-export function getEnvelope(
+export function getBudget(
   id: string,
   referenceMonth: string,
   accessToken: string,
 ) {
-  return apiRequest<Envelope>(
-    `/api/envelopes/${id}?referenceMonth=${referenceMonth}`,
+  return apiRequest<Budget>(
+    `/api/budgets/${id}?referenceMonth=${referenceMonth}`,
     {
       method: "GET",
       accessToken,
@@ -120,33 +120,33 @@ export function getEnvelope(
   );
 }
 
-export function createEnvelope(payload: EnvelopePayload, accessToken: string) {
-  return apiRequest<Envelope>("/api/envelopes", {
+export function createBudget(payload: BudgetPayload, accessToken: string) {
+  return apiRequest<Budget>("/api/budgets", {
     method: "POST",
     accessToken,
     body: JSON.stringify(payload),
   });
 }
 
-export function updateEnvelope(
+export function updateBudget(
   id: string,
-  payload: EnvelopePayload,
+  payload: BudgetPayload,
   accessToken: string,
 ) {
-  return apiRequest<Envelope>(`/api/envelopes/${id}`, {
+  return apiRequest<Budget>(`/api/budgets/${id}`, {
     method: "PUT",
     accessToken,
     body: JSON.stringify(payload),
   });
 }
 
-export function archiveEnvelope(
+export function archiveBudget(
   id: string,
   referenceMonth: string,
   accessToken: string,
 ) {
-  return apiRequest<Envelope>(
-    `/api/envelopes/${id}/archive?referenceMonth=${referenceMonth}`,
+  return apiRequest<Budget>(
+    `/api/budgets/${id}/archive?referenceMonth=${referenceMonth}`,
     {
       method: "PATCH",
       accessToken,
@@ -155,13 +155,13 @@ export function archiveEnvelope(
   );
 }
 
-export function listEnvelopeCategoryBreakdown(
+export function listBudgetCategoryBreakdown(
   id: string,
   referenceMonth: string,
   accessToken: string,
 ) {
-  return apiRequest<EnvelopeCategoryBreakdown[]>(
-    `/api/envelopes/${id}/category-breakdown?referenceMonth=${referenceMonth}`,
+  return apiRequest<BudgetCategoryBreakdown[]>(
+    `/api/budgets/${id}/category-breakdown?referenceMonth=${referenceMonth}`,
     {
       method: "GET",
       accessToken,
@@ -169,4 +169,4 @@ export function listEnvelopeCategoryBreakdown(
   );
 }
 
-export type EnvelopeCategoryOption = CategoryOption;
+export type BudgetCategoryOption = CategoryOption;

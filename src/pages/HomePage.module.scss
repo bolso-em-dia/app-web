@@ -1,3 +1,21 @@
+.summaryHeader {
+  margin-bottom: var(--space-4);
+}
+
+.balanceModeCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+.balanceModeMeta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+  text-align: right;
+}
+
 .summaryGrid {
   display: grid;
   gap: var(--space-4);
@@ -84,10 +102,33 @@
   border-bottom: 0;
 }
 
+.itemContent {
+  display: grid;
+  gap: var(--space-3);
+  flex: 1 1 auto;
+}
+
 .itemAmountBlock {
   display: grid;
   justify-items: end;
   gap: var(--space-1);
+  min-width: 8rem;
+}
+
+.progressTrack {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+}
+
+.progressFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
 }
 
 .itemMeta,
@@ -100,4 +141,21 @@
 .list {
   list-style: disc;
   padding-left: 1.25rem;
+}
+
+@media (width <= 720px) {
+  .balanceModeCard,
+  .itemRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .itemAmountBlock {
+    justify-items: start;
+    min-width: 0;
+  }
+
+  .balanceModeMeta {
+    text-align: left;
+  }
 }

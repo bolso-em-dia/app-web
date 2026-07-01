@@ -7,18 +7,18 @@ import {
 } from "../../app/api/categories";
 import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
 import {
-  archiveEnvelope,
-  createEnvelope,
-  getEnvelope,
-  listEnvelopeCategoryBreakdown,
-  listEnvelopes,
-  updateEnvelope,
-  type Envelope,
-  type EnvelopeCategoryBreakdown,
-  type EnvelopeListParams,
-  type EnvelopePayload,
-  type EnvelopeType,
-} from "../../app/api/envelopes";
+  archiveBudget,
+  createBudget,
+  getBudget,
+  listBudgetCategoryBreakdown,
+  listBudgets,
+  updateBudget,
+  type Budget,
+  type BudgetCategoryBreakdown,
+  type BudgetListParams,
+  type BudgetPayload,
+  type BudgetType,
+} from "../../app/api/budgets";
 import { useAuth } from "../../app/auth/useAuth";
 import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
@@ -37,11 +37,11 @@ import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
-import { envelopeSchema, type EnvelopeFormValues } from "../../lib/validation/envelopeSchema";
+import { budgetSchema, type BudgetFormValues } from "../../lib/validation/budgetSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
-import styles from "./EnvelopesPage.module.scss";
+import styles from "./BudgetsPage.module.scss";
 
-const DEFAULT_VALUES: EnvelopeFormValues = {
+const DEFAULT_VALUES: BudgetFormValues = {
   name: "",
   type: "GLOBAL",
   ownerMemberId: "",
@@ -58,7 +58,7 @@ function fromMonthInputValue(value: string) {
   return `${value}-01`;
 }
 
-function mapFormValuesToPayload(values: EnvelopeFormValues): EnvelopePayload {
+function mapFormValuesToPayload(values: BudgetFormValues): BudgetPayload {
   return {
     name: values.name,
     type: values.type,
@@ -71,26 +71,26 @@ function mapFormValuesToPayload(values: EnvelopeFormValues): EnvelopePayload {
   };
 }
 
-export default function EnvelopesPage() {
+export default function BudgetsPage() {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const initialReferenceMonth = useMemo(() => getCurrentReferenceMonth(), []);
   const [referenceMonth, setReferenceMonth] = useState(initialReferenceMonth);
-  const [envelopes, setEnvelopes] = useState<Envelope[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedEnvelope, setSelectedEnvelope] = useState<Envelope | null>(
+  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(
     null,
   );
   const [categoryBreakdown, setCategoryBreakdown] = useState<
-    EnvelopeCategoryBreakdown[]
+    BudgetCategoryBreakdown[]
   >([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "ACTIVE" | "ARCHIVED"
   >("ACTIVE");
-  const [typeFilter, setTypeFilter] = useState<"" | EnvelopeType>("");
+  const [typeFilter, setTypeFilter] = useState<"" | BudgetType>("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
@@ -103,17 +103,17 @@ export default function EnvelopesPage() {
   const [isArchiving, setIsArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const selectedEnvelopeSummary = useMemo(
-    () => envelopes.find((envelope) => envelope.id === selectedId) ?? null,
-    [envelopes, selectedId],
+  const selectedBudgetSummary = useMemo(
+    () => budgets.find((budget) => budget.id === selectedId) ?? null,
+    [budgets, selectedId],
   );
 
-  const form = useForm<EnvelopeFormValues>({
-    resolver: zodResolver(envelopeSchema),
+  const form = useForm<BudgetFormValues>({
+    resolver: zodResolver(budgetSchema),
     defaultValues: DEFAULT_VALUES,
   });
 
-  const envelopeType = form.watch("type");
+  const budgetType = form.watch("type");
   const selectedCategoryIds = form.watch("categoryIds");
 
   const availableAllowanceMembers = useMemo(
@@ -121,8 +121,8 @@ export default function EnvelopesPage() {
     [members],
   );
 
-  const loadEnvelopesData = useCallback(
-    async (params: EnvelopeListParams) => {
+  const loadBudgetsData = useCallback(
+    async (params: BudgetListParams) => {
       if (!accessToken) {
         return;
       }
@@ -131,28 +131,28 @@ export default function EnvelopesPage() {
       setError(null);
 
       try {
-        const [envelopesResponse, categoryOptionsResponse, membersResponse] =
+        const [budgetsResponse, categoryOptionsResponse, membersResponse] =
           await Promise.all([
-            listEnvelopes(params, accessToken),
+            listBudgets(params, accessToken),
             listCategoryOptions(params.referenceMonth, accessToken),
             listFamilyMembers(accessToken),
           ]);
 
-        setEnvelopes(envelopesResponse.items);
-        setPage(envelopesResponse.page);
-        setPageSize(envelopesResponse.size);
-        setTotalItems(envelopesResponse.totalItems);
-        setTotalPages(envelopesResponse.totalPages);
+        setBudgets(budgetsResponse.items);
+        setPage(budgetsResponse.page);
+        setPageSize(budgetsResponse.size);
+        setTotalItems(budgetsResponse.totalItems);
+        setTotalPages(budgetsResponse.totalPages);
         setCategoryOptions(categoryOptionsResponse);
         setMembers(membersResponse);
         setSelectedId((current) =>
           current &&
-          envelopesResponse.items.some((envelope) => envelope.id === current)
+          budgetsResponse.items.some((budget) => budget.id === current)
             ? current
             : null,
         );
       } catch {
-        setError(t("envelopes.error"));
+        setError(t("budgets.error"));
       } finally {
         setIsLoading(false);
         setHasLoadedOnce(true);
@@ -161,9 +161,9 @@ export default function EnvelopesPage() {
     [accessToken, t],
   );
 
-  const loadEnvelopeDetails = useCallback(async () => {
+  const loadBudgetDetails = useCallback(async () => {
     if (!accessToken || !selectedId || isCreating) {
-      setSelectedEnvelope(null);
+      setSelectedBudget(null);
       setCategoryBreakdown([]);
       return;
     }
@@ -171,15 +171,15 @@ export default function EnvelopesPage() {
     setIsDetailLoading(true);
 
     try {
-      const [envelopeResponse, categoryBreakdownResponse] = await Promise.all([
-        getEnvelope(selectedId, referenceMonth, accessToken),
-        listEnvelopeCategoryBreakdown(selectedId, referenceMonth, accessToken),
+      const [budgetResponse, categoryBreakdownResponse] = await Promise.all([
+        getBudget(selectedId, referenceMonth, accessToken),
+        listBudgetCategoryBreakdown(selectedId, referenceMonth, accessToken),
       ]);
-      setSelectedEnvelope(envelopeResponse);
+      setSelectedBudget(budgetResponse);
       setCategoryBreakdown(categoryBreakdownResponse);
     } catch {
-      setError(t("envelopes.detailsError"));
-      setSelectedEnvelope(null);
+      setError(t("budgets.detailsError"));
+      setSelectedBudget(null);
       setCategoryBreakdown([]);
     } finally {
       setIsDetailLoading(false);
@@ -187,7 +187,7 @@ export default function EnvelopesPage() {
   }, [accessToken, isCreating, referenceMonth, selectedId, t]);
 
   useEffect(() => {
-    void loadEnvelopesData({
+    void loadBudgetsData({
       referenceMonth,
       page,
       size: pageSize,
@@ -196,7 +196,7 @@ export default function EnvelopesPage() {
       type: typeFilter || undefined,
     });
   }, [
-    loadEnvelopesData,
+    loadBudgetsData,
     page,
     pageSize,
     referenceMonth,
@@ -206,8 +206,8 @@ export default function EnvelopesPage() {
   ]);
 
   useEffect(() => {
-    void loadEnvelopeDetails();
-  }, [loadEnvelopeDetails]);
+    void loadBudgetDetails();
+  }, [loadBudgetDetails]);
 
   useEffect(() => {
     if (isCreating) {
@@ -215,26 +215,26 @@ export default function EnvelopesPage() {
       return;
     }
 
-    if (selectedEnvelope) {
+    if (selectedBudget) {
       form.reset({
-        name: selectedEnvelope.name,
-        type: selectedEnvelope.type,
-        ownerMemberId: selectedEnvelope.ownerMemberId ?? "",
-        categoryIds: selectedEnvelope.categories.map((category) => category.id),
-        monthlyLimit: selectedEnvelope.monthlyLimit,
+        name: selectedBudget.name,
+        type: selectedBudget.type,
+        ownerMemberId: selectedBudget.ownerMemberId ?? "",
+        categoryIds: selectedBudget.categories.map((category) => category.id),
+        monthlyLimit: selectedBudget.monthlyLimit,
       });
-    } else if (selectedEnvelopeSummary) {
+    } else if (selectedBudgetSummary) {
       form.reset({
-        name: selectedEnvelopeSummary.name,
-        type: selectedEnvelopeSummary.type,
-        ownerMemberId: selectedEnvelopeSummary.ownerMemberId ?? "",
-        categoryIds: selectedEnvelopeSummary.categories.map(
+        name: selectedBudgetSummary.name,
+        type: selectedBudgetSummary.type,
+        ownerMemberId: selectedBudgetSummary.ownerMemberId ?? "",
+        categoryIds: selectedBudgetSummary.categories.map(
           (category) => category.id,
         ),
-        monthlyLimit: selectedEnvelopeSummary.monthlyLimit,
+        monthlyLimit: selectedBudgetSummary.monthlyLimit,
       });
     }
-  }, [form, isCreating, selectedEnvelope, selectedEnvelopeSummary]);
+  }, [form, isCreating, selectedBudget, selectedBudgetSummary]);
 
   function handleToggleCategory(categoryId: string, checked: boolean) {
     const nextValues = checked
@@ -248,7 +248,7 @@ export default function EnvelopesPage() {
     });
   }
 
-  async function onSubmit(values: EnvelopeFormValues) {
+  async function onSubmit(values: BudgetFormValues) {
     if (!accessToken) {
       return;
     }
@@ -258,13 +258,13 @@ export default function EnvelopesPage() {
 
     try {
       if (isCreating) {
-        const created = await createEnvelope(
+        const created = await createBudget(
           mapFormValuesToPayload(values),
           accessToken,
         );
         setSelectedId(created.id);
         setIsCreating(false);
-        await loadEnvelopesData({
+        await loadBudgetsData({
           referenceMonth,
           page,
           size: pageSize,
@@ -272,14 +272,14 @@ export default function EnvelopesPage() {
           status: statusFilter,
           type: typeFilter || undefined,
         });
-      } else if (selectedEnvelopeSummary) {
-        const updated = await updateEnvelope(
-          selectedEnvelopeSummary.id,
+      } else if (selectedBudgetSummary) {
+        const updated = await updateBudget(
+          selectedBudgetSummary.id,
           mapFormValuesToPayload(values),
           accessToken,
         );
         setSelectedId(updated.id);
-        await loadEnvelopesData({
+        await loadBudgetsData({
           referenceMonth,
           page,
           size: pageSize,
@@ -289,7 +289,7 @@ export default function EnvelopesPage() {
         });
       }
     } catch {
-      setError(t("envelopes.saveError"));
+      setError(t("budgets.saveError"));
     } finally {
       setIsSaving(false);
     }
@@ -298,8 +298,8 @@ export default function EnvelopesPage() {
   async function onArchive() {
     if (
       !accessToken ||
-      !selectedEnvelopeSummary ||
-      selectedEnvelopeSummary.archivedFromMonth
+      !selectedBudgetSummary ||
+      selectedBudgetSummary.archivedFromMonth
     ) {
       return;
     }
@@ -308,13 +308,13 @@ export default function EnvelopesPage() {
     setError(null);
 
     try {
-      const archived = await archiveEnvelope(
-        selectedEnvelopeSummary.id,
+      const archived = await archiveBudget(
+        selectedBudgetSummary.id,
         referenceMonth,
         accessToken,
       );
       setSelectedId(archived.id);
-      await loadEnvelopesData({
+      await loadBudgetsData({
         referenceMonth,
         page,
         size: pageSize,
@@ -323,7 +323,7 @@ export default function EnvelopesPage() {
         type: typeFilter || undefined,
       });
     } catch {
-      setError(t("envelopes.archiveError"));
+      setError(t("budgets.archiveError"));
     } finally {
       setIsArchiving(false);
     }
@@ -332,7 +332,7 @@ export default function EnvelopesPage() {
   function handleStartCreate() {
     setIsCreating(true);
     setSelectedId(null);
-    setSelectedEnvelope(null);
+    setSelectedBudget(null);
     setCategoryBreakdown([]);
     setError(null);
   }
@@ -346,7 +346,7 @@ export default function EnvelopesPage() {
   function handleCloseDrawer() {
     setIsCreating(false);
     setSelectedId(null);
-    setSelectedEnvelope(null);
+    setSelectedBudget(null);
     setCategoryBreakdown([]);
     setError(null);
   }
@@ -360,17 +360,17 @@ export default function EnvelopesPage() {
 
   return (
     <AppShell
-      title={t("envelopes.title")}
-      subtitle={t("envelopes.subtitle")}
+      title={t("budgets.title")}
+      subtitle={t("budgets.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
-          {t("envelopes.new")}
+          {t("budgets.new")}
         </Button>
       }
     >
       {showInitialLoading ? (
         <Card className={styles.loadingCard}>
-          <Spinner label={t("envelopes.loading")} />
+          <Spinner label={t("budgets.loading")} />
         </Card>
       ) : (
         <section className={styles.stack}>
@@ -378,11 +378,11 @@ export default function EnvelopesPage() {
             <div className={styles.toolbar}>
               <div className={styles.filterGroup}>
                 <Field
-                  htmlFor="envelope-reference-month"
+                  htmlFor="budget-reference-month"
                   label={t("common.month")}
                 >
                   <Input
-                    id="envelope-reference-month"
+                    id="budget-reference-month"
                     onChange={(event) => {
                       setReferenceMonth(
                         fromMonthInputValue(event.target.value),
@@ -394,24 +394,24 @@ export default function EnvelopesPage() {
                   />
                 </Field>
 
-                <Field htmlFor="envelope-search" label={t("common.search")}>
+                <Field htmlFor="budget-search" label={t("common.search")}>
                   <Input
-                    id="envelope-search"
+                    id="budget-search"
                     onChange={(event) => {
                       setSearch(event.target.value);
                       setPage(0);
                     }}
-                    placeholder={t("envelopes.searchPlaceholder")}
+                    placeholder={t("budgets.searchPlaceholder")}
                     value={search}
                   />
                 </Field>
 
                 <Field
-                  htmlFor="envelope-status-filter"
+                  htmlFor="budget-status-filter"
                   label={t("common.status")}
                 >
                   <Select
-                    id="envelope-status-filter"
+                    id="budget-status-filter"
                     onChange={(event) => {
                       setStatusFilter(
                         event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
@@ -426,19 +426,19 @@ export default function EnvelopesPage() {
                   </Select>
                 </Field>
 
-                <Field htmlFor="envelope-type-filter" label={t("common.type")}>
+                <Field htmlFor="budget-type-filter" label={t("common.type")}>
                   <Select
-                    id="envelope-type-filter"
+                    id="budget-type-filter"
                     onChange={(event) => {
-                      setTypeFilter(event.target.value as "" | EnvelopeType);
+                      setTypeFilter(event.target.value as "" | BudgetType);
                       setPage(0);
                     }}
                     value={typeFilter}
                   >
                     <option value="">{t("common.allTypes")}</option>
-                    <option value="GLOBAL">{t("envelopeTypes.GLOBAL")}</option>
+                    <option value="GLOBAL">{t("budgetTypes.GLOBAL")}</option>
                     <option value="ALLOWANCE">
-                      {t("envelopeTypes.ALLOWANCE")}
+                      {t("budgetTypes.ALLOWANCE")}
                     </option>
                   </Select>
                 </Field>
@@ -446,57 +446,57 @@ export default function EnvelopesPage() {
             </div>
           </Card>
 
-          <section className={styles.envelopeGrid}>
-            {envelopes.length === 0 ? (
+          <section className={styles.budgetGrid}>
+            {budgets.length === 0 ? (
               <Card className={styles.emptyState}>
-                <p>{t("envelopes.empty")}</p>
+                <p>{t("budgets.empty")}</p>
               </Card>
             ) : (
-              envelopes.map((envelope) => (
-                <Card key={envelope.id} className={styles.envelopeCard}>
+              budgets.map((budget) => (
+                <Card key={budget.id} className={styles.budgetCard}>
                   <button
-                    className={styles.envelopeButton}
+                    className={styles.budgetButton}
                     onClick={() => {
                       setIsCreating(false);
-                      setSelectedId(envelope.id);
+                      setSelectedId(budget.id);
                       setError(null);
                     }}
                     type="button"
                   >
-                    <div className={styles.envelopeHeader}>
+                    <div className={styles.budgetHeader}>
                       <div>
-                        <strong>{envelope.name}</strong>
-                        <p className={styles.envelopeMeta}>
-                          {envelope.type === "ALLOWANCE" &&
-                          envelope.ownerMemberName
-                            ? t("envelopes.allowanceFor", {
-                                name: envelope.ownerMemberName,
+                        <strong>{budget.name}</strong>
+                        <p className={styles.budgetMeta}>
+                          {budget.type === "ALLOWANCE" &&
+                          budget.ownerMemberName
+                            ? t("budgets.allowanceFor", {
+                                name: budget.ownerMemberName,
                               })
-                            : t("envelopes.linkedCategories", {
-                                count: envelope.categories.length,
+                            : t("budgets.linkedCategories", {
+                                count: budget.categories.length,
                               })}
                         </p>
                       </div>
                       <strong>
-                        {formatCurrency(envelope.remainingAmount)}
+                        {formatCurrency(budget.remainingAmount)}
                       </strong>
                     </div>
 
                     <div className={styles.badgeRow}>
                       <span className={styles.badge}>
-                        {t(`envelopeTypes.${envelope.type}` as const)}
+                        {t(`budgetTypes.${budget.type}` as const)}
                       </span>
                       <span
                         className={
-                          envelope.archivedFromMonth
+                          budget.archivedFromMonth
                             ? `${styles.badge} ${styles.badgeMuted}`
                             : `${styles.badge} ${styles.badgeSuccess}`
                         }
                       >
-                        {envelope.archivedFromMonth
-                          ? t("envelopes.archivedFrom", {
+                        {budget.archivedFromMonth
+                          ? t("budgets.archivedFrom", {
                               month: formatReferenceMonth(
-                                envelope.archivedFromMonth,
+                                budget.archivedFromMonth,
                               ),
                             })
                           : t("common.active")}
@@ -556,20 +556,20 @@ export default function EnvelopesPage() {
             </div>
           </Card>
 
-          {isCreating || selectedEnvelopeSummary ? (
+          {isCreating || selectedBudgetSummary ? (
             <Drawer
               description={
                 isCreating
-                  ? t("envelopes.newDescription")
-                  : t("envelopes.editDescription", {
+                  ? t("budgets.newDescription")
+                  : t("budgets.editDescription", {
                       month: formatReferenceMonth(referenceMonth),
                     })
               }
               onClose={handleCloseDrawer}
               title={
                 isCreating
-                  ? t("envelopes.newTitle")
-                  : t("envelopes.detailsTitle")
+                  ? t("budgets.newTitle")
+                  : t("budgets.detailsTitle")
               }
             >
               <div className={styles.drawerStack}>
@@ -580,11 +580,11 @@ export default function EnvelopesPage() {
                 >
                   <Field
                     error={form.formState.errors.name?.message}
-                    htmlFor="envelope-name"
+                    htmlFor="budget-name"
                     label={t("common.name")}
                   >
                     <Input
-                      id="envelope-name"
+                      id="budget-name"
                       hasError={Boolean(form.formState.errors.name)}
                       {...form.register("name")}
                     />
@@ -592,27 +592,27 @@ export default function EnvelopesPage() {
 
                   <Field
                     error={form.formState.errors.type?.message}
-                    htmlFor="envelope-type"
+                    htmlFor="budget-type"
                     label={t("common.type")}
                   >
                     <Select
-                      id="envelope-type"
+                      id="budget-type"
                       hasError={Boolean(form.formState.errors.type)}
                       {...form.register("type")}
                     >
                       <option value="GLOBAL">
-                        {t("envelopeTypes.GLOBAL")}
+                        {t("budgetTypes.GLOBAL")}
                       </option>
                       <option value="ALLOWANCE">
-                        {t("envelopeTypes.ALLOWANCE")}
+                        {t("budgetTypes.ALLOWANCE")}
                       </option>
                     </Select>
                   </Field>
 
                   <Field
                     error={form.formState.errors.monthlyLimit?.message}
-                    htmlFor="envelope-monthly-limit"
-                    label={t("envelopes.monthlyLimit")}
+                    htmlFor="budget-monthly-limit"
+                    label={t("budgets.monthlyLimit")}
                   >
                     <Controller
                       control={form.control}
@@ -620,7 +620,7 @@ export default function EnvelopesPage() {
                       render={({ field }) => (
                         <CurrencyInput
                           hasError={Boolean(form.formState.errors.monthlyLimit)}
-                          id="envelope-monthly-limit"
+                          id="budget-monthly-limit"
                           onBlur={field.onBlur}
                           onValueChange={field.onChange}
                           ref={field.ref}
@@ -630,14 +630,14 @@ export default function EnvelopesPage() {
                     />
                   </Field>
 
-                  {envelopeType === "ALLOWANCE" ? (
+                  {budgetType === "ALLOWANCE" ? (
                     <Field
                       error={form.formState.errors.ownerMemberId?.message}
-                      htmlFor="envelope-owner-member"
-                      label={t("envelopes.ownerMember")}
+                      htmlFor="budget-owner-member"
+                      label={t("budgets.ownerMember")}
                     >
                       <Select
-                        id="envelope-owner-member"
+                        id="budget-owner-member"
                         hasError={Boolean(form.formState.errors.ownerMemberId)}
                         {...form.register("ownerMemberId")}
                       >
@@ -652,7 +652,7 @@ export default function EnvelopesPage() {
                   ) : (
                     <div className={styles.sectionBlock}>
                       <span className={styles.sectionTitle}>
-                        {t("envelopes.linkedCategoriesTitle")}
+                        {t("budgets.linkedCategoriesTitle")}
                       </span>
                       <div className={styles.checkboxGroup}>
                         <div className={styles.checkboxList}>
@@ -673,7 +673,7 @@ export default function EnvelopesPage() {
                           ))}
                         </div>
                         <p className={styles.helperText}>
-                          {t("envelopes.globalHelper")}
+                          {t("budgets.globalHelper")}
                         </p>
                       </div>
                       {form.formState.errors.categoryIds?.message ? (
@@ -689,7 +689,7 @@ export default function EnvelopesPage() {
                   <div className={styles.formActions}>
                     <Button loading={isSaving} type="submit">
                       {isCreating
-                        ? t("envelopes.create")
+                        ? t("budgets.create")
                         : t("common.saveChanges")}
                     </Button>
                     {isCreating ? (
@@ -700,7 +700,19 @@ export default function EnvelopesPage() {
                       >
                         {t("common.cancel")}
                       </Button>
-                    ) : null}
+                    ) : (
+                      <Button
+                        disabled={Boolean(selectedBudgetSummary?.archivedFromMonth)}
+                        loading={isArchiving}
+                        onClick={() => void onArchive()}
+                        type="button"
+                        variant="secondary"
+                      >
+                        {selectedBudgetSummary?.archivedFromMonth
+                          ? t("budgets.archived")
+                          : t("budgets.archiveAction")}
+                      </Button>
+                    )}
                   </div>
                 </form>
 
@@ -708,49 +720,49 @@ export default function EnvelopesPage() {
                   <Card className={styles.detailPanel}>
                     <div className={styles.detailHeader}>
                       <h3 className={styles.detailTitle}>
-                        {t("envelopes.currentImpact")}
+                        {t("budgets.currentImpact")}
                       </h3>
                       <p className={styles.detailSubtitle}>
-                        {t("envelopes.currentImpactSubtitle", {
+                        {t("budgets.currentImpactSubtitle", {
                           month: formatReferenceMonth(referenceMonth),
                         })}
                       </p>
                     </div>
 
                     {isDetailLoading ? (
-                      <Spinner label={t("envelopes.loadingDetails")} />
-                    ) : selectedEnvelope ? (
+                      <Spinner label={t("budgets.loadingDetails")} />
+                    ) : selectedBudget ? (
                       <div className={styles.detailSection}>
                         <section className={styles.summaryGrid}>
                           <div className={styles.summaryCard}>
                             <span className={styles.summaryLabel}>
-                              {t("envelopes.limit")}
+                              {t("budgets.limit")}
                             </span>
                             <strong className={styles.summaryValue}>
-                              {formatCurrency(selectedEnvelope.monthlyLimit)}
+                              {formatCurrency(selectedBudget.monthlyLimit)}
                             </strong>
                           </div>
                           <div className={styles.summaryCard}>
                             <span className={styles.summaryLabel}>
-                              {t("envelopes.consumed")}
+                              {t("budgets.consumed")}
                             </span>
                             <strong className={styles.summaryValue}>
-                              {formatCurrency(selectedEnvelope.consumedAmount)}
+                              {formatCurrency(selectedBudget.consumedAmount)}
                             </strong>
                           </div>
                           <div className={styles.summaryCard}>
                             <span className={styles.summaryLabel}>
-                              {t("envelopes.remaining")}
+                              {t("budgets.remaining")}
                             </span>
                             <strong className={styles.summaryValue}>
-                              {formatCurrency(selectedEnvelope.remainingAmount)}
+                              {formatCurrency(selectedBudget.remainingAmount)}
                             </strong>
                           </div>
                         </section>
 
                         <section className={styles.sectionBlock}>
                           <h4 className={styles.sectionTitle}>
-                            {t("envelopes.categoryBreakdown")}
+                            {t("budgets.categoryBreakdown")}
                           </h4>
                           {categoryBreakdown.length > 0 ? (
                             <div className={styles.detailList}>
@@ -766,18 +778,18 @@ export default function EnvelopesPage() {
                             </div>
                           ) : (
                             <div className={styles.emptyStateInline}>
-                              {t("envelopes.noCategoryConsumption")}
+                              {t("budgets.noCategoryConsumption")}
                             </div>
                           )}
                         </section>
 
                         <section className={styles.sectionBlock}>
                           <h4 className={styles.sectionTitle}>
-                            {t("envelopes.matchedTransactions")}
+                            {t("budgets.matchedTransactions")}
                           </h4>
-                          {selectedEnvelope.transactions.length > 0 ? (
+                          {selectedBudget.transactions.length > 0 ? (
                             <div className={styles.transactionList}>
-                              {selectedEnvelope.transactions.map(
+                              {selectedBudget.transactions.map(
                                 (transaction) => (
                                   <div
                                     key={transaction.id}
@@ -800,18 +812,18 @@ export default function EnvelopesPage() {
                             </div>
                           ) : (
                             <div className={styles.emptyStateInline}>
-                              {t("envelopes.noMatchedTransactions")}
+                              {t("budgets.noMatchedTransactions")}
                             </div>
                           )}
                         </section>
 
                         <section className={styles.sectionBlock}>
                           <h4 className={styles.sectionTitle}>
-                            {t("envelopes.linkedCategoriesTitle")}
+                            {t("budgets.linkedCategoriesTitle")}
                           </h4>
-                          {selectedEnvelope.categories.length > 0 ? (
+                          {selectedBudget.categories.length > 0 ? (
                             <div className={styles.categoryList}>
-                              {selectedEnvelope.categories.map((category) => (
+                              {selectedBudget.categories.map((category) => (
                                 <span
                                   key={category.id}
                                   className={styles.badge}
@@ -822,51 +834,19 @@ export default function EnvelopesPage() {
                             </div>
                           ) : (
                             <div className={styles.emptyStateInline}>
-                              {t("envelopes.noSharedCategories")}
+                              {t("budgets.noSharedCategories")}
                             </div>
                           )}
                         </section>
                       </div>
                     ) : (
                       <p className={styles.detailSubtitle}>
-                        {t("envelopes.selectToReview")}
+                        {t("budgets.selectToReview")}
                       </p>
                     )}
                   </Card>
                 ) : null}
 
-                {!isCreating && selectedEnvelopeSummary ? (
-                  <Card className={styles.archivePanel}>
-                    <div className={styles.archiveHeader}>
-                      <h3 className={styles.detailTitle}>
-                        {t("envelopes.archiveTitle")}
-                      </h3>
-                      <p className={styles.detailSubtitle}>
-                        {t("envelopes.archiveSubtitle")}
-                      </p>
-                    </div>
-
-                    <div className={styles.form}>
-                      <p className={styles.detailSubtitle}>
-                        O arquivamento passa a valer automaticamente para o mês exibido: {formatReferenceMonth(referenceMonth)}.
-                      </p>
-
-                      <Button
-                        disabled={Boolean(
-                          selectedEnvelopeSummary.archivedFromMonth,
-                        )}
-                        loading={isArchiving}
-                        onClick={() => void onArchive()}
-                        type="button"
-                        variant="secondary"
-                      >
-                        {selectedEnvelopeSummary.archivedFromMonth
-                          ? t("envelopes.archived")
-                          : t("envelopes.archiveAction")}
-                      </Button>
-                    </div>
-                  </Card>
-                ) : null}
               </div>
             </Drawer>
           ) : null}

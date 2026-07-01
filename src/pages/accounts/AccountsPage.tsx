@@ -585,40 +585,21 @@ export default function AccountsPage() {
                       >
                         {t("common.cancel")}
                       </Button>
-                    ) : null}
-                  </div>
-                </form>
-
-                {selectedAccount &&
-                !selectedAccount.archivedFromMonth &&
-                !isCreating ? (
-                  <Card className={styles.archivePanel}>
-                    <div className={styles.archiveHeader}>
-                      <h3 className={styles.archiveTitle}>
-                        {t("accounts.archiveTitle")}
-                      </h3>
-                      <p className={styles.archiveSubtitle}>
-                        Pare de usar esta conta a partir de um mês específico.
-                      </p>
-                    </div>
-
-                    <div className={styles.form}>
-                      <p className={styles.archiveSubtitle}>
-                        O arquivamento passa a valer automaticamente a partir do mês atual.
-                      </p>
-
+                    ) : (
                       <Button
-                        disabled={isArchiving}
+                        disabled={isArchiving || Boolean(selectedAccount?.archivedFromMonth)}
                         loading={isArchiving}
                         onClick={() => void onArchive()}
                         type="button"
                         variant="secondary"
                       >
-                        {t("accounts.archiveAction")}
+                        {selectedAccount?.archivedFromMonth
+                          ? t("accounts.archived")
+                          : t("accounts.archiveAction")}
                       </Button>
-                    </div>
-                  </Card>
-                ) : null}
+                    )}
+                  </div>
+                </form>
               </div>
             </Drawer>
           ) : null}

@@ -1,12 +1,12 @@
 import { z } from "zod";
-import type { EnvelopeType } from "../../app/api/envelopes";
+import type { BudgetType } from "../../app/api/budgets";
 
 const ENVELOPE_TYPE_VALUES = [
   "GLOBAL",
   "ALLOWANCE",
-] as const satisfies readonly EnvelopeType[];
+] as const satisfies readonly BudgetType[];
 
-export const envelopeSchema = z
+export const budgetSchema = z
   .object({
     name: z
       .string()
@@ -31,7 +31,7 @@ export const envelopeSchema = z
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["ownerMemberId"],
-        message: "O membro dono é obrigatório para envelopes de mesada.",
+        message: "O membro dono é obrigatório para budgets de mesada.",
       });
     }
 
@@ -39,9 +39,9 @@ export const envelopeSchema = z
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["categoryIds"],
-        message: "Selecione pelo menos uma categoria para envelopes globais.",
+        message: "Selecione pelo menos uma categoria para budgets globais.",
       });
     }
   });
 
-export type EnvelopeFormValues = z.infer<typeof envelopeSchema>;
+export type BudgetFormValues = z.infer<typeof budgetSchema>;

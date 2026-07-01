@@ -500,34 +500,20 @@ export default function FamilyPage() {
                       >
                         {t("common.cancel")}
                       </Button>
-                    ) : null}
+                    ) : (
+                      <Button
+                        loading={isArchiving}
+                        onClick={() => void handleArchiveToggle()}
+                        type="button"
+                        variant="secondary"
+                      >
+                        {selectedMember?.active
+                          ? t("family.archiveMember")
+                          : t("family.restoreMember")}
+                      </Button>
+                    )}
                   </div>
                 </form>
-
-                {!isCreating && selectedMember ? (
-                  <Card className={styles.archivePanel}>
-                    <div className={styles.archiveHeader}>
-                      <h3 className={styles.archiveTitle}>
-                        {t("family.memberStatus")}
-                      </h3>
-                      <p className={styles.archiveSubtitle}>
-                        Arquive o membro para desabilitar o acesso ou reative
-                        depois.
-                      </p>
-                    </div>
-
-                    <Button
-                      loading={isArchiving}
-                      onClick={() => void handleArchiveToggle()}
-                      type="button"
-                      variant="secondary"
-                    >
-                      {selectedMember.active
-                        ? t("family.archiveMember")
-                        : t("family.restoreMember")}
-                    </Button>
-                  </Card>
-                ) : null}
               </div>
             </Drawer>
           ) : null}

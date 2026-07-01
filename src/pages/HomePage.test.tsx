@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import HomePage from "./HomePage";
@@ -15,11 +15,13 @@ describe("HomePage", () => {
           totalIncome: 5000,
           totalExpense: 195,
           balance: 4805,
+          availableBalance: 3955,
+          reservedBudgetAmount: 850,
         },
-        envelopes: [
+        budgets: [
           {
-            id: "env-1",
-            name: "Family Essentials",
+            id: "budget-1",
+            name: "Mercado",
             type: "GLOBAL",
             ownerMemberId: null,
             ownerMemberName: null,
@@ -72,7 +74,7 @@ describe("HomePage", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the dashboard data", async () => {
+  it("renders the dashboard data and toggles the balance mode", async () => {
     render(
       <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
@@ -93,7 +95,18 @@ describe("HomePage", () => {
       screen.getByRole("heading", { name: "Dashboard" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Família")).toBeInTheDocument();
-    expect(await screen.findByText("Family Essentials")).toBeInTheDocument();
+    expect(await screen.findByText("Mercado")).toBeInTheDocument();
     expect(await screen.findByText("Market")).toBeInTheDocument();
+    expect(screen.getByText("Saldo livre")).toBeInTheDocument();
+    expect(screen.getByText("R$ 3.955,00")).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("switch", {
+        name: "Considerar orçamentos no saldo",
+      }),
+    );
+
+    expect(screen.getByText("Saldo realizado")).toBeInTheDocument();
+    expect(screen.getByText("R$ 4.805,00")).toBeInTheDocument();
   });
 });

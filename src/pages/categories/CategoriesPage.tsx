@@ -537,55 +537,44 @@ export default function CategoriesPage() {
                   </div>
                 </form>
 
-                {!isCreating && selectedCategory ? (
-                  <Card className={styles.archivePanel}>
-                    <div className={styles.formHeader}>
-                      <div>
-                        <h3 className={styles.sectionTitle}>
-                          {t("categories.archiveTitle")}
-                        </h3>
-                        <p className={styles.formSubtitle}>
-                          {t("categories.archiveSubtitle")} O arquivamento passa a valer automaticamente a partir do mês atual.
-                        </p>
-                      </div>
-                    </div>
-
-                    <form
-                      className={styles.form}
-                      onSubmit={archiveForm.handleSubmit(onArchive)}
-                      noValidate
+                {!isCreating && selectedCategory && !selectedCategory.archivedFromMonth ? (
+                  <form
+                    className={styles.form}
+                    onSubmit={archiveForm.handleSubmit(onArchive)}
+                    noValidate
+                  >
+                    <Field
+                      error={
+                        archiveForm.formState.errors.replacementCategoryId
+                          ?.message
+                      }
+                      htmlFor="replacement-category"
+                      label={t("categories.replacementCategory")}
                     >
-                      <Field
-                        error={
-                          archiveForm.formState.errors.replacementCategoryId
-                            ?.message
-                        }
-                        htmlFor="replacement-category"
-                        label={t("categories.replacementCategory")}
+                      <Select
+                        hasError={Boolean(
+                          archiveForm.formState.errors.replacementCategoryId,
+                        )}
+                        id="replacement-category"
+                        {...archiveForm.register("replacementCategoryId")}
                       >
-                        <Select
-                          hasError={Boolean(
-                            archiveForm.formState.errors.replacementCategoryId,
-                          )}
-                          id="replacement-category"
-                          {...archiveForm.register("replacementCategoryId")}
-                        >
-                          <option value="">
-                            {t("categories.selectReplacement")}
+                        <option value="">
+                          {t("categories.selectReplacement")}
+                        </option>
+                        {archiveOptions.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.name}
                           </option>
-                          {archiveOptions.map((option) => (
-                            <option key={option.id} value={option.id}>
-                              {option.name}
-                            </option>
-                          ))}
-                        </Select>
-                      </Field>
+                        ))}
+                      </Select>
+                    </Field>
 
-                      <Button loading={isArchiving} type="submit">
+                    <div className={styles.formActions}>
+                      <Button loading={isArchiving} type="submit" variant="secondary">
                         {t("categories.archiveAction")}
                       </Button>
-                    </form>
-                  </Card>
+                    </div>
+                  </form>
                 ) : null}
               </div>
             </Drawer>
