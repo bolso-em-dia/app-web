@@ -76,7 +76,6 @@ export default function CategoriesPage() {
   const archiveForm = useForm<ArchiveCategoryFormValues>({
     resolver: zodResolver(archiveCategorySchema),
     defaultValues: {
-      archivedFromMonth: getCurrentReferenceMonth(),
       replacementCategoryId: "",
     },
   });
@@ -145,7 +144,6 @@ export default function CategoriesPage() {
   useEffect(() => {
     if (!selectedCategory) {
       archiveForm.reset({
-        archivedFromMonth: getCurrentReferenceMonth(),
         replacementCategoryId: "",
       });
       return;
@@ -156,7 +154,6 @@ export default function CategoriesPage() {
     );
 
     archiveForm.reset({
-      archivedFromMonth: getCurrentReferenceMonth(),
       replacementCategoryId:
         selectedCategory.replacementCategoryId ?? replacementOption?.id ?? "",
     });
@@ -182,9 +179,12 @@ export default function CategoriesPage() {
         );
         setSelectedId(created.id);
         setIsCreating(false);
-        setSearch(created.name);
-        setStatusFilter("ALL");
-        setPage(0);
+        await loadCategories({
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+        });
       } else if (selectedCategory) {
         const updated = await updateCategory(
           selectedCategory.id,
@@ -196,10 +196,12 @@ export default function CategoriesPage() {
           accessToken,
         );
         setSelectedId(updated.id);
-        setSearch((current) =>
-          current.trim().length === 0 ? current : updated.name,
-        );
-        setPage(0);
+        await loadCategories({
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+        });
       }
     } catch {
       setError(t("categories.saveError"));
@@ -223,7 +225,12 @@ export default function CategoriesPage() {
         accessToken,
       );
       setSelectedId(archived.id);
-      setPage(0);
+      await loadCategories({
+        page,
+        size: pageSize,
+        search,
+        status: statusFilter,
+      });
     } catch {
       setError(t("categories.archiveError"));
     } finally {
@@ -538,7 +545,7 @@ export default function CategoriesPage() {
                           {t("categories.archiveTitle")}
                         </h3>
                         <p className={styles.formSubtitle}>
-                          {t("categories.archiveSubtitle")}
+                          {t("categories.archiveSubtitle")} O arquivamento passa a valer automaticamente a partir do mês atual.
                         </p>
                       </div>
                     </div>
@@ -548,24 +555,6 @@ export default function CategoriesPage() {
                       onSubmit={archiveForm.handleSubmit(onArchive)}
                       noValidate
                     >
-                      <Field
-                        error={
-                          archiveForm.formState.errors.archivedFromMonth
-                            ?.message
-                        }
-                        htmlFor="archive-month"
-                        label={t("categories.archiveMonth")}
-                      >
-                        <Input
-                          hasError={Boolean(
-                            archiveForm.formState.errors.archivedFromMonth,
-                          )}
-                          id="archive-month"
-                          type="date"
-                          {...archiveForm.register("archivedFromMonth")}
-                        />
-                      </Field>
-
                       <Field
                         error={
                           archiveForm.formState.errors.replacementCategoryId

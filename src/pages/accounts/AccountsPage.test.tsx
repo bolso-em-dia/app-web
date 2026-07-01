@@ -129,4 +129,111 @@ describe("AccountsPage", () => {
     expect(accountSwatch).not.toBeNull();
     expect(accountSwatch).toHaveStyle({ backgroundColor: "rgb(34, 84, 209)" });
   });
+  it("preserves active filters after update and refetches the list with the same query", async () => {
+    vi.mocked(fetch).mockImplementation((_input, init) => {
+      const method = init?.method ?? "GET";
+
+      if (method === "PUT") {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "account-1",
+            name: "Main checking",
+            type: "CHECKING",
+            brand: null,
+            color: "#2254d1",
+            closingDay: null,
+            dueDay: null,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          items: [
+            {
+              id: "account-1",
+              name: "Main checking",
+              type: "CHECKING",
+              brand: null,
+              color: "#2254d1",
+              closingDay: null,
+              dueDay: null,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        }),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/accounts"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    await screen.findByText("Main checking");
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Buscar" }), {
+      target: { value: "Main" },
+    });
+    fireEvent.change(
+      screen.getByLabelText("Tipo", { selector: "#account-type-filter" }),
+      {
+        target: { value: "CHECKING" },
+      },
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Salvar alterações" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveValue(
+        "Main",
+      );
+    });
+
+    expect(
+      screen.getByLabelText("Tipo", { selector: "#account-type-filter" }),
+    ).toHaveValue("CHECKING");
+
+    const accountRequests = vi
+      .mocked(fetch)
+      .mock.calls.map(([input]) => String(input))
+      .filter((url) => url.includes("/api/accounts?") && !url.includes("options"));
+
+    expect(accountRequests.some((url) => url.includes("search=Main"))).toBe(
+      true,
+    );
+    expect(accountRequests.some((url) => url.includes("type=CHECKING"))).toBe(
+      true,
+    );
+  });
+
 });

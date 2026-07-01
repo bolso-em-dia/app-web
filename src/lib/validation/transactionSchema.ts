@@ -31,17 +31,17 @@ export const transactionSchema = z
       z.coerce.number().positive("O valor deve ser maior que zero."),
     ),
     transactionDate: z.string().min(1, "A data da transação é obrigatória."),
-    referenceMonth: z.string().min(1, "O mês de referência é obrigatório."),
     accountId: z.string().min(1, "A conta é obrigatória."),
     categoryId: z.string().min(1, "A categoria é obrigatória."),
     memberId: z.string(),
+    isInstallment: z.boolean(),
     installmentCount: z.preprocess(
       (value) => (value === "" ? undefined : value),
       z.coerce
         .number()
         .int("A quantidade de parcelas deve ser um número inteiro.")
-        .min(1, "A quantidade de parcelas deve estar entre 1 e 120.")
-        .max(120, "A quantidade de parcelas deve estar entre 1 e 120.")
+        .min(2, "A quantidade de parcelas deve estar entre 2 e 120.")
+        .max(120, "A quantidade de parcelas deve estar entre 2 e 120.")
         .optional(),
     ),
   })
@@ -54,6 +54,18 @@ export const transactionSchema = z
         code: z.ZodIssueCode.custom,
         path: ["memberId"],
         message: "O membro é obrigatório para transações individuais.",
+      });
+    }
+
+    if (
+      values.type === "EXPENSE" &&
+      values.isInstallment &&
+      values.installmentCount === undefined
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["installmentCount"],
+        message: "A quantidade de parcelas é obrigatória.",
       });
     }
   });

@@ -24,10 +24,6 @@ export type FixedExpenseTemplatePayload = {
   dueDay: number;
 };
 
-export type ArchiveFixedExpenseTemplatePayload = {
-  archivedFromMonth: string;
-};
-
 export type FixedExpenseTemplateListParams = {
   page: number;
   size: number;
@@ -94,17 +90,13 @@ export function updateFixedExpenseTemplate(
   );
 }
 
-export function archiveFixedExpenseTemplate(
-  id: string,
-  payload: ArchiveFixedExpenseTemplatePayload,
-  accessToken: string,
-) {
+export function archiveFixedExpenseTemplate(id: string, accessToken: string) {
   return apiRequest<FixedExpenseTemplate>(
     `/api/fixed-expense-templates/${id}/archive`,
     {
       method: "PATCH",
       accessToken,
-      body: JSON.stringify(payload),
+      body: JSON.stringify({}),
     },
   );
 }

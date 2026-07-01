@@ -126,7 +126,7 @@
   gap: var(--space-5);
 }
 
-.dateGrid {
+.switchGrid {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -134,6 +134,7 @@
 
 .formActions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
 }
 
@@ -167,7 +168,7 @@
 
 @media (width <= 40rem) {
   .filtersGrid,
-  .dateGrid {
+  .switchGrid {
     grid-template-columns: 1fr;
   }
 

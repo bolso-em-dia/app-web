@@ -62,10 +62,6 @@ export type EnvelopePayload = {
   monthlyLimit: number;
 };
 
-export type ArchiveEnvelopePayload = {
-  archivedFromMonth: string;
-};
-
 export type EnvelopeListParams = {
   referenceMonth: string;
   page: number;
@@ -146,14 +142,17 @@ export function updateEnvelope(
 
 export function archiveEnvelope(
   id: string,
-  payload: ArchiveEnvelopePayload,
+  referenceMonth: string,
   accessToken: string,
 ) {
-  return apiRequest<Envelope>(`/api/envelopes/${id}/archive`, {
-    method: "PATCH",
-    accessToken,
-    body: JSON.stringify(payload),
-  });
+  return apiRequest<Envelope>(
+    `/api/envelopes/${id}/archive?referenceMonth=${referenceMonth}`,
+    {
+      method: "PATCH",
+      accessToken,
+      body: JSON.stringify({}),
+    },
+  );
 }
 
 export function listEnvelopeCategoryBreakdown(

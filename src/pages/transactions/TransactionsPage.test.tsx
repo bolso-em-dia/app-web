@@ -162,17 +162,10 @@ describe("TransactionsPage", () => {
         target: { value: "cat-1" },
       },
     );
-    fireEvent.change(
-      within(drawer).getByLabelText("Titularidade", {
-        selector: "#transaction-ownership",
-      }),
-      {
-        target: { value: "INDIVIDUAL" },
-      },
-    );
+    fireEvent.click(within(drawer).getByRole("switch", { name: "Titularidade Individual" }));
 
     fireEvent.click(
-      within(drawer).getByRole("button", { name: "Criar transação" }),
+      within(drawer).getByRole("button", { name: "Salvar e criar novo" }),
     );
 
     await waitFor(() => {

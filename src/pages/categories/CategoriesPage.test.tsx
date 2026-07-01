@@ -127,4 +127,123 @@ describe("CategoriesPage", () => {
     expect(categoryIcon).not.toBeNull();
     expect(categoryIcon).toHaveStyle({ color: "rgb(34, 84, 209)" });
   });
+  it("preserves active filters after create and refetches the list with the same query", async () => {
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+            },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "POST") {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "cat-2",
+            name: "Travel",
+            icon: null,
+            color: null,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            replacementCategoryId: null,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          items: [
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              replacementCategoryId: null,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        }),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/categories"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <CategoriesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    await screen.findByText("Groceries");
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Buscar" }), {
+      target: { value: "Gro" },
+    });
+    fireEvent.change(screen.getByLabelText("Status"), {
+      target: { value: "ACTIVE" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Nova categoria" }));
+    fireEvent.change(screen.getByLabelText("Nome"), {
+      target: { value: "Travel" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Criar categoria" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveValue(
+        "Gro",
+      );
+    });
+
+    expect(screen.getByLabelText("Status")).toHaveValue("ACTIVE");
+
+    const categoryRequests = vi
+      .mocked(fetch)
+      .mock.calls.map(([input]) => String(input))
+      .filter((url) => url.includes("/api/categories?") && !url.includes("options"));
+
+    expect(categoryRequests.some((url) => url.includes("search=Gro"))).toBe(
+      true,
+    );
+    expect(categoryRequests.some((url) => url.includes("status=ACTIVE"))).toBe(
+      true,
+    );
+  });
+
 });

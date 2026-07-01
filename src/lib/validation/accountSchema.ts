@@ -60,9 +60,4 @@ export const accountSchema = z
     }
   });
 
-export const archiveAccountSchema = z.object({
-  archivedFromMonth: z.string().min(1, "O mês de arquivamento é obrigatório."),
-});
-
 export type AccountFormValues = z.infer<typeof accountSchema>;
-export type ArchiveAccountFormValues = z.infer<typeof archiveAccountSchema>;

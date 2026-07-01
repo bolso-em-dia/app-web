@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { BaseSyntheticEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { listAccounts, type Account } from "../../app/api/accounts";
 import {
@@ -30,6 +31,8 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import Switch from "../../components/ui/Switch";
+import { useI18n } from "../../app/i18n/I18nContext";
 import { formatCurrency } from "../../lib/formatters/currency";
 import {
   formatDay,
@@ -40,21 +43,8 @@ import {
   transactionSchema,
   type TransactionFormValues,
 } from "../../lib/validation/transactionSchema";
-import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./TransactionsPage.module.scss";
 
-const DEFAULT_VALUES: TransactionFormValues = {
-  type: "EXPENSE",
-  ownershipType: "SHARED",
-  description: "",
-  amount: 0,
-  transactionDate: getCurrentReferenceMonth(),
-  referenceMonth: getCurrentReferenceMonth(),
-  accountId: "",
-  categoryId: "",
-  memberId: "",
-  installmentCount: 1,
-};
 const DEFAULT_PAGE_SIZE = 12;
 
 function toMonthInputValue(value: string) {
@@ -63,6 +53,25 @@ function toMonthInputValue(value: string) {
 
 function fromMonthInputValue(value: string) {
   return `${value}-01`;
+}
+
+function referenceMonthFromDate(value: string) {
+  return `${value.slice(0, 7)}-01`;
+}
+
+function createDefaultValues(referenceMonth: string): TransactionFormValues {
+  return {
+    type: "EXPENSE",
+    ownershipType: "SHARED",
+    description: "",
+    amount: 0,
+    transactionDate: referenceMonth,
+    accountId: "",
+    categoryId: "",
+    memberId: "",
+    isInstallment: false,
+    installmentCount: 2,
+  };
 }
 
 function mapFormValuesToCreatePayload(
@@ -74,13 +83,12 @@ function mapFormValuesToCreatePayload(
     description: values.description,
     amount: values.amount,
     transactionDate: values.transactionDate,
-    referenceMonth: values.referenceMonth,
     accountId: values.accountId,
     categoryId: values.categoryId,
     memberId:
       values.ownershipType === "INDIVIDUAL" ? values.memberId : undefined,
     installmentCount:
-      values.installmentCount && values.installmentCount > 1
+      values.type === "EXPENSE" && values.isInstallment
         ? values.installmentCount
         : undefined,
   };
@@ -95,7 +103,6 @@ function mapFormValuesToUpdatePayload(
     description: values.description,
     amount: values.amount,
     transactionDate: values.transactionDate,
-    referenceMonth: values.referenceMonth,
     accountId: values.accountId,
     categoryId: values.categoryId,
     memberId:
@@ -107,6 +114,7 @@ export default function TransactionsPage() {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const initialReferenceMonth = useMemo(() => getCurrentReferenceMonth(), []);
+  const descriptionInputRef = useRef<HTMLInputElement | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
@@ -135,16 +143,27 @@ export default function TransactionsPage() {
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: createDefaultValues(initialReferenceMonth),
   });
 
   const transactionType = form.watch("type");
   const ownershipType = form.watch("ownershipType");
-  const currentReferenceMonth = form.watch("referenceMonth");
+  const transactionDate = form.watch("transactionDate");
+  const isInstallment = form.watch("isInstallment");
+  const currentReferenceMonth = useMemo(
+    () => referenceMonthFromDate(transactionDate || filters.referenceMonth),
+    [filters.referenceMonth, transactionDate],
+  );
   const allowanceMembers = useMemo(
     () => members.filter((member) => member.active && member.allowanceEnabled),
     [members],
   );
+
+  const focusDescriptionField = useCallback(() => {
+    window.setTimeout(() => {
+      descriptionInputRef.current?.focus();
+    }, 0);
+  }, []);
 
   const loadPageData = useCallback(async () => {
     if (!accessToken) {
@@ -197,11 +216,8 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     if (isCreating) {
-      form.reset({
-        ...DEFAULT_VALUES,
-        transactionDate: filters.referenceMonth,
-        referenceMonth: filters.referenceMonth,
-      });
+      form.reset(createDefaultValues(filters.referenceMonth));
+      focusDescriptionField();
       return;
     }
 
@@ -212,30 +228,26 @@ export default function TransactionsPage() {
         description: selectedTransaction.description,
         amount: selectedTransaction.amount,
         transactionDate: selectedTransaction.transactionDate,
-        referenceMonth: selectedTransaction.referenceMonth,
         accountId: selectedTransaction.accountId,
         categoryId: selectedTransaction.categoryId,
         memberId: selectedTransaction.memberId ?? "",
-        installmentCount: selectedTransaction.installmentTotal ?? 1,
+        isInstallment: Boolean(selectedTransaction.installmentTotal),
+        installmentCount: selectedTransaction.installmentTotal ?? 2,
       });
       setDeleteScope("SINGLE");
     }
-  }, [filters.referenceMonth, form, isCreating, selectedTransaction]);
+  }, [filters.referenceMonth, focusDescriptionField, form, isCreating, selectedTransaction]);
 
   useEffect(() => {
     if (currentReferenceMonth === filters.referenceMonth) {
       return;
     }
 
-    if (!currentReferenceMonth) {
+    if (!accessToken) {
       return;
     }
 
     const updateCategories = async () => {
-      if (!accessToken) {
-        return;
-      }
-
       try {
         const response = await listCategoryOptions(
           currentReferenceMonth,
@@ -250,10 +262,36 @@ export default function TransactionsPage() {
     void updateCategories();
   }, [accessToken, currentReferenceMonth, filters.referenceMonth, t]);
 
-  async function onSubmit(values: TransactionFormValues) {
+  function resetForNextCreate(values: TransactionFormValues) {
+    form.reset({
+      type: values.type,
+      ownershipType: values.ownershipType,
+      description: "",
+      amount: 0,
+      transactionDate: values.transactionDate,
+      accountId: values.accountId,
+      categoryId: values.categoryId,
+      memberId: values.ownershipType === "INDIVIDUAL" ? values.memberId : "",
+      isInstallment: values.type === "EXPENSE" ? values.isInstallment : false,
+      installmentCount: values.isInstallment ? values.installmentCount ?? 2 : 2,
+    });
+    setSelectedId(null);
+    focusDescriptionField();
+  }
+
+  async function onSubmit(
+    values: TransactionFormValues,
+    event?: BaseSyntheticEvent,
+  ) {
     if (!accessToken) {
       return;
     }
+
+    const nativeEvent = event?.nativeEvent as SubmitEvent | undefined;
+    const submitter = nativeEvent?.submitter as HTMLButtonElement | undefined;
+    const intent = submitter?.value === "save-and-create-new"
+      ? "save-and-create-new"
+      : "save";
 
     setIsSaving(true);
     setError(null);
@@ -264,15 +302,17 @@ export default function TransactionsPage() {
           mapFormValuesToCreatePayload(values),
           accessToken,
         );
-        if (created[0]) {
-          setSelectedId(created[0].id);
-          setPage(0);
-          setFilters((current) => ({
-            ...current,
-            referenceMonth: created[0].referenceMonth,
-          }));
+
+        await loadPageData();
+
+        if (intent === "save-and-create-new") {
+          resetForNextCreate(values);
+        } else {
+          if (created[0]) {
+            setSelectedId(created[0].id);
+          }
+          setIsCreating(false);
         }
-        setIsCreating(false);
       } else if (selectedTransaction) {
         const updated = await updateTransaction(
           selectedTransaction.id,
@@ -280,10 +320,8 @@ export default function TransactionsPage() {
           accessToken,
         );
         setSelectedId(updated.id);
-        setPage(0);
+        await loadPageData();
       }
-
-      await loadPageData();
     } catch {
       setError(t("transactions.saveError"));
     } finally {
@@ -627,44 +665,6 @@ export default function TransactionsPage() {
                   noValidate
                 >
                   <Field
-                    error={form.formState.errors.type?.message}
-                    htmlFor="transaction-type"
-                    label={t("common.type")}
-                  >
-                    <Select
-                      id="transaction-type"
-                      hasError={Boolean(form.formState.errors.type)}
-                      {...form.register("type")}
-                    >
-                      <option value="EXPENSE">
-                        {t("transactionTypes.EXPENSE")}
-                      </option>
-                      <option value="INCOME">
-                        {t("transactionTypes.INCOME")}
-                      </option>
-                    </Select>
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.ownershipType?.message}
-                    htmlFor="transaction-ownership"
-                    label={t("common.ownership")}
-                  >
-                    <Select
-                      id="transaction-ownership"
-                      hasError={Boolean(form.formState.errors.ownershipType)}
-                      {...form.register("ownershipType")}
-                    >
-                      <option value="SHARED">
-                        {t("ownershipTypes.SHARED")}
-                      </option>
-                      <option value="INDIVIDUAL">
-                        {t("ownershipTypes.INDIVIDUAL")}
-                      </option>
-                    </Select>
-                  </Field>
-
-                  <Field
                     error={form.formState.errors.description?.message}
                     htmlFor="transaction-description"
                     label={t("transactions.description")}
@@ -673,6 +673,10 @@ export default function TransactionsPage() {
                       id="transaction-description"
                       hasError={Boolean(form.formState.errors.description)}
                       {...form.register("description")}
+                      ref={(element) => {
+                        form.register("description").ref(element);
+                        descriptionInputRef.current = element;
+                      }}
                     />
                   </Field>
 
@@ -697,34 +701,83 @@ export default function TransactionsPage() {
                     />
                   </Field>
 
-                  <div className={styles.dateGrid}>
-                    <Field
-                      error={form.formState.errors.transactionDate?.message}
-                      htmlFor="transaction-date"
-                      label={t("transactions.transactionDate")}
+                  <Field
+                    error={form.formState.errors.transactionDate?.message}
+                    htmlFor="transaction-date"
+                    label={t("transactions.transactionDate")}
+                  >
+                    <Input
+                      id="transaction-date"
+                      hasError={Boolean(form.formState.errors.transactionDate)}
+                      type="date"
+                      {...form.register("transactionDate")}
+                    />
+                  </Field>
+
+                  <Field
+                    error={form.formState.errors.type?.message}
+                    htmlFor="transaction-type"
+                    label={t("common.type")}
+                  >
+                    <Select
+                      id="transaction-type"
+                      hasError={Boolean(form.formState.errors.type)}
+                      {...form.register("type")}
                     >
-                      <Input
-                        id="transaction-date"
-                        hasError={Boolean(
-                          form.formState.errors.transactionDate,
+                      <option value="EXPENSE">
+                        {t("transactionTypes.EXPENSE")}
+                      </option>
+                      <option value="INCOME">
+                        {t("transactionTypes.INCOME")}
+                      </option>
+                    </Select>
+                  </Field>
+
+                  <div className={styles.switchGrid}>
+                    <Field htmlFor="transaction-ownership-switch" label={t("common.ownership")}>
+                      <Controller
+                        control={form.control}
+                        name="ownershipType"
+                        render={({ field }) => (
+                          <Switch
+                            checked={field.value === "INDIVIDUAL"}
+                            id="transaction-ownership-switch"
+                            label={t("ownershipTypes.INDIVIDUAL")}
+                            onBlur={field.onBlur}
+                            onChange={(event) =>
+                              field.onChange(
+                                event.target.checked ? "INDIVIDUAL" : "SHARED",
+                              )
+                            }
+                            ref={field.ref}
+                          />
                         )}
-                        type="date"
-                        {...form.register("transactionDate")}
                       />
                     </Field>
 
-                    <Field
-                      error={form.formState.errors.referenceMonth?.message}
-                      htmlFor="transaction-reference-month"
-                      label={t("common.referenceMonth")}
-                    >
-                      <Input
-                        id="transaction-reference-month"
-                        hasError={Boolean(form.formState.errors.referenceMonth)}
-                        type="date"
-                        {...form.register("referenceMonth")}
-                      />
-                    </Field>
+                    {isCreating && transactionType === "EXPENSE" ? (
+                      <Field
+                        htmlFor="transaction-installment-switch"
+                        label={t("transactions.installmentToggle")}
+                      >
+                        <Controller
+                          control={form.control}
+                          name="isInstallment"
+                          render={({ field }) => (
+                            <Switch
+                              checked={field.value}
+                              id="transaction-installment-switch"
+                              label={t("transactions.installmentToggle")}
+                              onBlur={field.onBlur}
+                              onChange={(event) =>
+                                field.onChange(event.target.checked)
+                              }
+                              ref={field.ref}
+                            />
+                          )}
+                        />
+                      </Field>
+                    ) : null}
                   </div>
 
                   <Field
@@ -786,7 +839,7 @@ export default function TransactionsPage() {
                     </Field>
                   ) : null}
 
-                  {isCreating && transactionType === "EXPENSE" ? (
+                  {isCreating && transactionType === "EXPENSE" && isInstallment ? (
                     <Field
                       error={form.formState.errors.installmentCount?.message}
                       htmlFor="transaction-installment-count"
@@ -798,7 +851,7 @@ export default function TransactionsPage() {
                           form.formState.errors.installmentCount,
                         )}
                         max="120"
-                        min="1"
+                        min="2"
                         step="1"
                         type="number"
                         {...form.register("installmentCount")}
@@ -809,20 +862,36 @@ export default function TransactionsPage() {
                   <FormError>{error}</FormError>
 
                   <div className={styles.formActions}>
-                    <Button loading={isSaving} type="submit">
-                      {isCreating
-                        ? t("transactions.create")
-                        : t("common.saveChanges")}
-                    </Button>
                     {isCreating ? (
-                      <Button
-                        onClick={handleCancelCreate}
-                        type="button"
-                        variant="secondary"
-                      >
-                        {t("common.cancel")}
+                      <>
+                        <Button
+                          loading={isSaving}
+                          type="submit"
+                          value="save-and-create-new"
+                        >
+                          {t("transactions.saveAndCreateNew")}
+                        </Button>
+                        <Button
+                          loading={isSaving}
+                          type="submit"
+                          value="save"
+                          variant="secondary"
+                        >
+                          {t("transactions.save")}
+                        </Button>
+                        <Button
+                          onClick={handleCancelCreate}
+                          type="button"
+                          variant="secondary"
+                        >
+                          {t("common.cancel")}
+                        </Button>
+                      </>
+                    ) : (
+                      <Button loading={isSaving} type="submit">
+                        {t("common.saveChanges")}
                       </Button>
-                    ) : null}
+                    )}
                   </div>
                 </form>
 

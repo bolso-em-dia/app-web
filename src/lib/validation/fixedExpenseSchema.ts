@@ -22,11 +22,4 @@ export const fixedExpenseSchema = z.object({
   ),
 });
 
-export const archiveFixedExpenseSchema = z.object({
-  archivedFromMonth: z.string().min(1, "O mês de arquivamento é obrigatório."),
-});
-
 export type FixedExpenseFormValues = z.infer<typeof fixedExpenseSchema>;
-export type ArchiveFixedExpenseFormValues = z.infer<
-  typeof archiveFixedExpenseSchema
->;

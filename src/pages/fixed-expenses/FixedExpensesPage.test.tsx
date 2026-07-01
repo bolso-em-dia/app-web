@@ -86,7 +86,7 @@ describe("FixedExpensesPage", () => {
     expect(await screen.findByText("Rent")).toBeInTheDocument();
     expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Novo modelo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Novo gasto fixo" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Nome"), {
       target: { value: "Water bill" },
@@ -98,7 +98,7 @@ describe("FixedExpensesPage", () => {
       target: { value: "12" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Criar modelo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Criar gasto fixo" }));
 
     await waitFor(() => {
       expect(

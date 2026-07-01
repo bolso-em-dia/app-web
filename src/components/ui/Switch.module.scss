@@ -1,0 +1,54 @@
+@use "../../styles/mixins.scss" as mixins;
+
+.root {
+  display: inline-flex;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.track {
+  display: inline-flex;
+  align-items: center;
+  width: 2.75rem;
+  height: 1.5rem;
+  padding: 0.125rem;
+  border-radius: var(--radius-round);
+  background: var(--color-border-strong);
+  transition: background-color 160ms ease;
+}
+
+.thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  transition: transform 160ms ease;
+}
+
+.input:checked + .control .track {
+  background: var(--color-accent);
+}
+
+.input:checked + .control .thumb {
+  transform: translateX(1.25rem);
+}
+
+.input:focus-visible + .control .track {
+  @include mixins.focus-ring;
+}
+
+.label {
+  color: var(--color-text);
+}

@@ -11,7 +11,6 @@ export const categorySchema = z.object({
 });
 
 export const archiveCategorySchema = z.object({
-  archivedFromMonth: z.string().min(1, "O mês de arquivamento é obrigatório."),
   replacementCategoryId: z
     .string()
     .min(1, "A categoria substituta é obrigatória."),

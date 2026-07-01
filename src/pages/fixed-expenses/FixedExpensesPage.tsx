@@ -32,12 +32,7 @@ import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
-import {
-  archiveFixedExpenseSchema,
-  fixedExpenseSchema,
-  type ArchiveFixedExpenseFormValues,
-  type FixedExpenseFormValues,
-} from "../../lib/validation/fixedExpenseSchema";
+import { fixedExpenseSchema, type FixedExpenseFormValues } from "../../lib/validation/fixedExpenseSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./FixedExpensesPage.module.scss";
 
@@ -49,14 +44,6 @@ const DEFAULT_VALUES: FixedExpenseFormValues = {
   dueDay: 1,
 };
 const DEFAULT_PAGE_SIZE = 12;
-
-function toMonthInputValue(value: string) {
-  return value.slice(0, 7);
-}
-
-function fromMonthInputValue(value: string) {
-  return `${value}-01`;
-}
 
 function mapFormValuesToPayload(
   values: FixedExpenseFormValues,
@@ -101,13 +88,6 @@ export default function FixedExpensesPage() {
   const form = useForm<FixedExpenseFormValues>({
     resolver: zodResolver(fixedExpenseSchema),
     defaultValues: DEFAULT_VALUES,
-  });
-
-  const archiveForm = useForm<ArchiveFixedExpenseFormValues>({
-    resolver: zodResolver(archiveFixedExpenseSchema),
-    defaultValues: {
-      archivedFromMonth: toMonthInputValue(referenceMonth),
-    },
   });
 
   const loadTemplates = useCallback(
@@ -176,14 +156,6 @@ export default function FixedExpensesPage() {
     }
   }, [form, isCreating, selectedTemplate]);
 
-  useEffect(() => {
-    archiveForm.reset({
-      archivedFromMonth: toMonthInputValue(
-        selectedTemplate?.archivedFromMonth ?? referenceMonth,
-      ),
-    });
-  }, [archiveForm, referenceMonth, selectedTemplate]);
-
   async function onSubmit(values: FixedExpenseFormValues) {
     if (!accessToken) {
       return;
@@ -204,9 +176,12 @@ export default function FixedExpensesPage() {
         );
         setSelectedId(detailed.id);
         setIsCreating(false);
-        setSearch(detailed.name);
-        setStatusFilter("ALL");
-        setPage(0);
+        await loadTemplates({
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+        });
       } else if (selectedTemplate) {
         const updated = await updateFixedExpenseTemplate(
           selectedTemplate.id,
@@ -214,10 +189,12 @@ export default function FixedExpensesPage() {
           accessToken,
         );
         setSelectedId(updated.id);
-        setSearch((current) =>
-          current.trim().length === 0 ? current : updated.name,
-        );
-        setPage(0);
+        await loadTemplates({
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+        });
       }
     } catch {
       setError(t("fixedExpenses.saveError"));
@@ -226,7 +203,7 @@ export default function FixedExpensesPage() {
     }
   }
 
-  async function onArchive(values: ArchiveFixedExpenseFormValues) {
+  async function onArchive() {
     if (
       !accessToken ||
       !selectedTemplate ||
@@ -241,13 +218,15 @@ export default function FixedExpensesPage() {
     try {
       const archived = await archiveFixedExpenseTemplate(
         selectedTemplate.id,
-        {
-          archivedFromMonth: fromMonthInputValue(values.archivedFromMonth),
-        },
         accessToken,
       );
       setSelectedId(archived.id);
-      setPage(0);
+      await loadTemplates({
+        page,
+        size: pageSize,
+        search,
+        status: statusFilter,
+      });
     } catch {
       setError(t("fixedExpenses.archiveError"));
     } finally {
@@ -586,40 +565,23 @@ export default function FixedExpensesPage() {
                       </div>
                     </div>
 
-                    <form
-                      className={styles.form}
-                      onSubmit={archiveForm.handleSubmit(onArchive)}
-                      noValidate
-                    >
-                      <Field
-                        error={
-                          archiveForm.formState.errors.archivedFromMonth
-                            ?.message
-                        }
-                        htmlFor="fixed-expense-archive-month"
-                        label={t("fixedExpenses.archiveMonth")}
-                      >
-                        <Input
-                          hasError={Boolean(
-                            archiveForm.formState.errors.archivedFromMonth,
-                          )}
-                          id="fixed-expense-archive-month"
-                          type="month"
-                          {...archiveForm.register("archivedFromMonth")}
-                        />
-                      </Field>
+                    <div className={styles.form}>
+                      <p className={styles.formSubtitle}>
+                        O arquivamento passa a valer automaticamente a partir do mês atual.
+                      </p>
 
                       <Button
                         disabled={Boolean(selectedTemplate.archivedFromMonth)}
                         loading={isArchiving}
-                        type="submit"
+                        onClick={() => void onArchive()}
+                        type="button"
                         variant="secondary"
                       >
                         {selectedTemplate.archivedFromMonth
                           ? t("fixedExpenses.archived")
                           : t("fixedExpenses.archiveAction")}
                       </Button>
-                    </form>
+                    </div>
                   </Card>
                 ) : null}
               </div>

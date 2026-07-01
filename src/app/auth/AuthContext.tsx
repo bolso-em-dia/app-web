@@ -1,48 +1,80 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
   login as loginRequest,
   logout as logoutRequest,
-  me,
   refresh,
   type AuthUser,
 } from "../api/auth";
+import { configureApiClientAuth } from "../api/client";
 import { AuthContext, type AuthContextValue } from "./authContext";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const accessTokenRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    void bootstrapSession();
+  const setAccessToken = useCallback((value: string | null) => {
+    accessTokenRef.current = value;
+    setAccessTokenState(value);
   }, []);
 
-  async function bootstrapSession() {
+  const bootstrapSession = useCallback(async () => {
     try {
       const auth = await refresh();
       setAccessToken(auth.accessToken);
-      const currentUser = await me(auth.accessToken);
-      setUser(currentUser);
+      setUser(auth.user);
     } catch {
       setAccessToken(null);
       setUser(null);
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [setAccessToken]);
 
-  async function handleLogin(email: string, password: string) {
-    const auth = await loginRequest(email, password);
-    setAccessToken(auth.accessToken);
-    setUser(auth.user);
-  }
+  const handleLogin = useCallback(
+    async (email: string, password: string) => {
+      const auth = await loginRequest(email, password);
+      setAccessToken(auth.accessToken);
+      setUser(auth.user);
+    },
+    [setAccessToken],
+  );
 
-  async function handleLogout() {
+  const handleLogout = useCallback(async () => {
     await logoutRequest();
     setAccessToken(null);
     setUser(null);
-  }
+  }, [setAccessToken]);
+
+  useEffect(() => {
+    configureApiClientAuth({
+      getAccessToken: () => accessTokenRef.current,
+      refreshAccessToken: async () => {
+        try {
+          const auth = await refresh();
+          setAccessToken(auth.accessToken);
+          setUser(auth.user);
+          return auth.accessToken;
+        } catch {
+          setAccessToken(null);
+          setUser(null);
+          return null;
+        }
+      },
+      onUnauthorized: () => {
+        setAccessToken(null);
+        setUser(null);
+      },
+    });
+
+    void bootstrapSession();
+
+    return () => {
+      configureApiClientAuth({});
+    };
+  }, [bootstrapSession, setAccessToken]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -53,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login: handleLogin,
       logout: handleLogout,
     }),
-    [accessToken, isLoading, user],
+    [accessToken, handleLogin, handleLogout, isLoading, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

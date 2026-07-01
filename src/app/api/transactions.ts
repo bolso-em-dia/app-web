@@ -32,7 +32,6 @@ export type TransactionPayload = {
   description: string;
   amount: number;
   transactionDate: string;
-  referenceMonth: string;
   accountId: string;
   categoryId: string;
   memberId?: string;

@@ -26,7 +26,6 @@ export type CategoryPayload = {
 };
 
 export type ArchiveCategoryPayload = {
-  archivedFromMonth: string;
   replacementCategoryId: string;
 };
 

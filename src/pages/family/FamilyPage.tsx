@@ -156,9 +156,12 @@ export default function FamilyPage() {
         const detailed = await getFamilyMemberById(created.id, accessToken);
         setSelectedId(detailed.id);
         setIsCreating(false);
-        setSearch(detailed.name);
-        setStatusFilter("ALL");
-        setPage(0);
+        await loadMembers({
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+        });
       } else if (selectedMember) {
         const updated = await updateFamilyMember(
           selectedMember.id,
@@ -172,10 +175,12 @@ export default function FamilyPage() {
           accessToken,
         );
         setSelectedId(updated.id);
-        setSearch((current) =>
-          current.trim().length === 0 ? current : updated.name,
-        );
-        setPage(0);
+        await loadMembers({
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+        });
       }
     } catch {
       setError(t("family.saveError"));
@@ -197,7 +202,12 @@ export default function FamilyPage() {
         ? await archiveFamilyMember(selectedMember.id, accessToken)
         : await restoreFamilyMember(selectedMember.id, accessToken);
       setSelectedId(updated.id);
-      setPage(0);
+      await loadMembers({
+        page,
+        size: pageSize,
+        search,
+        status: statusFilter,
+      });
     } catch {
       setError(t("family.statusError"));
     } finally {

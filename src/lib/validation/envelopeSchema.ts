@@ -44,9 +44,4 @@ export const envelopeSchema = z
     }
   });
 
-export const archiveEnvelopeSchema = z.object({
-  archivedFromMonth: z.string().min(1, "O mês de arquivamento é obrigatório."),
-});
-
 export type EnvelopeFormValues = z.infer<typeof envelopeSchema>;
-export type ArchiveEnvelopeFormValues = z.infer<typeof archiveEnvelopeSchema>;

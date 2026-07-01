@@ -25,10 +25,6 @@ export type AccountPayload = {
   dueDay?: number;
 };
 
-export type ArchiveAccountPayload = {
-  archivedFromMonth: string;
-};
-
 export type AccountListParams = {
   page: number;
   size: number;
@@ -122,14 +118,10 @@ export function updateAccount(
   });
 }
 
-export function archiveAccount(
-  id: string,
-  payload: ArchiveAccountPayload,
-  accessToken: string,
-) {
+export function archiveAccount(id: string, accessToken: string) {
   return apiRequest<Account>(`/api/accounts/${id}/archive`, {
     method: "PATCH",
     accessToken,
-    body: JSON.stringify(payload),
+    body: JSON.stringify({}),
   });
 }

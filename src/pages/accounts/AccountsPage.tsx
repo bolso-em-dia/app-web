@@ -23,17 +23,9 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import {
-  formatReferenceMonth,
-  getCurrentReferenceMonth,
-} from "../../lib/formatters/date";
+import { formatReferenceMonth } from "../../lib/formatters/date";
 import { COLOR_OPTIONS, getColorLabel } from "../../lib/uiOptions";
-import {
-  accountSchema,
-  archiveAccountSchema,
-  type AccountFormValues,
-  type ArchiveAccountFormValues,
-} from "../../lib/validation/accountSchema";
+import { accountSchema, type AccountFormValues } from "../../lib/validation/accountSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./AccountsPage.module.scss";
 
@@ -46,14 +38,6 @@ const DEFAULT_VALUES: AccountFormValues = {
   dueDay: undefined,
 };
 const DEFAULT_PAGE_SIZE = 12;
-
-function toMonthInputValue(value: string) {
-  return value.slice(0, 7);
-}
-
-function fromMonthInputValue(value: string) {
-  return `${value}-01`;
-}
 
 function mapFormValuesToPayload(values: AccountFormValues): AccountPayload {
   return {
@@ -95,13 +79,6 @@ export default function AccountsPage() {
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
     defaultValues: DEFAULT_VALUES,
-  });
-
-  const archiveForm = useForm<ArchiveAccountFormValues>({
-    resolver: zodResolver(archiveAccountSchema),
-    defaultValues: {
-      archivedFromMonth: getCurrentReferenceMonth(),
-    },
   });
 
   const accountType = form.watch("type");
@@ -167,14 +144,6 @@ export default function AccountsPage() {
     }
   }, [form, isCreating, selectedAccount]);
 
-  useEffect(() => {
-    archiveForm.reset({
-      archivedFromMonth: toMonthInputValue(
-        selectedAccount?.archivedFromMonth ?? getCurrentReferenceMonth(),
-      ),
-    });
-  }, [archiveForm, selectedAccount]);
-
   async function onSubmit(values: AccountFormValues) {
     if (!accessToken) {
       return;
@@ -192,10 +161,13 @@ export default function AccountsPage() {
         const detailed = await getAccountById(created.id, accessToken);
         setSelectedId(detailed.id);
         setIsCreating(false);
-        setSearch(detailed.name);
-        setStatusFilter("ALL");
-        setTypeFilter(detailed.type);
-        setPage(0);
+        await loadAccounts({
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+          type: typeFilter || undefined,
+        });
       } else if (selectedAccount) {
         const updated = await updateAccount(
           selectedAccount.id,
@@ -203,11 +175,13 @@ export default function AccountsPage() {
           accessToken,
         );
         setSelectedId(updated.id);
-        setSearch((current) =>
-          current.trim().length === 0 ? current : updated.name,
-        );
-        setTypeFilter((current) => (current === "" ? current : updated.type));
-        setPage(0);
+        await loadAccounts({
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+          type: typeFilter || undefined,
+        });
       }
     } catch {
       setError(t("accounts.saveError"));
@@ -216,7 +190,7 @@ export default function AccountsPage() {
     }
   }
 
-  async function onArchive(values: ArchiveAccountFormValues) {
+  async function onArchive() {
     if (!accessToken || !selectedAccount || selectedAccount.archivedFromMonth) {
       return;
     }
@@ -225,15 +199,15 @@ export default function AccountsPage() {
     setError(null);
 
     try {
-      const archived = await archiveAccount(
-        selectedAccount.id,
-        {
-          archivedFromMonth: fromMonthInputValue(values.archivedFromMonth),
-        },
-        accessToken,
-      );
+      const archived = await archiveAccount(selectedAccount.id, accessToken);
       setSelectedId(archived.id);
-      setPage(0);
+      await loadAccounts({
+        page,
+        size: pageSize,
+        search,
+        status: statusFilter,
+        type: typeFilter || undefined,
+      });
     } catch {
       setError(t("accounts.archiveError"));
     } finally {
@@ -628,36 +602,21 @@ export default function AccountsPage() {
                       </p>
                     </div>
 
-                    <form
-                      className={styles.form}
-                      onSubmit={archiveForm.handleSubmit(onArchive)}
-                    >
-                      <Field
-                        error={
-                          archiveForm.formState.errors.archivedFromMonth
-                            ?.message
-                        }
-                        htmlFor="account-archive-month"
-                        label={t("accounts.archiveMonth")}
-                      >
-                        <Input
-                          id="account-archive-month"
-                          {...archiveForm.register("archivedFromMonth")}
-                          hasError={Boolean(
-                            archiveForm.formState.errors.archivedFromMonth,
-                          )}
-                          type="month"
-                        />
-                      </Field>
+                    <div className={styles.form}>
+                      <p className={styles.archiveSubtitle}>
+                        O arquivamento passa a valer automaticamente a partir do mês atual.
+                      </p>
 
                       <Button
                         disabled={isArchiving}
-                        type="submit"
+                        loading={isArchiving}
+                        onClick={() => void onArchive()}
+                        type="button"
                         variant="secondary"
                       >
                         {t("accounts.archiveAction")}
                       </Button>
-                    </form>
+                    </div>
                   </Card>
                 ) : null}
               </div>

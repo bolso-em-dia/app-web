@@ -37,12 +37,7 @@ import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
-import {
-  archiveEnvelopeSchema,
-  envelopeSchema,
-  type ArchiveEnvelopeFormValues,
-  type EnvelopeFormValues,
-} from "../../lib/validation/envelopeSchema";
+import { envelopeSchema, type EnvelopeFormValues } from "../../lib/validation/envelopeSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./EnvelopesPage.module.scss";
 
@@ -116,13 +111,6 @@ export default function EnvelopesPage() {
   const form = useForm<EnvelopeFormValues>({
     resolver: zodResolver(envelopeSchema),
     defaultValues: DEFAULT_VALUES,
-  });
-
-  const archiveForm = useForm<ArchiveEnvelopeFormValues>({
-    resolver: zodResolver(archiveEnvelopeSchema),
-    defaultValues: {
-      archivedFromMonth: toMonthInputValue(referenceMonth),
-    },
   });
 
   const envelopeType = form.watch("type");
@@ -248,14 +236,6 @@ export default function EnvelopesPage() {
     }
   }, [form, isCreating, selectedEnvelope, selectedEnvelopeSummary]);
 
-  useEffect(() => {
-    archiveForm.reset({
-      archivedFromMonth: toMonthInputValue(
-        selectedEnvelope?.archivedFromMonth ?? referenceMonth,
-      ),
-    });
-  }, [archiveForm, referenceMonth, selectedEnvelope]);
-
   function handleToggleCategory(categoryId: string, checked: boolean) {
     const nextValues = checked
       ? [...selectedCategoryIds, categoryId]
@@ -284,10 +264,14 @@ export default function EnvelopesPage() {
         );
         setSelectedId(created.id);
         setIsCreating(false);
-        setSearch(created.name);
-        setStatusFilter("ALL");
-        setTypeFilter(created.type);
-        setPage(0);
+        await loadEnvelopesData({
+          referenceMonth,
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+          type: typeFilter || undefined,
+        });
       } else if (selectedEnvelopeSummary) {
         const updated = await updateEnvelope(
           selectedEnvelopeSummary.id,
@@ -295,11 +279,14 @@ export default function EnvelopesPage() {
           accessToken,
         );
         setSelectedId(updated.id);
-        setSearch((current) =>
-          current.trim().length === 0 ? current : updated.name,
-        );
-        setTypeFilter((current) => (current === "" ? current : updated.type));
-        setPage(0);
+        await loadEnvelopesData({
+          referenceMonth,
+          page,
+          size: pageSize,
+          search,
+          status: statusFilter,
+          type: typeFilter || undefined,
+        });
       }
     } catch {
       setError(t("envelopes.saveError"));
@@ -308,7 +295,7 @@ export default function EnvelopesPage() {
     }
   }
 
-  async function onArchive(values: ArchiveEnvelopeFormValues) {
+  async function onArchive() {
     if (
       !accessToken ||
       !selectedEnvelopeSummary ||
@@ -323,13 +310,18 @@ export default function EnvelopesPage() {
     try {
       const archived = await archiveEnvelope(
         selectedEnvelopeSummary.id,
-        {
-          archivedFromMonth: fromMonthInputValue(values.archivedFromMonth),
-        },
+        referenceMonth,
         accessToken,
       );
       setSelectedId(archived.id);
-      setPage(0);
+      await loadEnvelopesData({
+        referenceMonth,
+        page,
+        size: pageSize,
+        search,
+        status: statusFilter,
+        type: typeFilter || undefined,
+      });
     } catch {
       setError(t("envelopes.archiveError"));
     } finally {
@@ -854,42 +846,25 @@ export default function EnvelopesPage() {
                       </p>
                     </div>
 
-                    <form
-                      className={styles.form}
-                      onSubmit={archiveForm.handleSubmit(onArchive)}
-                      noValidate
-                    >
-                      <Field
-                        error={
-                          archiveForm.formState.errors.archivedFromMonth
-                            ?.message
-                        }
-                        htmlFor="envelope-archive-month"
-                        label={t("envelopes.archiveMonth")}
-                      >
-                        <Input
-                          id="envelope-archive-month"
-                          hasError={Boolean(
-                            archiveForm.formState.errors.archivedFromMonth,
-                          )}
-                          type="month"
-                          {...archiveForm.register("archivedFromMonth")}
-                        />
-                      </Field>
+                    <div className={styles.form}>
+                      <p className={styles.detailSubtitle}>
+                        O arquivamento passa a valer automaticamente para o mês exibido: {formatReferenceMonth(referenceMonth)}.
+                      </p>
 
                       <Button
                         disabled={Boolean(
                           selectedEnvelopeSummary.archivedFromMonth,
                         )}
                         loading={isArchiving}
-                        type="submit"
+                        onClick={() => void onArchive()}
+                        type="button"
                         variant="secondary"
                       >
                         {selectedEnvelopeSummary.archivedFromMonth
                           ? t("envelopes.archived")
                           : t("envelopes.archiveAction")}
                       </Button>
-                    </form>
+                    </div>
                   </Card>
                 ) : null}
               </div>
