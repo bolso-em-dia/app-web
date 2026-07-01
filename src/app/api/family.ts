@@ -37,7 +37,7 @@ export type FamilyMemberListParams = {
 };
 
 export function listFamilyMemberPage(
-  { page, size, search, status = "ALL" }: FamilyMemberListParams,
+  { page, size, search, status = "ACTIVE" }: FamilyMemberListParams,
   accessToken: string,
 ) {
   const query = new URLSearchParams({
@@ -62,7 +62,7 @@ export function listFamilyMemberPage(
 export async function listFamilyMembers(accessToken: string) {
   const response = await apiRequest<
     PageResponse<FamilyMember> | FamilyMember[]
-  >("/api/family-members?page=0&size=200&status=ALL", {
+  >("/api/family-members?page=0&size=200&status=ACTIVE", {
     method: "GET",
     accessToken,
   });

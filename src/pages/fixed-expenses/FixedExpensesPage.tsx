@@ -68,7 +68,7 @@ export default function FixedExpensesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "ACTIVE" | "ARCHIVED"
-  >("ALL");
+  >("ACTIVE");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
@@ -547,43 +547,21 @@ export default function FixedExpensesPage() {
                       >
                         {t("common.cancel")}
                       </Button>
-                    ) : null}
-                  </div>
-                </form>
-
-                {!isCreating && selectedTemplate ? (
-                  <Card className={styles.archivePanel}>
-                    <div className={styles.formHeader}>
-                      <div>
-                        <h3 className={styles.sectionTitle}>
-                          {t("fixedExpenses.archiveAction")}
-                        </h3>
-                        <p className={styles.formSubtitle}>
-                          Pare de gerar esta despesa recorrente a partir de um
-                          mês específico.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className={styles.form}>
-                      <p className={styles.formSubtitle}>
-                        O arquivamento passa a valer automaticamente a partir do mês atual.
-                      </p>
-
+                    ) : (
                       <Button
-                        disabled={Boolean(selectedTemplate.archivedFromMonth)}
+                        disabled={Boolean(selectedTemplate?.archivedFromMonth)}
                         loading={isArchiving}
                         onClick={() => void onArchive()}
                         type="button"
                         variant="secondary"
                       >
-                        {selectedTemplate.archivedFromMonth
+                        {selectedTemplate?.archivedFromMonth
                           ? t("fixedExpenses.archived")
                           : t("fixedExpenses.archiveAction")}
                       </Button>
-                    </div>
-                  </Card>
-                ) : null}
+                    )}
+                  </div>
+                </form>
               </div>
             </Drawer>
           ) : null}

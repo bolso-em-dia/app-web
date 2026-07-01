@@ -32,7 +32,7 @@ export type FixedExpenseTemplateListParams = {
 };
 
 export function listFixedExpenseTemplates(
-  { page, size, search, status = "ALL" }: FixedExpenseTemplateListParams,
+  { page, size, search, status = "ACTIVE" }: FixedExpenseTemplateListParams,
   accessToken: string,
 ) {
   const query = new URLSearchParams({

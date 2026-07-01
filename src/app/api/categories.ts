@@ -37,7 +37,7 @@ export type CategoryListParams = {
 };
 
 export function listCategories(
-  { page, size, search, status = "ALL" }: CategoryListParams,
+  { page, size, search, status = "ACTIVE" }: CategoryListParams,
   accessToken: string,
 ) {
   const query = new URLSearchParams({

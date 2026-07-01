@@ -58,7 +58,7 @@ export default function AccountsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "ACTIVE" | "ARCHIVED"
-  >("ALL");
+  >("ACTIVE");
   const [typeFilter, setTypeFilter] = useState<"" | AccountType>("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);

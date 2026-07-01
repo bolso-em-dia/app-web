@@ -34,7 +34,7 @@ export type AccountListParams = {
 };
 
 export function listAccountPage(
-  { page, size, search, status = "ALL", type }: AccountListParams,
+  { page, size, search, status = "ACTIVE", type }: AccountListParams,
   accessToken: string,
 ) {
   const query = new URLSearchParams({
@@ -62,7 +62,7 @@ export function listAccountPage(
 
 export async function listAccounts(accessToken: string) {
   const response = await apiRequest<PageResponse<Account> | Account[]>(
-    "/api/accounts?page=0&size=200&status=ALL",
+    "/api/accounts?page=0&size=200&status=ACTIVE",
     {
       method: "GET",
       accessToken,
