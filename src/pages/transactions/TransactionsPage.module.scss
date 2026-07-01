@@ -29,35 +29,86 @@
   padding: var(--space-4);
 }
 
+.transactionCard {
+  padding: 0;
+}
+
 .transactionButton {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-3);
   width: 100%;
   border: 0;
+  border-inline-start: 0.25rem solid transparent;
+  border-radius: inherit;
   background: transparent;
-  padding: 0;
+  padding: var(--space-5);
+  padding-inline-start: calc(var(--space-5) - 0.25rem);
   text-align: left;
   cursor: pointer;
+}
+
+.transactionButton:hover {
+  background: var(--color-panel-muted);
 }
 
 .transactionTop {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-3);
+}
+
+.transactionMain {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.transactionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.transactionLine {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+}
+
+.transactionDescription {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.transactionAmount {
+  white-space: nowrap;
 }
 
 .transactionMeta,
 .helperText {
-  margin: var(--space-1) 0 0;
+  margin: 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-100);
+}
+
+.transactionMeta,
+.transactionMetaSeparator {
+  white-space: nowrap;
+}
+
+.transactionMetaSeparator {
+  color: var(--color-text-muted);
 }
 
 .badgeRow {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+  margin-inline-start: calc(1.25rem + var(--space-3));
 }
 
 .badge {
@@ -75,6 +126,40 @@
 .badgeMuted {
   background: var(--color-surface-muted);
   color: var(--color-text-muted);
+}
+
+.badgeIncome {
+  background: #eefaf4;
+  color: var(--color-success);
+}
+
+.badgeExpense {
+  background: #fdf2f1;
+  color: var(--color-danger);
+}
+
+.categoryLead {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+}
+
+.categoryIcon,
+.categoryDot {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: 0 0 auto;
+}
+
+.categoryDot {
+  display: inline-block;
+  border-radius: var(--radius-round);
+  background: currentColor;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 28%, white);
 }
 
 .emptyState {
@@ -240,5 +325,19 @@
   .formActions,
   .paginationButtons {
     flex-direction: column;
+  }
+
+  .badgeRow {
+    margin-inline-start: 0;
+  }
+
+  .transactionLine,
+  .transactionTop {
+    align-items: flex-start;
+  }
+
+  .transactionMeta,
+  .transactionMetaSeparator {
+    white-space: normal;
   }
 }

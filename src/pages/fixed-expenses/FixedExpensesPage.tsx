@@ -34,6 +34,7 @@ import {
 } from "../../lib/formatters/date";
 import { fixedExpenseSchema, type FixedExpenseFormValues } from "../../lib/validation/fixedExpenseSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { getStoredIcon } from "../../lib/icons";
 import styles from "./FixedExpensesPage.module.scss";
 
 const DEFAULT_VALUES: FixedExpenseFormValues = {
@@ -83,6 +84,11 @@ export default function FixedExpensesPage() {
   const selectedTemplate = useMemo(
     () => templates.find((template) => template.id === selectedId) ?? null,
     [templates, selectedId],
+  );
+
+  const categoryOptionsById = useMemo(
+    () => new Map(categoryOptions.map((category) => [category.id, category])),
+    [categoryOptions],
   );
 
   const form = useForm<FixedExpenseFormValues>({
@@ -317,48 +323,86 @@ export default function FixedExpensesPage() {
           </Card>
 
           <section className={styles.templateGrid}>
-            {templates.map((template) => (
-              <Card key={template.id} className={styles.templateCard}>
-                <button
-                  className={styles.templateButton}
-                  onClick={() => {
-                    setIsCreating(false);
-                    setSelectedId(template.id);
-                    setError(null);
-                  }}
-                  type="button"
-                >
-                  <div className={styles.templateHeader}>
-                    <div>
-                      <strong>{template.name}</strong>
-                      <p className={styles.templateMeta}>
-                        {template.categoryName} · {template.accountName}
-                      </p>
-                    </div>
-                    <strong>{formatCurrency(template.amount)}</strong>
-                  </div>
+            {templates.map((template) => {
+              const categoryOption = categoryOptionsById.get(template.categoryId);
+              const CategoryIcon = getStoredIcon(categoryOption?.icon);
+              const categoryColor = categoryOption?.color ?? undefined;
 
-                  <div className={styles.templateBadges}>
-                    <span className={styles.badge}>
-                      Vence no dia {template.dueDay}
-                    </span>
-                    <span
-                      className={
-                        template.archivedFromMonth
-                          ? `${styles.badge} ${styles.badgeMuted}`
-                          : `${styles.badge} ${styles.badgeSuccess}`
-                      }
-                    >
-                      {template.archivedFromMonth
-                        ? `Arquivado a partir de ${formatReferenceMonth(
-                            template.archivedFromMonth,
-                          )}`
-                        : t("common.active")}
-                    </span>
-                  </div>
-                </button>
-              </Card>
-            ))}
+              return (
+                <Card key={template.id} className={styles.templateCard}>
+                  <button
+                    className={styles.templateButton}
+                    onClick={() => {
+                      setIsCreating(false);
+                      setSelectedId(template.id);
+                      setError(null);
+                    }}
+                    style={
+                      categoryColor
+                        ? { borderInlineStartColor: categoryColor }
+                        : undefined
+                    }
+                    type="button"
+                  >
+                    <div className={styles.templateHeader}>
+                      <div className={styles.templateMain}>
+                        <div className={styles.templateTitleRow}>
+                          {CategoryIcon ? (
+                            <span
+                              aria-hidden="true"
+                              className={styles.categoryLead}
+                              style={
+                                categoryColor
+                                  ? { color: categoryColor }
+                                  : undefined
+                              }
+                            >
+                              <CategoryIcon className={styles.categoryIcon} />
+                            </span>
+                          ) : categoryColor ? (
+                            <span
+                              aria-hidden="true"
+                              className={styles.categoryLead}
+                              style={{ color: categoryColor }}
+                            >
+                              <span className={styles.categoryDot} />
+                            </span>
+                          ) : null}
+                          <div className={styles.templateLine}>
+                            <strong className={styles.templateName}>
+                              {template.name}
+                            </strong>
+                            <span className={styles.templateMetaSeparator}>·</span>
+                            <p className={styles.templateMeta}>
+                              {template.categoryName} · {template.accountName} · Vence dia {String(template.dueDay).padStart(2, "0")}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <strong className={styles.templateAmount}>
+                        {formatCurrency(template.amount)}
+                      </strong>
+                    </div>
+
+                    <div className={styles.templateBadges}>
+                      <span
+                        className={
+                          template.archivedFromMonth
+                            ? `${styles.badge} ${styles.badgeMuted}`
+                            : `${styles.badge} ${styles.badgeSuccess}`
+                        }
+                      >
+                        {template.archivedFromMonth
+                          ? `Arquivado a partir de ${formatReferenceMonth(
+                              template.archivedFromMonth,
+                            )}`
+                          : t("common.active")}
+                      </span>
+                    </div>
+                  </button>
+                </Card>
+              );
+            })}
           </section>
 
           <Card className={styles.footerPanel}>

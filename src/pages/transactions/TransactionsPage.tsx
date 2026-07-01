@@ -34,6 +34,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Switch from "../../components/ui/Switch";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { getStoredIcon } from "../../lib/icons";
 import { formatCurrency } from "../../lib/formatters/currency";
 import {
   formatDay,
@@ -160,6 +161,10 @@ export default function TransactionsPage() {
   const allowanceMembers = useMemo(
     () => members.filter((member) => member.active && member.allowanceEnabled),
     [members],
+  );
+  const categoryOptionsById = useMemo(
+    () => new Map(categoryOptions.map((category) => [category.id, category])),
+    [categoryOptions],
   );
 
   const focusDescriptionField = useCallback(() => {
@@ -582,56 +587,102 @@ export default function TransactionsPage() {
                 <p>{t("transactions.empty")}</p>
               </Card>
             ) : (
-              transactions.map((transaction) => (
-                <Card key={transaction.id} className={styles.transactionCard}>
-                  <button
-                    className={styles.transactionButton}
-                    onClick={() => {
-                      setIsCreating(false);
-                      setSelectedId(transaction.id);
-                      setError(null);
-                    }}
-                    type="button"
-                  >
-                    <div className={styles.transactionTop}>
-                      <div>
-                        <strong>{transaction.description}</strong>
-                        <p className={styles.transactionMeta}>
-                          {transaction.categoryName} · {transaction.accountName}{" "}
-                          · {formatDay(transaction.transactionDate)}
-                        </p>
-                      </div>
-                      <strong>{formatCurrency(transaction.amount)}</strong>
-                    </div>
+              transactions.map((transaction) => {
+                const categoryOption = categoryOptionsById.get(
+                  transaction.categoryId,
+                );
+                const CategoryIcon = getStoredIcon(categoryOption?.icon);
+                const categoryColor = categoryOption?.color ?? undefined;
 
-                    <div className={styles.badgeRow}>
-                      <span className={styles.badge}>
-                        {t(`transactionTypes.${transaction.type}` as const)}
-                      </span>
-                      <span className={styles.badge}>
-                        {t(
-                          `ownershipTypes.${transaction.ownershipType}` as const,
-                        )}
-                      </span>
-                      {transaction.memberName ? (
+                return (
+                  <Card key={transaction.id} className={styles.transactionCard}>
+                    <button
+                      className={styles.transactionButton}
+                      onClick={() => {
+                        setIsCreating(false);
+                        setSelectedId(transaction.id);
+                        setError(null);
+                      }}
+                      style={
+                        categoryColor
+                          ? { borderInlineStartColor: categoryColor }
+                          : undefined
+                      }
+                      type="button"
+                    >
+                      <div className={styles.transactionTop}>
+                        <div className={styles.transactionMain}>
+                          <div className={styles.transactionTitleRow}>
+                            {CategoryIcon ? (
+                              <span
+                                aria-hidden="true"
+                                className={styles.categoryLead}
+                                style={
+                                  categoryColor
+                                    ? { color: categoryColor }
+                                    : undefined
+                                }
+                              >
+                                <CategoryIcon className={styles.categoryIcon} />
+                              </span>
+                            ) : categoryColor ? (
+                              <span
+                                aria-hidden="true"
+                                className={styles.categoryLead}
+                                style={{ color: categoryColor }}
+                              >
+                                <span className={styles.categoryDot} />
+                              </span>
+                            ) : null}
+                            <div className={styles.transactionLine}>
+                              <strong className={styles.transactionDescription}>
+                                {transaction.description}
+                              </strong>
+                              <span className={styles.transactionMetaSeparator}>
+                                ·
+                              </span>
+                              <span className={styles.transactionMeta}>
+                                {transaction.categoryName} · {transaction.accountName} · {formatDay(transaction.transactionDate)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <strong className={styles.transactionAmount}>
+                          {formatCurrency(transaction.amount)}
+                        </strong>
+                      </div>
+
+                      <div className={styles.badgeRow}>
                         <span
-                          className={`${styles.badge} ${styles.badgeMuted}`}
+                          className={`${styles.badge} ${transaction.type === "INCOME" ? styles.badgeIncome : styles.badgeExpense}`}
                         >
-                          {transaction.memberName}
+                          {t(`transactionTypes.${transaction.type}` as const)}
                         </span>
-                      ) : null}
-                      {transaction.installmentTotal ? (
-                        <span
-                          className={`${styles.badge} ${styles.badgeMuted}`}
-                        >
-                          {transaction.installmentNumber}/
-                          {transaction.installmentTotal}
+                        <span className={styles.badge}>
+                          {t(
+                            `ownershipTypes.${transaction.ownershipType}` as const,
+                          )}
                         </span>
-                      ) : null}
-                    </div>
-                  </button>
-                </Card>
-              ))
+                        {transaction.memberName ? (
+                          <span
+                            className={`${styles.badge} ${styles.badgeMuted}`}
+                          >
+                            {transaction.memberName}
+                          </span>
+                        ) : null}
+                        {transaction.installmentTotal ? (
+                          <span
+                            className={`${styles.badge} ${styles.badgeMuted}`}
+                          >
+                            {transaction.installmentNumber}/
+                            {transaction.installmentTotal}
+                          </span>
+                        ) : null}
+                      </div>
+                    </button>
+                  </Card>
+                );
+              })
             )}
           </section>
 

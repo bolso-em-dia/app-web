@@ -84,6 +84,9 @@ describe("FixedExpensesPage", () => {
     );
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
+    expect(
+      screen.getByText("Housing · Main checking · Vence dia 05"),
+    ).toBeInTheDocument();
     expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Novo gasto fixo" }));
