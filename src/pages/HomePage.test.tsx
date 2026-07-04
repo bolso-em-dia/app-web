@@ -6,6 +6,13 @@ import { TestAuthProvider } from "../app/auth/TestAuthProvider";
 
 describe("HomePage", () => {
   beforeEach(() => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      value: 1280,
+      writable: true,
+    });
+    window.dispatchEvent(new Event("resize"));
+
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       status: 200,
