@@ -4,7 +4,7 @@ import clsx from "./clsx";
 import styles from "./Button.module.scss";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "subtle" | "danger";
   fullWidth?: boolean;
   loading?: boolean;
 };
@@ -25,6 +25,7 @@ export default function Button({
       className={clsx(
         styles.root,
         styles[variant],
+        loading ? styles.loading : "",
         fullWidth ? styles.fullWidth : "",
         className,
       )}

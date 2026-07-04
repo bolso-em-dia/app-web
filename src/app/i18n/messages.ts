@@ -34,6 +34,8 @@ export const ptBRMessages = {
   "common.account": "Conta",
   "common.category": "Categoria",
   "common.member": "Membro",
+  "common.filters": "Filtros",
+  "common.clearFilters": "Limpar filtros",
   "common.referenceMonth": "Mês de referência",
   "common.ownership": "Titularidade",
   "common.selectAccount": "Selecione uma conta",

@@ -20,6 +20,7 @@ import Card from "../../components/ui/Card";
 import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
+import FilterToolbar from "../../components/ui/FilterToolbar";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
@@ -65,6 +66,7 @@ export default function AccountsPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -233,6 +235,57 @@ export default function AccountsPage() {
     setError(null);
   }
 
+  const activeFilters = useMemo(
+    () => [
+      ...(search
+        ? [
+            {
+              key: "search",
+              label: `${t("common.search")}: ${search}`,
+              onRemove: () => {
+                setSearch("");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(statusFilter !== "ACTIVE"
+        ? [
+            {
+              key: "status",
+              label: `${t("common.status")}: ${t(
+                statusFilter === "ALL" ? "common.all" : "common.archived",
+              )}`,
+              onRemove: () => {
+                setStatusFilter("ACTIVE");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(typeFilter
+        ? [
+            {
+              key: "type",
+              label: `${t("common.type")}: ${t(`accountTypes.${typeFilter}`)}`,
+              onRemove: () => {
+                setTypeFilter("");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+    ],
+    [search, statusFilter, t, typeFilter],
+  );
+
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("ACTIVE");
+    setTypeFilter("");
+    setPage(0);
+  }
+
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
@@ -257,8 +310,13 @@ export default function AccountsPage() {
       ) : (
         <section className={styles.stack}>
           <Card className={styles.toolbarPanel}>
-            <div className={styles.toolbar}>
-              <div className={styles.filterGroup}>
+            <FilterToolbar
+              activeFilters={activeFilters}
+              isPanelOpen={isFiltersOpen}
+              onClearFilters={clearFilters}
+              onClosePanel={() => setIsFiltersOpen(false)}
+              onTogglePanel={() => setIsFiltersOpen((current) => !current)}
+              primaryContent={
                 <Field htmlFor="account-search" label={t("common.search")}>
                   <Input
                     id="account-search"
@@ -270,7 +328,9 @@ export default function AccountsPage() {
                     value={search}
                   />
                 </Field>
-
+              }
+              secondaryContent={
+                <>
                 <Field
                   htmlFor="account-status-filter"
                   label={t("common.status")}
@@ -290,7 +350,6 @@ export default function AccountsPage() {
                     <option value="ARCHIVED">{t("common.archived")}</option>
                   </Select>
                 </Field>
-
                 <Field htmlFor="account-type-filter" label={t("common.type")}>
                   <Select
                     id="account-type-filter"
@@ -313,8 +372,9 @@ export default function AccountsPage() {
                     </option>
                   </Select>
                 </Field>
-              </div>
-            </div>
+                </>
+              }
+            />
           </Card>
 
           <section className={styles.accountGrid}>
@@ -416,7 +476,7 @@ export default function AccountsPage() {
                     disabled={!hasPreviousPage}
                     onClick={() => setPage((current) => current - 1)}
                     type="button"
-                    variant="secondary"
+                    variant="subtle"
                   >
                     {t("common.previous")}
                   </Button>
@@ -424,7 +484,7 @@ export default function AccountsPage() {
                     disabled={!hasNextPage}
                     onClick={() => setPage((current) => current + 1)}
                     type="button"
-                    variant="secondary"
+                    variant="subtle"
                   >
                     {t("common.next")}
                   </Button>
@@ -581,7 +641,7 @@ export default function AccountsPage() {
                       <Button
                         onClick={handleCancelCreate}
                         type="button"
-                        variant="secondary"
+                        variant="subtle"
                       >
                         {t("common.cancel")}
                       </Button>
@@ -591,7 +651,9 @@ export default function AccountsPage() {
                         loading={isArchiving}
                         onClick={() => void onArchive()}
                         type="button"
-                        variant="secondary"
+                        variant={
+                          selectedAccount?.archivedFromMonth ? "subtle" : "danger"
+                        }
                       >
                         {selectedAccount?.archivedFromMonth
                           ? t("accounts.archived")

@@ -20,6 +20,7 @@ import CategorySelect from "../../components/ui/CategorySelect";
 import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
+import FilterToolbar from "../../components/ui/FilterToolbar";
 import FormError from "../../components/ui/FormError";
 import IconSelect from "../../components/ui/IconSelect";
 import Input from "../../components/ui/Input";
@@ -58,6 +59,7 @@ export default function CategoriesPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -257,6 +259,44 @@ export default function CategoriesPage() {
     setError(null);
   }
 
+  const activeFilters = useMemo(
+    () => [
+      ...(search
+        ? [
+            {
+              key: "search",
+              label: `${t("common.search")}: ${search}`,
+              onRemove: () => {
+                setSearch("");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(statusFilter !== "ACTIVE"
+        ? [
+            {
+              key: "status",
+              label: `${t("common.status")}: ${t(
+                statusFilter === "ALL" ? "common.all" : "common.archived",
+              )}`,
+              onRemove: () => {
+                setStatusFilter("ACTIVE");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+    ],
+    [search, statusFilter, t],
+  );
+
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("ACTIVE");
+    setPage(0);
+  }
+
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const archiveOptions = options.filter(
     (option) => option.id !== selectedCategory?.id,
@@ -287,8 +327,13 @@ export default function CategoriesPage() {
         <>
           <section className={styles.stack}>
             <Card className={styles.toolbarPanel}>
-              <div className={styles.toolbar}>
-                <div className={styles.filterGroup}>
+              <FilterToolbar
+                activeFilters={activeFilters}
+                isPanelOpen={isFiltersOpen}
+                onClearFilters={clearFilters}
+                onClosePanel={() => setIsFiltersOpen(false)}
+                onTogglePanel={() => setIsFiltersOpen((current) => !current)}
+                primaryContent={
                   <Field htmlFor="category-search" label={t("common.search")}>
                     <Input
                       id="category-search"
@@ -300,7 +345,9 @@ export default function CategoriesPage() {
                       value={search}
                     />
                   </Field>
-
+                }
+                secondaryContent={
+                  <>
                   <Field
                     htmlFor="category-status-filter"
                     label={t("common.status")}
@@ -320,8 +367,9 @@ export default function CategoriesPage() {
                       <option value="ARCHIVED">{t("common.archived")}</option>
                     </Select>
                   </Field>
-                </div>
-              </div>
+                  </>
+                }
+              />
             </Card>
 
             <section className={styles.categoryGrid}>
@@ -422,7 +470,7 @@ export default function CategoriesPage() {
                       disabled={!hasPreviousPage}
                       onClick={() => setPage((current) => current - 1)}
                       type="button"
-                      variant="secondary"
+                      variant="subtle"
                     >
                       {t("common.previous")}
                     </Button>
@@ -436,7 +484,7 @@ export default function CategoriesPage() {
                       disabled={!hasNextPage}
                       onClick={() => setPage((current) => current + 1)}
                       type="button"
-                      variant="secondary"
+                      variant="subtle"
                     >
                       {t("common.next")}
                     </Button>
@@ -530,7 +578,7 @@ export default function CategoriesPage() {
                       <Button
                         onClick={handleCancelCreate}
                         type="button"
-                        variant="secondary"
+                        variant="subtle"
                       >
                         {t("common.cancel")}
                       </Button>
@@ -572,7 +620,7 @@ export default function CategoriesPage() {
                     </Field>
 
                     <div className={styles.formActions}>
-                      <Button loading={isArchiving} type="submit" variant="secondary">
+                      <Button loading={isArchiving} type="submit" variant="danger">
                         {t("categories.archiveAction")}
                       </Button>
                     </div>

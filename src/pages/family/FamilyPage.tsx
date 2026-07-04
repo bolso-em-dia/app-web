@@ -20,6 +20,7 @@ import Card from "../../components/ui/Card";
 import Checkbox from "../../components/ui/Checkbox";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
+import FilterToolbar from "../../components/ui/FilterToolbar";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
@@ -58,6 +59,7 @@ export default function FamilyPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -233,6 +235,44 @@ export default function FamilyPage() {
     setError(null);
   }
 
+  const activeFilters = useMemo(
+    () => [
+      ...(search
+        ? [
+            {
+              key: "search",
+              label: `${t("common.search")}: ${search}`,
+              onRemove: () => {
+                setSearch("");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(statusFilter !== "ACTIVE"
+        ? [
+            {
+              key: "status",
+              label: `${t("common.status")}: ${t(
+                statusFilter === "ALL" ? "common.all" : "common.archived",
+              )}`,
+              onRemove: () => {
+                setStatusFilter("ACTIVE");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+    ],
+    [search, statusFilter, t],
+  );
+
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("ACTIVE");
+    setPage(0);
+  }
+
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
@@ -257,8 +297,13 @@ export default function FamilyPage() {
       ) : (
         <section className={styles.stack}>
           <Card className={styles.toolbarPanel}>
-            <div className={styles.toolbar}>
-              <div className={styles.filterGroup}>
+            <FilterToolbar
+              activeFilters={activeFilters}
+              isPanelOpen={isFiltersOpen}
+              onClearFilters={clearFilters}
+              onClosePanel={() => setIsFiltersOpen(false)}
+              onTogglePanel={() => setIsFiltersOpen((current) => !current)}
+              primaryContent={
                 <Field htmlFor="family-search" label={t("common.search")}>
                   <Input
                     id="family-search"
@@ -270,7 +315,9 @@ export default function FamilyPage() {
                     value={search}
                   />
                 </Field>
-
+              }
+              secondaryContent={
+                <>
                 <Field
                   htmlFor="family-status-filter"
                   label={t("common.status")}
@@ -290,8 +337,9 @@ export default function FamilyPage() {
                     <option value="ARCHIVED">{t("common.archived")}</option>
                   </Select>
                 </Field>
-              </div>
-            </div>
+                </>
+              }
+            />
           </Card>
 
           <section className={styles.memberGrid}>
@@ -387,7 +435,7 @@ export default function FamilyPage() {
                     disabled={!hasPreviousPage}
                     onClick={() => setPage((current) => current - 1)}
                     type="button"
-                    variant="secondary"
+                    variant="subtle"
                   >
                     {t("common.previous")}
                   </Button>
@@ -395,7 +443,7 @@ export default function FamilyPage() {
                     disabled={!hasNextPage}
                     onClick={() => setPage((current) => current + 1)}
                     type="button"
-                    variant="secondary"
+                    variant="subtle"
                   >
                     {t("common.next")}
                   </Button>
@@ -496,7 +544,7 @@ export default function FamilyPage() {
                       <Button
                         onClick={handleCancelCreate}
                         type="button"
-                        variant="secondary"
+                        variant="subtle"
                       >
                         {t("common.cancel")}
                       </Button>
@@ -505,7 +553,7 @@ export default function FamilyPage() {
                         loading={isArchiving}
                         onClick={() => void handleArchiveToggle()}
                         type="button"
-                        variant="secondary"
+                        variant={selectedMember?.active ? "danger" : "secondary"}
                       >
                         {selectedMember?.active
                           ? t("family.archiveMember")

@@ -203,6 +203,7 @@ describe("AccountsPage", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Buscar" }), {
       target: { value: "Main" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
     fireEvent.change(
       screen.getByLabelText("Tipo", { selector: "#account-type-filter" }),
       {
@@ -218,6 +219,10 @@ describe("AccountsPage", () => {
         "Main",
       );
     });
+
+    if (!screen.queryByLabelText("Tipo", { selector: "#account-type-filter" })) {
+      fireEvent.click(screen.getByRole("button", { name: "Filtros (2)" }));
+    }
 
     expect(
       screen.getByLabelText("Tipo", { selector: "#account-type-filter" }),

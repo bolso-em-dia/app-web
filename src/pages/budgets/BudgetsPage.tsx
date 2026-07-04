@@ -28,6 +28,7 @@ import CategoryMultiSelect from "../../components/ui/CategoryMultiSelect";
 import Drawer from "../../components/ui/Drawer";
 import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
+import FilterToolbar from "../../components/ui/FilterToolbar";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
@@ -96,6 +97,7 @@ export default function BudgetsPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
@@ -338,6 +340,57 @@ export default function BudgetsPage() {
     setError(null);
   }
 
+  const activeFilters = useMemo(
+    () => [
+      ...(search
+        ? [
+            {
+              key: "search",
+              label: `${t("common.search")}: ${search}`,
+              onRemove: () => {
+                setSearch("");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(statusFilter !== "ACTIVE"
+        ? [
+            {
+              key: "status",
+              label: `${t("common.status")}: ${t(
+                statusFilter === "ALL" ? "common.all" : "common.archived",
+              )}`,
+              onRemove: () => {
+                setStatusFilter("ACTIVE");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(typeFilter
+        ? [
+            {
+              key: "type",
+              label: `${t("common.type")}: ${t(`budgetTypes.${typeFilter}`)}`,
+              onRemove: () => {
+                setTypeFilter("");
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+    ],
+    [search, statusFilter, t, typeFilter],
+  );
+
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("ACTIVE");
+    setTypeFilter("");
+    setPage(0);
+  }
+
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
@@ -362,8 +415,14 @@ export default function BudgetsPage() {
       ) : (
         <section className={styles.stack}>
           <Card className={styles.toolbarPanel}>
-            <div className={styles.toolbar}>
-              <div className={styles.filterGroup}>
+            <FilterToolbar
+              activeFilters={activeFilters}
+              isPanelOpen={isFiltersOpen}
+              onClearFilters={clearFilters}
+              onClosePanel={() => setIsFiltersOpen(false)}
+              onTogglePanel={() => setIsFiltersOpen((current) => !current)}
+              primaryContent={
+                <>
                 <Field
                   htmlFor="budget-reference-month"
                   label={t("common.month")}
@@ -380,7 +439,6 @@ export default function BudgetsPage() {
                     value={toMonthInputValue(referenceMonth)}
                   />
                 </Field>
-
                 <Field htmlFor="budget-search" label={t("common.search")}>
                   <Input
                     id="budget-search"
@@ -392,7 +450,10 @@ export default function BudgetsPage() {
                     value={search}
                   />
                 </Field>
-
+                </>
+              }
+              secondaryContent={
+                <>
                 <Field
                   htmlFor="budget-status-filter"
                   label={t("common.status")}
@@ -429,8 +490,9 @@ export default function BudgetsPage() {
                     </option>
                   </Select>
                 </Field>
-              </div>
-            </div>
+                </>
+              }
+            />
           </Card>
 
           <section className={styles.budgetGrid}>
@@ -526,7 +588,7 @@ export default function BudgetsPage() {
                     disabled={!hasPreviousPage}
                     onClick={() => setPage((current) => current - 1)}
                     type="button"
-                    variant="secondary"
+                    variant="subtle"
                   >
                     {t("common.previous")}
                   </Button>
@@ -534,7 +596,7 @@ export default function BudgetsPage() {
                     disabled={!hasNextPage}
                     onClick={() => setPage((current) => current + 1)}
                     type="button"
-                    variant="secondary"
+                    variant="subtle"
                   >
                     {t("common.next")}
                   </Button>
@@ -676,7 +738,7 @@ export default function BudgetsPage() {
                       <Button
                         onClick={handleCancelCreate}
                         type="button"
-                        variant="secondary"
+                        variant="subtle"
                       >
                         {t("common.cancel")}
                       </Button>
@@ -686,7 +748,11 @@ export default function BudgetsPage() {
                         loading={isArchiving}
                         onClick={() => void onArchive()}
                         type="button"
-                        variant="secondary"
+                        variant={
+                          selectedBudgetSummary?.archivedFromMonth
+                            ? "subtle"
+                            : "danger"
+                        }
                       >
                         {selectedBudgetSummary?.archivedFromMonth
                           ? t("budgets.archived")

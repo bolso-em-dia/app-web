@@ -30,6 +30,7 @@ import CategorySelect from "../../components/ui/CategorySelect";
 import Drawer from "../../components/ui/Drawer";
 import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
+import FilterToolbar from "../../components/ui/FilterToolbar";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
@@ -135,6 +136,7 @@ export default function TransactionsPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<TransactionFilters>({
     referenceMonth: initialReferenceMonth,
   });
@@ -413,6 +415,97 @@ export default function TransactionsPage() {
     setError(null);
   }
 
+  const activeFilters = useMemo(() => {
+    const accountName =
+      accounts.find((account) => account.id === filters.accountId)?.name ?? "";
+    const categoryName =
+      categoryOptions.find((category) => category.id === filters.categoryId)
+        ?.name ?? "";
+    const memberName =
+      allowanceMembers.find((member) => member.id === filters.memberId)?.name ??
+      "";
+
+    return [
+      ...(filters.type
+        ? [
+            {
+              key: "type",
+              label: `${t("common.type")}: ${t(
+                `transactionTypes.${filters.type}`,
+              )}`,
+              onRemove: () => {
+                setFilters((current) => ({ ...current, type: undefined }));
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(filters.ownershipType
+        ? [
+            {
+              key: "ownership",
+              label: `${t("common.ownership")}: ${t(
+                `ownershipTypes.${filters.ownershipType}`,
+              )}`,
+              onRemove: () => {
+                setFilters((current) => ({
+                  ...current,
+                  ownershipType: undefined,
+                }));
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(filters.accountId && accountName
+        ? [
+            {
+              key: "account",
+              label: `${t("common.account")}: ${accountName}`,
+              onRemove: () => {
+                setFilters((current) => ({ ...current, accountId: undefined }));
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(filters.categoryId && categoryName
+        ? [
+            {
+              key: "category",
+              label: `${t("common.category")}: ${categoryName}`,
+              onRemove: () => {
+                setFilters((current) => ({
+                  ...current,
+                  categoryId: undefined,
+                }));
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+      ...(filters.memberId && memberName
+        ? [
+            {
+              key: "member",
+              label: `${t("common.member")}: ${memberName}`,
+              onRemove: () => {
+                setFilters((current) => ({ ...current, memberId: undefined }));
+                setPage(0);
+              },
+            },
+          ]
+        : []),
+    ];
+  }, [accounts, allowanceMembers, categoryOptions, filters, t]);
+
+  function clearFilters() {
+    setFilters((current) => ({
+      referenceMonth: current.referenceMonth,
+    }));
+    setPage(0);
+  }
+
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const supportsGroupedDelete = Boolean(
     selectedTransaction?.installmentGroupId,
@@ -440,7 +533,14 @@ export default function TransactionsPage() {
       ) : (
         <section className={styles.stack}>
           <Card className={styles.toolbarPanel}>
-            <div className={styles.filtersGrid}>
+            <FilterToolbar
+              activeFilters={activeFilters}
+              isPanelOpen={isFiltersOpen}
+              onClearFilters={clearFilters}
+              onClosePanel={() => setIsFiltersOpen(false)}
+              onTogglePanel={() => setIsFiltersOpen((current) => !current)}
+              primaryContent={
+                <>
               <Field
                 label={t("common.referenceMonth")}
                 htmlFor="transaction-filter-month"
@@ -458,7 +558,6 @@ export default function TransactionsPage() {
                   value={toMonthInputValue(filters.referenceMonth)}
                 />
               </Field>
-
               <Field label={t("common.type")} htmlFor="transaction-filter-type">
                 <Select
                   id="transaction-filter-type"
@@ -481,7 +580,10 @@ export default function TransactionsPage() {
                   </option>
                 </Select>
               </Field>
-
+                </>
+              }
+              secondaryContent={
+                <>
               <Field
                 label={t("common.ownership")}
                 htmlFor="transaction-filter-ownership"
@@ -574,7 +676,9 @@ export default function TransactionsPage() {
                   ))}
                 </Select>
               </Field>
-            </div>
+                </>
+              }
+            />
           </Card>
 
           <section className={styles.transactionGrid}>
@@ -713,7 +817,7 @@ export default function TransactionsPage() {
                     disabled={!hasPreviousPage}
                     onClick={() => setPage((current) => current - 1)}
                     type="button"
-                    variant="secondary"
+                    variant="subtle"
                   >
                     {t("common.previous")}
                   </Button>
@@ -721,7 +825,7 @@ export default function TransactionsPage() {
                     disabled={!hasNextPage}
                     onClick={() => setPage((current) => current + 1)}
                     type="button"
-                    variant="secondary"
+                    variant="subtle"
                   >
                     {t("common.next")}
                   </Button>
@@ -1013,7 +1117,7 @@ export default function TransactionsPage() {
                         <Button
                           onClick={handleCancelCreate}
                           type="button"
-                          variant="secondary"
+                          variant="subtle"
                         >
                           {t("common.cancel")}
                         </Button>
@@ -1071,7 +1175,7 @@ export default function TransactionsPage() {
                         loading={isDeleting}
                         onClick={() => void handleDelete()}
                         type="button"
-                        variant="secondary"
+                        variant="danger"
                       >
                         {t("transactions.deleteAction")}
                       </Button>

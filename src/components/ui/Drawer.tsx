@@ -47,7 +47,7 @@ export default function Drawer({
             className={styles.closeButton}
             onClick={onClose}
             type="button"
-            variant="secondary"
+            variant="subtle"
           >
             <X aria-hidden="true" className={styles.closeIcon} />
           </Button>

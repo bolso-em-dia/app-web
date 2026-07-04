@@ -214,6 +214,7 @@ describe("CategoriesPage", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Buscar" }), {
       target: { value: "Gro" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
     fireEvent.change(screen.getByLabelText("Status"), {
       target: { value: "ACTIVE" },
     });
@@ -230,6 +231,10 @@ describe("CategoriesPage", () => {
         "Gro",
       );
     });
+
+    if (!screen.queryByLabelText("Status")) {
+      fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
+    }
 
     expect(screen.getByLabelText("Status")).toHaveValue("ACTIVE");
 

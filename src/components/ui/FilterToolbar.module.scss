@@ -1,0 +1,78 @@
+.root {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.primaryRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.primaryContent {
+  display: grid;
+  flex: 1;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.actions {
+  display: inline-flex;
+  align-items: stretch;
+  align-self: flex-end;
+  gap: var(--space-3);
+  padding-bottom: 1px;
+}
+
+.actions > * {
+  min-height: 2.75rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.drawerContent {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (width <= 60rem) {
+  .primaryRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-start;
+    align-self: stretch;
+    padding-bottom: 0;
+  }
+}
+
+@media (width <= 40rem) {
+  .primaryContent {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .actions > * {
+    flex: 1;
+  }
+}

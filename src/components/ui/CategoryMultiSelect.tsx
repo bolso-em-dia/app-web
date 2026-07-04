@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type { CategoryOption } from "../../app/api/categories";
 import { getStoredIcon } from "../../lib/icons";
 import MultiSelect from "./MultiSelect";
@@ -38,11 +37,6 @@ export default function CategoryMultiSelect({
   onChange,
   hasError = false,
 }: CategoryMultiSelectProps) {
-  const selectedOptions = useMemo(
-    () => options.filter((option) => value.includes(option.id)),
-    [options, value],
-  );
-
   return (
     <div className={styles.stack}>
       <MultiSelect

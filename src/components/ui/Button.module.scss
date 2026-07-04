@@ -1,11 +1,17 @@
 @use "../../styles/mixins.scss" as mixins;
 
 .root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   min-height: 2.75rem;
   padding: 0 var(--space-4);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
   transition:
     background-color 120ms ease,
     border-color 120ms ease,
@@ -19,7 +25,7 @@
 
   &:disabled {
     opacity: 0.72;
-    cursor: wait;
+    cursor: not-allowed;
   }
 }
 
@@ -33,15 +39,43 @@
 }
 
 .secondary {
-  background: var(--color-panel);
-  border-color: var(--color-border-strong);
-  color: var(--color-text);
+  background: var(--color-accent-soft);
+  border-color: color-mix(in srgb, var(--color-accent) 24%, white);
+  color: var(--color-accent-strong);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-accent-soft) 68%, white);
+    border-color: color-mix(in srgb, var(--color-accent) 38%, white);
+  }
+}
+
+.subtle {
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
 
   &:hover:not(:disabled) {
     background: var(--color-panel-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+  }
+}
+
+.danger {
+  background: var(--color-danger-soft);
+  border-color: color-mix(in srgb, var(--color-danger) 24%, white);
+  color: var(--color-danger);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-danger-soft) 76%, white);
+    border-color: color-mix(in srgb, var(--color-danger) 38%, white);
   }
 }
 
 .fullWidth {
   width: 100%;
+}
+
+.loading {
+  cursor: wait;
 }

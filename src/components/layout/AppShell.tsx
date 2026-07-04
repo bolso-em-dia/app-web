@@ -103,7 +103,7 @@ export default function AppShell({
           <Button
             onClick={() => void logout()}
             type="button"
-            variant="secondary"
+            variant="subtle"
           >
             {t("common.signOut")}
           </Button>
