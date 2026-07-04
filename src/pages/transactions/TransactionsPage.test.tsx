@@ -107,6 +107,15 @@ function queueInitialLoads() {
     );
 }
 
+function selectCategory(container: HTMLElement, categoryName: string) {
+  fireEvent.click(
+    within(container).getByLabelText("Categoria", { selector: "button" }),
+  );
+  fireEvent.click(
+    within(container).getByRole("option", { name: new RegExp(categoryName, "i") }),
+  );
+}
+
 describe("TransactionsPage", () => {
   afterEach(() => {
     vi.clearAllMocks();
@@ -153,14 +162,7 @@ describe("TransactionsPage", () => {
         target: { value: "account-1" },
       },
     );
-    fireEvent.change(
-      within(drawer).getByLabelText("Categoria", {
-        selector: "#transaction-category",
-      }),
-      {
-        target: { value: "cat-1" },
-      },
-    );
+    selectCategory(drawer, "Groceries");
     fireEvent.click(
       within(drawer).getByRole("switch", { name: "Titularidade Individual" }),
     );
@@ -257,14 +259,7 @@ describe("TransactionsPage", () => {
         target: { value: "account-1" },
       },
     );
-    fireEvent.change(
-      within(drawer).getByLabelText("Categoria", {
-        selector: "#transaction-category",
-      }),
-      {
-        target: { value: "cat-1" },
-      },
-    );
+    selectCategory(drawer, "Groceries");
 
     fireEvent.click(
       within(drawer).getByRole("button", { name: "Salvar e criar novo" }),
@@ -287,9 +282,7 @@ describe("TransactionsPage", () => {
       }),
     ).toHaveValue("account-1");
     expect(
-      within(drawer).getByLabelText("Categoria", {
-        selector: "#transaction-category",
-      }),
-    ).toHaveValue("cat-1");
+      within(drawer).getByText("Groceries"),
+    ).toBeInTheDocument();
   });
 });

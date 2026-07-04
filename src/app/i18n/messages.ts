@@ -38,6 +38,7 @@ export const ptBRMessages = {
   "common.ownership": "Titularidade",
   "common.selectAccount": "Selecione uma conta",
   "common.selectCategory": "Selecione uma categoria",
+  "common.selectCategories": "Selecione categorias",
   "common.selectMember": "Selecione um membro",
   "common.clearSelection": "Limpar seleção",
   "common.allTypes": "Todos os tipos",

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   archiveCategory,
   createCategory,
@@ -16,6 +16,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import CategorySelect from "../../components/ui/CategorySelect";
 import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
@@ -551,22 +552,23 @@ export default function CategoriesPage() {
                       htmlFor="replacement-category"
                       label={t("categories.replacementCategory")}
                     >
-                      <Select
-                        hasError={Boolean(
-                          archiveForm.formState.errors.replacementCategoryId,
+                      <Controller
+                        control={archiveForm.control}
+                        name="replacementCategoryId"
+                        render={({ field }) => (
+                          <CategorySelect
+                            hasError={Boolean(
+                              archiveForm.formState.errors
+                                .replacementCategoryId,
+                            )}
+                            id="replacement-category"
+                            onChange={field.onChange}
+                            options={archiveOptions}
+                            placeholder={t("categories.selectReplacement")}
+                            value={field.value}
+                          />
                         )}
-                        id="replacement-category"
-                        {...archiveForm.register("replacementCategoryId")}
-                      >
-                        <option value="">
-                          {t("categories.selectReplacement")}
-                        </option>
-                        {archiveOptions.map((option) => (
-                          <option key={option.id} value={option.id}>
-                            {option.name}
-                          </option>
-                        ))}
-                      </Select>
+                      />
                     </Field>
 
                     <div className={styles.formActions}>

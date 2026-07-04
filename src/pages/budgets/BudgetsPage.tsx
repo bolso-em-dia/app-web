@@ -24,7 +24,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import Checkbox from "../../components/ui/Checkbox";
+import CategoryMultiSelect from "../../components/ui/CategoryMultiSelect";
 import Drawer from "../../components/ui/Drawer";
 import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
@@ -114,7 +114,6 @@ export default function BudgetsPage() {
   });
 
   const budgetType = form.watch("type");
-  const selectedCategoryIds = form.watch("categoryIds");
 
   const availableAllowanceMembers = useMemo(
     () => members.filter((member) => member.active && member.allowanceEnabled),
@@ -235,18 +234,6 @@ export default function BudgetsPage() {
       });
     }
   }, [form, isCreating, selectedBudget, selectedBudgetSummary]);
-
-  function handleToggleCategory(categoryId: string, checked: boolean) {
-    const nextValues = checked
-      ? [...selectedCategoryIds, categoryId]
-      : selectedCategoryIds.filter((value) => value !== categoryId);
-
-    form.setValue("categoryIds", nextValues, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true,
-    });
-  }
 
   async function onSubmit(values: BudgetFormValues) {
     if (!accessToken) {
@@ -650,38 +637,31 @@ export default function BudgetsPage() {
                       </Select>
                     </Field>
                   ) : (
-                    <div className={styles.sectionBlock}>
-                      <span className={styles.sectionTitle}>
-                        {t("budgets.linkedCategoriesTitle")}
-                      </span>
-                      <div className={styles.checkboxGroup}>
-                        <div className={styles.checkboxList}>
-                          {categoryOptions.map((category) => (
-                            <Checkbox
-                              key={category.id}
-                              checked={selectedCategoryIds.includes(
-                                category.id,
-                              )}
-                              label={category.name}
-                              onChange={(event) =>
-                                handleToggleCategory(
-                                  category.id,
-                                  event.currentTarget.checked,
-                                )
-                              }
-                            />
-                          ))}
-                        </div>
-                        <p className={styles.helperText}>
-                          {t("budgets.globalHelper")}
-                        </p>
-                      </div>
-                      {form.formState.errors.categoryIds?.message ? (
-                        <FormError>
-                          {form.formState.errors.categoryIds.message}
-                        </FormError>
-                      ) : null}
-                    </div>
+                    <Field
+                      error={form.formState.errors.categoryIds?.message}
+                      htmlFor="budget-linked-categories"
+                      label={t("budgets.linkedCategoriesTitle")}
+                    >
+                      <Controller
+                        control={form.control}
+                        name="categoryIds"
+                        render={({ field }) => (
+                          <CategoryMultiSelect
+                            hasError={Boolean(
+                              form.formState.errors.categoryIds,
+                            )}
+                            id="budget-linked-categories"
+                            onChange={field.onChange}
+                            options={categoryOptions}
+                            placeholder={t("common.selectCategories")}
+                            value={field.value}
+                          />
+                        )}
+                      />
+                      <p className={styles.helperText}>
+                        {t("budgets.globalHelper")}
+                      </p>
+                    </Field>
                   )}
 
                   <FormError>{error}</FormError>

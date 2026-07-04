@@ -26,6 +26,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import CategorySelect from "../../components/ui/CategorySelect";
 import Drawer from "../../components/ui/Drawer";
 import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
@@ -535,24 +536,19 @@ export default function TransactionsPage() {
                 label={t("common.category")}
                 htmlFor="transaction-filter-category"
               >
-                <Select
+                <CategorySelect
                   id="transaction-filter-category"
-                  onChange={(event) => {
+                  onChange={(value) => {
                     setFilters((current) => ({
                       ...current,
-                      categoryId: event.target.value || undefined,
+                      categoryId: value || undefined,
                     }));
                     setPage(0);
                   }}
+                  options={categoryOptions}
+                  placeholder={t("common.allCategories")}
                   value={filters.categoryId ?? ""}
-                >
-                  <option value="">{t("common.allCategories")}</option>
-                  {categoryOptions.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </Select>
+                />
               </Field>
 
               <Field
@@ -937,18 +933,20 @@ export default function TransactionsPage() {
                     htmlFor="transaction-category"
                     label={t("common.category")}
                   >
-                    <Select
-                      id="transaction-category"
-                      hasError={Boolean(form.formState.errors.categoryId)}
-                      {...form.register("categoryId")}
-                    >
-                      <option value="">{t("common.selectCategory")}</option>
-                      {categoryOptions.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </Select>
+                    <Controller
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <CategorySelect
+                          hasError={Boolean(form.formState.errors.categoryId)}
+                          id="transaction-category"
+                          onChange={field.onChange}
+                          options={categoryOptions}
+                          placeholder={t("common.selectCategory")}
+                          value={field.value}
+                        />
+                      )}
+                    />
                   </Field>
 
                   {ownershipType === "INDIVIDUAL" ? (

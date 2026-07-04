@@ -21,6 +21,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import CategorySelect from "../../components/ui/CategorySelect";
 import Drawer from "../../components/ui/Drawer";
 import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
@@ -526,18 +527,20 @@ export default function FixedExpensesPage() {
                     htmlFor="fixed-expense-category"
                     label={t("common.category")}
                   >
-                    <Select
-                      hasError={Boolean(form.formState.errors.categoryId)}
-                      id="fixed-expense-category"
-                      {...form.register("categoryId")}
-                    >
-                      <option value="">{t("common.selectCategory")}</option>
-                      {categoryOptions.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </Select>
+                    <Controller
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <CategorySelect
+                          hasError={Boolean(form.formState.errors.categoryId)}
+                          id="fixed-expense-category"
+                          onChange={field.onChange}
+                          options={categoryOptions}
+                          placeholder={t("common.selectCategory")}
+                          value={field.value}
+                        />
+                      )}
+                    />
                   </Field>
 
                   <Field
