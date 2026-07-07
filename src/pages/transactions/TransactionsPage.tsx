@@ -65,14 +65,17 @@ function referenceMonthFromDate(value: string) {
   return `${value.slice(0, 7)}-01`;
 }
 
-function createDefaultValues(referenceMonth: string): TransactionFormValues {
+function createDefaultValues(
+  referenceMonth: string,
+  defaultAccountId: string,
+): TransactionFormValues {
   return {
     type: "EXPENSE",
     ownershipType: "SHARED",
     description: "",
     amount: 0,
     transactionDate: referenceMonth,
-    accountId: "",
+    accountId: defaultAccountId,
     categoryId: "",
     memberId: "",
     isInstallment: false,
@@ -138,7 +141,7 @@ function formatCategoryFilterLabel(
 }
 
 export default function TransactionsPage() {
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const { t } = useI18n();
   const initialReferenceMonth = useMemo(() => getCurrentReferenceMonth(), []);
   const descriptionInputRef = useRef<HTMLInputElement | null>(null);
@@ -176,7 +179,10 @@ export default function TransactionsPage() {
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
-    defaultValues: createDefaultValues(initialReferenceMonth),
+    defaultValues: createDefaultValues(
+      initialReferenceMonth,
+      user?.preferences.defaultAccountId ?? "",
+    ),
   });
 
   const transactionType = form.watch("type");
@@ -254,7 +260,12 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     if (isCreating) {
-      form.reset(createDefaultValues(filters.referenceMonth));
+      form.reset(
+        createDefaultValues(
+          filters.referenceMonth,
+          user?.preferences.defaultAccountId ?? "",
+        ),
+      );
       focusDescriptionField();
       return;
     }
@@ -280,6 +291,7 @@ export default function TransactionsPage() {
     form,
     isCreating,
     selectedTransaction,
+    user?.preferences.defaultAccountId,
   ]);
 
   useEffect(() => {

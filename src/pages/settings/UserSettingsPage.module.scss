@@ -1,0 +1,76 @@
+.formCard {
+  width: min(100%, 42rem);
+  margin: 0 auto;
+}
+
+.feedbackCard {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 42rem);
+  margin: 0 auto;
+}
+
+.form {
+  display: grid;
+  gap: 24px;
+}
+
+.formIntro {
+  display: grid;
+  gap: 8px;
+}
+
+.formTitle {
+  margin: 0;
+  font-size: var(--font-size-300);
+}
+
+.formSubtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.fieldGroup {
+  display: grid;
+  gap: 12px;
+}
+
+.fieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fieldTitleWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fieldIcon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-text-muted);
+}
+
+.fieldTitle {
+  font-weight: var(--font-weight-semibold);
+}
+
+.successMessage {
+  margin: 0;
+  color: var(--color-success-strong);
+  font-size: var(--font-size-100);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (width <= 40rem) {
+  .formActions > * {
+    width: 100%;
+  }
+}

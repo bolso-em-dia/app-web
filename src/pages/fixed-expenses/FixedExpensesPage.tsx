@@ -42,13 +42,15 @@ import { useI18n } from "../../app/i18n/I18nContext";
 import { getStoredIcon } from "../../lib/icons";
 import styles from "./FixedExpensesPage.module.scss";
 
-const DEFAULT_VALUES: FixedExpenseFormValues = {
-  name: "",
-  amount: 0,
-  categoryId: "",
-  accountId: "",
-  dueDay: 1,
-};
+function createDefaultValues(defaultAccountId: string): FixedExpenseFormValues {
+  return {
+    name: "",
+    amount: 0,
+    categoryId: "",
+    accountId: defaultAccountId,
+    dueDay: 1,
+  };
+}
 const DEFAULT_PAGE_SIZE = 12;
 
 function mapFormValuesToPayload(
@@ -64,7 +66,7 @@ function mapFormValuesToPayload(
 }
 
 export default function FixedExpensesPage() {
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const { t } = useI18n();
   const referenceMonth = getCurrentReferenceMonth();
   const [templates, setTemplates] = useState<FixedExpenseTemplate[]>([]);
@@ -101,7 +103,7 @@ export default function FixedExpensesPage() {
 
   const form = useForm<FixedExpenseFormValues>({
     resolver: zodResolver(fixedExpenseSchema),
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: createDefaultValues(user?.preferences.defaultAccountId ?? ""),
   });
 
   const loadTemplates = useCallback(
@@ -155,7 +157,7 @@ export default function FixedExpensesPage() {
 
   useEffect(() => {
     if (isCreating) {
-      form.reset(DEFAULT_VALUES);
+      form.reset(createDefaultValues(user?.preferences.defaultAccountId ?? ""));
       return;
     }
 
@@ -168,7 +170,7 @@ export default function FixedExpensesPage() {
         dueDay: selectedTemplate.dueDay,
       });
     }
-  }, [form, isCreating, selectedTemplate]);
+  }, [form, isCreating, selectedTemplate, user?.preferences.defaultAccountId]);
 
   async function onSubmit(values: FixedExpenseFormValues) {
     if (!accessToken) {

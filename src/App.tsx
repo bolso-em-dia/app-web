@@ -8,6 +8,7 @@ import BudgetsPage from "./pages/budgets/BudgetsPage";
 import FamilyPage from "./pages/family/FamilyPage";
 import FixedExpensesPage from "./pages/fixed-expenses/FixedExpensesPage";
 import HomePage from "./pages/HomePage";
+import UserSettingsPage from "./pages/settings/UserSettingsPage";
 import LoginPage from "./pages/LoginPage";
 import TransactionsPage from "./pages/transactions/TransactionsPage";
 
@@ -80,6 +81,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <TransactionsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <UserSettingsPage />
           </ProtectedRoute>
         }
       />

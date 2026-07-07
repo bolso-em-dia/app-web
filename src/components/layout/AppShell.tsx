@@ -1,7 +1,7 @@
-import { Menu } from "lucide-react";
+import { LogOut, Menu, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import {
@@ -122,9 +122,20 @@ export default function AppShell({
               : null}
           </span>
         </div>
-        <Button onClick={() => void logout()} type="button" variant="subtle">
-          {t("common.signOut")}
-        </Button>
+        <div className={styles.profileActions}>
+          <Link
+            aria-label={t("settings.title")}
+            className={styles.accountAction}
+            title={t("settings.title")}
+            to="/settings"
+          >
+            <UserRound aria-hidden="true" className={styles.accountActionIcon} />
+          </Link>
+          <Button onClick={() => void logout()} type="button" variant="subtle">
+            <LogOut aria-hidden="true" className={styles.signOutIcon} />
+            {t("common.signOut")}
+          </Button>
+        </div>
       </div>
     );
   }

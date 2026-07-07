@@ -91,6 +91,11 @@ describe("HomePage", () => {
             email: "admin@my-money.local",
             role: "ADMIN",
             allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: true,
+            },
           }}
         >
           <HomePage />

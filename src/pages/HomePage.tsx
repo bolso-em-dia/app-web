@@ -29,8 +29,13 @@ export default function HomePage() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [considerBudgetsInBalance, setConsiderBudgetsInBalance] =
-    useState(true);
+  const [considerBudgetsInBalance, setConsiderBudgetsInBalance] = useState(
+    user?.preferences.showBalanceWithBudgets ?? false,
+  );
+
+  useEffect(() => {
+    setConsiderBudgetsInBalance(user?.preferences.showBalanceWithBudgets ?? false);
+  }, [user?.preferences.showBalanceWithBudgets]);
 
   const loadDashboard = useCallback(async () => {
     if (!accessToken) {
@@ -213,7 +218,7 @@ export default function HomePage() {
                   <div>
                     <strong>{transaction.description}</strong>
                     <p className={styles.itemMeta}>
-                      {transaction.categoryName} · {transaction.accountName} ·{' '}
+                      {transaction.categoryName} · {transaction.accountName} ·{" "}
                       {formatDay(transaction.transactionDate)}
                     </p>
                   </div>

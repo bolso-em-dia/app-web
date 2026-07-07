@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import type { AuthUser } from "../api/auth";
+import type { UserPreferences } from "../api/userPreferences";
 
 export type AuthContextValue = {
   accessToken: string | null;
@@ -8,6 +9,7 @@ export type AuthContextValue = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserPreferences: (preferences: UserPreferences) => void;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(

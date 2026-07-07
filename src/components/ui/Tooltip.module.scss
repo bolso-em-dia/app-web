@@ -1,0 +1,59 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: help;
+}
+
+.trigger:hover,
+.trigger:focus-visible {
+  background: var(--color-panel-muted);
+  color: var(--color-text);
+  outline: none;
+}
+
+.icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.content {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.5rem);
+  z-index: 20;
+  width: max-content;
+  max-width: 16rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-text);
+  color: var(--color-surface);
+  font-size: var(--font-size-100);
+  line-height: 1.4;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(0.25rem);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+
+.root:hover .content,
+.root:focus-within .content {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

@@ -36,6 +36,7 @@ describe("AppShell", () => {
       name: "Navegação principal",
     });
 
+    expect(screen.getByRole("link", { name: "Configurações" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Orçamentos" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Gastos fixos" })).toBeInTheDocument();
@@ -82,6 +83,7 @@ describe("AppShell", () => {
       name: "Navegação principal",
     });
 
+    expect(within(dialog).getByRole("link", { name: "Configurações" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
     expect(within(dialog).getByText("Admin User")).toBeInTheDocument();
     expect(within(dialog).getByText("Administrador")).toBeInTheDocument();

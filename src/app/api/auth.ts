@@ -1,3 +1,4 @@
+import type { UserPreferences } from "./userPreferences";
 import { apiRequest } from "./client";
 
 export type AuthUser = {
@@ -6,6 +7,7 @@ export type AuthUser = {
   email: string;
   role: string;
   allowanceEnabled: boolean;
+  preferences: UserPreferences;
 };
 
 export type AuthResponse = {

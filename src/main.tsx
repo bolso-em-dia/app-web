@@ -10,11 +10,11 @@ import "./styles/globals.scss";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <I18nProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <I18nProvider>
           <App />
-        </AuthProvider>
-      </I18nProvider>
+        </I18nProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );

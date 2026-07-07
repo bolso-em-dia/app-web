@@ -6,6 +6,7 @@ import {
   refresh,
   type AuthUser,
 } from "../api/auth";
+import type { UserPreferences } from "../api/userPreferences";
 import { configureApiClientAuth } from "../api/client";
 import { AuthContext, type AuthContextValue } from "./authContext";
 
@@ -48,6 +49,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, [setAccessToken]);
 
+  const updateUserPreferences = useCallback((preferences: UserPreferences) => {
+    setUser((current) =>
+      current
+        ? {
+            ...current,
+            preferences,
+          }
+        : current,
+    );
+  }, []);
+
   useEffect(() => {
     configureApiClientAuth({
       getAccessToken: () => accessTokenRef.current,
@@ -84,8 +96,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       login: handleLogin,
       logout: handleLogout,
+      updateUserPreferences,
     }),
-    [accessToken, handleLogin, handleLogout, isLoading, user],
+    [
+      accessToken,
+      handleLogin,
+      handleLogout,
+      isLoading,
+      updateUserPreferences,
+      user,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
