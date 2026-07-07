@@ -43,7 +43,7 @@ export type TransactionFilters = {
   type?: TransactionType;
   ownershipType?: OwnershipType;
   accountId?: string;
-  categoryId?: string;
+  categoryIds?: string[];
   memberId?: string;
 };
 
@@ -71,8 +71,10 @@ function buildQuery(filters: TransactionListParams) {
     searchParams.set("accountId", filters.accountId);
   }
 
-  if (filters.categoryId) {
-    searchParams.set("categoryId", filters.categoryId);
+  if (filters.categoryIds) {
+    for (const categoryId of filters.categoryIds) {
+      searchParams.append("categoryIds", categoryId);
+    }
   }
 
   if (filters.memberId) {

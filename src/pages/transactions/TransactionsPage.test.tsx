@@ -83,6 +83,12 @@ function queueInitialLoads() {
           icon: "shopping-cart",
           color: "#2254d1",
         },
+        {
+          id: "cat-2",
+          name: "Transport",
+          icon: "car",
+          color: "#14a44d",
+        },
       ]),
     )
     .mockResolvedValueOnce(
@@ -284,5 +290,55 @@ describe("TransactionsPage", () => {
     expect(
       within(drawer).getByText("Groceries"),
     ).toBeInTheDocument();
+  });
+
+  it("filters transactions by multiple categories without expanding the active chip list", async () => {
+    queueInitialLoads();
+    queueInitialLoads();
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Filtros" }));
+    fireEvent.click(
+      screen.getByLabelText("Categorias", { selector: "button" }),
+    );
+
+    const listbox = screen.getByRole("listbox");
+    fireEvent.click(within(listbox).getByRole("option", { name: /Groceries/i }));
+    fireEvent.click(within(listbox).getByRole("option", { name: /Transport/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Categorias: Groceries, Transport")).toBeInTheDocument();
+    });
+
+    const transactionRequests = vi
+      .mocked(fetch)
+      .mock.calls.map(([input]) => String(input))
+      .filter((url) => url.includes("/api/transactions?"));
+
+    expect(
+      transactionRequests.some(
+        (url) =>
+          url.includes("categoryIds=cat-1") &&
+          url.includes("categoryIds=cat-2"),
+      ),
+    ).toBe(true);
   });
 });
