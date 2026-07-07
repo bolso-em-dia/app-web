@@ -1,41 +1,60 @@
 import { z } from "zod";
+import type { Translate } from "../../app/i18n/I18nContext";
+import { validationMessage } from "./validationMessages";
 
-const baseSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Nome é obrigatório.")
-    .max(120, "O nome deve ter no máximo 120 caracteres."),
-  email: z
-    .string()
-    .trim()
-    .min(1, "E-mail é obrigatório.")
-    .email("Informe um e-mail válido.")
-    .max(160, "O e-mail deve ter no máximo 160 caracteres."),
-  role: z.enum(["ADMIN", "USER"]),
-  allowanceEnabled: z.boolean(),
-});
+function createBaseSchema(t: Translate) {
+  const message = (key: Parameters<typeof validationMessage>[1]) =>
+    validationMessage(t, key);
 
-export const createFamilyMemberSchema = baseSchema.extend({
-  password: z
-    .string()
-    .min(8, "A senha deve ter pelo menos 8 caracteres.")
-    .max(72, "A senha deve ter no máximo 72 caracteres."),
-});
+  return z.object({
+    name: z
+      .string()
+      .trim()
+      .min(1, message("validation.requiredName"))
+      .max(120, message("validation.nameMax120")),
+    email: z
+      .string()
+      .trim()
+      .min(1, message("validation.requiredEmail"))
+      .email(message("validation.invalidEmail"))
+      .max(160, message("validation.emailMax160")),
+    role: z.enum(["ADMIN", "USER"], {
+      errorMap: () => ({ message: message("validation.requiredRole") }),
+    }),
+    allowanceEnabled: z.boolean(),
+  });
+}
 
-export const updateFamilyMemberSchema = baseSchema.extend({
-  password: z
-    .string()
-    .max(72, "A senha deve ter no máximo 72 caracteres.")
-    .refine(
-      (value) => value.length === 0 || value.length >= 8,
-      "A senha deve ter pelo menos 8 caracteres.",
-    ),
-});
+export function createFamilyMemberSchema(t: Translate) {
+  const message = (key: Parameters<typeof validationMessage>[1]) =>
+    validationMessage(t, key);
+
+  return createBaseSchema(t).extend({
+    password: z
+      .string()
+      .min(8, message("validation.passwordMin8"))
+      .max(72, message("validation.passwordMax72")),
+  });
+}
+
+export function createUpdateFamilyMemberSchema(t: Translate) {
+  const message = (key: Parameters<typeof validationMessage>[1]) =>
+    validationMessage(t, key);
+
+  return createBaseSchema(t).extend({
+    password: z
+      .string()
+      .max(72, message("validation.passwordMax72"))
+      .refine(
+        (value) => value.length === 0 || value.length >= 8,
+        message("validation.passwordMin8"),
+      ),
+  });
+}
 
 export type CreateFamilyMemberFormValues = z.infer<
-  typeof createFamilyMemberSchema
+  ReturnType<typeof createFamilyMemberSchema>
 >;
 export type UpdateFamilyMemberFormValues = z.infer<
-  typeof updateFamilyMemberSchema
+  ReturnType<typeof createUpdateFamilyMemberSchema>
 >;

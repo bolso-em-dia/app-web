@@ -33,6 +33,7 @@ export const ptBRMessages = {
   "common.month": "Mês",
   "common.account": "Conta",
   "common.category": "Categoria",
+  "common.categories": "Categorias",
   "common.member": "Membro",
   "common.filters": "Filtros",
   "common.clearFilters": "Limpar filtros",
@@ -60,6 +61,51 @@ export const ptBRMessages = {
   "transactionTypes.EXPENSE": "Despesa",
   "ownershipTypes.SHARED": "Compartilhado",
   "ownershipTypes.INDIVIDUAL": "Individual",
+  "validation.requiredName": "Nome é obrigatório.",
+  "validation.nameMax120": "O nome deve ter no máximo 120 caracteres.",
+  "validation.requiredType": "O tipo é obrigatório.",
+  "validation.requiredRole": "O papel é obrigatório.",
+  "validation.requiredEmail": "E-mail é obrigatório.",
+  "validation.invalidEmail": "Informe um e-mail válido.",
+  "validation.emailMax160": "O e-mail deve ter no máximo 160 caracteres.",
+  "validation.requiredPassword": "Senha é obrigatória.",
+  "validation.passwordMin8": "A senha deve ter pelo menos 8 caracteres.",
+  "validation.passwordMax72": "A senha deve ter no máximo 72 caracteres.",
+  "validation.requiredCategory": "A categoria é obrigatória.",
+  "validation.requiredAccount": "A conta é obrigatória.",
+  "validation.requiredOwnership": "A titularidade é obrigatória.",
+  "validation.requiredDescription": "A descrição é obrigatória.",
+  "validation.descriptionMax160":
+    "A descrição deve ter no máximo 160 caracteres.",
+  "validation.amountPositive": "O valor deve ser maior que zero.",
+  "validation.invalidNumber": "Informe um número válido.",
+  "validation.requiredTransactionDate": "A data da transação é obrigatória.",
+  "validation.installmentCountInteger":
+    "A quantidade de parcelas deve ser um número inteiro.",
+  "validation.installmentCountRange":
+    "A quantidade de parcelas deve estar entre 2 e 120.",
+  "validation.requiredInstallmentCount":
+    "A quantidade de parcelas é obrigatória.",
+  "validation.requiredIndividualMember":
+    "O membro é obrigatório para transações individuais.",
+  "validation.requiredAllowanceOwner":
+    "O membro dono é obrigatório para budgets de mesada.",
+  "validation.requiredGlobalBudgetCategory":
+    "Selecione pelo menos uma categoria para budgets globais.",
+  "validation.monthlyLimitPositive": "O limite mensal deve ser maior que zero.",
+  "validation.iconMax80": "O ícone deve ter no máximo 80 caracteres.",
+  "validation.colorMax20": "A cor deve ter no máximo 20 caracteres.",
+  "validation.requiredReplacementCategory":
+    "A categoria substituta é obrigatória.",
+  "validation.brandMax80": "A bandeira deve ter no máximo 80 caracteres.",
+  "validation.requiredCreditCardBrand":
+    "A bandeira é obrigatória para cartões de crédito.",
+  "validation.requiredCreditCardClosingDay":
+    "O dia de fechamento é obrigatório para cartões de crédito.",
+  "validation.requiredCreditCardDueDay":
+    "O dia de vencimento é obrigatório para cartões de crédito.",
+  "validation.dueDayInteger": "O dia de vencimento deve ser um número inteiro.",
+  "validation.dueDayRange": "O dia de vencimento deve estar entre 1 e 31.",
   "login.title": "Entrar",
   "login.subtitle":
     "Use a conta administrativa inicial para acessar o sistema.",
@@ -165,15 +211,12 @@ export const ptBRMessages = {
   "fixedExpenses.title": "Gastos fixos",
   "fixedExpenses.subtitle": "Gerencie gastos fixos recorrentes.",
   "fixedExpenses.loading": "Carregando gastos fixos",
-  "fixedExpenses.error":
-    "Não foi possível carregar os gastos fixos.",
+  "fixedExpenses.error": "Não foi possível carregar os gastos fixos.",
   "fixedExpenses.saveError": "Não foi possível salvar o gasto fixo.",
-  "fixedExpenses.archiveError":
-    "Não foi possível arquivar o gasto fixo.",
+  "fixedExpenses.archiveError": "Não foi possível arquivar o gasto fixo.",
   "fixedExpenses.new": "Novo gasto fixo",
   "fixedExpenses.searchPlaceholder": "Buscar gastos fixos",
-  "fixedExpenses.empty":
-    "Nenhum gasto fixo encontrado para os filtros atuais.",
+  "fixedExpenses.empty": "Nenhum gasto fixo encontrado para os filtros atuais.",
   "fixedExpenses.newDescription": "Crie um gasto fixo recorrente.",
   "fixedExpenses.editDescription":
     "Atualize nome, valor, categoria, conta e dia de vencimento do recorrente.",
@@ -188,8 +231,7 @@ export const ptBRMessages = {
   "budgets.subtitle": "Gerencie orçamentos globais e orçamentos de mesada.",
   "budgets.loading": "Carregando orçamentos",
   "budgets.error": "Não foi possível carregar os orçamentos.",
-  "budgets.detailsError":
-    "Não foi possível carregar os detalhes do orçamento.",
+  "budgets.detailsError": "Não foi possível carregar os detalhes do orçamento.",
   "budgets.saveError": "Não foi possível salvar o orçamento.",
   "budgets.archiveError": "Não foi possível arquivar o orçamento.",
   "budgets.new": "Novo orçamento",

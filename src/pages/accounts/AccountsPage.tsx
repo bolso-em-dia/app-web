@@ -26,7 +26,10 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { formatReferenceMonth } from "../../lib/formatters/date";
 import { COLOR_OPTIONS, getColorLabel } from "../../lib/uiOptions";
-import { accountSchema, type AccountFormValues } from "../../lib/validation/accountSchema";
+import {
+  createAccountSchema,
+  type AccountFormValues,
+} from "../../lib/validation/accountSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./AccountsPage.module.scss";
 
@@ -77,6 +80,8 @@ export default function AccountsPage() {
     () => accounts.find((account) => account.id === selectedId) ?? null,
     [accounts, selectedId],
   );
+
+  const accountSchema = useMemo(() => createAccountSchema(t), [t]);
 
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
@@ -331,47 +336,49 @@ export default function AccountsPage() {
               }
               secondaryContent={
                 <>
-                <Field
-                  htmlFor="account-status-filter"
-                  label={t("common.status")}
-                >
-                  <Select
-                    id="account-status-filter"
-                    onChange={(event) => {
-                      setStatusFilter(
-                        event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                      );
-                      setPage(0);
-                    }}
-                    value={statusFilter}
+                  <Field
+                    htmlFor="account-status-filter"
+                    label={t("common.status")}
                   >
-                    <option value="ALL">{t("common.all")}</option>
-                    <option value="ACTIVE">{t("common.active")}</option>
-                    <option value="ARCHIVED">{t("common.archived")}</option>
-                  </Select>
-                </Field>
-                <Field htmlFor="account-type-filter" label={t("common.type")}>
-                  <Select
-                    id="account-type-filter"
-                    onChange={(event) => {
-                      setTypeFilter(event.target.value as "" | AccountType);
-                      setPage(0);
-                    }}
-                    value={typeFilter}
-                  >
-                    <option value="">{t("common.allTypes")}</option>
-                    <option value="CHECKING">
-                      {t("accountTypes.CHECKING")}
-                    </option>
-                    <option value="SAVINGS">{t("accountTypes.SAVINGS")}</option>
-                    <option value="CREDIT_CARD">
-                      {t("accountTypes.CREDIT_CARD")}
-                    </option>
-                    <option value="INVESTMENT">
-                      {t("accountTypes.INVESTMENT")}
-                    </option>
-                  </Select>
-                </Field>
+                    <Select
+                      id="account-status-filter"
+                      onChange={(event) => {
+                        setStatusFilter(
+                          event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
+                        );
+                        setPage(0);
+                      }}
+                      value={statusFilter}
+                    >
+                      <option value="ALL">{t("common.all")}</option>
+                      <option value="ACTIVE">{t("common.active")}</option>
+                      <option value="ARCHIVED">{t("common.archived")}</option>
+                    </Select>
+                  </Field>
+                  <Field htmlFor="account-type-filter" label={t("common.type")}>
+                    <Select
+                      id="account-type-filter"
+                      onChange={(event) => {
+                        setTypeFilter(event.target.value as "" | AccountType);
+                        setPage(0);
+                      }}
+                      value={typeFilter}
+                    >
+                      <option value="">{t("common.allTypes")}</option>
+                      <option value="CHECKING">
+                        {t("accountTypes.CHECKING")}
+                      </option>
+                      <option value="SAVINGS">
+                        {t("accountTypes.SAVINGS")}
+                      </option>
+                      <option value="CREDIT_CARD">
+                        {t("accountTypes.CREDIT_CARD")}
+                      </option>
+                      <option value="INVESTMENT">
+                        {t("accountTypes.INVESTMENT")}
+                      </option>
+                    </Select>
+                  </Field>
                 </>
               }
             />
@@ -625,7 +632,10 @@ export default function AccountsPage() {
                         className={styles.swatchDot}
                         style={{ backgroundColor: colorValue }}
                       />
-                      <span>{getColorLabel(colorValue) || t("common.clearSelection")}</span>
+                      <span>
+                        {getColorLabel(colorValue) ||
+                          t("common.clearSelection")}
+                      </span>
                     </div>
                   ) : null}
 
@@ -647,12 +657,17 @@ export default function AccountsPage() {
                       </Button>
                     ) : (
                       <Button
-                        disabled={isArchiving || Boolean(selectedAccount?.archivedFromMonth)}
+                        disabled={
+                          isArchiving ||
+                          Boolean(selectedAccount?.archivedFromMonth)
+                        }
                         loading={isArchiving}
                         onClick={() => void onArchive()}
                         type="button"
                         variant={
-                          selectedAccount?.archivedFromMonth ? "subtle" : "danger"
+                          selectedAccount?.archivedFromMonth
+                            ? "subtle"
+                            : "danger"
                         }
                       >
                         {selectedAccount?.archivedFromMonth

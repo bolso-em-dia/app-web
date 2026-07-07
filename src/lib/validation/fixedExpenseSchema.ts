@@ -1,25 +1,36 @@
 import { z } from "zod";
+import type { Translate } from "../../app/i18n/I18nContext";
+import { validationMessage } from "./validationMessages";
 
-export const fixedExpenseSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Nome é obrigatório.")
-    .max(120, "O nome deve ter no máximo 120 caracteres."),
-  amount: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.coerce.number().positive("O valor deve ser maior que zero."),
-  ),
-  categoryId: z.string().min(1, "A categoria é obrigatória."),
-  accountId: z.string().min(1, "A conta é obrigatória."),
-  dueDay: z.preprocess(
-    (value) => (value === "" ? undefined : value),
-    z.coerce
-      .number()
-      .int("O dia de vencimento deve ser um número inteiro.")
-      .min(1, "O dia de vencimento deve estar entre 1 e 31.")
-      .max(31, "O dia de vencimento deve estar entre 1 e 31."),
-  ),
-});
+export function createFixedExpenseSchema(t: Translate) {
+  const message = (key: Parameters<typeof validationMessage>[1]) =>
+    validationMessage(t, key);
 
-export type FixedExpenseFormValues = z.infer<typeof fixedExpenseSchema>;
+  return z.object({
+    name: z
+      .string()
+      .trim()
+      .min(1, message("validation.requiredName"))
+      .max(120, message("validation.nameMax120")),
+    amount: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce
+        .number({ invalid_type_error: message("validation.invalidNumber") })
+        .positive(message("validation.amountPositive")),
+    ),
+    categoryId: z.string().min(1, message("validation.requiredCategory")),
+    accountId: z.string().min(1, message("validation.requiredAccount")),
+    dueDay: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.coerce
+        .number({ invalid_type_error: message("validation.invalidNumber") })
+        .int(message("validation.dueDayInteger"))
+        .min(1, message("validation.dueDayRange"))
+        .max(31, message("validation.dueDayRange")),
+    ),
+  });
+}
+
+export type FixedExpenseFormValues = z.infer<
+  ReturnType<typeof createFixedExpenseSchema>
+>;

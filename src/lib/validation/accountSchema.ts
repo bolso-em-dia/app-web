@@ -1,5 +1,7 @@
 import { z } from "zod";
+import type { Translate } from "../../app/i18n/I18nContext";
 import type { AccountType } from "../../app/api/accounts";
+import { validationMessage } from "./validationMessages";
 
 const ACCOUNT_TYPE_VALUES = [
   "CHECKING",
@@ -8,56 +10,71 @@ const ACCOUNT_TYPE_VALUES = [
   "INVESTMENT",
 ] as const satisfies readonly AccountType[];
 
-export const accountSchema = z
-  .object({
-    name: z
-      .string()
-      .trim()
-      .min(1, "Nome é obrigatório.")
-      .max(120, "O nome deve ter no máximo 120 caracteres."),
-    type: z.enum(ACCOUNT_TYPE_VALUES, {
-      errorMap: () => ({ message: "O tipo é obrigatório." }),
-    }),
-    brand: z
-      .string()
-      .trim()
-      .max(80, "A bandeira deve ter no máximo 80 caracteres."),
-    color: z.string().trim().max(20, "A cor deve ter no máximo 20 caracteres."),
-    closingDay: z.preprocess(
-      (value) => (value === "" ? undefined : value),
-      z.coerce.number().int().min(1).max(31).optional(),
-    ),
-    dueDay: z.preprocess(
-      (value) => (value === "" ? undefined : value),
-      z.coerce.number().int().min(1).max(31).optional(),
-    ),
-  })
-  .superRefine((values, context) => {
-    if (values.type === "CREDIT_CARD") {
-      if (values.brand.trim().length === 0) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["brand"],
-          message: "A bandeira é obrigatória para cartões de crédito.",
-        });
-      }
+export function createAccountSchema(t: Translate) {
+  const message = (key: Parameters<typeof validationMessage>[1]) =>
+    validationMessage(t, key);
 
-      if (values.closingDay === undefined || Number.isNaN(values.closingDay)) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["closingDay"],
-          message: "O dia de fechamento é obrigatório para cartões de crédito.",
-        });
-      }
+  return z
+    .object({
+      name: z
+        .string()
+        .trim()
+        .min(1, message("validation.requiredName"))
+        .max(120, message("validation.nameMax120")),
+      type: z.enum(ACCOUNT_TYPE_VALUES, {
+        errorMap: () => ({ message: message("validation.requiredType") }),
+      }),
+      brand: z.string().trim().max(80, message("validation.brandMax80")),
+      color: z.string().trim().max(20, message("validation.colorMax20")),
+      closingDay: z.preprocess(
+        (value) => (value === "" ? undefined : value),
+        z.coerce
+          .number({ invalid_type_error: message("validation.invalidNumber") })
+          .int(message("validation.dueDayInteger"))
+          .min(1, message("validation.dueDayRange"))
+          .max(31, message("validation.dueDayRange"))
+          .optional(),
+      ),
+      dueDay: z.preprocess(
+        (value) => (value === "" ? undefined : value),
+        z.coerce
+          .number({ invalid_type_error: message("validation.invalidNumber") })
+          .int(message("validation.dueDayInteger"))
+          .min(1, message("validation.dueDayRange"))
+          .max(31, message("validation.dueDayRange"))
+          .optional(),
+      ),
+    })
+    .superRefine((values, context) => {
+      if (values.type === "CREDIT_CARD") {
+        if (values.brand.trim().length === 0) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["brand"],
+            message: message("validation.requiredCreditCardBrand"),
+          });
+        }
 
-      if (values.dueDay === undefined || Number.isNaN(values.dueDay)) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["dueDay"],
-          message: "O dia de vencimento é obrigatório para cartões de crédito.",
-        });
-      }
-    }
-  });
+        if (
+          values.closingDay === undefined ||
+          Number.isNaN(values.closingDay)
+        ) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["closingDay"],
+            message: message("validation.requiredCreditCardClosingDay"),
+          });
+        }
 
-export type AccountFormValues = z.infer<typeof accountSchema>;
+        if (values.dueDay === undefined || Number.isNaN(values.dueDay)) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["dueDay"],
+            message: message("validation.requiredCreditCardDueDay"),
+          });
+        }
+      }
+    });
+}
+
+export type AccountFormValues = z.infer<ReturnType<typeof createAccountSchema>>;

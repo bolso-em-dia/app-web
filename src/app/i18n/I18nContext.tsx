@@ -2,14 +2,16 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { ptBRMessages, type MessageKey } from "./messages";
 
-type TranslateParams = Record<string, string | number>;
+export type TranslateParams = Record<string, string | number>;
 
-type I18nContextValue = {
+export type Translate = (key: MessageKey, params?: TranslateParams) => string;
+
+export type I18nContextValue = {
   locale: "pt-BR";
-  t: (key: MessageKey, params?: TranslateParams) => string;
+  t: Translate;
 };
 
-function translate(key: MessageKey, params?: TranslateParams) {
+export function translate(key: MessageKey, params?: TranslateParams) {
   let message: string = ptBRMessages[key];
 
   if (!params) {

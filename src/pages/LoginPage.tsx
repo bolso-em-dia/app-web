@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../app/auth/useAuth";
@@ -10,7 +10,7 @@ import Field from "../components/ui/Field";
 import FormError from "../components/ui/FormError";
 import Input from "../components/ui/Input";
 import {
-  loginSchema,
+  createLoginSchema,
   type LoginFormValues,
 } from "../lib/validation/loginSchema";
 import styles from "./LoginPage.module.scss";
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { t } = useI18n();
+  const loginSchema = useMemo(() => createLoginSchema(t), [t]);
   const [error, setError] = useState<string | null>(null);
   const {
     register,

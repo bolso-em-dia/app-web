@@ -34,7 +34,10 @@ import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
-import { fixedExpenseSchema, type FixedExpenseFormValues } from "../../lib/validation/fixedExpenseSchema";
+import {
+  createFixedExpenseSchema,
+  type FixedExpenseFormValues,
+} from "../../lib/validation/fixedExpenseSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { getStoredIcon } from "../../lib/icons";
 import styles from "./FixedExpensesPage.module.scss";
@@ -93,6 +96,8 @@ export default function FixedExpensesPage() {
     () => new Map(categoryOptions.map((category) => [category.id, category])),
     [categoryOptions],
   );
+
+  const fixedExpenseSchema = useMemo(() => createFixedExpenseSchema(t), [t]);
 
   const form = useForm<FixedExpenseFormValues>({
     resolver: zodResolver(fixedExpenseSchema),
@@ -347,25 +352,25 @@ export default function FixedExpensesPage() {
               }
               secondaryContent={
                 <>
-                <Field
-                  htmlFor="fixed-expense-status-filter"
-                  label={t("common.status")}
-                >
-                  <Select
-                    id="fixed-expense-status-filter"
-                    onChange={(event) => {
-                      setStatusFilter(
-                        event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                      );
-                      setPage(0);
-                    }}
-                    value={statusFilter}
+                  <Field
+                    htmlFor="fixed-expense-status-filter"
+                    label={t("common.status")}
                   >
-                    <option value="ALL">{t("common.all")}</option>
-                    <option value="ACTIVE">{t("common.active")}</option>
-                    <option value="ARCHIVED">{t("common.archived")}</option>
-                  </Select>
-                </Field>
+                    <Select
+                      id="fixed-expense-status-filter"
+                      onChange={(event) => {
+                        setStatusFilter(
+                          event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
+                        );
+                        setPage(0);
+                      }}
+                      value={statusFilter}
+                    >
+                      <option value="ALL">{t("common.all")}</option>
+                      <option value="ACTIVE">{t("common.active")}</option>
+                      <option value="ARCHIVED">{t("common.archived")}</option>
+                    </Select>
+                  </Field>
                 </>
               }
             />
@@ -373,7 +378,9 @@ export default function FixedExpensesPage() {
 
           <section className={styles.templateGrid}>
             {templates.map((template) => {
-              const categoryOption = categoryOptionsById.get(template.categoryId);
+              const categoryOption = categoryOptionsById.get(
+                template.categoryId,
+              );
               const CategoryIcon = getStoredIcon(categoryOption?.icon);
               const categoryColor = categoryOption?.color ?? undefined;
 
@@ -421,9 +428,13 @@ export default function FixedExpensesPage() {
                             <strong className={styles.templateName}>
                               {template.name}
                             </strong>
-                            <span className={styles.templateMetaSeparator}>·</span>
+                            <span className={styles.templateMetaSeparator}>
+                              ·
+                            </span>
                             <p className={styles.templateMeta}>
-                              {template.categoryName} · {template.accountName} · Vence dia {String(template.dueDay).padStart(2, "0")}
+                              {template.categoryName} · {template.accountName} ·
+                              Vence dia{" "}
+                              {String(template.dueDay).padStart(2, "0")}
                             </p>
                           </div>
                         </div>
@@ -649,7 +660,9 @@ export default function FixedExpensesPage() {
                         onClick={() => void onArchive()}
                         type="button"
                         variant={
-                          selectedTemplate?.archivedFromMonth ? "subtle" : "danger"
+                          selectedTemplate?.archivedFromMonth
+                            ? "subtle"
+                            : "danger"
                         }
                       >
                         {selectedTemplate?.archivedFromMonth

@@ -38,7 +38,10 @@ import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
-import { budgetSchema, type BudgetFormValues } from "../../lib/validation/budgetSchema";
+import {
+  createBudgetSchema,
+  type BudgetFormValues,
+} from "../../lib/validation/budgetSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./BudgetsPage.module.scss";
 
@@ -81,9 +84,7 @@ export default function BudgetsPage() {
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(
-    null,
-  );
+  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
   const [categoryBreakdown, setCategoryBreakdown] = useState<
     BudgetCategoryBreakdown[]
   >([]);
@@ -109,6 +110,8 @@ export default function BudgetsPage() {
     () => budgets.find((budget) => budget.id === selectedId) ?? null,
     [budgets, selectedId],
   );
+
+  const budgetSchema = useMemo(() => createBudgetSchema(t), [t]);
 
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
@@ -423,73 +426,73 @@ export default function BudgetsPage() {
               onTogglePanel={() => setIsFiltersOpen((current) => !current)}
               primaryContent={
                 <>
-                <Field
-                  htmlFor="budget-reference-month"
-                  label={t("common.month")}
-                >
-                  <Input
-                    id="budget-reference-month"
-                    onChange={(event) => {
-                      setReferenceMonth(
-                        fromMonthInputValue(event.target.value),
-                      );
-                      setPage(0);
-                    }}
-                    type="month"
-                    value={toMonthInputValue(referenceMonth)}
-                  />
-                </Field>
-                <Field htmlFor="budget-search" label={t("common.search")}>
-                  <Input
-                    id="budget-search"
-                    onChange={(event) => {
-                      setSearch(event.target.value);
-                      setPage(0);
-                    }}
-                    placeholder={t("budgets.searchPlaceholder")}
-                    value={search}
-                  />
-                </Field>
+                  <Field
+                    htmlFor="budget-reference-month"
+                    label={t("common.month")}
+                  >
+                    <Input
+                      id="budget-reference-month"
+                      onChange={(event) => {
+                        setReferenceMonth(
+                          fromMonthInputValue(event.target.value),
+                        );
+                        setPage(0);
+                      }}
+                      type="month"
+                      value={toMonthInputValue(referenceMonth)}
+                    />
+                  </Field>
+                  <Field htmlFor="budget-search" label={t("common.search")}>
+                    <Input
+                      id="budget-search"
+                      onChange={(event) => {
+                        setSearch(event.target.value);
+                        setPage(0);
+                      }}
+                      placeholder={t("budgets.searchPlaceholder")}
+                      value={search}
+                    />
+                  </Field>
                 </>
               }
               secondaryContent={
                 <>
-                <Field
-                  htmlFor="budget-status-filter"
-                  label={t("common.status")}
-                >
-                  <Select
-                    id="budget-status-filter"
-                    onChange={(event) => {
-                      setStatusFilter(
-                        event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                      );
-                      setPage(0);
-                    }}
-                    value={statusFilter}
+                  <Field
+                    htmlFor="budget-status-filter"
+                    label={t("common.status")}
                   >
-                    <option value="ALL">{t("common.all")}</option>
-                    <option value="ACTIVE">{t("common.active")}</option>
-                    <option value="ARCHIVED">{t("common.archived")}</option>
-                  </Select>
-                </Field>
+                    <Select
+                      id="budget-status-filter"
+                      onChange={(event) => {
+                        setStatusFilter(
+                          event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
+                        );
+                        setPage(0);
+                      }}
+                      value={statusFilter}
+                    >
+                      <option value="ALL">{t("common.all")}</option>
+                      <option value="ACTIVE">{t("common.active")}</option>
+                      <option value="ARCHIVED">{t("common.archived")}</option>
+                    </Select>
+                  </Field>
 
-                <Field htmlFor="budget-type-filter" label={t("common.type")}>
-                  <Select
-                    id="budget-type-filter"
-                    onChange={(event) => {
-                      setTypeFilter(event.target.value as "" | BudgetType);
-                      setPage(0);
-                    }}
-                    value={typeFilter}
-                  >
-                    <option value="">{t("common.allTypes")}</option>
-                    <option value="GLOBAL">{t("budgetTypes.GLOBAL")}</option>
-                    <option value="ALLOWANCE">
-                      {t("budgetTypes.ALLOWANCE")}
-                    </option>
-                  </Select>
-                </Field>
+                  <Field htmlFor="budget-type-filter" label={t("common.type")}>
+                    <Select
+                      id="budget-type-filter"
+                      onChange={(event) => {
+                        setTypeFilter(event.target.value as "" | BudgetType);
+                        setPage(0);
+                      }}
+                      value={typeFilter}
+                    >
+                      <option value="">{t("common.allTypes")}</option>
+                      <option value="GLOBAL">{t("budgetTypes.GLOBAL")}</option>
+                      <option value="ALLOWANCE">
+                        {t("budgetTypes.ALLOWANCE")}
+                      </option>
+                    </Select>
+                  </Field>
                 </>
               }
             />
@@ -516,8 +519,7 @@ export default function BudgetsPage() {
                       <div>
                         <strong>{budget.name}</strong>
                         <p className={styles.budgetMeta}>
-                          {budget.type === "ALLOWANCE" &&
-                          budget.ownerMemberName
+                          {budget.type === "ALLOWANCE" && budget.ownerMemberName
                             ? t("budgets.allowanceFor", {
                                 name: budget.ownerMemberName,
                               })
@@ -526,9 +528,7 @@ export default function BudgetsPage() {
                               })}
                         </p>
                       </div>
-                      <strong>
-                        {formatCurrency(budget.remainingAmount)}
-                      </strong>
+                      <strong>{formatCurrency(budget.remainingAmount)}</strong>
                     </div>
 
                     <div className={styles.badgeRow}>
@@ -616,9 +616,7 @@ export default function BudgetsPage() {
               }
               onClose={handleCloseDrawer}
               title={
-                isCreating
-                  ? t("budgets.newTitle")
-                  : t("budgets.detailsTitle")
+                isCreating ? t("budgets.newTitle") : t("budgets.detailsTitle")
               }
             >
               <div className={styles.drawerStack}>
@@ -649,9 +647,7 @@ export default function BudgetsPage() {
                       hasError={Boolean(form.formState.errors.type)}
                       {...form.register("type")}
                     >
-                      <option value="GLOBAL">
-                        {t("budgetTypes.GLOBAL")}
-                      </option>
+                      <option value="GLOBAL">{t("budgetTypes.GLOBAL")}</option>
                       <option value="ALLOWANCE">
                         {t("budgetTypes.ALLOWANCE")}
                       </option>
@@ -744,7 +740,9 @@ export default function BudgetsPage() {
                       </Button>
                     ) : (
                       <Button
-                        disabled={Boolean(selectedBudgetSummary?.archivedFromMonth)}
+                        disabled={Boolean(
+                          selectedBudgetSummary?.archivedFromMonth,
+                        )}
                         loading={isArchiving}
                         onClick={() => void onArchive()}
                         type="button"
@@ -892,7 +890,6 @@ export default function BudgetsPage() {
                     )}
                   </Card>
                 ) : null}
-
               </div>
             </Drawer>
           ) : null}

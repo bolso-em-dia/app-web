@@ -26,6 +26,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import CategoryMultiSelect from "../../components/ui/CategoryMultiSelect";
 import CategorySelect from "../../components/ui/CategorySelect";
 import Drawer from "../../components/ui/Drawer";
 import CurrencyInput from "../../components/ui/CurrencyInput";
@@ -44,12 +45,13 @@ import {
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
 import {
-  transactionSchema,
+  createTransactionSchema,
   type TransactionFormValues,
 } from "../../lib/validation/transactionSchema";
 import styles from "./TransactionsPage.module.scss";
 
 const DEFAULT_PAGE_SIZE = 12;
+type Translate = ReturnType<typeof useI18n>["t"];
 
 function toMonthInputValue(value: string) {
   return value.slice(0, 7);
@@ -114,6 +116,27 @@ function mapFormValuesToUpdatePayload(
   };
 }
 
+function formatCategoryFilterLabel(
+  selectedCategories: CategoryOption[],
+  t: Translate,
+) {
+  if (selectedCategories.length === 0) {
+    return "";
+  }
+
+  const labelPrefix = `${t("common.categories")}: `;
+
+  if (selectedCategories.length === 1) {
+    return `${labelPrefix}${selectedCategories[0].name}`;
+  }
+
+  if (selectedCategories.length === 2) {
+    return `${labelPrefix}${selectedCategories[0].name}, ${selectedCategories[1].name}`;
+  }
+
+  return `${labelPrefix}${selectedCategories[0].name} +${selectedCategories.length - 1}`;
+}
+
 export default function TransactionsPage() {
   const { accessToken } = useAuth();
   const { t } = useI18n();
@@ -123,7 +146,9 @@ export default function TransactionsPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [members, setMembers] = useState<FamilyMember[]>([]);
-  const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
+  const [descriptionSuggestions, setDescriptionSuggestions] = useState<
+    string[]
+  >([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,6 +171,8 @@ export default function TransactionsPage() {
       transactions.find((transaction) => transaction.id === selectedId) ?? null,
     [selectedId, transactions],
   );
+
+  const transactionSchema = useMemo(() => createTransactionSchema(t), [t]);
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
@@ -247,7 +274,13 @@ export default function TransactionsPage() {
       });
       setDeleteScope("SINGLE");
     }
-  }, [filters.referenceMonth, focusDescriptionField, form, isCreating, selectedTransaction]);
+  }, [
+    filters.referenceMonth,
+    focusDescriptionField,
+    form,
+    isCreating,
+    selectedTransaction,
+  ]);
 
   useEffect(() => {
     if (currentReferenceMonth === filters.referenceMonth) {
@@ -322,7 +355,9 @@ export default function TransactionsPage() {
       categoryId: values.categoryId,
       memberId: values.ownershipType === "INDIVIDUAL" ? values.memberId : "",
       isInstallment: values.type === "EXPENSE" ? values.isInstallment : false,
-      installmentCount: values.isInstallment ? values.installmentCount ?? 2 : 2,
+      installmentCount: values.isInstallment
+        ? (values.installmentCount ?? 2)
+        : 2,
     });
     setSelectedId(null);
     focusDescriptionField();
@@ -338,9 +373,10 @@ export default function TransactionsPage() {
 
     const nativeEvent = event?.nativeEvent as SubmitEvent | undefined;
     const submitter = nativeEvent?.submitter as HTMLButtonElement | undefined;
-    const intent = submitter?.value === "save-and-create-new"
-      ? "save-and-create-new"
-      : "save";
+    const intent =
+      submitter?.value === "save-and-create-new"
+        ? "save-and-create-new"
+        : "save";
 
     setIsSaving(true);
     setError(null);
@@ -418,9 +454,9 @@ export default function TransactionsPage() {
   const activeFilters = useMemo(() => {
     const accountName =
       accounts.find((account) => account.id === filters.accountId)?.name ?? "";
-    const categoryName =
-      categoryOptions.find((category) => category.id === filters.categoryId)
-        ?.name ?? "";
+    const selectedCategories = categoryOptions.filter((category) =>
+      filters.categoryIds?.includes(category.id),
+    );
     const memberName =
       allowanceMembers.find((member) => member.id === filters.memberId)?.name ??
       "";
@@ -469,15 +505,15 @@ export default function TransactionsPage() {
             },
           ]
         : []),
-      ...(filters.categoryId && categoryName
+      ...(selectedCategories.length > 0
         ? [
             {
               key: "category",
-              label: `${t("common.category")}: ${categoryName}`,
+              label: formatCategoryFilterLabel(selectedCategories, t),
               onRemove: () => {
                 setFilters((current) => ({
                   ...current,
-                  categoryId: undefined,
+                  categoryIds: undefined,
                 }));
                 setPage(0);
               },
@@ -541,141 +577,150 @@ export default function TransactionsPage() {
               onTogglePanel={() => setIsFiltersOpen((current) => !current)}
               primaryContent={
                 <>
-              <Field
-                label={t("common.referenceMonth")}
-                htmlFor="transaction-filter-month"
-              >
-                <Input
-                  id="transaction-filter-month"
-                  onChange={(event) => {
-                    setFilters((current) => ({
-                      ...current,
-                      referenceMonth: fromMonthInputValue(event.target.value),
-                    }));
-                    setPage(0);
-                  }}
-                  type="month"
-                  value={toMonthInputValue(filters.referenceMonth)}
-                />
-              </Field>
-              <Field label={t("common.type")} htmlFor="transaction-filter-type">
-                <Select
-                  id="transaction-filter-type"
-                  onChange={(event) => {
-                    setFilters((current) => ({
-                      ...current,
-                      type:
-                        event.target.value.length > 0
-                          ? (event.target.value as TransactionType)
-                          : undefined,
-                    }));
-                    setPage(0);
-                  }}
-                  value={filters.type ?? ""}
-                >
-                  <option value="">{t("common.allTypes")}</option>
-                  <option value="INCOME">{t("transactionTypes.INCOME")}</option>
-                  <option value="EXPENSE">
-                    {t("transactionTypes.EXPENSE")}
-                  </option>
-                </Select>
-              </Field>
+                  <Field
+                    label={t("common.referenceMonth")}
+                    htmlFor="transaction-filter-month"
+                  >
+                    <Input
+                      id="transaction-filter-month"
+                      onChange={(event) => {
+                        setFilters((current) => ({
+                          ...current,
+                          referenceMonth: fromMonthInputValue(
+                            event.target.value,
+                          ),
+                        }));
+                        setPage(0);
+                      }}
+                      type="month"
+                      value={toMonthInputValue(filters.referenceMonth)}
+                    />
+                  </Field>
+                  <Field
+                    label={t("common.type")}
+                    htmlFor="transaction-filter-type"
+                  >
+                    <Select
+                      id="transaction-filter-type"
+                      onChange={(event) => {
+                        setFilters((current) => ({
+                          ...current,
+                          type:
+                            event.target.value.length > 0
+                              ? (event.target.value as TransactionType)
+                              : undefined,
+                        }));
+                        setPage(0);
+                      }}
+                      value={filters.type ?? ""}
+                    >
+                      <option value="">{t("common.allTypes")}</option>
+                      <option value="INCOME">
+                        {t("transactionTypes.INCOME")}
+                      </option>
+                      <option value="EXPENSE">
+                        {t("transactionTypes.EXPENSE")}
+                      </option>
+                    </Select>
+                  </Field>
                 </>
               }
               secondaryContent={
                 <>
-              <Field
-                label={t("common.ownership")}
-                htmlFor="transaction-filter-ownership"
-              >
-                <Select
-                  id="transaction-filter-ownership"
-                  onChange={(event) => {
-                    setFilters((current) => ({
-                      ...current,
-                      ownershipType:
-                        event.target.value.length > 0
-                          ? (event.target.value as OwnershipType)
-                          : undefined,
-                    }));
-                    setPage(0);
-                  }}
-                  value={filters.ownershipType ?? ""}
-                >
-                  <option value="">{t("common.allOwnerships")}</option>
-                  <option value="SHARED">{t("ownershipTypes.SHARED")}</option>
-                  <option value="INDIVIDUAL">
-                    {t("ownershipTypes.INDIVIDUAL")}
-                  </option>
-                </Select>
-              </Field>
+                  <Field
+                    label={t("common.ownership")}
+                    htmlFor="transaction-filter-ownership"
+                  >
+                    <Select
+                      id="transaction-filter-ownership"
+                      onChange={(event) => {
+                        setFilters((current) => ({
+                          ...current,
+                          ownershipType:
+                            event.target.value.length > 0
+                              ? (event.target.value as OwnershipType)
+                              : undefined,
+                        }));
+                        setPage(0);
+                      }}
+                      value={filters.ownershipType ?? ""}
+                    >
+                      <option value="">{t("common.allOwnerships")}</option>
+                      <option value="SHARED">
+                        {t("ownershipTypes.SHARED")}
+                      </option>
+                      <option value="INDIVIDUAL">
+                        {t("ownershipTypes.INDIVIDUAL")}
+                      </option>
+                    </Select>
+                  </Field>
 
-              <Field
-                label={t("common.account")}
-                htmlFor="transaction-filter-account"
-              >
-                <Select
-                  id="transaction-filter-account"
-                  onChange={(event) => {
-                    setFilters((current) => ({
-                      ...current,
-                      accountId: event.target.value || undefined,
-                    }));
-                    setPage(0);
-                  }}
-                  value={filters.accountId ?? ""}
-                >
-                  <option value="">{t("common.allAccounts")}</option>
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
+                  <Field
+                    label={t("common.account")}
+                    htmlFor="transaction-filter-account"
+                  >
+                    <Select
+                      id="transaction-filter-account"
+                      onChange={(event) => {
+                        setFilters((current) => ({
+                          ...current,
+                          accountId: event.target.value || undefined,
+                        }));
+                        setPage(0);
+                      }}
+                      value={filters.accountId ?? ""}
+                    >
+                      <option value="">{t("common.allAccounts")}</option>
+                      {accounts.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {account.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
 
-              <Field
-                label={t("common.category")}
-                htmlFor="transaction-filter-category"
-              >
-                <CategorySelect
-                  id="transaction-filter-category"
-                  onChange={(value) => {
-                    setFilters((current) => ({
-                      ...current,
-                      categoryId: value || undefined,
-                    }));
-                    setPage(0);
-                  }}
-                  options={categoryOptions}
-                  placeholder={t("common.allCategories")}
-                  value={filters.categoryId ?? ""}
-                />
-              </Field>
+                  <Field
+                    label={t("common.categories")}
+                    htmlFor="transaction-filter-category"
+                  >
+                    <CategoryMultiSelect
+                      id="transaction-filter-category"
+                      onChange={(value) => {
+                        setFilters((current) => ({
+                          ...current,
+                          categoryIds: value.length > 0 ? value : undefined,
+                        }));
+                        setPage(0);
+                      }}
+                      options={categoryOptions}
+                      placeholder={t("common.allCategories")}
+                      value={filters.categoryIds ?? []}
+                    />
+                  </Field>
 
-              <Field
-                label={t("common.member")}
-                htmlFor="transaction-filter-member"
-              >
-                <Select
-                  id="transaction-filter-member"
-                  onChange={(event) => {
-                    setFilters((current) => ({
-                      ...current,
-                      memberId: event.target.value || undefined,
-                    }));
-                    setPage(0);
-                  }}
-                  value={filters.memberId ?? ""}
-                >
-                  <option value="">{t("common.allMembers")}</option>
-                  {allowanceMembers.map((member) => (
-                    <option key={member.id} value={member.id}>
-                      {member.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
+                  <Field
+                    label={t("common.member")}
+                    htmlFor="transaction-filter-member"
+                  >
+                    <Select
+                      id="transaction-filter-member"
+                      onChange={(event) => {
+                        setFilters((current) => ({
+                          ...current,
+                          memberId: event.target.value || undefined,
+                        }));
+                        setPage(0);
+                      }}
+                      value={filters.memberId ?? ""}
+                    >
+                      <option value="">{t("common.allMembers")}</option>
+                      {allowanceMembers.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
                 </>
               }
             />
@@ -742,7 +787,9 @@ export default function TransactionsPage() {
                                 ·
                               </span>
                               <span className={styles.transactionMeta}>
-                                {transaction.categoryName} · {transaction.accountName} · {formatDay(transaction.transactionDate)}
+                                {transaction.categoryName} ·{" "}
+                                {transaction.accountName} ·{" "}
+                                {formatDay(transaction.transactionDate)}
                               </span>
                             </div>
                           </div>
@@ -934,40 +981,45 @@ export default function TransactionsPage() {
                           className={styles.segmentedControl}
                           role="radiogroup"
                         >
-                          {(["EXPENSE", "INCOME"] as const).map((typeOption) => {
-                            const toneClass =
-                              typeOption === "INCOME"
-                                ? styles.segmentButtonIncome
-                                : styles.segmentButtonExpense;
-                            const activeClass =
-                              field.value === typeOption
-                                ? typeOption === "INCOME"
-                                  ? styles.segmentButtonIncomeActive
-                                  : styles.segmentButtonExpenseActive
-                                : "";
+                          {(["EXPENSE", "INCOME"] as const).map(
+                            (typeOption) => {
+                              const toneClass =
+                                typeOption === "INCOME"
+                                  ? styles.segmentButtonIncome
+                                  : styles.segmentButtonExpense;
+                              const activeClass =
+                                field.value === typeOption
+                                  ? typeOption === "INCOME"
+                                    ? styles.segmentButtonIncomeActive
+                                    : styles.segmentButtonExpenseActive
+                                  : "";
 
-                            return (
-                              <button
-                                aria-checked={field.value === typeOption}
-                                className={`${styles.segmentButton} ${toneClass} ${activeClass}`.trim()}
-                                id={`transaction-type-${typeOption.toLowerCase()}`}
-                                key={typeOption}
-                                onBlur={field.onBlur}
-                                onClick={() => field.onChange(typeOption)}
-                                role="radio"
-                                type="button"
-                              >
-                                {t(`transactionTypes.${typeOption}` as const)}
-                              </button>
-                            );
-                          })}
+                              return (
+                                <button
+                                  aria-checked={field.value === typeOption}
+                                  className={`${styles.segmentButton} ${toneClass} ${activeClass}`.trim()}
+                                  id={`transaction-type-${typeOption.toLowerCase()}`}
+                                  key={typeOption}
+                                  onBlur={field.onBlur}
+                                  onClick={() => field.onChange(typeOption)}
+                                  role="radio"
+                                  type="button"
+                                >
+                                  {t(`transactionTypes.${typeOption}` as const)}
+                                </button>
+                              );
+                            },
+                          )}
                         </div>
                       )}
                     />
                   </Field>
 
                   <div className={styles.switchGrid}>
-                    <Field htmlFor="transaction-ownership-switch" label={t("common.ownership")}>
+                    <Field
+                      htmlFor="transaction-ownership-switch"
+                      label={t("common.ownership")}
+                    >
                       <Controller
                         control={form.control}
                         name="ownershipType"
@@ -1074,7 +1126,9 @@ export default function TransactionsPage() {
                     </Field>
                   ) : null}
 
-                  {isCreating && transactionType === "EXPENSE" && isInstallment ? (
+                  {isCreating &&
+                  transactionType === "EXPENSE" &&
+                  isInstallment ? (
                     <Field
                       error={form.formState.errors.installmentCount?.message}
                       htmlFor="transaction-installment-count"

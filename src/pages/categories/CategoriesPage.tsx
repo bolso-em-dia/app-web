@@ -29,8 +29,8 @@ import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { getStoredIcon } from "../../lib/icons";
 import { COLOR_OPTIONS, ICON_OPTIONS } from "../../lib/uiOptions";
 import {
-  archiveCategorySchema,
-  categorySchema,
+  createArchiveCategorySchema,
+  createCategorySchema,
   type ArchiveCategoryFormValues,
   type CategoryFormValues,
 } from "../../lib/validation/categorySchema";
@@ -69,6 +69,12 @@ export default function CategoriesPage() {
   const selectedCategory = useMemo(
     () => categories.find((category) => category.id === selectedId) ?? null,
     [categories, selectedId],
+  );
+
+  const categorySchema = useMemo(() => createCategorySchema(t), [t]);
+  const archiveCategorySchema = useMemo(
+    () => createArchiveCategorySchema(t),
+    [t],
   );
 
   const form = useForm<CategoryFormValues>({
@@ -348,25 +354,25 @@ export default function CategoriesPage() {
                 }
                 secondaryContent={
                   <>
-                  <Field
-                    htmlFor="category-status-filter"
-                    label={t("common.status")}
-                  >
-                    <Select
-                      id="category-status-filter"
-                      onChange={(event) => {
-                        setStatusFilter(
-                          event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                        );
-                        setPage(0);
-                      }}
-                      value={statusFilter}
+                    <Field
+                      htmlFor="category-status-filter"
+                      label={t("common.status")}
                     >
-                      <option value="ALL">{t("common.all")}</option>
-                      <option value="ACTIVE">{t("common.active")}</option>
-                      <option value="ARCHIVED">{t("common.archived")}</option>
-                    </Select>
-                  </Field>
+                      <Select
+                        id="category-status-filter"
+                        onChange={(event) => {
+                          setStatusFilter(
+                            event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
+                          );
+                          setPage(0);
+                        }}
+                        value={statusFilter}
+                      >
+                        <option value="ALL">{t("common.all")}</option>
+                        <option value="ACTIVE">{t("common.active")}</option>
+                        <option value="ARCHIVED">{t("common.archived")}</option>
+                      </Select>
+                    </Field>
                   </>
                 }
               />
@@ -586,7 +592,9 @@ export default function CategoriesPage() {
                   </div>
                 </form>
 
-                {!isCreating && selectedCategory && !selectedCategory.archivedFromMonth ? (
+                {!isCreating &&
+                selectedCategory &&
+                !selectedCategory.archivedFromMonth ? (
                   <form
                     className={styles.form}
                     onSubmit={archiveForm.handleSubmit(onArchive)}
@@ -620,7 +628,11 @@ export default function CategoriesPage() {
                     </Field>
 
                     <div className={styles.formActions}>
-                      <Button loading={isArchiving} type="submit" variant="danger">
+                      <Button
+                        loading={isArchiving}
+                        type="submit"
+                        variant="danger"
+                      >
                         {t("categories.archiveAction")}
                       </Button>
                     </div>

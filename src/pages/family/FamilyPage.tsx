@@ -25,10 +25,10 @@ import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import {
-  createFamilyMemberSchema,
+  createFamilyMemberSchema as buildCreateFamilyMemberSchema,
   type CreateFamilyMemberFormValues,
   type UpdateFamilyMemberFormValues,
-  updateFamilyMemberSchema,
+  createUpdateFamilyMemberSchema,
 } from "../../lib/validation/familyMemberSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./FamilyPage.module.scss";
@@ -69,6 +69,15 @@ export default function FamilyPage() {
   const selectedMember = useMemo(
     () => members.find((member) => member.id === selectedId) ?? null,
     [members, selectedId],
+  );
+
+  const createFamilyMemberSchema = useMemo(
+    () => buildCreateFamilyMemberSchema(t),
+    [t],
+  );
+  const updateFamilyMemberSchema = useMemo(
+    () => createUpdateFamilyMemberSchema(t),
+    [t],
   );
 
   const form = useForm<FamilyFormValues>({
@@ -318,25 +327,25 @@ export default function FamilyPage() {
               }
               secondaryContent={
                 <>
-                <Field
-                  htmlFor="family-status-filter"
-                  label={t("common.status")}
-                >
-                  <Select
-                    id="family-status-filter"
-                    onChange={(event) => {
-                      setStatusFilter(
-                        event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                      );
-                      setPage(0);
-                    }}
-                    value={statusFilter}
+                  <Field
+                    htmlFor="family-status-filter"
+                    label={t("common.status")}
                   >
-                    <option value="ALL">{t("common.all")}</option>
-                    <option value="ACTIVE">{t("common.active")}</option>
-                    <option value="ARCHIVED">{t("common.archived")}</option>
-                  </Select>
-                </Field>
+                    <Select
+                      id="family-status-filter"
+                      onChange={(event) => {
+                        setStatusFilter(
+                          event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
+                        );
+                        setPage(0);
+                      }}
+                      value={statusFilter}
+                    >
+                      <option value="ALL">{t("common.all")}</option>
+                      <option value="ACTIVE">{t("common.active")}</option>
+                      <option value="ARCHIVED">{t("common.archived")}</option>
+                    </Select>
+                  </Field>
                 </>
               }
             />
@@ -553,7 +562,9 @@ export default function FamilyPage() {
                         loading={isArchiving}
                         onClick={() => void handleArchiveToggle()}
                         type="button"
-                        variant={selectedMember?.active ? "danger" : "secondary"}
+                        variant={
+                          selectedMember?.active ? "danger" : "secondary"
+                        }
                       >
                         {selectedMember?.active
                           ? t("family.archiveMember")

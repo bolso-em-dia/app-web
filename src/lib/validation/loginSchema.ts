@@ -1,15 +1,22 @@
 import { z } from "zod";
+import type { Translate } from "../../app/i18n/I18nContext";
+import { validationMessage } from "./validationMessages";
 
-export const loginSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .min(1, "E-mail é obrigatório.")
-    .email("Informe um e-mail válido."),
-  password: z
-    .string()
-    .min(1, "Senha é obrigatória.")
-    .min(8, "A senha deve ter pelo menos 8 caracteres."),
-});
+export function createLoginSchema(t: Translate) {
+  const message = (key: Parameters<typeof validationMessage>[1]) =>
+    validationMessage(t, key);
 
-export type LoginFormValues = z.infer<typeof loginSchema>;
+  return z.object({
+    email: z
+      .string()
+      .trim()
+      .min(1, message("validation.requiredEmail"))
+      .email(message("validation.invalidEmail")),
+    password: z
+      .string()
+      .min(1, message("validation.requiredPassword"))
+      .min(8, message("validation.passwordMin8")),
+  });
+}
+
+export type LoginFormValues = z.infer<ReturnType<typeof createLoginSchema>>;
