@@ -8,6 +8,7 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
 import TransactionsPage from "./TransactionsPage";
 
 function jsonResponse(payload: unknown) {
@@ -290,6 +291,93 @@ describe("TransactionsPage", () => {
     expect(
       within(drawer).getByText("Groceries"),
     ).toBeInTheDocument();
+  });
+
+  it("lets the user move to previous and next months and highlights non-current months", async () => {
+    const currentReferenceMonth = getCurrentReferenceMonth();
+    const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
+
+    queueInitialLoads();
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByRole("button", { name: /Groceries/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Mês atual")).toBeInTheDocument();
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        jsonResponse({
+          items: [],
+          page: 0,
+          size: 12,
+          totalItems: 0,
+          totalPages: 0,
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(
+        jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
+      )
+      .mockResolvedValueOnce(jsonResponse([]));
+
+    fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Fora do mês atual")).toBeInTheDocument();
+    });
+
+    const previousMonthCall = vi
+      .mocked(fetch)
+      .mock.calls.find(([input]) =>
+        String(input).includes(`referenceMonth=${previousReferenceMonth}`),
+      );
+    expect(previousMonthCall).toBeTruthy();
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        jsonResponse({
+          items: [],
+          page: 0,
+          size: 12,
+          totalItems: 0,
+          totalPages: 0,
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(
+        jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
+      );
+
+    fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Mês atual")).toBeInTheDocument();
+    });
+
+    const currentMonthCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(([input]) =>
+        String(input).includes(`referenceMonth=${currentReferenceMonth}`),
+      );
+    expect(currentMonthCalls.length).toBeGreaterThan(0);
   });
 
   it("filters transactions by multiple categories without expanding the active chip list", async () => {

@@ -15,6 +15,15 @@ export function getCurrentReferenceMonth() {
     .slice(0, 10);
 }
 
+export function shiftReferenceMonth(value: string, deltaMonths: number) {
+  const [year, month] = value.split("-").map(Number);
+  return new Date(year, month - 1 + deltaMonths, 1).toISOString().slice(0, 10);
+}
+
+export function isCurrentReferenceMonth(value: string) {
+  return value === getCurrentReferenceMonth();
+}
+
 export function formatReferenceMonth(value: string) {
   return MONTH_FORMATTER.format(new Date(`${value}T00:00:00`));
 }

@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -37,6 +38,8 @@ import {
   formatDay,
   formatReferenceMonth,
   getCurrentReferenceMonth,
+  isCurrentReferenceMonth,
+  shiftReferenceMonth,
 } from "../../lib/formatters/date";
 import {
   createBudgetSchema,
@@ -112,6 +115,10 @@ export default function BudgetsPage() {
   );
 
   const budgetSchema = useMemo(() => createBudgetSchema(t), [t]);
+  const isViewingCurrentMonth = useMemo(
+    () => isCurrentReferenceMonth(referenceMonth),
+    [referenceMonth],
+  );
 
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
@@ -430,17 +437,66 @@ export default function BudgetsPage() {
                     htmlFor="budget-reference-month"
                     label={t("common.month")}
                   >
-                    <Input
-                      id="budget-reference-month"
-                      onChange={(event) => {
-                        setReferenceMonth(
-                          fromMonthInputValue(event.target.value),
-                        );
-                        setPage(0);
-                      }}
-                      type="month"
-                      value={toMonthInputValue(referenceMonth)}
-                    />
+                    <div className={styles.monthField}>
+                      <div
+                        className={
+                          isViewingCurrentMonth
+                            ? styles.monthInputShell
+                            : `${styles.monthInputShell} ${styles.monthInputShellHighlighted}`
+                        }
+                      >
+                        <Button
+                          aria-label={t("common.previousMonth")}
+                          className={styles.monthNavButton}
+                          onClick={() => {
+                            setReferenceMonth(
+                              shiftReferenceMonth(referenceMonth, -1),
+                            );
+                            setPage(0);
+                          }}
+                          type="button"
+                          variant="secondary"
+                        >
+                          <ChevronLeft aria-hidden="true" size={16} />
+                        </Button>
+                        <Input
+                          id="budget-reference-month"
+                          onChange={(event) => {
+                            setReferenceMonth(
+                              fromMonthInputValue(event.target.value),
+                            );
+                            setPage(0);
+                          }}
+                          type="month"
+                          value={toMonthInputValue(referenceMonth)}
+                        />
+                        <Button
+                          aria-label={t("common.nextMonth")}
+                          className={styles.monthNavButton}
+                          onClick={() => {
+                            setReferenceMonth(
+                              shiftReferenceMonth(referenceMonth, 1),
+                            );
+                            setPage(0);
+                          }}
+                          type="button"
+                          variant="secondary"
+                        >
+                          <ChevronRight aria-hidden="true" size={16} />
+                        </Button>
+                      </div>
+                      <span
+                        className={
+                          isViewingCurrentMonth
+                            ? styles.monthStatus
+                            : `${styles.monthStatus} ${styles.monthStatusHighlighted}`
+                        }
+                      >
+                        {isViewingCurrentMonth
+                          ? t("common.currentMonth")
+                          : t("common.outsideCurrentMonth")}
+                      </span>
+                    </div>
                   </Field>
                   <Field htmlFor="budget-search" label={t("common.search")}>
                     <Input

@@ -3,6 +3,43 @@
   gap: var(--space-4);
 }
 
+.monthField {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.monthInputShell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.monthInputShellHighlighted {
+  padding: var(--space-2);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+}
+
+.monthNavButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  padding-inline: 0;
+}
+
+.monthStatus {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-100);
+  font-weight: var(--font-weight-medium);
+}
+
+.monthStatusHighlighted {
+  color: var(--color-accent);
+}
+
 .loadingCard {
   padding: var(--space-6);
 }
@@ -222,6 +259,14 @@
 
   .summaryGrid {
     grid-template-columns: 1fr;
+  }
+
+  .monthInputShell {
+    grid-template-columns: 1fr;
+  }
+
+  .monthNavButton {
+    width: 100%;
   }
 }
 
