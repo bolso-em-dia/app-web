@@ -156,10 +156,16 @@ services:
 ```
 
 
+## CI
+
+- push validation workflow: `.github/workflows/ci.yml`
+- Docker publishing workflow: `.github/workflows/docker.yml`
+
 ## Docker releases
 
 - workflow: `.github/workflows/docker.yml`
 - release and tagging guide: `DOCKER.md`
+- published image: `danielarrais/bolso-em-dia-ui`
 
 ## Useful commands
 

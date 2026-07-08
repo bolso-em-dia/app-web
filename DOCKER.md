@@ -21,6 +21,8 @@ The namespace comes from:
 
 The Docker workflow runs in two modes:
 
+- only after the frontend validation job in the same workflow succeeds
+
 - automatically on pushed Git tags that match `v*`
 - manually through `workflow_dispatch`
 
