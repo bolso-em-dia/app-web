@@ -81,6 +81,88 @@ describe("HomePage", () => {
     vi.clearAllMocks();
   });
 
+  it("uses the realized balance as the initial mode when the preference is disabled", async () => {
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+            },
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Mercado")).toBeInTheDocument();
+    expect(screen.getByText("Saldo realizado")).toBeInTheDocument();
+    expect(screen.getByText("R$ 4.805,00")).toBeInTheDocument();
+  });
+
+  it("shows an error state and retries the dashboard request", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch)
+      .mockRejectedValueOnce(new Error("load failed"))
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          referenceMonth: "2026-06-01",
+          summary: {
+            totalIncome: 0,
+            totalExpense: 0,
+            balance: 0,
+            availableBalance: 0,
+            reservedBudgetAmount: 0,
+          },
+          budgets: [],
+          recentTransactions: [],
+          categoryBreakdown: [],
+        }),
+        text: async () => "",
+      } as Response);
+
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: true,
+            },
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByText("Não foi possível carregar o dashboard agora."),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+
+    expect(await screen.findByText("Sessão")).toBeInTheDocument();
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText("Não foi possível carregar o dashboard agora.")).not.toBeInTheDocument();
+  });
+
   it("renders the dashboard data and toggles the balance mode", async () => {
     render(
       <MemoryRouter initialEntries={["/dashboard"]}>

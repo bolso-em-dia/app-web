@@ -437,13 +437,9 @@ export default function BudgetsPage() {
                     htmlFor="budget-reference-month"
                     label={t("common.month")}
                   >
-                    <div className={styles.monthField}>
                       <div
-                        className={
-                          isViewingCurrentMonth
-                            ? styles.monthInputShell
-                            : `${styles.monthInputShell} ${styles.monthInputShellHighlighted}`
-                        }
+                        className={styles.monthInputShell}
+                        data-current-month={isViewingCurrentMonth ? "true" : "false"}
                       >
                         <Button
                           aria-label={t("common.previousMonth")}
@@ -460,6 +456,11 @@ export default function BudgetsPage() {
                           <ChevronLeft aria-hidden="true" size={16} />
                         </Button>
                         <Input
+                          className={
+                            isViewingCurrentMonth
+                              ? undefined
+                              : styles.monthInputHighlighted
+                          }
                           id="budget-reference-month"
                           onChange={(event) => {
                             setReferenceMonth(
@@ -485,18 +486,6 @@ export default function BudgetsPage() {
                           <ChevronRight aria-hidden="true" size={16} />
                         </Button>
                       </div>
-                      <span
-                        className={
-                          isViewingCurrentMonth
-                            ? styles.monthStatus
-                            : `${styles.monthStatus} ${styles.monthStatusHighlighted}`
-                        }
-                      >
-                        {isViewingCurrentMonth
-                          ? t("common.currentMonth")
-                          : t("common.outsideCurrentMonth")}
-                      </span>
-                    </div>
                   </Field>
                   <Field htmlFor="budget-search" label={t("common.search")}>
                     <Input

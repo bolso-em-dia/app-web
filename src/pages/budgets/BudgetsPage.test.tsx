@@ -142,6 +142,241 @@ describe("BudgetsPage", () => {
       ).toBeInTheDocument();
     });
   });
+  it("sends only the compatible payload for an allowance budget", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+
+      if (url.includes("/api/budgets?") && (!init?.method || init.method === "GET")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [],
+            page: 0,
+            size: 12,
+            totalItems: 0,
+            totalPages: 0,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+            },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.includes("/api/family-members")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "member-1",
+                name: "Taylor",
+                email: "taylor@my-money.local",
+                role: "USER",
+                active: true,
+                allowanceEnabled: true,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 200,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.endsWith("/api/budgets") && init?.method === "POST") {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "budget-1",
+            name: "Allowance budget",
+            type: "ALLOWANCE",
+            ownerMemberId: "member-1",
+            ownerMemberName: "Taylor",
+            monthlyLimit: 4.5,
+            consumedAmount: 0,
+            remainingAmount: 450,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            categories: [],
+            transactions: [],
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.reject(new Error(`Unhandled request: ${url}`));
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/budgets"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("button", { name: "Novo orçamento" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Novo orçamento" }));
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText("Nome"), {
+      target: { value: "Allowance budget" },
+    });
+    fireEvent.change(within(drawer).getByLabelText("Limite mensal"), {
+      target: { value: "450" },
+    });
+    fireEvent.change(within(drawer).getByLabelText("Tipo"), {
+      target: { value: "ALLOWANCE" },
+    });
+    fireEvent.change(within(drawer).getByLabelText("Membro dono"), {
+      target: { value: "member-1" },
+    });
+
+    fireEvent.click(within(drawer).getByRole("button", { name: "Criar orçamento" }));
+
+    await waitFor(() => {
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(
+            ([input, init]) =>
+              String(input).endsWith("/api/budgets") && init?.method === "POST",
+          ),
+      ).toBe(true);
+    });
+
+    const createCall = vi.mocked(fetch).mock.calls.find(
+      ([input, init]) =>
+        String(input).endsWith("/api/budgets") && init?.method === "POST",
+    );
+    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<string, unknown>;
+
+    expect(payload).toMatchObject({
+      name: "Allowance budget",
+      type: "ALLOWANCE",
+      ownerMemberId: "member-1",
+      monthlyLimit: 4.5,
+    });
+    expect(payload).not.toHaveProperty("categoryIds");
+  });
+
+  it("builds the budget list request with combined search, status and type filters", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input) => {
+      const url = String(input);
+
+      if (url.includes("/api/budgets?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [],
+            page: 0,
+            size: 12,
+            totalItems: 0,
+            totalPages: 0,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [],
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.includes("/api/family-members")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.reject(new Error(`Unhandled request: ${url}`));
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/budgets"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("button", { name: /Filtros/ })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Buscar"), {
+      target: { value: "  travel  " },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Filtros/ }));
+    fireEvent.change(screen.getByLabelText("Status"), {
+      target: { value: "ARCHIVED" },
+    });
+    fireEvent.change(screen.getByLabelText("Tipo"), {
+      target: { value: "ALLOWANCE" },
+    });
+
+    await waitFor(() => {
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/budgets?"));
+      expect(
+        requests.some(
+          (url) =>
+            url.includes("search=travel") &&
+            url.includes("status=ARCHIVED") &&
+            url.includes("type=ALLOWANCE"),
+        ),
+      ).toBe(true);
+    });
+  });
+
   it("lets the user move to previous and next months and highlights non-current months", async () => {
     const currentReferenceMonth = getCurrentReferenceMonth();
     const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
@@ -163,7 +398,7 @@ describe("BudgetsPage", () => {
     );
 
     expect(await screen.findByText("Household")).toBeInTheDocument();
-    expect(screen.getByText("Mês atual")).toBeInTheDocument();
+    expect(screen.getByLabelText("Mês", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "true");
 
     vi.mocked(fetch)
       .mockResolvedValueOnce({
@@ -189,7 +424,7 @@ describe("BudgetsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Fora do mês atual")).toBeInTheDocument();
+      expect(screen.getByLabelText("Mês", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "false");
     });
 
     const previousMonthCall = vi
@@ -257,7 +492,7 @@ describe("BudgetsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Mês atual")).toBeInTheDocument();
+      expect(screen.getByLabelText("Mês", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "true");
     });
 
     const currentMonthCalls = vi

@@ -40,8 +40,6 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "common.referenceMonth": "Reference month",
   "common.previousMonth": "Previous month",
   "common.nextMonth": "Next month",
-  "common.currentMonth": "Current month",
-  "common.outsideCurrentMonth": "Outside current month",
   "common.ownership": "Ownership",
   "common.selectAccount": "Select an account",
   "common.selectCategory": "Select a category",

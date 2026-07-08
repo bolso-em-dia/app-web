@@ -40,8 +40,6 @@ export const ptBRMessages = {
   "common.referenceMonth": "Mês de referência",
   "common.previousMonth": "Mês anterior",
   "common.nextMonth": "Próximo mês",
-  "common.currentMonth": "Mês atual",
-  "common.outsideCurrentMonth": "Fora do mês atual",
   "common.ownership": "Titularidade",
   "common.selectAccount": "Selecione uma conta",
   "common.selectCategory": "Selecione uma categoria",

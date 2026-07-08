@@ -600,13 +600,9 @@ export default function TransactionsPage() {
                     label={t("common.referenceMonth")}
                     htmlFor="transaction-filter-month"
                   >
-                    <div className={styles.monthField}>
                       <div
-                        className={
-                          isViewingCurrentMonth
-                            ? styles.monthInputShell
-                            : `${styles.monthInputShell} ${styles.monthInputShellHighlighted}`
-                        }
+                        className={styles.monthInputShell}
+                        data-current-month={isViewingCurrentMonth ? "true" : "false"}
                       >
                         <Button
                           aria-label={t("common.previousMonth")}
@@ -627,6 +623,11 @@ export default function TransactionsPage() {
                           <ChevronLeft aria-hidden="true" size={16} />
                         </Button>
                         <Input
+                          className={
+                            isViewingCurrentMonth
+                              ? undefined
+                              : styles.monthInputHighlighted
+                          }
                           id="transaction-filter-month"
                           onChange={(event) => {
                             setFilters((current) => ({
@@ -659,18 +660,6 @@ export default function TransactionsPage() {
                           <ChevronRight aria-hidden="true" size={16} />
                         </Button>
                       </div>
-                      <span
-                        className={
-                          isViewingCurrentMonth
-                            ? styles.monthStatus
-                            : `${styles.monthStatus} ${styles.monthStatusHighlighted}`
-                        }
-                      >
-                        {isViewingCurrentMonth
-                          ? t("common.currentMonth")
-                          : t("common.outsideCurrentMonth")}
-                      </span>
-                    </div>
                   </Field>
                   <Field
                     label={t("common.type")}
