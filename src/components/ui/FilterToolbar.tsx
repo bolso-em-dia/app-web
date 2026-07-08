@@ -24,12 +24,12 @@ type FilterToolbarProps = {
 
 function useCompactFilterLayout() {
   const [isCompact, setIsCompact] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth <= 640 : false,
+    typeof window !== "undefined" ? window.innerWidth <= 960 : false,
   );
 
   useEffect(() => {
     function handleResize() {
-      setIsCompact(window.innerWidth <= 640);
+      setIsCompact(window.innerWidth <= 960);
     }
 
     window.addEventListener("resize", handleResize);

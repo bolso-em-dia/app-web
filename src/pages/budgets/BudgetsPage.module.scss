@@ -5,7 +5,7 @@
 
 .monthInputShell {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
   gap: var(--space-2);
   align-items: center;
 }
@@ -242,14 +242,6 @@
 
   .summaryGrid {
     grid-template-columns: 1fr;
-  }
-
-  .monthInputShell {
-    grid-template-columns: 1fr;
-  }
-
-  .monthNavButton {
-    width: 100%;
   }
 }
 

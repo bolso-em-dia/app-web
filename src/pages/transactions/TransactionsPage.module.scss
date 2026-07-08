@@ -5,7 +5,7 @@
 
 .monthInputShell {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
   gap: var(--space-2);
   align-items: center;
 }
@@ -44,8 +44,7 @@
 }
 
 .transactionCard,
-.emptyState,
-.deletePanel {
+.emptyState {
   padding: var(--space-4);
 }
 
@@ -306,18 +305,43 @@
   gap: var(--space-3);
 }
 
-.deleteHeader {
-  margin-bottom: var(--space-4);
+.confirmBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  border: 0;
+  background: color-mix(in srgb, var(--color-surface) 58%, transparent);
 }
 
-.deleteTitle {
+.confirmDialog {
+  position: fixed;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  z-index: 61;
+  width: min(100% - (var(--space-6) * 2), 32rem);
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-panel);
+  box-shadow: var(--shadow-popover);
+}
+
+.confirmContent {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.confirmTitle {
   margin: 0;
   font-size: var(--font-size-200);
 }
 
-.deleteSection {
-  display: grid;
-  gap: var(--space-4);
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 @media (width <= 72rem) {
@@ -332,14 +356,6 @@
     flex-direction: column;
     align-items: stretch;
   }
-
-  .monthInputShell {
-    grid-template-columns: 1fr;
-  }
-
-  .monthNavButton {
-    width: 100%;
-  }
 }
 
 @media (width <= 40rem) {
@@ -351,7 +367,8 @@
 
   .transactionTop,
   .formActions,
-  .paginationButtons {
+  .paginationButtons,
+  .confirmActions {
     flex-direction: column;
   }
 

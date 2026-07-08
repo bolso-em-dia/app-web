@@ -501,6 +501,371 @@ describe("TransactionsPage", () => {
     });
   });
 
+  it("opens a delete confirmation modal and cancels without calling the API", async () => {
+    queueInitialLoads();
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const transactionLabel = await screen.findByText("Groceries");
+    const transactionButton = transactionLabel.closest("button");
+    if (!transactionButton) {
+      throw new Error("Transaction button not found.");
+    }
+
+    fireEvent.click(transactionButton);
+
+    expect(
+      screen.queryByRole("dialog", { name: "Excluir transação" }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Excluir transação" }));
+
+    const modal = screen.getByRole("dialog", { name: "Excluir transação" });
+    expect(within(modal).getByText("Confirme a exclusão da transação selecionada.")).toBeInTheDocument();
+
+    fireEvent.click(within(modal).getByRole("button", { name: "Cancelar" }));
+
+    expect(
+      screen.queryByRole("dialog", { name: "Excluir transação" }),
+    ).not.toBeInTheDocument();
+    expect(
+      vi.mocked(fetch).mock.calls.some(
+        ([input, init]) =>
+          String(input).includes("/api/transactions/tx-1?") &&
+          init?.method === "DELETE",
+      ),
+    ).toBe(false);
+  });
+
+  it("confirms simple transaction deletion with SINGLE scope", async () => {
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+
+      if (url.includes("/api/transactions?") && (!init?.method || init.method === "GET")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [
+              {
+                id: "tx-1",
+                type: "EXPENSE",
+                ownershipType: "SHARED",
+                sourceType: "MANUAL",
+                description: "Groceries",
+                amount: 125.5,
+                transactionDate: "2026-06-10",
+                referenceMonth: "2026-06-01",
+                accountId: "account-1",
+                accountName: "Main checking",
+                categoryId: "cat-1",
+                categoryName: "Groceries",
+                memberId: null,
+                memberName: null,
+                installmentGroupId: null,
+                installmentNumber: null,
+                installmentTotal: null,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/accounts?")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [
+              {
+                id: "account-1",
+                name: "Main checking",
+                type: "CHECKING",
+                brand: null,
+                color: "#2254d1",
+                closingDay: null,
+                dueDay: null,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 200,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve(
+          jsonResponse([
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+            },
+          ]),
+        );
+      }
+
+      if (url.includes("/api/family-members")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [
+              {
+                id: "member-1",
+                name: "Taylor",
+                email: "taylor@my-money.local",
+                role: "USER",
+                active: true,
+                allowanceEnabled: true,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 200,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/transactions/tx-1?") && init?.method === "DELETE") {
+        return Promise.resolve(jsonResponse(undefined));
+      }
+
+      return Promise.reject(new Error(`Unhandled request: ${url}`));
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const transactionLabel = await screen.findByText("Groceries");
+    const transactionButton = transactionLabel.closest("button");
+    if (!transactionButton) {
+      throw new Error("Transaction button not found.");
+    }
+
+    fireEvent.click(transactionButton);
+    fireEvent.click(screen.getByRole("button", { name: "Excluir transação" }));
+
+    const modal = screen.getByRole("dialog", { name: "Excluir transação" });
+    fireEvent.click(within(modal).getByRole("button", { name: "Excluir transação" }));
+
+    await waitFor(() => {
+      expect(
+        vi.mocked(fetch).mock.calls.some(
+          ([input, init]) =>
+            String(input).endsWith("/api/transactions/tx-1?scope=SINGLE") &&
+            init?.method === "DELETE",
+        ),
+      ).toBe(true);
+    });
+  });
+
+  it("confirms grouped transaction deletion with FUTURE and ALL scopes", async () => {
+    const groupedTransaction = {
+      id: "tx-1",
+      type: "EXPENSE",
+      ownershipType: "SHARED",
+      sourceType: "INSTALLMENT",
+      description: "Groceries",
+      amount: 25,
+      transactionDate: "2026-06-10",
+      referenceMonth: "2026-06-01",
+      accountId: "account-1",
+      accountName: "Main checking",
+      categoryId: "cat-1",
+      categoryName: "Groceries",
+      memberId: null,
+      memberName: null,
+      installmentGroupId: "grp-1",
+      installmentNumber: 2,
+      installmentTotal: 4,
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-06-01T10:00:00Z",
+    };
+
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+
+      if (url.includes("/api/transactions?") && (!init?.method || init.method === "GET")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [groupedTransaction],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/accounts?")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [
+              {
+                id: "account-1",
+                name: "Main checking",
+                type: "CHECKING",
+                brand: null,
+                color: "#2254d1",
+                closingDay: null,
+                dueDay: null,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 200,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve(
+          jsonResponse([
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+            },
+          ]),
+        );
+      }
+
+      if (url.includes("/api/family-members")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [
+              {
+                id: "member-1",
+                name: "Taylor",
+                email: "taylor@my-money.local",
+                role: "USER",
+                active: true,
+                allowanceEnabled: true,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 200,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/transactions/tx-1?") && init?.method === "DELETE") {
+        return Promise.resolve(jsonResponse(undefined));
+      }
+
+      return Promise.reject(new Error(`Unhandled request: ${url}`));
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@my-money.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const transactionLabel = await screen.findByText("Groceries");
+    const transactionButton = transactionLabel.closest("button");
+    if (!transactionButton) {
+      throw new Error("Transaction button not found.");
+    }
+
+    fireEvent.click(transactionButton);
+    fireEvent.click(screen.getByRole("button", { name: "Excluir transação" }));
+
+    let modal = screen.getByRole("dialog", { name: "Excluir transação" });
+    expect(within(modal).getByLabelText("Escopo da exclusão")).toBeInTheDocument();
+    fireEvent.change(within(modal).getByLabelText("Escopo da exclusão"), {
+      target: { value: "FUTURE" },
+    });
+    fireEvent.click(within(modal).getByRole("button", { name: "Excluir transação" }));
+
+    await waitFor(() => {
+      expect(
+        vi.mocked(fetch).mock.calls.some(
+          ([input, init]) =>
+            String(input).endsWith("/api/transactions/tx-1?scope=FUTURE") &&
+            init?.method === "DELETE",
+        ),
+      ).toBe(true);
+    });
+
+    fireEvent.click(transactionButton);
+    fireEvent.click(screen.getByRole("button", { name: "Excluir transação" }));
+
+    modal = screen.getByRole("dialog", { name: "Excluir transação" });
+    fireEvent.change(within(modal).getByLabelText("Escopo da exclusão"), {
+      target: { value: "ALL" },
+    });
+    fireEvent.click(within(modal).getByRole("button", { name: "Excluir transação" }));
+
+    await waitFor(() => {
+      expect(
+        vi.mocked(fetch).mock.calls.some(
+          ([input, init]) =>
+            String(input).endsWith("/api/transactions/tx-1?scope=ALL") &&
+            init?.method === "DELETE",
+        ),
+      ).toBe(true);
+    });
+  });
+
   it("lets the user move to previous and next months and highlights non-current months", async () => {
     const currentReferenceMonth = getCurrentReferenceMonth();
     const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);

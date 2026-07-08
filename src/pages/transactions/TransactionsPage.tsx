@@ -162,6 +162,7 @@ export default function TransactionsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [deleteScope, setDeleteScope] = useState<DeleteScope>("SINGLE");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -444,6 +445,7 @@ export default function TransactionsPage() {
     try {
       await deleteTransaction(selectedTransaction.id, deleteScope, accessToken);
       setSelectedId(null);
+      setIsDeleteConfirmOpen(false);
       await loadPageData();
     } catch {
       setError(t("transactions.deleteError"));
@@ -455,19 +457,36 @@ export default function TransactionsPage() {
   function handleStartCreate() {
     setIsCreating(true);
     setSelectedId(null);
+    setIsDeleteConfirmOpen(false);
     setError(null);
   }
 
   function handleCancelCreate() {
     setIsCreating(false);
     setSelectedId(null);
+    setIsDeleteConfirmOpen(false);
     setError(null);
   }
 
   function handleCloseDrawer() {
     setIsCreating(false);
     setSelectedId(null);
+    setIsDeleteConfirmOpen(false);
     setError(null);
+  }
+
+  function handleOpenDeleteConfirm() {
+    setDeleteScope("SINGLE");
+    setIsDeleteConfirmOpen(true);
+  }
+
+  function handleCloseDeleteConfirm() {
+    if (isDeleting) {
+      return;
+    }
+
+    setIsDeleteConfirmOpen(false);
+    setDeleteScope("SINGLE");
   }
 
   const activeFilters = useMemo(() => {
@@ -811,6 +830,7 @@ export default function TransactionsPage() {
                       onClick={() => {
                         setIsCreating(false);
                         setSelectedId(transaction.id);
+                        setIsDeleteConfirmOpen(false);
                         setError(null);
                       }}
                       style={
@@ -1242,54 +1262,87 @@ export default function TransactionsPage() {
                         </Button>
                       </>
                     ) : (
-                      <Button loading={isSaving} type="submit">
-                        {t("common.saveChanges")}
-                      </Button>
+                      <>
+                        <Button loading={isSaving} type="submit">
+                          {t("common.saveChanges")}
+                        </Button>
+                        <Button
+                          disabled={isDeleting}
+                          onClick={handleOpenDeleteConfirm}
+                          type="button"
+                          variant="danger"
+                        >
+                          {t("transactions.deleteAction")}
+                        </Button>
+                      </>
                     )}
                   </div>
                 </form>
-
-                {!isCreating && selectedTransaction ? (
-                  <Card className={styles.deletePanel}>
-                    <div className={styles.deleteHeader}>
-                      <h3 className={styles.deleteTitle}>
-                        {t("transactions.deleteTitle")}
-                      </h3>
-                      <p className={styles.helperText}>
-                        {t("transactions.deleteSubtitle")}
-                      </p>
-                    </div>
-
-                    <div className={styles.deleteSection}>
-                      {supportsGroupedDelete ? (
-                        <Field
-                          htmlFor="transaction-delete-scope"
-                          label={t("transactions.deleteScope")}
-                        >
-                          <Select
-                            id="transaction-delete-scope"
-                            onChange={(event) =>
-                              setDeleteScope(event.target.value as DeleteScope)
-                            }
-                            value={deleteScope}
-                          >
-                            <option value="SINGLE">
-                              {t("transactions.deleteScope.single")}
-                            </option>
-                            <option value="FUTURE">
-                              {t("transactions.deleteScope.future")}
-                            </option>
-                            <option value="ALL">
-                              {t("transactions.deleteScope.all")}
-                            </option>
-                          </Select>
-                        </Field>
-                      ) : (
-                        <p className={styles.helperText}>
-                          {t("transactions.noInstallmentGroup")}
-                        </p>
+              </div>
+            </Drawer>
+          ) : null}
+            {isDeleteConfirmOpen && selectedTransaction ? (
+              <>
+                <button
+                  aria-label={t("transactions.closeDeleteConfirm")}
+                  className={styles.confirmBackdrop}
+                  onClick={handleCloseDeleteConfirm}
+                  type="button"
+                />
+                <aside
+                  aria-labelledby="transaction-delete-dialog-title"
+                  aria-modal="true"
+                  className={styles.confirmDialog}
+                  role="dialog"
+                >
+                  <div className={styles.confirmContent}>
+                    <h3
+                      className={styles.confirmTitle}
+                      id="transaction-delete-dialog-title"
+                    >
+                      {t("transactions.deleteTitle")}
+                    </h3>
+                    <p className={styles.helperText}>
+                      {t(
+                        supportsGroupedDelete
+                          ? "transactions.deleteSubtitle"
+                          : "transactions.deleteSingleSubtitle",
                       )}
+                    </p>
 
+                    {supportsGroupedDelete ? (
+                      <Field
+                        htmlFor="transaction-delete-scope"
+                        label={t("transactions.deleteScope")}
+                      >
+                        <Select
+                          id="transaction-delete-scope"
+                          onChange={(event) =>
+                            setDeleteScope(event.target.value as DeleteScope)
+                          }
+                          value={deleteScope}
+                        >
+                          <option value="SINGLE">
+                            {t("transactions.deleteScope.single")}
+                          </option>
+                          <option value="FUTURE">
+                            {t("transactions.deleteScope.future")}
+                          </option>
+                          <option value="ALL">
+                            {t("transactions.deleteScope.all")}
+                          </option>
+                        </Select>
+                      </Field>
+                    ) : null}
+
+                    <div className={styles.confirmActions}>
+                      <Button
+                        onClick={handleCloseDeleteConfirm}
+                        type="button"
+                        variant="subtle"
+                      >
+                        {t("common.cancel")}
+                      </Button>
                       <Button
                         loading={isDeleting}
                         onClick={() => void handleDelete()}
@@ -1299,11 +1352,10 @@ export default function TransactionsPage() {
                         {t("transactions.deleteAction")}
                       </Button>
                     </div>
-                  </Card>
-                ) : null}
-              </div>
-            </Drawer>
-          ) : null}
+                  </div>
+                </aside>
+              </>
+            ) : null}
         </section>
       )}
     </AppShell>

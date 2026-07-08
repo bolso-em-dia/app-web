@@ -93,4 +93,15 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "settings.saveError": "Unable to save settings.",
   "settings.saveSuccess": "Settings saved.",
   "settings.save": "Save preferences",
+  "transactions.deleteTitle": "Delete transaction",
+  "transactions.deleteSubtitle":
+    "Confirm deletion of the selected transaction or the remaining installments in the group.",
+  "transactions.deleteSingleSubtitle":
+    "Confirm deletion of the selected transaction.",
+  "transactions.deleteScope": "Deletion scope",
+  "transactions.deleteScope.single": "Only this installment",
+  "transactions.deleteScope.future": "This and future installments",
+  "transactions.deleteScope.all": "Entire installment group",
+  "transactions.deleteAction": "Delete transaction",
+  "transactions.closeDeleteConfirm": "Close delete confirmation",
 };

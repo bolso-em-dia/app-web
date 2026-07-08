@@ -55,6 +55,16 @@ describe("FilterToolbar", () => {
     expect(screen.queryByText("Buscar: Mercado")).not.toBeInTheDocument();
   });
 
+  it("uses the drawer for tablet-width layouts too", () => {
+    setViewportWidth(900);
+    render(<Harness />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByLabelText("Status secundário")).toBeInTheDocument();
+  });
+
   it("opens the secondary filters inside a drawer on compact screens", () => {
     setViewportWidth(480);
     render(<Harness />);

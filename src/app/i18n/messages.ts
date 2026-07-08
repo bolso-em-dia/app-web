@@ -322,7 +322,9 @@ export const ptBRMessages = {
   "transactions.installmentCount": "Quantidade de parcelas",
   "transactions.deleteTitle": "Excluir transação",
   "transactions.deleteSubtitle":
-    "Remova a transação selecionada ou as parcelas restantes do grupo.",
+    "Confirme a exclusão da transação selecionada ou das parcelas restantes do grupo.",
+  "transactions.deleteSingleSubtitle":
+    "Confirme a exclusão da transação selecionada.",
   "transactions.deleteScope": "Escopo da exclusão",
   "transactions.deleteScope.single": "Somente esta parcela",
   "transactions.deleteScope.future": "Esta e futuras parcelas",
@@ -330,6 +332,7 @@ export const ptBRMessages = {
   "transactions.noInstallmentGroup":
     "Esta transação não faz parte de um grupo de parcelamento.",
   "transactions.deleteAction": "Excluir transação",
+  "transactions.closeDeleteConfirm": "Fechar confirmação de exclusão",
 } as const;
 
 export type MessageKey = keyof typeof ptBRMessages;
