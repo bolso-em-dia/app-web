@@ -63,7 +63,7 @@ describe("CategoriesPage", () => {
           user={{
             id: "1",
             name: "Admin",
-            email: "admin@my-money.local",
+            email: "admin@bolso-em-dia.local",
             role: "ADMIN",
             allowanceEnabled: false,
           }}
@@ -97,7 +97,7 @@ describe("CategoriesPage", () => {
           user={{
             id: "1",
             name: "Admin",
-            email: "admin@my-money.local",
+            email: "admin@bolso-em-dia.local",
             role: "ADMIN",
             allowanceEnabled: false,
           }}
@@ -199,7 +199,7 @@ describe("CategoriesPage", () => {
           user={{
             id: "1",
             name: "Admin",
-            email: "admin@my-money.local",
+            email: "admin@bolso-em-dia.local",
             role: "ADMIN",
             allowanceEnabled: false,
           }}

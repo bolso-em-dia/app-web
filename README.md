@@ -1,64 +1,188 @@
 # app-web
 
-## Layout Refactor Plan
+React frontend for Bolso em Dia.
 
-### Objective
+## Stack
 
-Replace the current `side list + always-visible form` pattern with a clearer
-management layout:
+- React 18
+- TypeScript
+- Vite
+- React Router
+- React Hook Form
+- Zod
+- Vitest + Testing Library
+- ESLint + Stylelint + Prettier
 
-1. toolbar at the top
-2. primary list in the main page body
-3. create and edit in a drawer
-4. destructive actions isolated from the main list flow
+## Prerequisites
 
-### Why
+For manual local execution:
 
-The current pattern mixes exploration, inspection, and editing in the same
-surface. That makes the UI crowded and generic, especially on pages that are
-supposed to feel like a finance tool instead of a basic admin scaffold.
+- Node.js 22
+- npm 10+
+- a reachable `app-api` instance
 
-The new pattern should:
+## Ports and API integration
 
-- keep the list as the primary surface
-- use page width more effectively
-- isolate editing work in a focused panel
-- scale better as filters, details, and actions grow
+- Vite development server: `http://localhost:5173`
+- local preview build: `http://localhost:4173`
+- root `docker compose` stack: `http://localhost:4173`
 
-### Scope
+The application resolves the API base URL in this order:
 
-Pages using the current pattern:
+- runtime container config through `window.__APP_CONFIG__.apiBaseUrl`
+- development/build fallback through `VITE_API_BASE_URL`
+- final local fallback: `http://localhost:8080`
 
-- `family`
-- `categories`
-- `accounts`
-- `envelopes`
-- `fixed-expenses`
-- `transactions`
+That means:
 
-### Target Pattern
+- in local Vite development, you can still use `VITE_API_BASE_URL`
+- in the published Docker image, the runtime container should provide `API_BASE_URL`
 
-#### Main page
+## Manual execution
 
-- page title and actions in the shell header
-- optional toolbar for filters and secondary actions
-- list or table as the dominant page body
+Install dependencies:
 
-#### Editing
+```bash
+cd app-web
+npm ci
+```
 
-- create and edit open a right-side drawer
-- drawer contains the feature form
-- drawer may include contextual destructive actions when relevant
+Start the development server pointing to the local API:
 
-#### Destructive actions
+```bash
+cd app-web
+VITE_API_BASE_URL=http://localhost:8081 npm run dev
+```
 
-- archive and delete actions live in a secondary section inside the drawer or a
-  dedicated confirmation flow
+If the API is running manually on port `8080`, this also works:
 
-### Implementation Order
+```bash
+cd app-web
+npm run dev
+```
 
-1. create minimal shared drawer infrastructure
-2. migrate `categories` as the pilot page
-3. validate tests and checks
-4. migrate the other management pages
-5. migrate `transactions` last because it is the most complex screen
+Open:
+
+- `http://localhost:5173`
+
+## Build and local preview
+
+Build the app:
+
+```bash
+cd app-web
+npm run build
+```
+
+Serve the production build locally:
+
+```bash
+cd app-web
+npm run preview
+```
+
+Open:
+
+- `http://localhost:4173`
+
+## Running with Docker Compose
+
+Start the integrated stack from the repository root:
+
+```bash
+docker compose up --build
+```
+
+In this mode:
+
+- `app-web` is served at `http://localhost:4173`
+- the container entrypoint generates `app-config.js` with `API_BASE_URL=http://localhost:8081`
+- the browser talks to the API through the compose host port, not the internal
+  container port
+
+### Example `app-web` compose service
+
+```yaml
+services:
+  app-web:
+    build:
+      context: ./app-web
+    environment:
+      API_BASE_URL: http://localhost:8081
+    ports:
+      - "4173:80"
+    depends_on:
+      - app-api
+```
+
+### Example full stack
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bolso_em_dia
+      POSTGRES_USER: bolso_em_dia
+      POSTGRES_PASSWORD: bolso_em_dia
+    ports:
+      - "5432:5432"
+
+  app-api:
+    build:
+      context: ./app-api
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/bolso_em_dia
+      DB_USERNAME: bolso_em_dia
+      DB_PASSWORD: bolso_em_dia
+      APP_ALLOWED_ORIGINS: http://localhost:4173
+      APP_ADMIN_EMAIL: admin@bolso-em-dia.local
+      APP_ADMIN_PASSWORD: admin123456
+      APP_JWT_SECRET: change-this-secret-change-this-secret
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+
+  app-web:
+    build:
+      context: ./app-web
+    environment:
+      API_BASE_URL: http://localhost:8081
+    ports:
+      - "4173:80"
+    depends_on:
+      - app-api
+```
+
+
+## Docker releases
+
+- workflow: `.github/workflows/docker.yml`
+- release and tagging guide: `DOCKER.md`
+
+## Useful commands
+
+```bash
+cd app-web
+npm run test
+npm run lint
+npm run typecheck
+npm run stylelint
+npm run build
+```
+
+## Backend dependency
+
+The frontend does not start the database or the API on its own.
+
+When running `app-web` in isolation, make sure `app-api` is reachable from the
+browser. For local Vite development, set `VITE_API_BASE_URL` if needed. For the
+Docker image, pass `API_BASE_URL` when starting the container.
+
+## Development credentials
+
+When the API is using the default bootstrap data:
+
+- email: `admin@bolso-em-dia.local`
+- password: `admin123456`

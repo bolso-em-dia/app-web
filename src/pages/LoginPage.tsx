@@ -28,7 +28,7 @@ export default function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "admin@my-money.local",
+      email: "admin@bolso-em-dia.local",
       password: "admin123456",
     },
   });
@@ -48,7 +48,7 @@ export default function LoginPage() {
     <div className={styles.page}>
       <Card className={styles.card}>
         <div className={styles.heading}>
-          <span className={styles.eyebrow}>My Money</span>
+          <span className={styles.eyebrow}>Bolso em Dia</span>
           <h1 className={styles.title}>{t("login.title")}</h1>
           <p className={styles.subtitle}>{t("login.subtitle")}</p>
         </div>

@@ -1,5 +1,5 @@
 export const ptBRMessages = {
-  "app.brand": "My Money",
+  "app.brand": "Bolso em Dia",
   "app.loadingSession": "Carregando sessão",
   "navigation.aria": "Navegação principal",
   "navigation.management": "Gestão",

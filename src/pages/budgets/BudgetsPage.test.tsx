@@ -76,7 +76,7 @@ describe("BudgetsPage", () => {
             {
               id: "member-1",
               name: "Taylor",
-              email: "taylor@my-money.local",
+              email: "taylor@bolso-em-dia.local",
               role: "USER",
               active: true,
               allowanceEnabled: true,
@@ -104,7 +104,7 @@ describe("BudgetsPage", () => {
           user={{
             id: "1",
             name: "Admin",
-            email: "admin@my-money.local",
+            email: "admin@bolso-em-dia.local",
             role: "ADMIN",
             allowanceEnabled: false,
           }}
@@ -187,7 +187,7 @@ describe("BudgetsPage", () => {
               {
                 id: "member-1",
                 name: "Taylor",
-                email: "taylor@my-money.local",
+                email: "taylor@bolso-em-dia.local",
                 role: "USER",
                 active: true,
                 allowanceEnabled: true,
@@ -236,7 +236,7 @@ describe("BudgetsPage", () => {
           user={{
             id: "1",
             name: "Admin",
-            email: "admin@my-money.local",
+            email: "admin@bolso-em-dia.local",
             role: "ADMIN",
             allowanceEnabled: false,
           }}
@@ -339,7 +339,7 @@ describe("BudgetsPage", () => {
           user={{
             id: "1",
             name: "Admin",
-            email: "admin@my-money.local",
+            email: "admin@bolso-em-dia.local",
             role: "ADMIN",
             allowanceEnabled: false,
           }}
@@ -387,7 +387,7 @@ describe("BudgetsPage", () => {
           user={{
             id: "1",
             name: "Admin",
-            email: "admin@my-money.local",
+            email: "admin@bolso-em-dia.local",
             role: "ADMIN",
             allowanceEnabled: false,
           }}

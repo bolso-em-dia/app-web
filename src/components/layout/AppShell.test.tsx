@@ -20,7 +20,7 @@ describe("AppShell", () => {
           user={{
             id: "1",
             name: "Admin User",
-            email: "admin@my-money.local",
+            email: "admin@bolso-em-dia.local",
             role: "ADMIN",
             allowanceEnabled: false,
           }}
@@ -45,7 +45,7 @@ describe("AppShell", () => {
     expect(within(navigation).getByRole("link", { name: "Categorias" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Contas" })).toBeInTheDocument();
     expect(container.querySelectorAll("nav svg").length).toBe(7);
-    expect(screen.queryByText("admin@my-money.local")).not.toBeInTheDocument();
+    expect(screen.queryByText("admin@bolso-em-dia.local")).not.toBeInTheDocument();
   });
 
   it("renders the navigation inside a drawer on compact screens", () => {
@@ -62,7 +62,7 @@ describe("AppShell", () => {
           user={{
             id: "1",
             name: "Admin User",
-            email: "admin@my-money.local",
+            email: "admin@bolso-em-dia.local",
             role: "ADMIN",
             allowanceEnabled: false,
           }}
@@ -87,6 +87,6 @@ describe("AppShell", () => {
     expect(within(navigation).getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
     expect(within(dialog).getByText("Admin User")).toBeInTheDocument();
     expect(within(dialog).getByText("Administrador")).toBeInTheDocument();
-    expect(within(dialog).queryByText("admin@my-money.local")).not.toBeInTheDocument();
+    expect(within(dialog).queryByText("admin@bolso-em-dia.local")).not.toBeInTheDocument();
   });
 });

@@ -1,5 +1,22 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+declare global {
+  interface Window {
+    __APP_CONFIG__?: {
+      apiBaseUrl?: string;
+    };
+  }
+}
+
+function resolveApiBaseUrl() {
+  const runtimeApiBaseUrl = window.__APP_CONFIG__?.apiBaseUrl?.trim();
+
+  if (runtimeApiBaseUrl) {
+    return runtimeApiBaseUrl;
+  }
+
+  return import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 type RequestOptions = RequestInit & {
   accessToken?: string | null;
