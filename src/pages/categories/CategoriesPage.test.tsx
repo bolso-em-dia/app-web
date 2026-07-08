@@ -58,7 +58,7 @@ describe("CategoriesPage", () => {
 
   it("loads categories and validates the create form", async () => {
     render(
-      <MemoryRouter initialEntries={["/categories"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -92,7 +92,7 @@ describe("CategoriesPage", () => {
 
   it("keeps the search field focused during filtering and removes icon/color text from the card", async () => {
     render(
-      <MemoryRouter initialEntries={["/categories"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -194,7 +194,7 @@ describe("CategoriesPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/categories"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
           user={{
             id: "1",

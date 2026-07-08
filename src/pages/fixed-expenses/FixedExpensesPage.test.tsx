@@ -68,7 +68,7 @@ describe("FixedExpensesPage", () => {
 
   it("loads templates and validates required form fields", async () => {
     render(
-      <MemoryRouter initialEntries={["/fixed-expenses"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-expenses"]}>
         <TestAuthProvider
           user={{
             id: "1",

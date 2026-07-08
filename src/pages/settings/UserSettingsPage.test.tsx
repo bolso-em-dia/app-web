@@ -89,7 +89,7 @@ describe("UserSettingsPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/settings"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -143,7 +143,7 @@ describe("UserSettingsPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/settings"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -168,7 +168,7 @@ describe("UserSettingsPage", () => {
 
   it("renders the direct form and saves the preferences", async () => {
     render(
-      <MemoryRouter initialEntries={["/settings"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",

@@ -6,7 +6,7 @@ import LoginPage from "./LoginPage";
 describe("LoginPage", () => {
   it("renders the login form", () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <TestAuthProvider>
           <LoginPage />
         </TestAuthProvider>

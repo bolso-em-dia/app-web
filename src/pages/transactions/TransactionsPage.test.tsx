@@ -136,7 +136,7 @@ describe("TransactionsPage", () => {
     queueInitialLoads();
 
     render(
-      <MemoryRouter initialEntries={["/transactions"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -221,7 +221,7 @@ describe("TransactionsPage", () => {
     queueInitialLoads();
 
     render(
-      <MemoryRouter initialEntries={["/transactions"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -327,7 +327,7 @@ describe("TransactionsPage", () => {
     queueInitialLoads();
 
     render(
-      <MemoryRouter initialEntries={["/transactions"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -426,7 +426,7 @@ describe("TransactionsPage", () => {
     queueInitialLoads();
 
     render(
-      <MemoryRouter initialEntries={["/transactions"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -505,7 +505,7 @@ describe("TransactionsPage", () => {
     queueInitialLoads();
 
     render(
-      <MemoryRouter initialEntries={["/transactions"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -539,9 +539,11 @@ describe("TransactionsPage", () => {
 
     fireEvent.click(within(modal).getByRole("button", { name: "Cancelar" }));
 
-    expect(
-      screen.queryByRole("dialog", { name: "Excluir transação" }),
-    ).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: "Excluir transação" }),
+      ).not.toBeInTheDocument();
+    });
     expect(
       vi.mocked(fetch).mock.calls.some(
         ([input, init]) =>
@@ -659,7 +661,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/transactions"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -805,7 +807,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/transactions"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -977,7 +979,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/transactions"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1122,7 +1124,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/transactions"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",

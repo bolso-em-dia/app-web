@@ -43,7 +43,7 @@ describe("FamilyPage", () => {
 
   it("loads members and validates the create form", async () => {
     render(
-      <MemoryRouter initialEntries={["/family"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
           user={{
             id: "1",

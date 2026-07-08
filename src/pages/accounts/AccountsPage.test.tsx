@@ -46,7 +46,7 @@ describe("AccountsPage", () => {
 
   it("loads accounts and validates credit card fields", async () => {
     render(
-      <MemoryRouter initialEntries={["/accounts"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -95,7 +95,7 @@ describe("AccountsPage", () => {
 
   it("keeps the search field focused during filtering and uses the configured card color visually", async () => {
     render(
-      <MemoryRouter initialEntries={["/accounts"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -183,7 +183,7 @@ describe("AccountsPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/accounts"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",

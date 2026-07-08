@@ -15,7 +15,7 @@ describe("AppShell", () => {
 
   it("renders navigation items with library icons", () => {
     const { container } = render(
-      <MemoryRouter initialEntries={["/dashboard"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -57,7 +57,7 @@ describe("AppShell", () => {
     window.dispatchEvent(new Event("resize"));
 
     render(
-      <MemoryRouter initialEntries={["/dashboard"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",

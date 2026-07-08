@@ -99,7 +99,7 @@ describe("BudgetsPage", () => {
 
   it("loads budgets and validates budget-specific fields", async () => {
     render(
-      <MemoryRouter initialEntries={["/budgets"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -231,7 +231,7 @@ describe("BudgetsPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/budgets"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -334,7 +334,7 @@ describe("BudgetsPage", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/budgets"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -382,7 +382,7 @@ describe("BudgetsPage", () => {
     const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
 
     render(
-      <MemoryRouter initialEntries={["/budgets"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",

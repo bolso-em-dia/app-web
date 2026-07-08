@@ -83,7 +83,7 @@ describe("HomePage", () => {
 
   it("uses the realized balance as the initial mode when the preference is disabled", async () => {
     render(
-      <MemoryRouter initialEntries={["/dashboard"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -132,7 +132,7 @@ describe("HomePage", () => {
       } as Response);
 
     render(
-      <MemoryRouter initialEntries={["/dashboard"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -165,7 +165,7 @@ describe("HomePage", () => {
 
   it("renders the dashboard data and toggles the balance mode", async () => {
     render(
-      <MemoryRouter initialEntries={["/dashboard"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
