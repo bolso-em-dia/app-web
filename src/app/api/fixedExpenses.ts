@@ -96,7 +96,6 @@ export function archiveFixedExpenseTemplate(id: string, accessToken: string) {
     {
       method: "PATCH",
       accessToken,
-      body: JSON.stringify({}),
-    },
+          },
   );
 }

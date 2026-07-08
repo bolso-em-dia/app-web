@@ -122,6 +122,5 @@ export function archiveAccount(id: string, accessToken: string) {
   return apiRequest<Account>(`/api/accounts/${id}/archive`, {
     method: "PATCH",
     accessToken,
-    body: JSON.stringify({}),
-  });
+      });
 }

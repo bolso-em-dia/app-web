@@ -150,8 +150,7 @@ export function archiveBudget(
     {
       method: "PATCH",
       accessToken,
-      body: JSON.stringify({}),
-    },
+          },
   );
 }
 
