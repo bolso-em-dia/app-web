@@ -166,6 +166,8 @@ services:
 - workflow: `.github/workflows/docker.yml`
 - release and tagging guide: `DOCKER.md`
 - published image: `danielarrais/bolso-em-dia-ui`
+- pull example: `docker pull danielarrais/bolso-em-dia-ui:latest`
+- run example: `docker run --rm -p 4173:80 -e API_BASE_URL=https://api.example.com danielarrais/bolso-em-dia-ui:latest`
 
 ## Useful commands
 
