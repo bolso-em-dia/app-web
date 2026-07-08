@@ -90,8 +90,8 @@
 }
 
 .badgeSuccess {
-  background: rgb(35 126 84 / 10%);
-  color: rgb(35 126 84);
+  background: var(--color-success-soft);
+  color: var(--color-success);
 }
 
 .emptyState,

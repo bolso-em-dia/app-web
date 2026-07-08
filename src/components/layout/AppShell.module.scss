@@ -66,7 +66,7 @@
 
 .navItemActive {
   background: var(--color-accent-soft);
-  border-color: rgba(34, 84, 209, 24%);
+  border-color: color-mix(in srgb, var(--color-accent) 24%, white);
 }
 
 .navLead {

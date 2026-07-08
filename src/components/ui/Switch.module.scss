@@ -29,9 +29,9 @@
 }
 
 .thumb {
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 999px;
+  width: var(--space-5);
+  height: var(--space-5);
+  border-radius: var(--radius-round);
   background: var(--color-surface);
   box-shadow: var(--shadow-xs);
   transition: transform 160ms ease;
@@ -42,7 +42,7 @@
 }
 
 .input:checked + .control .thumb {
-  transform: translateX(1.25rem);
+  transform: translateX(var(--space-5));
 }
 
 .input:focus-visible + .control .track {

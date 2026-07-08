@@ -1,23 +1,25 @@
 .formCard {
   width: min(100%, 42rem);
   margin: 0 auto;
+  padding: var(--space-6);
 }
 
 .feedbackCard {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
   width: min(100%, 42rem);
   margin: 0 auto;
+  padding: var(--space-6);
 }
 
 .form {
   display: grid;
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 .formIntro {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .formTitle {
@@ -32,20 +34,20 @@
 
 .fieldGroup {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .fieldHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .fieldTitleWrap {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .fieldIcon {
@@ -60,7 +62,7 @@
 
 .successMessage {
   margin: 0;
-  color: var(--color-success-strong);
+  color: var(--color-success);
   font-size: var(--font-size-100);
 }
 
@@ -69,7 +71,13 @@
   justify-content: flex-end;
 }
 
+
 @media (width <= 40rem) {
+  .formCard,
+  .feedbackCard {
+    padding: var(--space-5);
+  }
+
   .formActions > * {
     width: 100%;
   }

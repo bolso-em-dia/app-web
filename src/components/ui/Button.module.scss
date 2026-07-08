@@ -31,7 +31,7 @@
 
 .primary {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-text-on-accent);
 
   &:hover:not(:disabled) {
     background: var(--color-accent-strong);

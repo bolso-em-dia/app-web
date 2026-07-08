@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgb(15 23 42 / 52%);
+  background: var(--color-overlay-strong);
 }
 
 .panel {
@@ -16,7 +16,7 @@
   width: min(34rem, 100vw);
   background: var(--color-panel);
   border-left: 1px solid var(--color-border);
-  box-shadow: -24px 0 48px rgb(15 23 42 / 20%);
+  box-shadow: var(--shadow-drawer);
 }
 
 .header {

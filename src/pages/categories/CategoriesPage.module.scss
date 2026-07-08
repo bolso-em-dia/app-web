@@ -112,7 +112,7 @@
   width: 100%;
   padding: var(--space-5);
   border: 0;
-  border-inline-start: 0.25rem solid transparent;
+  border-inline-start: var(--space-1) solid transparent;
   border-radius: inherit;
   background: transparent;
   text-align: left;
@@ -162,7 +162,7 @@
 }
 
 .badgeSuccess {
-  background: #ecfdf3;
+  background: var(--color-success-soft);
   color: var(--color-success);
 }
 
