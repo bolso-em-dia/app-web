@@ -272,8 +272,8 @@ export default function HomePage() {
                   <ChevronLeft />
                 </Button>
                 <span>
-                  {t("home.pageNofM", {
-                    current: recentTxPage + 1,
+                  {t("common.pageOf", {
+                    page: recentTxPage + 1,
                     total: recentTxPages,
                   })}
                 </span>
@@ -333,8 +333,8 @@ export default function HomePage() {
                   <ChevronLeft />
                 </Button>
                 <span>
-                  {t("home.pageNofM", {
-                    current: catPage + 1,
+                  {t("common.pageOf", {
+                    page: catPage + 1,
                     total: catPages,
                   })}
                 </span>

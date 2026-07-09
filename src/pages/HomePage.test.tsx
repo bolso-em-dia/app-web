@@ -237,4 +237,138 @@ describe("HomePage", () => {
       within(budgetRow!).getByText("Usado R$ 150,00 de R$ 1.000,00"),
     ).toBeInTheDocument();
   });
+
+  it("paginates twelve recent transactions showing ten on page one with navigation controls", async () => {
+    vi.mocked(fetch).mockReset();
+
+    const recentTransactions = Array.from({ length: 12 }, (_, index) => ({
+      id: `tx-${index + 1}`,
+      type: "EXPENSE",
+      ownershipType: "SHARED",
+      sourceType: "MANUAL",
+      description: `Transaction ${index + 1}`,
+      amount: 50,
+      transactionDate: "2026-06-10",
+      referenceMonth: "2026-06-01",
+      accountId: "acc-1",
+      accountName: "Main Checking",
+      categoryId: "cat-1",
+      categoryName: "Groceries",
+      memberId: null,
+      memberName: null,
+      installmentGroupId: null,
+      installmentNumber: null,
+      installmentTotal: null,
+      createdAt: "2026-06-10T10:00:00Z",
+      updatedAt: "2026-06-10T10:00:00Z",
+    }));
+
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 600,
+          balance: 4400,
+          availableBalance: 3550,
+          reservedBudgetAmount: 850,
+        },
+        budgets: [],
+        recentTransactions,
+        categoryBreakdown: [],
+      }),
+      text: async () => "",
+    } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+            },
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Transaction 1")).toBeInTheDocument();
+
+    for (let i = 1; i <= 10; i++) {
+      expect(screen.getByText(`Transaction ${i}`)).toBeInTheDocument();
+    }
+    expect(screen.queryByText("Transaction 11")).not.toBeInTheDocument();
+    expect(screen.queryByText("Transaction 12")).not.toBeInTheDocument();
+
+    const transactionsCard = screen
+      .getByText("Lançamentos recentes")
+      .closest("section, div");
+    expect(transactionsCard).not.toBeNull();
+
+    const paginationButtons = within(transactionsCard!).queryAllByRole("button");
+    expect(paginationButtons.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("shows the percentage share in the category breakdown", async () => {
+    vi.mocked(fetch).mockReset();
+
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 200,
+          balance: 4800,
+          availableBalance: 3950,
+          reservedBudgetAmount: 850,
+        },
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [
+          {
+            categoryId: "cat-1",
+            categoryName: "Groceries",
+            amount: 200,
+          },
+        ],
+      }),
+      text: async () => "",
+    } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+            },
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("100.0%")).toBeInTheDocument();
+  });
 });

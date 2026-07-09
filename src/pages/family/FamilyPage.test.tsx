@@ -41,6 +41,115 @@ describe("FamilyPage", () => {
     vi.clearAllMocks();
   });
 
+  it('opens "Arquivar membro" confirmation for an active member', async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FamilyPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Admin")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Admin/ }));
+
+    const archiveButton = await screen.findByRole("button", {
+      name: "Arquivar membro",
+    });
+    fireEvent.click(archiveButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    expect(alertDialog).toBeInTheDocument();
+    expect(
+      within(alertDialog).getByText(
+        "Tem certeza que deseja arquivar este membro? Ele não poderá mais fazer login.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('opens "Reativar membro" confirmation for an inactive member', async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "GET" && url.includes("/api/family-members?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "member-2",
+                name: "Jane",
+                email: "jane@bolso-em-dia.local",
+                role: "USER",
+                active: false,
+                allowanceEnabled: false,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-07-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FamilyPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Jane")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Jane/ }));
+
+    const restoreButton = await screen.findByRole("button", {
+      name: "Reativar membro",
+    });
+    fireEvent.click(restoreButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    expect(alertDialog).toBeInTheDocument();
+    expect(
+      within(alertDialog).getByText(
+        "Tem certeza que deseja reativar este membro?",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("loads members and validates the create form", async () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>

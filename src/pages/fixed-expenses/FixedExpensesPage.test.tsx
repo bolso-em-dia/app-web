@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
@@ -232,6 +238,361 @@ describe("FixedExpensesPage", () => {
 
     expect(
       await screen.findByText("Nenhuma transação fixa encontrada para os filtros atuais."),
+    ).toBeInTheDocument();
+  });
+
+  it("opens archive confirmation and cancels without calling the API", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "GET" && url.includes("/api/fixed-transactions?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "template-1",
+                name: "Rent",
+                type: "EXPENSE",
+                amount: 1800,
+                categoryId: "cat-1",
+                categoryName: "Housing",
+                accountId: "account-1",
+                accountName: "Main checking",
+                dueDay: 5,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                active: true,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "cat-1", name: "Housing", icon: "home", color: "#2254d1" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/accounts/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "account-1", name: "Main checking", type: "CHECKING" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
+
+    const archiveButton = await screen.findByRole("button", {
+      name: "Arquivar transação fixa",
+    });
+    fireEvent.click(archiveButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    expect(alertDialog).toBeInTheDocument();
+
+    const cancelButton = within(alertDialog).getByRole("button", {
+      name: "Cancelar",
+    });
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+
+    const archiveCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(
+        ([input, init]) =>
+          String(input).includes("/api/fixed-transactions/") &&
+          String(input).includes("/archive") &&
+          init?.method === "PATCH",
+      );
+    expect(archiveCalls).toHaveLength(0);
+  });
+
+  it("confirms archive calls PATCH /api/fixed-transactions/{id}/archive", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "PATCH" && url.includes("/archive")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "template-1",
+            name: "Rent",
+            type: "EXPENSE",
+            amount: 1800,
+            categoryId: "cat-1",
+            categoryName: "Housing",
+            accountId: "account-1",
+            accountName: "Main checking",
+            dueDay: 5,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: "2026-07-01",
+            active: true,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-07-01T10:00:00Z",
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/fixed-transactions?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "template-1",
+                name: "Rent",
+                type: "EXPENSE",
+                amount: 1800,
+                categoryId: "cat-1",
+                categoryName: "Housing",
+                accountId: "account-1",
+                accountName: "Main checking",
+                dueDay: 5,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                active: true,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "cat-1", name: "Housing", icon: "home", color: "#2254d1" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/accounts/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "account-1", name: "Main checking", type: "CHECKING" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
+
+    const archiveButton = await screen.findByRole("button", {
+      name: "Arquivar transação fixa",
+    });
+    fireEvent.click(archiveButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    const confirmButton = within(alertDialog).getByRole("button", {
+      name: "Arquivar transação fixa",
+    });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+
+    const patchCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(
+        ([input, init]) =>
+          String(input).includes("/api/fixed-transactions/template-1/archive") &&
+          init?.method === "PATCH",
+      );
+    expect(patchCalls).toHaveLength(1);
+  });
+
+  it("opens delete confirmation alertdialog when the delete button is clicked", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "GET" && url.includes("/api/fixed-transactions?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "template-1",
+                name: "Rent",
+                type: "EXPENSE",
+                amount: 1800,
+                categoryId: "cat-1",
+                categoryName: "Housing",
+                accountId: "account-1",
+                accountName: "Main checking",
+                dueDay: 5,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                active: true,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "cat-1", name: "Housing", icon: "home", color: "#2254d1" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/accounts/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "account-1", name: "Main checking", type: "CHECKING" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
+
+    const deleteButton = await screen.findByRole("button", {
+      name: "Excluir transação fixa",
+    });
+    fireEvent.click(deleteButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    expect(alertDialog).toBeInTheDocument();
+    expect(
+      within(alertDialog).getByText(
+        "Tem certeza que deseja excluir esta transação fixa? As transações materializadas do mês corrente em diante serão removidas. Transações de meses passados serão preservadas.",
+      ),
     ).toBeInTheDocument();
   });
 });

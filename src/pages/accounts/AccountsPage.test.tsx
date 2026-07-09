@@ -129,6 +129,162 @@ describe("AccountsPage", () => {
     expect(accountSwatch).not.toBeNull();
     expect(accountSwatch).toHaveStyle({ backgroundColor: "rgb(34, 84, 209)" });
   });
+  it("opens archive confirmation and cancels without calling the API", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
+
+    const archiveButton = await screen.findByRole("button", {
+      name: "Arquivar conta",
+    });
+    fireEvent.click(archiveButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    expect(alertDialog).toBeInTheDocument();
+
+    const cancelButton = within(alertDialog).getByRole("button", {
+      name: "Cancelar",
+    });
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+
+    const archiveCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(([input]) =>
+        String(input).includes("/api/accounts/") &&
+        String(input).includes("/archive"),
+      );
+    expect(archiveCalls).toHaveLength(0);
+  });
+
+  it("confirms archive calls PATCH and shows the button as disabled afterward", async () => {
+    vi.mocked(fetch).mockReset();
+    let getCallCount = 0;
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "PATCH" && url.includes("/archive")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "account-1",
+            name: "Main checking",
+            type: "CHECKING",
+            brand: null,
+            color: "#2254d1",
+            closingDay: null,
+            dueDay: null,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: "2026-07-01",
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-07-01T10:00:00Z",
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      getCallCount += 1;
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          items: [
+            {
+              id: "account-1",
+              name: "Main checking",
+              type: "CHECKING",
+              brand: null,
+              color: "#2254d1",
+              closingDay: null,
+              dueDay: null,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: getCallCount > 1 ? "2026-07-01" : null,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        }),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
+
+    const archiveButton = await screen.findByRole("button", {
+      name: "Arquivar conta",
+    });
+    fireEvent.click(archiveButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    const confirmButton = within(alertDialog).getByRole("button", {
+      name: "Arquivar conta",
+    });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+
+    const patchCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(
+        ([input, init]) =>
+          String(input).includes("/api/accounts/account-1/archive") &&
+          init?.method === "PATCH",
+      );
+    expect(patchCalls).toHaveLength(1);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Conta arquivada" }),
+      ).toBeDisabled();
+    });
+  });
+
   it("preserves active filters after update and refetches the list with the same query", async () => {
     vi.mocked(fetch).mockImplementation((_input, init) => {
       const method = init?.method ?? "GET";
