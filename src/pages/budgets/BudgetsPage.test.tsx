@@ -142,6 +142,36 @@ describe("BudgetsPage", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("shows monthly limit as the main value and consumed as secondary in budget cards", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const budgetName = await screen.findByText("Household");
+    const budgetCard = budgetName.closest("button");
+
+    expect(budgetCard).not.toBeNull();
+    expect(
+      within(budgetCard!).getByText("R$ 1.200,00"),
+    ).toBeInTheDocument();
+    expect(
+      within(budgetCard!).getByText("Usado R$ 320,00"),
+    ).toBeInTheDocument();
+  });
+
   it("sends only the compatible payload for an allowance budget", async () => {
     vi.mocked(fetch).mockReset();
     vi.mocked(fetch).mockImplementation((input, init) => {

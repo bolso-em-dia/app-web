@@ -76,6 +76,13 @@
   gap: var(--space-4);
 }
 
+.budgetAmounts {
+  display: grid;
+  justify-items: end;
+  gap: var(--space-1);
+  min-width: 8rem;
+}
+
 .budgetMeta,
 .detailSubtitle,
 .itemMeta,

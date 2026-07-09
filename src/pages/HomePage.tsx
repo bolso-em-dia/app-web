@@ -194,10 +194,10 @@ export default function HomePage() {
                       </div>
                     </div>
                     <div className={styles.itemAmountBlock}>
-                      <strong>{formatCurrency(budget.remainingAmount)}</strong>
+                      <strong>{formatCurrency(budget.monthlyLimit)}</strong>
                       <span className={styles.itemMeta}>
-                        {t("home.usedOfLimit", {
-                          used: formatCurrency(budget.consumedAmount),
+                        {t("home.consumedOfLimit", {
+                          consumed: formatCurrency(budget.consumedAmount),
                           limit: formatCurrency(budget.monthlyLimit),
                         })}
                       </span>

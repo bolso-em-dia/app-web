@@ -569,7 +569,14 @@ export default function BudgetsPage() {
                               })}
                         </p>
                       </div>
-                      <strong>{formatCurrency(budget.remainingAmount)}</strong>
+                      <div className={styles.budgetAmounts}>
+                        <strong>{formatCurrency(budget.monthlyLimit)}</strong>
+                        <p className={styles.budgetMeta}>
+                          {t("budgets.consumedOfLimit", {
+                            consumed: formatCurrency(budget.consumedAmount),
+                          })}
+                        </p>
+                      </div>
                     </div>
 
                     <div className={styles.badgeRow}>

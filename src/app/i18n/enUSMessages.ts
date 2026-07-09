@@ -68,6 +68,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "home.error": "Unable to load the dashboard right now.",
   "home.session": "Session",
   "home.budgets": "Budgets",
+  "home.consumedOfLimit": "Used {{consumed}} of {{limit}}",
   "home.availableBalance": "Available balance",
   "home.reservedBudgetAmount": "Reserved in budgets",
   "home.considerBudgetsInBalance": "Consider budgets in balance",
@@ -138,4 +139,5 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.deleteScope.all": "Entire installment group",
   "transactions.deleteAction": "Delete transaction",
   "transactions.closeDeleteConfirm": "Close delete confirmation",
+  "budgets.consumedOfLimit": "Used {{consumed}}",
 };

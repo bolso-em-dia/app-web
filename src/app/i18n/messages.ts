@@ -161,7 +161,7 @@ export const ptBRMessages = {
   "settings.password.firstAccessTitle": "Defina uma nova senha",
   "settings.password.firstAccessSubtitle": "O acesso inicial do administrador exige a troca da senha antes de continuar.",
   "settings.password.firstAccessSave": "Salvar nova senha",
-  "home.usedOfLimit": "{{used}} de {{limit}}",
+  "home.consumedOfLimit": "Usado {{consumed}} de {{limit}}",
   "home.recentTransactions": "Lançamentos recentes",
   "home.categoryBreakdown": "Gastos por categoria",
   "home.allowanceFor": "Mesada de {{name}}",
@@ -278,6 +278,7 @@ export const ptBRMessages = {
   "budgets.empty": "Nenhum orçamento encontrado para os filtros atuais.",
   "budgets.allowanceFor": "Mesada de {{name}}",
   "budgets.linkedCategories": "{{count}} categorias vinculadas",
+  "budgets.consumedOfLimit": "Usado {{consumed}}",
   "budgets.archivedFrom": "Arquivado a partir de {{month}}",
   "budgets.newDescription":
     "Crie um orçamento global ou um orçamento de mesada.",

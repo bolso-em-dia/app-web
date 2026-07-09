@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import HomePage from "./HomePage";
@@ -202,5 +202,39 @@ describe("HomePage", () => {
 
     expect(screen.getByText("Saldo realizado")).toBeInTheDocument();
     expect(screen.getByText("R$ 4.805,00")).toBeInTheDocument();
+  });
+
+  it("shows budget monthly limit as the main value with consumed as secondary", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+            },
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const budgetName = await screen.findByText("Mercado");
+    const budgetRow = budgetName.closest("li");
+    expect(budgetRow).not.toBeNull();
+
+    expect(
+      within(budgetRow!).getByText("R$ 1.000,00"),
+    ).toBeInTheDocument();
+    expect(
+      within(budgetRow!).getByText("Usado R$ 150,00 de R$ 1.000,00"),
+    ).toBeInTheDocument();
   });
 });
