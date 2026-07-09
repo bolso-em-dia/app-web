@@ -316,7 +316,7 @@ describe("HomePage", () => {
       .closest("section, div");
     expect(transactionsCard).not.toBeNull();
 
-    const paginationButtons = within(transactionsCard!).queryAllByRole("button");
+    const paginationButtons = within(transactionsCard! as HTMLElement).queryAllByRole("button");
     expect(paginationButtons.length).toBeGreaterThanOrEqual(2);
   });
 
