@@ -27,9 +27,9 @@ export function createFixedExpenseSchema(t: Translate) {
       (value) => (value === "" ? undefined : value),
       z.coerce
         .number({ invalid_type_error: message("validation.invalidNumber") })
-        .int(message("validation.dueDayInteger"))
-        .min(1, message("validation.dueDayRange"))
-        .max(31, message("validation.dueDayRange")),
+        .int(message("validation.dayInteger"))
+        .min(1, message("validation.dayRange"))
+        .max(31, message("validation.dayRange")),
     ),
   });
 }

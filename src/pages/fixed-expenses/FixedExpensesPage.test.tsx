@@ -101,7 +101,8 @@ describe("FixedExpensesPage", () => {
     fireEvent.change(screen.getByLabelText("Valor"), {
       target: { value: "150" },
     });
-    fireEvent.change(screen.getByLabelText("Dia de vencimento"), {
+    expect(screen.getByLabelText("Dia do recebimento")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Dia do recebimento"), {
       target: { value: "12" },
     });
 

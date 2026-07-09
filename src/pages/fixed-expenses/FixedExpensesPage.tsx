@@ -106,6 +106,7 @@ export default function FixedExpensesPage() {
     resolver: zodResolver(fixedExpenseSchema),
     defaultValues: createDefaultValues(user?.preferences.defaultAccountId ?? ""),
   });
+  const selectedType = form.watch("type");
 
   const loadTemplates = useCallback(
     async (params: FixedExpenseTemplateListParams) => {
@@ -428,9 +429,14 @@ export default function FixedExpensesPage() {
                               ·
                             </span>
                             <p className={styles.templateMeta}>
-                              {template.categoryName} · {template.accountName} ·
-                              Vence dia{" "}
-                              {String(template.dueDay).padStart(2, "0")}
+                              {template.categoryName} · {template.accountName} ·{" "}
+                              {template.type === "INCOME"
+                                ? t("fixedTransactions.receivesOnDay", {
+                                    day: String(template.dueDay).padStart(2, "0"),
+                                  })
+                                : t("fixedTransactions.dueOnDay", {
+                                    day: String(template.dueDay).padStart(2, "0"),
+                                  })}
                             </p>
                           </div>
                         </div>
@@ -644,7 +650,11 @@ export default function FixedExpensesPage() {
                   <Field
                     error={form.formState.errors.dueDay?.message}
                     htmlFor="fixed-expense-due-day"
-                    label={t("accounts.dueDay")}
+                    label={t(
+                      selectedType === "INCOME"
+                        ? "fixedTransactions.receiptDay"
+                        : "accounts.dueDay",
+                    )}
                   >
                     <Input
                       hasError={Boolean(form.formState.errors.dueDay)}
