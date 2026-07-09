@@ -868,6 +868,129 @@ describe("TransactionsPage", () => {
     });
   });
 
+  it("shows projected fixed transactions without allowing edit from the transaction list", async () => {
+    const futureReferenceMonth = shiftReferenceMonth(getCurrentReferenceMonth(), 1);
+
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+
+      if (url.includes("/api/transactions?")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [
+              {
+                id: "projected-rent",
+                type: "EXPENSE",
+                ownershipType: "SHARED",
+                sourceType: "FIXED_EXPENSE",
+                description: "Projected Rent",
+                amount: 880,
+                transactionDate: `${futureReferenceMonth.slice(0, 8)}12`,
+                referenceMonth: futureReferenceMonth,
+                accountId: "account-1",
+                accountName: "Main checking",
+                categoryId: "cat-1",
+                categoryName: "Groceries",
+                memberId: null,
+                memberName: null,
+                installmentGroupId: null,
+                installmentNumber: null,
+                installmentTotal: null,
+                fixedExpenseTemplateId: "template-1",
+                projected: true,
+                createdAt: null,
+                updatedAt: null,
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/accounts?")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [
+              {
+                id: "account-1",
+                name: "Main checking",
+                type: "CHECKING",
+                brand: null,
+                color: "#2254d1",
+                closingDay: null,
+                dueDay: null,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 200,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve(
+          jsonResponse([
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+            },
+          ]),
+        );
+      }
+
+      if (url.includes("/api/family-members")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [],
+            page: 0,
+            size: 200,
+            totalItems: 0,
+            totalPages: 0,
+          }),
+        );
+      }
+
+      return Promise.reject(new Error(`Unhandled request: ${url} ${init?.method ?? "GET"}`));
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Projected Rent")).toBeInTheDocument();
+    expect(screen.getByText("Prevista")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Projected Rent/i }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Projected Rent"));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("lets the user move to previous and next months and highlights non-current months", async () => {
     const currentReferenceMonth = getCurrentReferenceMonth();
     const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);

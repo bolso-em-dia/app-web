@@ -127,6 +127,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "fixedTransactions.archived": "Fixed transaction archived",
   "fixedTransactions.archiveAction": "Archive fixed transaction",
   "transactions.deleteTitle": "Delete transaction",
+  "transactions.projected": "Projected",
   "transactions.deleteSubtitle":
     "Confirm deletion of the selected transaction or the remaining installments in the group.",
   "transactions.deleteSingleSubtitle":

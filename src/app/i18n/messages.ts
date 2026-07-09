@@ -327,6 +327,7 @@ export const ptBRMessages = {
   "transactions.newDescription":
     "Crie uma transação mensal com parcelamento opcional.",
   "transactions.editDescription": "Atualize a transação de {{month}}.",
+  "transactions.projected": "Prevista",
   "transactions.newTitle": "Nova transação",
   "transactions.detailsTitle": "Detalhes da transação",
   "transactions.create": "Criar transação",

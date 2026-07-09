@@ -816,96 +816,121 @@ export default function TransactionsPage() {
                 );
                 const CategoryIcon = getStoredIcon(categoryOption?.icon);
                 const categoryColor = categoryOption?.color ?? undefined;
+                const cardContent = (
+                  <>
+                    <div className={styles.transactionTop}>
+                      <div className={styles.transactionMain}>
+                        <div className={styles.transactionTitleRow}>
+                          {CategoryIcon ? (
+                            <span
+                              aria-hidden="true"
+                              className={styles.categoryLead}
+                              style={
+                                categoryColor
+                                  ? { color: categoryColor }
+                                  : undefined
+                              }
+                            >
+                              <CategoryIcon className={styles.categoryIcon} />
+                            </span>
+                          ) : categoryColor ? (
+                            <span
+                              aria-hidden="true"
+                              className={styles.categoryLead}
+                              style={{ color: categoryColor }}
+                            >
+                              <span className={styles.categoryDot} />
+                            </span>
+                          ) : null}
+                          <div className={styles.transactionLine}>
+                            <strong className={styles.transactionDescription}>
+                              {transaction.description}
+                            </strong>
+                            <span className={styles.transactionMetaSeparator}>
+                              ·
+                            </span>
+                            <span className={styles.transactionMeta}>
+                              {transaction.categoryName} ·{" "}
+                              {transaction.accountName} ·{" "}
+                              {formatDay(transaction.transactionDate)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <strong className={styles.transactionAmount}>
+                        {formatCurrency(transaction.amount)}
+                      </strong>
+                    </div>
+
+                    <div className={styles.badgeRow}>
+                      <span
+                        className={`${styles.badge} ${transaction.type === "INCOME" ? styles.badgeIncome : styles.badgeExpense}`}
+                      >
+                        {t(`transactionTypes.${transaction.type}` as const)}
+                      </span>
+                      <span className={styles.badge}>
+                        {t(
+                          `ownershipTypes.${transaction.ownershipType}` as const,
+                        )}
+                      </span>
+                      {transaction.memberName ? (
+                        <span
+                          className={`${styles.badge} ${styles.badgeMuted}`}
+                        >
+                          {transaction.memberName}
+                        </span>
+                      ) : null}
+                      {transaction.installmentTotal ? (
+                        <span
+                          className={`${styles.badge} ${styles.badgeMuted}`}
+                        >
+                          {transaction.installmentNumber}/
+                          {transaction.installmentTotal}
+                        </span>
+                      ) : null}
+                      {transaction.projected ? (
+                        <span
+                          className={`${styles.badge} ${styles.badgeMuted}`}
+                        >
+                          {t("transactions.projected")}
+                        </span>
+                      ) : null}
+                    </div>
+                  </>
+                );
 
                 return (
                   <Card key={transaction.id} className={styles.transactionCard}>
-                    <button
-                      className={styles.transactionButton}
-                      onClick={() => {
-                        setIsCreating(false);
-                        setSelectedId(transaction.id);
-                        setIsDeleteConfirmOpen(false);
-                        setError(null);
-                      }}
-                      style={
-                        categoryColor
-                          ? { borderInlineStartColor: categoryColor }
-                          : undefined
-                      }
-                      type="button"
-                    >
-                      <div className={styles.transactionTop}>
-                        <div className={styles.transactionMain}>
-                          <div className={styles.transactionTitleRow}>
-                            {CategoryIcon ? (
-                              <span
-                                aria-hidden="true"
-                                className={styles.categoryLead}
-                                style={
-                                  categoryColor
-                                    ? { color: categoryColor }
-                                    : undefined
-                                }
-                              >
-                                <CategoryIcon className={styles.categoryIcon} />
-                              </span>
-                            ) : categoryColor ? (
-                              <span
-                                aria-hidden="true"
-                                className={styles.categoryLead}
-                                style={{ color: categoryColor }}
-                              >
-                                <span className={styles.categoryDot} />
-                              </span>
-                            ) : null}
-                            <div className={styles.transactionLine}>
-                              <strong className={styles.transactionDescription}>
-                                {transaction.description}
-                              </strong>
-                              <span className={styles.transactionMetaSeparator}>
-                                ·
-                              </span>
-                              <span className={styles.transactionMeta}>
-                                {transaction.categoryName} ·{" "}
-                                {transaction.accountName} ·{" "}
-                                {formatDay(transaction.transactionDate)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <strong className={styles.transactionAmount}>
-                          {formatCurrency(transaction.amount)}
-                        </strong>
+                    {transaction.projected ? (
+                      <div
+                        className={styles.transactionStatic}
+                        style={
+                          categoryColor
+                            ? { borderInlineStartColor: categoryColor }
+                            : undefined
+                        }
+                      >
+                        {cardContent}
                       </div>
-
-                      <div className={styles.badgeRow}>
-                        <span
-                          className={`${styles.badge} ${transaction.type === "INCOME" ? styles.badgeIncome : styles.badgeExpense}`}
-                        >
-                          {t(`transactionTypes.${transaction.type}` as const)}
-                        </span>
-                        <span className={styles.badge}>
-                          {t(
-                            `ownershipTypes.${transaction.ownershipType}` as const,
-                          )}
-                        </span>
-                        {transaction.memberName ? (
-                          <span
-                            className={`${styles.badge} ${styles.badgeMuted}`}
-                          >
-                            {transaction.memberName}
-                          </span>
-                        ) : null}
-                        {transaction.installmentTotal ? (
-                          <span
-                            className={`${styles.badge} ${styles.badgeMuted}`}
-                          >
-                            {transaction.installmentNumber}/
-                            {transaction.installmentTotal}
-                          </span>
-                        ) : null}
-                      </div>
-                    </button>
+                    ) : (
+                      <button
+                        className={styles.transactionButton}
+                        onClick={() => {
+                          setIsCreating(false);
+                          setSelectedId(transaction.id);
+                          setIsDeleteConfirmOpen(false);
+                          setError(null);
+                        }}
+                        style={
+                          categoryColor
+                            ? { borderInlineStartColor: categoryColor }
+                            : undefined
+                        }
+                        type="button"
+                      >
+                        {cardContent}
+                      </button>
+                    )}
                   </Card>
                 );
               })

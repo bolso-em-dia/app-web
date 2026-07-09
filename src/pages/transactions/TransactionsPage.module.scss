@@ -66,6 +66,17 @@
   cursor: pointer;
 }
 
+.transactionStatic {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  border-inline-start: var(--space-1) solid transparent;
+  border-radius: inherit;
+  padding: var(--space-5);
+  padding-inline-start: calc(var(--space-5) - var(--space-1));
+  text-align: left;
+}
+
 .transactionButton:hover {
   background: var(--color-panel-muted);
 }

@@ -28,8 +28,10 @@ export type BudgetTransaction = {
   installmentGroupId: string | null;
   installmentNumber: number | null;
   installmentTotal: number | null;
-  createdAt: string;
-  updatedAt: string;
+  fixedExpenseTemplateId?: string | null;
+  projected?: boolean;
+  createdAt: string | null;
+  updatedAt: string | null;
 };
 
 export type Budget = {
