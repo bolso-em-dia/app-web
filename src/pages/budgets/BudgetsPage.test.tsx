@@ -530,4 +530,135 @@ describe("BudgetsPage", () => {
     expect(currentMonthCalls.length).toBeGreaterThan(0);
   });
 
+  it("archive opens confirmation and cancels without calling API", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const householdButton = await screen.findByText("Household");
+    fireEvent.click(householdButton.closest("button")!);
+
+    fireEvent.click(screen.getByRole("button", { name: "Arquivar orçamento" }));
+
+    const confirmDialog = screen.getByRole("alertdialog");
+    expect(confirmDialog).toBeInTheDocument();
+
+    fireEvent.click(within(confirmDialog).getByRole("button", { name: "Cancelar" }));
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  });
+
+  it("archive confirms and calls API then reloads list", async () => {
+    vi.mocked(fetch).mockReset();
+    let archiveCalled = false;
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+
+      if (url.includes("/api/budgets") && init?.method === "PATCH") {
+        archiveCalled = true;
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "env-1",
+            name: "Household",
+            type: "GLOBAL",
+            monthlyLimit: 1200,
+            consumedAmount: 320,
+            remainingAmount: 880,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: "2026-07-01",
+            active: false,
+            categories: [],
+            transactions: [],
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.includes("/api/budgets?") && (!init?.method || init.method === "GET")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [{
+              id: "env-1",
+              name: "Household",
+              type: "GLOBAL",
+              ownerMemberId: null,
+              ownerMemberName: null,
+              monthlyLimit: 1200,
+              consumedAmount: 320,
+              remainingAmount: 880,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              active: true,
+              categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
+              transactions: [],
+            }],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [{ id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" }],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const householdButton = await screen.findByText("Household");
+    fireEvent.click(householdButton.closest("button")!);
+
+    fireEvent.click(screen.getByRole("button", { name: "Arquivar orçamento" }));
+
+    const dialog = screen.getByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Arquivar orçamento" }));
+
+    await waitFor(() => {
+      expect(archiveCalled).toBe(true);
+    });
+  });
 });
