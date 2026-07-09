@@ -203,6 +203,19 @@ export default function HomePage() {
                   budget.consumedAmount,
                   budget.monthlyLimit,
                 );
+                const rawRatio =
+                  budget.monthlyLimit > 0
+                    ? (budget.consumedAmount / budget.monthlyLimit) * 100
+                    : 0;
+
+                let fillClass = styles.progressFill;
+                if (rawRatio > 100) {
+                  fillClass = `${styles.progressFill} ${styles.progressFillDanger}`;
+                } else if (rawRatio >= 80) {
+                  fillClass = `${styles.progressFill} ${styles.progressFillWarning}`;
+                } else {
+                  fillClass = `${styles.progressFill} ${styles.progressFillSafe}`;
+                }
 
                 return (
                   <li key={budget.id} className={styles.itemRow}>
@@ -224,7 +237,7 @@ export default function HomePage() {
                         className={styles.progressTrack}
                       >
                         <span
-                          className={styles.progressFill}
+                          className={fillClass}
                           style={{ width: `${consumptionPercent}%` }}
                         />
                       </div>

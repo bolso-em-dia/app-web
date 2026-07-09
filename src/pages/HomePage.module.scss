@@ -131,6 +131,18 @@
   background: var(--color-accent);
 }
 
+.progressFillSafe {
+  background: var(--color-success);
+}
+
+.progressFillWarning {
+  background: var(--color-warning);
+}
+
+.progressFillDanger {
+  background: var(--color-danger);
+}
+
 .itemMeta,
 .body {
   margin: var(--space-1) 0 0;

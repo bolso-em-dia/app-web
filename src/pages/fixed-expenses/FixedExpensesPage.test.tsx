@@ -595,4 +595,234 @@ describe("FixedExpensesPage", () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it("shows error feedback when archive fails", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "PATCH" && url.includes("/archive")) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: "Server error" }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/fixed-transactions?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "template-1",
+                name: "Rent",
+                type: "EXPENSE",
+                amount: 1800,
+                categoryId: "cat-1",
+                categoryName: "Housing",
+                accountId: "account-1",
+                accountName: "Main checking",
+                dueDay: 5,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                active: true,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "cat-1", name: "Housing", icon: "home", color: "#2254d1" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/accounts/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "account-1", name: "Main checking", type: "CHECKING" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
+
+    const archiveButton = await screen.findByRole("button", {
+      name: "Arquivar transação fixa",
+    });
+    fireEvent.click(archiveButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    const confirmButton = within(alertDialog).getByRole("button", {
+      name: "Arquivar transação fixa",
+    });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Não foi possível arquivar a transação fixa."),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("shows error feedback when delete fails", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "DELETE") {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: "Server error" }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/fixed-transactions?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "template-1",
+                name: "Rent",
+                type: "EXPENSE",
+                amount: 1800,
+                categoryId: "cat-1",
+                categoryName: "Housing",
+                accountId: "account-1",
+                accountName: "Main checking",
+                dueDay: 5,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                active: true,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "cat-1", name: "Housing", icon: "home", color: "#2254d1" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/accounts/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "account-1", name: "Main checking", type: "CHECKING" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
+
+    const deleteButton = await screen.findByRole("button", {
+      name: "Excluir transação fixa",
+    });
+    fireEvent.click(deleteButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    const confirmButton = within(alertDialog).getByRole("button", {
+      name: "Excluir transação fixa",
+    });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Não foi possível excluir a transação fixa."),
+      ).toBeInTheDocument();
+    });
+  });
 });

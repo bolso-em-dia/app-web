@@ -397,4 +397,85 @@ describe("AccountsPage", () => {
     );
   });
 
+  it("shows error feedback when archive fails", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "PATCH" && url.includes("/archive")) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: "Server error" }),
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          items: [
+            {
+              id: "account-1",
+              name: "Main checking",
+              type: "CHECKING",
+              brand: null,
+              color: "#2254d1",
+              closingDay: null,
+              dueDay: null,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        }),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
+
+    const archiveButton = await screen.findByRole("button", {
+      name: "Arquivar conta",
+    });
+    fireEvent.click(archiveButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    const confirmButton = within(alertDialog).getByRole("button", {
+      name: "Arquivar conta",
+    });
+    fireEvent.click(confirmButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Não foi possível arquivar a conta."),
+      ).toBeInTheDocument();
+    });
+  });
+
 });

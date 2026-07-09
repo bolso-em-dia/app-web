@@ -320,6 +320,168 @@ describe("HomePage", () => {
     expect(paginationButtons.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("shows expenses in red and income in green", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 195,
+          balance: 4805,
+          availableBalance: 3955,
+          reservedBudgetAmount: 850,
+        },
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      }),
+      text: async () => "",
+    } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+            },
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const incomeElement = await screen.findByText("R$ 5.000,00");
+    expect(incomeElement.className).toContain("income");
+
+    const expenseElement = screen.getByText("-R$ 195,00");
+    expect(expenseElement.className).toContain("expense");
+  });
+
+  it("budget progress bar shows green below 80%, warning at 80-100%, red above 100%", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 2400,
+          balance: 2600,
+          availableBalance: 2600,
+          reservedBudgetAmount: 0,
+        },
+        budgets: [
+          {
+            id: "budget-a",
+            name: "Budget A",
+            type: "GLOBAL",
+            ownerMemberId: null,
+            ownerMemberName: null,
+            monthlyLimit: 1000,
+            consumedAmount: 300,
+            remainingAmount: 700,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            categories: [],
+            transactions: [],
+          },
+          {
+            id: "budget-b",
+            name: "Budget B",
+            type: "GLOBAL",
+            ownerMemberId: null,
+            ownerMemberName: null,
+            monthlyLimit: 1000,
+            consumedAmount: 900,
+            remainingAmount: 100,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            categories: [],
+            transactions: [],
+          },
+          {
+            id: "budget-c",
+            name: "Budget C",
+            type: "GLOBAL",
+            ownerMemberId: null,
+            ownerMemberName: null,
+            monthlyLimit: 1000,
+            consumedAmount: 1200,
+            remainingAmount: 0,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            categories: [],
+            transactions: [],
+          },
+        ],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      }),
+      text: async () => "",
+    } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+            },
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const budgetAName = await screen.findByText("Budget A");
+    const budgetARow = budgetAName.closest("li");
+    expect(budgetARow).not.toBeNull();
+    const budgetABar = budgetARow!.querySelector("div[aria-hidden] > span");
+    expect(budgetABar).not.toBeNull();
+    expect(budgetABar).toHaveStyle({ width: "30%" });
+    expect(budgetABar!.className).toContain("progressFillSafe");
+
+    const budgetBName = screen.getByText("Budget B");
+    const budgetBRow = budgetBName.closest("li");
+    expect(budgetBRow).not.toBeNull();
+    const budgetBBar = budgetBRow!.querySelector("div[aria-hidden] > span");
+    expect(budgetBBar).not.toBeNull();
+    expect(budgetBBar).toHaveStyle({ width: "90%" });
+    expect(budgetBBar!.className).toContain("progressFillWarning");
+
+    const budgetCName = screen.getByText("Budget C");
+    const budgetCRow = budgetCName.closest("li");
+    expect(budgetCRow).not.toBeNull();
+    const budgetCBar = budgetCRow!.querySelector("div[aria-hidden] > span");
+    expect(budgetCBar).not.toBeNull();
+    expect(budgetCBar).toHaveStyle({ width: "100%" });
+    expect(budgetCBar!.className).toContain("progressFillDanger");
+  });
+
   it("shows the percentage share in the category breakdown", async () => {
     vi.mocked(fetch).mockReset();
 

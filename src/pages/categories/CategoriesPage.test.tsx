@@ -488,4 +488,119 @@ describe("CategoriesPage", () => {
       expect(body.replacementCategoryId).toBe("cat-2");
     });
   });
+
+  it("shows error feedback when archive fails", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (
+        method === "PATCH" &&
+        url.includes("/archive")
+      ) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: "Server error" }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+            },
+            {
+              id: "cat-2",
+              name: "Utilities",
+              icon: "home",
+              color: "#e91e63",
+            },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          items: [
+            {
+              id: "cat-1",
+              name: "Groceries",
+              icon: "shopping-cart",
+              color: "#2254d1",
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              replacementCategoryId: null,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        }),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <CategoriesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Groceries")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Groceries/ }));
+
+    const categorySelectTrigger = await screen.findByRole("button", {
+      name: /substituta/,
+    });
+    fireEvent.click(categorySelectTrigger);
+
+    const listbox = screen.getByRole("listbox");
+    fireEvent.click(
+      within(listbox).getByRole("option", { name: /Utilities/ }),
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Arquivar categoria" }),
+    );
+
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+
+    fireEvent.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", {
+        name: "Arquivar categoria",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Não foi possível arquivar a categoria."),
+      ).toBeInTheDocument();
+    });
+  });
 });

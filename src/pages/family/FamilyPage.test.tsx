@@ -150,6 +150,179 @@ describe("FamilyPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("confirms archive and calls PATCH /api/family-members/{id}/archive", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "GET" && url.includes("/api/family-members?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "member-3",
+                name: "Alice",
+                email: "alice@bolso-em-dia.local",
+                role: "USER",
+                active: true,
+                allowanceEnabled: false,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: "member-3",
+          name: "Alice",
+          email: "alice@bolso-em-dia.local",
+          role: "USER",
+          active: false,
+          allowanceEnabled: false,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-07-09T10:00:00Z",
+        }),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FamilyPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Alice")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Alice/ }));
+
+    const archiveButton = await screen.findByRole("button", {
+      name: "Arquivar membro",
+    });
+    fireEvent.click(archiveButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    fireEvent.click(
+      within(alertDialog).getByRole("button", { name: "Arquivar membro" }),
+    );
+
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+        expect.stringContaining("/api/family-members/member-3/archive"),
+        expect.objectContaining({ method: "PATCH" }),
+      );
+    });
+  });
+
+  it("shows error feedback when archive fails", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "GET" && url.includes("/api/family-members?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "member-4",
+                name: "Bob",
+                email: "bob@bolso-em-dia.local",
+                role: "USER",
+                active: true,
+                allowanceEnabled: false,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "PATCH" && url.includes("/archive")) {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: async () => ({}),
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FamilyPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Bob")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Bob/ }));
+
+    const archiveButton = await screen.findByRole("button", {
+      name: "Arquivar membro",
+    });
+    fireEvent.click(archiveButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    fireEvent.click(
+      within(alertDialog).getByRole("button", { name: "Arquivar membro" }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Não foi possível atualizar o status do membro."),
+      ).toBeInTheDocument();
+    });
+  });
+
   it("loads members and validates the create form", async () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
