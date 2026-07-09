@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import {
   archiveFamilyMember,
   createFamilyMember,
-  getFamilyMemberById,
   listFamilyMemberPage,
   restoreFamilyMember,
   type FamilyMember,
@@ -154,7 +153,7 @@ export default function FamilyPage() {
 
     try {
       if (isCreating) {
-        const created = await createFamilyMember(
+        await createFamilyMember(
           {
             name: values.name,
             email: values.email,
@@ -164,9 +163,7 @@ export default function FamilyPage() {
           },
           accessToken,
         );
-        const detailed = await getFamilyMemberById(created.id, accessToken);
-        setSelectedId(detailed.id);
-        setIsCreating(false);
+        handleCloseDrawer();
         await loadMembers({
           page,
           size: pageSize,
@@ -174,7 +171,7 @@ export default function FamilyPage() {
           status: statusFilter,
         });
       } else if (selectedMember) {
-        const updated = await updateFamilyMember(
+        await updateFamilyMember(
           selectedMember.id,
           {
             name: values.name,
@@ -185,7 +182,7 @@ export default function FamilyPage() {
           },
           accessToken,
         );
-        setSelectedId(updated.id);
+        handleCloseDrawer();
         await loadMembers({
           page,
           size: pageSize,

@@ -3,8 +3,9 @@ import type { AuthUser } from "../api/auth";
 import type { UserPreferences } from "../api/userPreferences";
 import { AuthContext, type AuthContextValue } from "./authContext";
 
-type TestAuthUser = Omit<AuthUser, "preferences"> & {
+type TestAuthUser = Omit<AuthUser, "preferences" | "mustChangePassword"> & {
   preferences?: UserPreferences;
+  mustChangePassword?: boolean;
 };
 
 const defaultPreferences: UserPreferences = {
@@ -23,6 +24,7 @@ export function TestAuthProvider({
   const resolvedUser = user
     ? {
         ...user,
+        mustChangePassword: user.mustChangePassword ?? false,
         preferences: user.preferences ?? defaultPreferences,
       }
     : null;
@@ -35,6 +37,7 @@ export function TestAuthProvider({
     login: async () => undefined,
     logout: async () => undefined,
     updateUserPreferences: () => undefined,
+    updateUser: () => undefined,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

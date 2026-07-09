@@ -257,12 +257,8 @@ export default function BudgetsPage() {
 
     try {
       if (isCreating) {
-        const created = await createBudget(
-          mapFormValuesToPayload(values),
-          accessToken,
-        );
-        setSelectedId(created.id);
-        setIsCreating(false);
+        await createBudget(mapFormValuesToPayload(values), accessToken);
+        handleCloseDrawer();
         await loadBudgetsData({
           referenceMonth,
           page,
@@ -272,12 +268,12 @@ export default function BudgetsPage() {
           type: typeFilter || undefined,
         });
       } else if (selectedBudgetSummary) {
-        const updated = await updateBudget(
+        await updateBudget(
           selectedBudgetSummary.id,
           mapFormValuesToPayload(values),
           accessToken,
         );
-        setSelectedId(updated.id);
+        handleCloseDrawer();
         await loadBudgetsData({
           referenceMonth,
           page,

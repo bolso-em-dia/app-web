@@ -38,7 +38,7 @@ describe("apiRequest", () => {
       } as Response);
 
     await expect(
-      apiRequest<{ items: unknown[] }>("/api/fixed-expense-templates", {
+      apiRequest<{ items: unknown[] }>("/api/fixed-transactions", {
         method: "GET",
         accessToken: "stale-render-token",
       }),
@@ -73,7 +73,7 @@ describe("apiRequest", () => {
     } as Response);
 
     await expect(
-      apiRequest<{ ok: boolean }>("/api/fixed-expense-templates", {
+      apiRequest<{ ok: boolean }>("/api/fixed-transactions", {
         method: "GET",
         accessToken: "stale-render-token",
       }),
@@ -124,7 +124,7 @@ describe("apiRequest", () => {
       } as Response);
 
     const [first, second] = await Promise.all([
-      apiRequest<{ id: number }>("/api/fixed-expense-templates", {
+      apiRequest<{ id: number }>("/api/fixed-transactions", {
         method: "GET",
         accessToken: "stale-render-token",
       }),
@@ -182,7 +182,7 @@ describe("apiRequest", () => {
     } as Response);
 
     await expect(
-      apiRequest("/api/fixed-expense-templates", {
+      apiRequest("/api/fixed-transactions", {
         method: "GET",
         accessToken: "stale-render-token",
       }),

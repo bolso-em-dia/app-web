@@ -60,6 +60,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const updateUser = useCallback((nextUser: AuthUser) => {
+    setUser(nextUser);
+  }, []);
+
   useEffect(() => {
     configureApiClientAuth({
       getAccessToken: () => accessTokenRef.current,
@@ -97,12 +101,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login: handleLogin,
       logout: handleLogout,
       updateUserPreferences,
+      updateUser,
     }),
     [
       accessToken,
       handleLogin,
       handleLogout,
       isLoading,
+      updateUser,
       updateUserPreferences,
       user,
     ],

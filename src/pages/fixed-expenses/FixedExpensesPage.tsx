@@ -9,7 +9,6 @@ import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import {
   archiveFixedExpenseTemplate,
   createFixedExpenseTemplate,
-  listFixedExpenseTemplateById,
   listFixedExpenseTemplates,
   updateFixedExpenseTemplate,
   type FixedExpenseTemplate,
@@ -45,6 +44,7 @@ import styles from "./FixedExpensesPage.module.scss";
 function createDefaultValues(defaultAccountId: string): FixedExpenseFormValues {
   return {
     name: "",
+    type: "EXPENSE",
     amount: 0,
     categoryId: "",
     accountId: defaultAccountId,
@@ -58,6 +58,7 @@ function mapFormValuesToPayload(
 ): FixedExpenseTemplatePayload {
   return {
     name: values.name,
+    type: values.type,
     amount: values.amount,
     categoryId: values.categoryId,
     accountId: values.accountId,
@@ -137,7 +138,7 @@ export default function FixedExpensesPage() {
             : null,
         );
       } catch {
-        setError(t("fixedExpenses.error"));
+        setError(t("fixedTransactions.error"));
       } finally {
         setIsLoading(false);
         setHasLoadedOnce(true);
@@ -164,6 +165,7 @@ export default function FixedExpensesPage() {
     if (selectedTemplate) {
       form.reset({
         name: selectedTemplate.name,
+        type: selectedTemplate.type,
         amount: selectedTemplate.amount,
         categoryId: selectedTemplate.categoryId,
         accountId: selectedTemplate.accountId,
@@ -182,16 +184,8 @@ export default function FixedExpensesPage() {
 
     try {
       if (isCreating) {
-        const created = await createFixedExpenseTemplate(
-          mapFormValuesToPayload(values),
-          accessToken,
-        );
-        const detailed = await listFixedExpenseTemplateById(
-          created.id,
-          accessToken,
-        );
-        setSelectedId(detailed.id);
-        setIsCreating(false);
+        await createFixedExpenseTemplate(mapFormValuesToPayload(values), accessToken);
+        handleCloseDrawer();
         await loadTemplates({
           page,
           size: pageSize,
@@ -199,12 +193,12 @@ export default function FixedExpensesPage() {
           status: statusFilter,
         });
       } else if (selectedTemplate) {
-        const updated = await updateFixedExpenseTemplate(
+        await updateFixedExpenseTemplate(
           selectedTemplate.id,
           mapFormValuesToPayload(values),
           accessToken,
         );
-        setSelectedId(updated.id);
+        handleCloseDrawer();
         await loadTemplates({
           page,
           size: pageSize,
@@ -213,7 +207,7 @@ export default function FixedExpensesPage() {
         });
       }
     } catch {
-      setError(t("fixedExpenses.saveError"));
+      setError(t("fixedTransactions.saveError"));
     } finally {
       setIsSaving(false);
     }
@@ -244,7 +238,7 @@ export default function FixedExpensesPage() {
         status: statusFilter,
       });
     } catch {
-      setError(t("fixedExpenses.archiveError"));
+      setError(t("fixedTransactions.archiveError"));
     } finally {
       setIsArchiving(false);
     }
@@ -315,17 +309,17 @@ export default function FixedExpensesPage() {
 
   return (
     <AppShell
-      title={t("fixedExpenses.title")}
-      subtitle={t("fixedExpenses.subtitle")}
+      title={t("fixedTransactions.title")}
+      subtitle={t("fixedTransactions.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
-          {t("fixedExpenses.new")}
+          {t("fixedTransactions.new")}
         </Button>
       }
     >
       {showInitialLoading ? (
         <Card className={styles.loadingCard}>
-          <Spinner label={t("fixedExpenses.loading")} />
+          <Spinner label={t("fixedTransactions.loading")} />
         </Card>
       ) : (
         <section className={styles.stack}>
@@ -347,7 +341,7 @@ export default function FixedExpensesPage() {
                       setSearch(event.target.value);
                       setPage(0);
                     }}
-                    placeholder={t("fixedExpenses.searchPlaceholder")}
+                    placeholder={t("fixedTransactions.searchPlaceholder")}
                     value={search}
                   />
                 </Field>
@@ -449,6 +443,15 @@ export default function FixedExpensesPage() {
                     <div className={styles.templateBadges}>
                       <span
                         className={
+                          template.type === "INCOME"
+                            ? `${styles.badge} ${styles.badgeSuccess}`
+                            : styles.badge
+                        }
+                      >
+                        {t(`transactionTypes.${template.type}`)}
+                      </span>
+                      <span
+                        className={
                           template.archivedFromMonth
                             ? `${styles.badge} ${styles.badgeMuted}`
                             : `${styles.badge} ${styles.badgeSuccess}`
@@ -471,7 +474,7 @@ export default function FixedExpensesPage() {
             <div className={styles.footerBar}>
               <p className={styles.resultSummary}>
                 {totalItems === 0
-                  ? t("fixedExpenses.empty")
+                  ? t("fixedTransactions.empty")
                   : t("common.range", {
                       start: rangeStart,
                       end: rangeEnd,
@@ -534,14 +537,14 @@ export default function FixedExpensesPage() {
             <Drawer
               description={
                 isCreating
-                  ? t("fixedExpenses.newDescription")
-                  : t("fixedExpenses.editDescription")
+                  ? t("fixedTransactions.newDescription")
+                  : t("fixedTransactions.editDescription")
               }
               onClose={handleCloseDrawer}
               title={
                 isCreating
-                  ? t("fixedExpenses.newTitle")
-                  : t("fixedExpenses.detailsTitle")
+                  ? t("fixedTransactions.newTitle")
+                  : t("fixedTransactions.detailsTitle")
               }
             >
               <div className={styles.drawerStack}>
@@ -563,9 +566,24 @@ export default function FixedExpensesPage() {
                   </Field>
 
                   <Field
+                    error={form.formState.errors.type?.message}
+                    htmlFor="fixed-transaction-type"
+                    label={t("common.type")}
+                  >
+                    <Select
+                      hasError={Boolean(form.formState.errors.type)}
+                      id="fixed-transaction-type"
+                      {...form.register("type")}
+                    >
+                      <option value="EXPENSE">{t("transactionTypes.EXPENSE")}</option>
+                      <option value="INCOME">{t("transactionTypes.INCOME")}</option>
+                    </Select>
+                  </Field>
+
+                  <Field
                     error={form.formState.errors.amount?.message}
                     htmlFor="fixed-expense-amount"
-                    label={t("fixedExpenses.amount")}
+                    label={t("fixedTransactions.amount")}
                   >
                     <Controller
                       control={form.control}
@@ -644,7 +662,7 @@ export default function FixedExpensesPage() {
                   <div className={styles.formActions}>
                     <Button loading={isSaving} type="submit">
                       {isCreating
-                        ? t("fixedExpenses.create")
+                        ? t("fixedTransactions.create")
                         : t("common.saveChanges")}
                     </Button>
                     {isCreating ? (
@@ -668,8 +686,8 @@ export default function FixedExpensesPage() {
                         }
                       >
                         {selectedTemplate?.archivedFromMonth
-                          ? t("fixedExpenses.archived")
-                          : t("fixedExpenses.archiveAction")}
+                          ? t("fixedTransactions.archived")
+                          : t("fixedTransactions.archiveAction")}
                       </Button>
                     )}
                   </div>

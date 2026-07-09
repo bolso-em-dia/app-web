@@ -7,6 +7,7 @@ export type AuthUser = {
   email: string;
   role: string;
   allowanceEnabled: boolean;
+  mustChangePassword: boolean;
   preferences: UserPreferences;
 };
 
@@ -39,5 +40,22 @@ export function me(accessToken: string) {
 export function logout() {
   return apiRequest<void>("/api/auth/logout", {
     method: "POST",
+  });
+}
+
+export type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
+export function changePassword(
+  payload: ChangePasswordPayload,
+  accessToken: string,
+) {
+  return apiRequest<AuthUser>("/api/auth/change-password", {
+    method: "POST",
+    accessToken,
+    body: JSON.stringify(payload),
   });
 }

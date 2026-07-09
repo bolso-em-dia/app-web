@@ -15,6 +15,7 @@ describe("FixedExpensesPage", () => {
             {
               id: "template-1",
               name: "Rent",
+              type: "EXPENSE",
               amount: 1800,
               categoryId: "cat-1",
               categoryName: "Housing",
@@ -68,7 +69,7 @@ describe("FixedExpensesPage", () => {
 
   it("loads templates and validates required form fields", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-expenses"]}>
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -89,10 +90,13 @@ describe("FixedExpensesPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Novo gasto fixo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova transação fixa" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Nome"), {
       target: { value: "Water bill" },
+    });
+    fireEvent.change(screen.getByLabelText("Tipo"), {
+      target: { value: "INCOME" },
     });
     fireEvent.change(screen.getByLabelText("Valor"), {
       target: { value: "150" },
@@ -101,7 +105,7 @@ describe("FixedExpensesPage", () => {
       target: { value: "12" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Criar gasto fixo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Criar transação fixa" }));
 
     await waitFor(() => {
       expect(

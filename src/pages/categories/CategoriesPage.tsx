@@ -178,7 +178,7 @@ export default function CategoriesPage() {
 
     try {
       if (isCreating) {
-        const created = await createCategory(
+        await createCategory(
           {
             name: values.name,
             icon: values.icon || undefined,
@@ -186,8 +186,7 @@ export default function CategoriesPage() {
           },
           accessToken,
         );
-        setSelectedId(created.id);
-        setIsCreating(false);
+        handleCloseDrawer();
         await loadCategories({
           page,
           size: pageSize,
@@ -195,7 +194,7 @@ export default function CategoriesPage() {
           status: statusFilter,
         });
       } else if (selectedCategory) {
-        const updated = await updateCategory(
+        await updateCategory(
           selectedCategory.id,
           {
             name: values.name,
@@ -204,7 +203,7 @@ export default function CategoriesPage() {
           },
           accessToken,
         );
-        setSelectedId(updated.id);
+        handleCloseDrawer();
         await loadCategories({
           page,
           size: pageSize,

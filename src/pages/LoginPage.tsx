@@ -28,8 +28,8 @@ export default function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "admin@bolso-em-dia.local",
-      password: "admin123456",
+      email: "",
+      password: "",
     },
   });
 

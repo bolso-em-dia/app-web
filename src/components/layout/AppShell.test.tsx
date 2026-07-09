@@ -39,7 +39,7 @@ describe("AppShell", () => {
     expect(screen.getByRole("link", { name: "Configurações" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Orçamentos" })).toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: "Gastos fixos" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Transações fixas" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Transações" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Família" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Categorias" })).toBeInTheDocument();

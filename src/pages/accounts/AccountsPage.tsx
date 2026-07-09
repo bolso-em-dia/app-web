@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import {
   archiveAccount,
   createAccount,
-  getAccountById,
   listAccountPage,
   type Account,
   type AccountListParams,
@@ -161,13 +160,8 @@ export default function AccountsPage() {
 
     try {
       if (isCreating) {
-        const created = await createAccount(
-          mapFormValuesToPayload(values),
-          accessToken,
-        );
-        const detailed = await getAccountById(created.id, accessToken);
-        setSelectedId(detailed.id);
-        setIsCreating(false);
+        await createAccount(mapFormValuesToPayload(values), accessToken);
+        handleCloseDrawer();
         await loadAccounts({
           page,
           size: pageSize,
@@ -176,12 +170,12 @@ export default function AccountsPage() {
           type: typeFilter || undefined,
         });
       } else if (selectedAccount) {
-        const updated = await updateAccount(
+        await updateAccount(
           selectedAccount.id,
           mapFormValuesToPayload(values),
           accessToken,
         );
-        setSelectedId(updated.id);
+        handleCloseDrawer();
         await loadAccounts({
           page,
           size: pageSize,

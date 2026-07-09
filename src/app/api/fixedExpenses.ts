@@ -3,6 +3,7 @@ import { apiRequest, type PageResponse } from "./client";
 export type FixedExpenseTemplate = {
   id: string;
   name: string;
+  type: "INCOME" | "EXPENSE";
   amount: number;
   categoryId: string;
   categoryName: string;
@@ -18,6 +19,7 @@ export type FixedExpenseTemplate = {
 
 export type FixedExpenseTemplatePayload = {
   name: string;
+  type: "INCOME" | "EXPENSE";
   amount: number;
   categoryId: string;
   accountId: string;
@@ -46,7 +48,7 @@ export function listFixedExpenseTemplates(
   }
 
   return apiRequest<PageResponse<FixedExpenseTemplate>>(
-    `/api/fixed-expense-templates?${query.toString()}`,
+    `/api/fixed-transactions?${query.toString()}`,
     {
       method: "GET",
       accessToken,
@@ -56,7 +58,7 @@ export function listFixedExpenseTemplates(
 
 export function listFixedExpenseTemplateById(id: string, accessToken: string) {
   return apiRequest<FixedExpenseTemplate>(
-    `/api/fixed-expense-templates/${id}`,
+    `/api/fixed-transactions/${id}`,
     {
       method: "GET",
       accessToken,
@@ -68,7 +70,7 @@ export function createFixedExpenseTemplate(
   payload: FixedExpenseTemplatePayload,
   accessToken: string,
 ) {
-  return apiRequest<FixedExpenseTemplate>("/api/fixed-expense-templates", {
+  return apiRequest<FixedExpenseTemplate>("/api/fixed-transactions", {
     method: "POST",
     accessToken,
     body: JSON.stringify(payload),
@@ -81,7 +83,7 @@ export function updateFixedExpenseTemplate(
   accessToken: string,
 ) {
   return apiRequest<FixedExpenseTemplate>(
-    `/api/fixed-expense-templates/${id}`,
+    `/api/fixed-transactions/${id}`,
     {
       method: "PUT",
       accessToken,
@@ -92,7 +94,7 @@ export function updateFixedExpenseTemplate(
 
 export function archiveFixedExpenseTemplate(id: string, accessToken: string) {
   return apiRequest<FixedExpenseTemplate>(
-    `/api/fixed-expense-templates/${id}/archive`,
+    `/api/fixed-transactions/${id}/archive`,
     {
       method: "PATCH",
       accessToken,

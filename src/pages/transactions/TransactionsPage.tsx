@@ -403,28 +403,22 @@ export default function TransactionsPage() {
 
     try {
       if (isCreating) {
-        const created = await createTransaction(
-          mapFormValuesToCreatePayload(values),
-          accessToken,
-        );
+        await createTransaction(mapFormValuesToCreatePayload(values), accessToken);
 
         await loadPageData();
 
         if (intent === "save-and-create-new") {
           resetForNextCreate(values);
         } else {
-          if (created[0]) {
-            setSelectedId(created[0].id);
-          }
-          setIsCreating(false);
+          handleCloseDrawer();
         }
       } else if (selectedTransaction) {
-        const updated = await updateTransaction(
+        await updateTransaction(
           selectedTransaction.id,
           mapFormValuesToUpdatePayload(values),
           accessToken,
         );
-        setSelectedId(updated.id);
+        handleCloseDrawer();
         await loadPageData();
       }
     } catch {

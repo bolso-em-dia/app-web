@@ -83,11 +83,34 @@ If `API_BASE_URL` is not provided, the container falls back to:
 This makes the same image reusable across different environments without a
 rebuild.
 
-Example runtime override:
+## Using the published image from Docker Hub
+
+Pull the published UI image with:
+
+```bash
+docker pull <dockerhub-namespace>/bolso-em-dia-ui:latest
+```
+
+Run it directly with:
 
 ```bash
 docker run --rm -p 4173:80 \
   -e API_BASE_URL=https://api.example.com \
+  <dockerhub-namespace>/bolso-em-dia-ui:latest
+```
+
+The published container always listens on port `80` internally. The host-side
+published port is configurable.
+
+The image publishes its own Docker health check against:
+
+- `http://localhost:80/`
+
+Example with a custom published port:
+
+```bash
+docker run --rm -p 14173:80 \
+  -e API_BASE_URL=http://localhost:18081 \
   <dockerhub-namespace>/bolso-em-dia-ui:latest
 ```
 

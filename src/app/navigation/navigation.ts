@@ -4,7 +4,7 @@ export type NavigationItem = {
   labelKey:
     | "navigation.dashboard"
     | "navigation.budgets"
-    | "navigation.fixedExpenses"
+    | "navigation.fixedTransactions"
     | "navigation.transactions"
     | "navigation.family"
     | "navigation.categories"
@@ -25,8 +25,8 @@ export const operationalNavigation: NavigationItem[] = [
     iconId: "budgets",
   },
   {
-    labelKey: "navigation.fixedExpenses",
-    path: "/fixed-expenses",
+    labelKey: "navigation.fixedTransactions",
+    path: "/fixed-transactions",
     iconId: "fixed-expenses",
   },
   {

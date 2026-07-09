@@ -48,6 +48,27 @@ describe("UserSettingsPage", () => {
         } as Response);
       }
 
+      if (url.endsWith("/api/auth/change-password") && init?.method === "POST") {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            mustChangePassword: false,
+            preferences: {
+              defaultAccountId: "acc-1",
+              locale: "en-US",
+              showBalanceWithBudgets: true,
+            },
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
       return Promise.reject(new Error(`Unhandled request: ${url}`));
     });
   });
@@ -139,6 +160,10 @@ describe("UserSettingsPage", () => {
         return Promise.reject(new Error("save failed"));
       }
 
+      if (url.endsWith("/api/auth/change-password") && init?.method === "POST") {
+        return Promise.reject(new Error("password failed"));
+      }
+
       return Promise.reject(new Error(`Unhandled request: ${url}`));
     });
 
@@ -208,5 +233,38 @@ describe("UserSettingsPage", () => {
       locale: "en-US",
       showBalanceWithBudgets: true,
     });
+  });
+
+  it("changes the current user password from settings", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <UserSettingsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Preferências pessoais")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Senha atual"), {
+      target: { value: "admin12345678" },
+    });
+    fireEvent.change(screen.getByLabelText("Nova senha"), {
+      target: { value: "novaSenha123" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirmar nova senha"), {
+      target: { value: "novaSenha123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Salvar senha" }));
+
+    expect(await screen.findByText("Senha atualizada.")).toBeInTheDocument();
   });
 });

@@ -12,6 +12,9 @@ export function createFixedExpenseSchema(t: Translate) {
       .trim()
       .min(1, message("validation.requiredName"))
       .max(120, message("validation.nameMax120")),
+    type: z.enum(["INCOME", "EXPENSE"], {
+      required_error: message("validation.requiredType"),
+    }),
     amount: z.preprocess(
       (value) => (value === "" ? undefined : value),
       z.coerce
