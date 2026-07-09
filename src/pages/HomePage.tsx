@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getDashboard, type DashboardResponse } from "../app/api/dashboard";
 import { useI18n } from "../app/i18n/I18nContext";
 import Card from "../components/ui/Card";
+import MoneyAmount from "../components/ui/MoneyAmount";
 import MonthSelector from "../components/ui/MonthSelector";
 import AppShell from "../components/layout/AppShell";
 import { useAuth } from "../app/auth/useAuth";
@@ -14,6 +16,8 @@ import {
   getCurrentReferenceMonth,
 } from "../lib/formatters/date";
 import styles from "./HomePage.module.scss";
+
+const ITEMS_PER_PAGE = 10;
 
 function getBudgetConsumptionPercent(consumedAmount: number, monthlyLimit: number) {
   if (monthlyLimit <= 0) {
@@ -33,10 +37,17 @@ export default function HomePage() {
   const [considerBudgetsInBalance, setConsiderBudgetsInBalance] = useState(
     user?.preferences.showBalanceWithBudgets ?? false,
   );
+  const [recentTxPage, setRecentTxPage] = useState(0);
+  const [catPage, setCatPage] = useState(0);
 
   useEffect(() => {
     setConsiderBudgetsInBalance(user?.preferences.showBalanceWithBudgets ?? false);
   }, [user?.preferences.showBalanceWithBudgets]);
+
+  useEffect(() => {
+    setRecentTxPage(0);
+    setCatPage(0);
+  }, [referenceMonth]);
 
   const loadDashboard = useCallback(async () => {
     if (!accessToken) {
@@ -72,6 +83,30 @@ export default function HomePage() {
     ? t("home.availableBalance")
     : t("home.balance");
 
+  const balanceAmountClass =
+    displayedBalance > 0
+      ? styles.amountPositive
+      : displayedBalance < 0
+        ? styles.amountNegative
+        : styles.amountNeutral;
+
+  const recentTxPages = Math.ceil(
+    (dashboard?.recentTransactions.length ?? 0) / ITEMS_PER_PAGE,
+  );
+  const recentTxSlice = (dashboard?.recentTransactions ?? []).slice(
+    recentTxPage * ITEMS_PER_PAGE,
+    (recentTxPage + 1) * ITEMS_PER_PAGE,
+  );
+
+  const totalExpense = dashboard?.summary.totalExpense ?? 0;
+  const catPages = Math.ceil(
+    (dashboard?.categoryBreakdown.length ?? 0) / ITEMS_PER_PAGE,
+  );
+  const catSlice = (dashboard?.categoryBreakdown ?? []).slice(
+    catPage * ITEMS_PER_PAGE,
+    (catPage + 1) * ITEMS_PER_PAGE,
+  );
+
   return (
     <AppShell title={t("home.title")} subtitle={t("home.subtitle")}>
       <section className={styles.summaryHeader}>
@@ -103,18 +138,18 @@ export default function HomePage() {
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>{t("home.income")}</span>
           <strong className={styles.summaryValue}>
-            {formatCurrency(dashboard?.summary.totalIncome ?? 0)}
+            <MoneyAmount amount={dashboard?.summary.totalIncome ?? 0} type="INCOME" />
           </strong>
         </Card>
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>{t("home.expense")}</span>
           <strong className={styles.summaryValue}>
-            {formatCurrency(dashboard?.summary.totalExpense ?? 0)}
+            <MoneyAmount amount={dashboard?.summary.totalExpense ?? 0} type="EXPENSE" />
           </strong>
         </Card>
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>{balanceLabel}</span>
-          <strong className={styles.summaryValue}>
+          <strong className={`${styles.summaryValue} ${balanceAmountClass}`}>
             {formatCurrency(displayedBalance)}
           </strong>
         </Card>
@@ -214,7 +249,7 @@ export default function HomePage() {
               {t("home.recentTransactions")}
             </h2>
             <ul className={styles.itemList}>
-              {dashboard.recentTransactions.map((transaction) => (
+              {recentTxSlice.map((transaction) => (
                 <li key={transaction.id} className={styles.itemRow}>
                   <div>
                     <strong>{transaction.description}</strong>
@@ -227,18 +262,91 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
+            {recentTxPages > 1 ? (
+              <div className={styles.paginationRow}>
+                <Button
+                  type="button"
+                  disabled={recentTxPage === 0}
+                  onClick={() => setRecentTxPage((p) => p - 1)}
+                >
+                  <ChevronLeft />
+                </Button>
+                <span>
+                  {t("home.pageNofM", {
+                    current: recentTxPage + 1,
+                    total: recentTxPages,
+                  })}
+                </span>
+                <Button
+                  type="button"
+                  disabled={recentTxPage >= recentTxPages - 1}
+                  onClick={() => setRecentTxPage((p) => p + 1)}
+                >
+                  <ChevronRight />
+                </Button>
+              </div>
+            ) : null}
           </Card>
 
           <Card className={styles.panel}>
             <h2 className={styles.panelTitle}>{t("home.categoryBreakdown")}</h2>
             <ul className={styles.itemList}>
-              {dashboard.categoryBreakdown.map((category) => (
-                <li key={category.categoryId} className={styles.itemRow}>
-                  <strong>{category.categoryName}</strong>
-                  <strong>{formatCurrency(category.amount)}</strong>
-                </li>
-              ))}
+              {catSlice.map((category) => {
+                const percent =
+                  totalExpense > 0
+                    ? ((category.amount / totalExpense) * 100).toFixed(1)
+                    : "0.0";
+
+                return (
+                  <li key={category.categoryId} className={styles.itemRow}>
+                    <div className={styles.itemContent}>
+                      <div className={styles.categoryRow}>
+                        <strong>{category.categoryName}</strong>
+                        <span className={styles.categoryPercent}>
+                          {percent}%
+                        </span>
+                      </div>
+                      <div
+                        aria-hidden="true"
+                        className={styles.progressTrack}
+                      >
+                        <span
+                          className={styles.progressFill}
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                      <span className={styles.itemMeta}>
+                        <MoneyAmount amount={category.amount} type="EXPENSE" />
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
+            {catPages > 1 ? (
+              <div className={styles.paginationRow}>
+                <Button
+                  type="button"
+                  disabled={catPage === 0}
+                  onClick={() => setCatPage((p) => p - 1)}
+                >
+                  <ChevronLeft />
+                </Button>
+                <span>
+                  {t("home.pageNofM", {
+                    current: catPage + 1,
+                    total: catPages,
+                  })}
+                </span>
+                <Button
+                  type="button"
+                  disabled={catPage >= catPages - 1}
+                  onClick={() => setCatPage((p) => p + 1)}
+                >
+                  <ChevronRight />
+                </Button>
+              </div>
+            ) : null}
           </Card>
         </section>
       ) : null}

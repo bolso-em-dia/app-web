@@ -34,6 +34,7 @@ import FilterToolbar from "../../components/ui/FilterToolbar";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import MoneyAmount from "../../components/ui/MoneyAmount";
 import { formatCurrency } from "../../lib/formatters/currency";
 import {
   formatDay,
@@ -517,9 +518,8 @@ export default function BudgetsPage() {
                       <div className={styles.budgetAmounts}>
                         <strong>{formatCurrency(budget.monthlyLimit)}</strong>
                         <p className={styles.budgetMeta}>
-                          {t("budgets.consumedOfLimit", {
-                            consumed: formatCurrency(budget.consumedAmount),
-                          })}
+                          {t("budgets.consumed")}{" "}
+                          <MoneyAmount amount={budget.consumedAmount} type="EXPENSE" />
                         </p>
                       </div>
                     </div>

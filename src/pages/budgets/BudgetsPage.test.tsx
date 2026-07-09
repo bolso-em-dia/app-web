@@ -168,7 +168,7 @@ describe("BudgetsPage", () => {
       within(budgetCard!).getByText("R$ 1.200,00"),
     ).toBeInTheDocument();
     expect(
-      within(budgetCard!).getByText("Usado R$ 320,00"),
+      within(budgetCard!).getByText((content) => content.includes("R$ 320,00")),
     ).toBeInTheDocument();
   });
 

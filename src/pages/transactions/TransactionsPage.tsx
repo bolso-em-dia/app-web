@@ -40,7 +40,7 @@ import Select from "../../components/ui/Select";
 import Switch from "../../components/ui/Switch";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { getStoredIcon } from "../../lib/icons";
-import { formatCurrency } from "../../lib/formatters/currency";
+import MoneyAmount from "../../components/ui/MoneyAmount";
 import {
   formatDay,
   formatReferenceMonth,
@@ -828,7 +828,7 @@ export default function TransactionsPage() {
                         </div>
                       </div>
                       <strong className={styles.transactionAmount}>
-                        {formatCurrency(transaction.amount)}
+                        <MoneyAmount amount={transaction.amount} type={transaction.type} />
                       </strong>
                     </div>
 

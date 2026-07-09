@@ -29,7 +29,7 @@ import FilterToolbar from "../../components/ui/FilterToolbar";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import { formatCurrency } from "../../lib/formatters/currency";
+import MoneyAmount from "../../components/ui/MoneyAmount";
 import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
@@ -444,7 +444,7 @@ export default function FixedExpensesPage() {
                         </div>
                       </div>
                       <strong className={styles.templateAmount}>
-                        {formatCurrency(template.amount)}
+                        <MoneyAmount amount={template.amount} type={template.type} />
                       </strong>
                     </div>
 
