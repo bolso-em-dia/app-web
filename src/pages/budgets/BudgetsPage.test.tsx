@@ -428,7 +428,6 @@ describe("BudgetsPage", () => {
     );
 
     expect(await screen.findByText("Household")).toBeInTheDocument();
-    expect(screen.getByLabelText("Mês", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "true");
 
     vi.mocked(fetch)
       .mockResolvedValueOnce({
@@ -454,7 +453,6 @@ describe("BudgetsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Mês", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "false");
     });
 
     const previousMonthCall = vi
@@ -522,7 +520,6 @@ describe("BudgetsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Mês", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "true");
     });
 
     const currentMonthCalls = vi

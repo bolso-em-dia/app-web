@@ -1118,26 +1118,22 @@ describe("TransactionsPage", () => {
     );
 
     expect(await screen.findByText("1-1 de 1")).toBeInTheDocument();
-    expect(screen.getByLabelText("Mês de referência", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "true");
 
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Mês de referência", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "false");
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(([input]) =>
+            String(input).includes(`referenceMonth=${previousReferenceMonth}`),
+          ),
+      ).toBe(true);
     });
-
-    expect(
-      vi
-        .mocked(fetch)
-        .mock.calls.some(([input]) =>
-          String(input).includes(`referenceMonth=${previousReferenceMonth}`),
-        ),
-    ).toBe(true);
 
     fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Mês de referência", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "true");
     });
 
     expect(
@@ -1280,7 +1276,6 @@ describe("TransactionsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Mês de referência", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "false");
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getDashboard, type DashboardResponse } from "../app/api/dashboard";
 import { useI18n } from "../app/i18n/I18nContext";
 import Card from "../components/ui/Card";
+import MonthSelector from "../components/ui/MonthSelector";
 import AppShell from "../components/layout/AppShell";
 import { useAuth } from "../app/auth/useAuth";
 import Spinner from "../components/feedback/Spinner";
@@ -10,7 +11,6 @@ import Switch from "../components/ui/Switch";
 import { formatCurrency } from "../lib/formatters/currency";
 import {
   formatDay,
-  formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../lib/formatters/date";
 import styles from "./HomePage.module.scss";
@@ -29,6 +29,7 @@ export default function HomePage() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [referenceMonth, setReferenceMonth] = useState(getCurrentReferenceMonth);
   const [considerBudgetsInBalance, setConsiderBudgetsInBalance] = useState(
     user?.preferences.showBalanceWithBudgets ?? false,
   );
@@ -47,7 +48,7 @@ export default function HomePage() {
 
     try {
       const response = await getDashboard(
-        getCurrentReferenceMonth(),
+        referenceMonth,
         accessToken,
       );
       setDashboard(response);
@@ -57,7 +58,7 @@ export default function HomePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, t]);
+  }, [accessToken, referenceMonth, t]);
 
   useEffect(() => {
     void loadDashboard();
@@ -93,11 +94,11 @@ export default function HomePage() {
           <span className={styles.summaryLabel}>
             {t("home.referenceMonth")}
           </span>
-          <strong className={styles.summaryValue}>
-            {dashboard
-              ? formatReferenceMonth(dashboard.referenceMonth)
-              : formatReferenceMonth(getCurrentReferenceMonth())}
-          </strong>
+          <MonthSelector
+            id="dashboard-month"
+            onChange={setReferenceMonth}
+            value={referenceMonth}
+          />
         </Card>
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>{t("home.income")}</span>

@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BaseSyntheticEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -31,6 +30,7 @@ import ConfirmAction from "../../components/ui/ConfirmAction";
 import CategoryMultiSelect from "../../components/ui/CategoryMultiSelect";
 import CategorySelect from "../../components/ui/CategorySelect";
 import Drawer from "../../components/ui/Drawer";
+import MonthSelector from "../../components/ui/MonthSelector";
 import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
@@ -45,8 +45,6 @@ import {
   formatDay,
   formatReferenceMonth,
   getCurrentReferenceMonth,
-  isCurrentReferenceMonth,
-  shiftReferenceMonth,
 } from "../../lib/formatters/date";
 import {
   createTransactionSchema,
@@ -56,14 +54,6 @@ import styles from "./TransactionsPage.module.scss";
 
 const DEFAULT_PAGE_SIZE = 12;
 type Translate = ReturnType<typeof useI18n>["t"];
-
-function toMonthInputValue(value: string) {
-  return value.slice(0, 7);
-}
-
-function fromMonthInputValue(value: string) {
-  return `${value}-01`;
-}
 
 function referenceMonthFromDate(value: string) {
   return `${value.slice(0, 7)}-01`;
@@ -198,10 +188,6 @@ export default function TransactionsPage() {
   const currentReferenceMonth = useMemo(
     () => referenceMonthFromDate(transactionDate || filters.referenceMonth),
     [filters.referenceMonth, transactionDate],
-  );
-  const isViewingCurrentMonth = useMemo(
-    () => isCurrentReferenceMonth(filters.referenceMonth),
-    [filters.referenceMonth],
   );
   const allowanceMembers = useMemo(
     () => members.filter((member) => member.active && member.allowanceEnabled),
@@ -626,66 +612,17 @@ export default function TransactionsPage() {
                     label={t("common.referenceMonth")}
                     htmlFor="transaction-filter-month"
                   >
-                      <div
-                        className={styles.monthInputShell}
-                        data-current-month={isViewingCurrentMonth ? "true" : "false"}
-                      >
-                        <Button
-                          aria-label={t("common.previousMonth")}
-                          className={styles.monthNavButton}
-                          onClick={() => {
-                            setFilters((current) => ({
-                              ...current,
-                              referenceMonth: shiftReferenceMonth(
-                                current.referenceMonth,
-                                -1,
-                              ),
-                            }));
-                            setPage(0);
-                          }}
-                          type="button"
-                          variant="secondary"
-                        >
-                          <ChevronLeft aria-hidden="true" size={16} />
-                        </Button>
-                        <Input
-                          className={
-                            isViewingCurrentMonth
-                              ? undefined
-                              : styles.monthInputHighlighted
-                          }
-                          id="transaction-filter-month"
-                          onChange={(event) => {
-                            setFilters((current) => ({
-                              ...current,
-                              referenceMonth: fromMonthInputValue(
-                                event.target.value,
-                              ),
-                            }));
-                            setPage(0);
-                          }}
-                          type="month"
-                          value={toMonthInputValue(filters.referenceMonth)}
-                        />
-                        <Button
-                          aria-label={t("common.nextMonth")}
-                          className={styles.monthNavButton}
-                          onClick={() => {
-                            setFilters((current) => ({
-                              ...current,
-                              referenceMonth: shiftReferenceMonth(
-                                current.referenceMonth,
-                                1,
-                              ),
-                            }));
-                            setPage(0);
-                          }}
-                          type="button"
-                          variant="secondary"
-                        >
-                          <ChevronRight aria-hidden="true" size={16} />
-                        </Button>
-                      </div>
+                    <MonthSelector
+                      id="transaction-filter-month"
+                      onChange={(newMonth) => {
+                        setFilters((current) => ({
+                          ...current,
+                          referenceMonth: newMonth,
+                        }));
+                        setPage(0);
+                      }}
+                      value={filters.referenceMonth}
+                    />
                   </Field>
                   <Field
                     htmlFor="transaction-search"

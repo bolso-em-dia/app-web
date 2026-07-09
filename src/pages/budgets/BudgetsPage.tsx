@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -28,6 +27,7 @@ import Card from "../../components/ui/Card";
 import ConfirmAction from "../../components/ui/ConfirmAction";
 import CategoryMultiSelect from "../../components/ui/CategoryMultiSelect";
 import Drawer from "../../components/ui/Drawer";
+import MonthSelector from "../../components/ui/MonthSelector";
 import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
@@ -39,8 +39,6 @@ import {
   formatDay,
   formatReferenceMonth,
   getCurrentReferenceMonth,
-  isCurrentReferenceMonth,
-  shiftReferenceMonth,
 } from "../../lib/formatters/date";
 import {
   createBudgetSchema,
@@ -57,14 +55,6 @@ const DEFAULT_VALUES: BudgetFormValues = {
   monthlyLimit: 0,
 };
 const DEFAULT_PAGE_SIZE = 12;
-
-function toMonthInputValue(value: string) {
-  return value.slice(0, 7);
-}
-
-function fromMonthInputValue(value: string) {
-  return `${value}-01`;
-}
 
 function mapFormValuesToPayload(values: BudgetFormValues): BudgetPayload {
   return {
@@ -116,12 +106,7 @@ export default function BudgetsPage() {
     [budgets, selectedId],
   );
 
-  const budgetSchema = useMemo(() => createBudgetSchema(t), [t]);
-  const isViewingCurrentMonth = useMemo(
-    () => isCurrentReferenceMonth(referenceMonth),
-    [referenceMonth],
-  );
-
+  const budgetSchema = useMemo(() => createBudgetSchema(t), [t]  );
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
     defaultValues: DEFAULT_VALUES,
@@ -435,58 +420,16 @@ export default function BudgetsPage() {
                     htmlFor="budget-reference-month"
                     label={t("common.month")}
                   >
-                      <div
-                        className={styles.monthInputShell}
-                        data-current-month={isViewingCurrentMonth ? "true" : "false"}
-                      >
-                        <Button
-                          aria-label={t("common.previousMonth")}
-                          className={styles.monthNavButton}
-                          onClick={() => {
-                            setReferenceMonth(
-                              shiftReferenceMonth(referenceMonth, -1),
-                            );
-                            setPage(0);
-                          }}
-                          type="button"
-                          variant="secondary"
-                        >
-                          <ChevronLeft aria-hidden="true" size={16} />
-                        </Button>
-                        <Input
-                          className={
-                            isViewingCurrentMonth
-                              ? undefined
-                              : styles.monthInputHighlighted
-                          }
-                          id="budget-reference-month"
-                          onChange={(event) => {
-                            setReferenceMonth(
-                              fromMonthInputValue(event.target.value),
-                            );
-                            setPage(0);
-                          }}
-                          type="month"
-                          value={toMonthInputValue(referenceMonth)}
-                        />
-                        <Button
-                          aria-label={t("common.nextMonth")}
-                          className={styles.monthNavButton}
-                          onClick={() => {
-                            setReferenceMonth(
-                              shiftReferenceMonth(referenceMonth, 1),
-                            );
-                            setPage(0);
-                          }}
-                          type="button"
-                          variant="secondary"
-                        >
-                          <ChevronRight aria-hidden="true" size={16} />
-                        </Button>
-                      </div>
+                    <MonthSelector
+                      id="budget-reference-month"
+                      onChange={(newMonth) => {
+                        setReferenceMonth(newMonth);
+                        setPage(0);
+                      }}
+                      value={referenceMonth}
+                    />
                   </Field>
-                  <Field htmlFor="budget-search" label={t("common.search")}>
-                    <Input
+                  <Field htmlFor="budget-search" label={t("common.search")}>                     <Input
                       id="budget-search"
                       onChange={(event) => {
                         setSearch(event.target.value);

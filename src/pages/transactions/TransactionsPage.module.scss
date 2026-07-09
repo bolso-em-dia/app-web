@@ -3,26 +3,6 @@
   gap: var(--space-4);
 }
 
-.monthInputShell {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) max-content;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.monthInputHighlighted {
-  border-color: color-mix(in srgb, var(--color-accent) 55%, white);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 18%, transparent);
-}
-
-.monthNavButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.75rem;
-  padding-inline: 0;
-}
-
 .loadingCard {
   padding: var(--space-6);
 }
