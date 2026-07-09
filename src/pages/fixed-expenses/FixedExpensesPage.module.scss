@@ -8,14 +8,12 @@
 }
 
 .toolbarPanel,
-.templateCard,
-.archivePanel,
 .footerPanel {
-  padding: var(--space-6);
+  padding: var(--space-4);
 }
 
-.footerPanel {
-  padding: var(--space-4) var(--space-5);
+.archivePanel {
+  padding: var(--space-6);
 }
 
 .toolbar,
@@ -58,7 +56,6 @@
 .templateGrid {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
 }
 
 .templateCard {

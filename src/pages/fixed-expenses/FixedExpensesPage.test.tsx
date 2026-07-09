@@ -115,4 +115,123 @@ describe("FixedExpensesPage", () => {
       expect(screen.getByText("A conta é obrigatória.")).toBeInTheDocument();
     });
   });
+
+  it("renders templates as full-width single-column list", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          items: [
+            {
+              id: "t1",
+              name: "Rent",
+              type: "EXPENSE",
+              amount: 1800,
+              categoryId: "cat-1",
+              categoryName: "Housing",
+              accountId: "account-1",
+              accountName: "Main checking",
+              dueDay: 5,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              active: true,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+            {
+              id: "t2",
+              name: "Salary",
+              type: "INCOME",
+              amount: 5000,
+              categoryId: "cat-2",
+              categoryName: "Income",
+              accountId: "account-1",
+              accountName: "Main checking",
+              dueDay: 1,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              active: true,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 2,
+          totalPages: 1,
+        }),
+        text: async () => "",
+      } as Response)
+      .mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => [],
+        text: async () => "",
+      } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+    expect(screen.getByText("Salary")).toBeInTheDocument();
+    expect(screen.getByText("1-2 de 2")).toBeInTheDocument();
+  });
+
+  it("shows range text when no templates exist", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          items: [],
+          page: 0,
+          size: 12,
+          totalItems: 0,
+          totalPages: 0,
+        }),
+        text: async () => "",
+      } as Response)
+      .mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => [],
+        text: async () => "",
+      } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(
+      await screen.findByText("Nenhuma transação fixa encontrada para os filtros atuais."),
+    ).toBeInTheDocument();
+  });
 });
