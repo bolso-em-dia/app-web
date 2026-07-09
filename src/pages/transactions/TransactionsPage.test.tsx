@@ -1435,4 +1435,70 @@ describe("TransactionsPage", () => {
       ),
     ).toBe(true);
   });
+
+  it("filters transactions by search term and shows an active filter chip", async () => {
+    vi.mocked(fetch).mockImplementation((input) => {
+      const url = String(input);
+
+      if (url.includes("/api/transactions?")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [],
+            page: 0,
+            size: 12,
+            totalItems: 0,
+            totalPages: 0,
+          }),
+        );
+      }
+      if (url.includes("/api/accounts")) {
+        return Promise.resolve(jsonResponse([]));
+      }
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve(jsonResponse([]));
+      }
+      if (url.includes("/api/family-members")) {
+        return Promise.resolve(
+          jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
+        );
+      }
+      if (url.includes("/api/transactions/descriptions")) {
+        return Promise.resolve(jsonResponse([]));
+      }
+      return Promise.reject(new Error(`Unhandled: ${url}`));
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const searchInput = await screen.findByLabelText("Buscar");
+    fireEvent.change(searchInput, { target: { value: "mercado" } });
+
+    await waitFor(() => {
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/transactions?"));
+      expect(
+        requests.some((url) => url.includes("search=mercado")),
+      ).toBe(true);
+    });
+
+    expect(
+      screen.getByText("Buscar: mercado"),
+    ).toBeInTheDocument();
+  });
 });

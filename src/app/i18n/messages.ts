@@ -317,6 +317,7 @@ export const ptBRMessages = {
   "transactions.title": "Transações",
   "transactions.subtitle":
     "Revise, filtre, crie, edite e exclua transações mensais.",
+  "transactions.searchPlaceholder": "Buscar por descrição",
   "transactions.loading": "Carregando transações",
   "transactions.error": "Não foi possível carregar as transações.",
   "transactions.categoryRefreshError":

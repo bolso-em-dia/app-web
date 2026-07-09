@@ -140,4 +140,5 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.deleteAction": "Delete transaction",
   "transactions.closeDeleteConfirm": "Close delete confirmation",
   "budgets.consumedOfLimit": "Used {{consumed}}",
+  "transactions.searchPlaceholder": "Search by description",
 };

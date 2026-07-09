@@ -42,6 +42,7 @@ export type TransactionPayload = {
 
 export type TransactionFilters = {
   referenceMonth: string;
+  search?: string;
   type?: TransactionType;
   ownershipType?: OwnershipType;
   accountId?: string;
@@ -60,6 +61,10 @@ function buildQuery(filters: TransactionListParams) {
     page: String(filters.page),
     size: String(filters.size),
   });
+
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
 
   if (filters.type) {
     searchParams.set("type", filters.type);

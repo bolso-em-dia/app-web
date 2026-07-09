@@ -494,6 +494,18 @@ export default function TransactionsPage() {
       "";
 
     return [
+      ...(filters.search
+        ? [
+            {
+              key: "search",
+              label: `${t("common.search")}: ${filters.search}`,
+              onRemove: () => {
+                setFilters((current) => ({ ...current, search: undefined }));
+                setPage(0);
+              },
+            },
+          ]
+        : []),
       ...(filters.type
         ? [
             {
@@ -673,6 +685,26 @@ export default function TransactionsPage() {
                           <ChevronRight aria-hidden="true" size={16} />
                         </Button>
                       </div>
+                  </Field>
+                  <Field
+                    htmlFor="transaction-search"
+                    label={t("common.search")}
+                  >
+                    <Input
+                      id="transaction-search"
+                      onChange={(event) => {
+                        setFilters((current) => ({
+                          ...current,
+                          search:
+                            event.target.value.length > 0
+                              ? event.target.value
+                              : undefined,
+                        }));
+                        setPage(0);
+                      }}
+                      placeholder={t("transactions.searchPlaceholder")}
+                      value={filters.search ?? ""}
+                    />
                   </Field>
                   <Field
                     label={t("common.type")}
