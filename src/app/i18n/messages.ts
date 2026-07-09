@@ -266,6 +266,8 @@ export const ptBRMessages = {
   "fixedTransactions.archiveMonth": "Mês de arquivamento",
   "fixedTransactions.archived": "Transação fixa arquivada",
   "fixedTransactions.archiveAction": "Arquivar transação fixa",
+  "fixedTransactions.deleteAction": "Excluir transação fixa",
+  "fixedTransactions.deleteError": "Não foi possível excluir a transação fixa.",
   "budgets.title": "Orçamentos",
   "budgets.subtitle": "Gerencie orçamentos globais e orçamentos de mesada.",
   "budgets.loading": "Carregando orçamentos",
@@ -357,6 +359,7 @@ export const ptBRMessages = {
   "confirmations.archiveCategory": "Tem certeza que deseja arquivar esta categoria? A categoria substituta será usada a partir do mês atual.",
   "confirmations.archiveAccount": "Tem certeza que deseja arquivar esta conta? Transações passadas preservam o vínculo e a conta não aparecerá em novos lançamentos.",
   "confirmations.archiveFixedExpense": "Tem certeza que deseja arquivar esta transação fixa? As transações já materializadas serão preservadas, mas o modelo deixará de gerar novas.",
+  "confirmations.deleteFixedExpense": "Tem certeza que deseja excluir esta transação fixa? As transações materializadas do mês corrente em diante serão removidas. Transações de meses passados serão preservadas.",
   "confirmations.archiveMember": "Tem certeza que deseja arquivar este membro? Ele não poderá mais fazer login.",
   "confirmations.restoreMember": "Tem certeza que deseja reativar este membro?",
 } as const;

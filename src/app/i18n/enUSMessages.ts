@@ -127,6 +127,8 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "fixedTransactions.receivesOnDay": "Receives on day {{day}}",
   "fixedTransactions.archived": "Fixed transaction archived",
   "fixedTransactions.archiveAction": "Archive fixed transaction",
+  "fixedTransactions.deleteAction": "Delete fixed transaction",
+  "fixedTransactions.deleteError": "Unable to delete the fixed transaction.",
   "transactions.deleteTitle": "Delete transaction",
   "transactions.projected": "Projected",
   "transactions.deleteSubtitle":
@@ -144,6 +146,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "confirmations.archiveCategory": "Are you sure you want to archive this category? The replacement category will be used from the current month onward.",
   "confirmations.archiveAccount": "Are you sure you want to archive this account? Past transactions preserve their link and the account will not appear in new entries.",
   "confirmations.archiveFixedExpense": "Are you sure you want to archive this fixed transaction? Already materialized transactions will be preserved, but the template will stop generating new ones.",
+  "confirmations.deleteFixedExpense": "Are you sure you want to delete this fixed transaction? Transactions materialized from the current month onward will be removed. Past month transactions will be preserved.",
   "confirmations.archiveMember": "Are you sure you want to archive this member? They will no longer be able to log in.",
   "confirmations.restoreMember": "Are you sure you want to restore this member?",
   "transactions.searchPlaceholder": "Search by description",

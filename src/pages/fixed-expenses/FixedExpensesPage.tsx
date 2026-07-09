@@ -9,6 +9,7 @@ import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import {
   archiveFixedExpenseTemplate,
   createFixedExpenseTemplate,
+  deleteFixedExpenseTemplate,
   listFixedExpenseTemplates,
   updateFixedExpenseTemplate,
   type FixedExpenseTemplate,
@@ -90,6 +91,8 @@ export default function FixedExpensesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedTemplate = useMemo(
@@ -244,6 +247,30 @@ export default function FixedExpensesPage() {
       setError(t("fixedTransactions.archiveError"));
     } finally {
       setIsArchiving(false);
+    }
+  }
+
+  async function onDelete() {
+    if (!accessToken || !selectedTemplate) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      await deleteFixedExpenseTemplate(selectedTemplate.id, accessToken);
+      setSelectedId(null);
+      await loadTemplates({
+        page,
+        size: pageSize,
+        search,
+        status: statusFilter,
+      });
+    } catch {
+      setError(t("fixedTransactions.deleteError"));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -701,6 +728,15 @@ export default function FixedExpensesPage() {
                           : t("fixedTransactions.archiveAction")}
                       </Button>
                     )}
+                    {!isCreating ? (
+                      <Button
+                        onClick={() => setIsDeleteConfirmOpen(true)}
+                        type="button"
+                        variant="danger"
+                      >
+                        {t("fixedTransactions.deleteAction")}
+                      </Button>
+                    ) : null}
                   </div>
                 </form>
               </div>
@@ -715,6 +751,18 @@ export default function FixedExpensesPage() {
                 }}
                 open={isArchiveConfirmOpen}
                 title={t("fixedTransactions.archiveAction")}
+              />
+              <ConfirmAction
+                confirmLabel={t("fixedTransactions.deleteAction")}
+                loading={isDeleting}
+                message={t("confirmations.deleteFixedExpense")}
+                onCancel={() => setIsDeleteConfirmOpen(false)}
+                onConfirm={() => {
+                  setIsDeleteConfirmOpen(false);
+                  void onDelete();
+                }}
+                open={isDeleteConfirmOpen}
+                title={t("fixedTransactions.deleteAction")}
               />
             </Drawer>
           ) : null}
