@@ -140,5 +140,11 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.deleteAction": "Delete transaction",
   "transactions.closeDeleteConfirm": "Close delete confirmation",
   "budgets.consumedOfLimit": "Used {{consumed}}",
+  "confirmations.archiveBudget": "Are you sure you want to archive this budget? It will stop appearing from the current month onward.",
+  "confirmations.archiveCategory": "Are you sure you want to archive this category? The replacement category will be used from the current month onward.",
+  "confirmations.archiveAccount": "Are you sure you want to archive this account? Past transactions preserve their link and the account will not appear in new entries.",
+  "confirmations.archiveFixedExpense": "Are you sure you want to archive this fixed transaction? Already materialized transactions will be preserved, but the template will stop generating new ones.",
+  "confirmations.archiveMember": "Are you sure you want to archive this member? They will no longer be able to log in.",
+  "confirmations.restoreMember": "Are you sure you want to restore this member?",
   "transactions.searchPlaceholder": "Search by description",
 };

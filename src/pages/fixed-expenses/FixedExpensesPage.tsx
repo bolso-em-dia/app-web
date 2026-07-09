@@ -20,6 +20,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import ConfirmAction from "../../components/ui/ConfirmAction";
 import CategorySelect from "../../components/ui/CategorySelect";
 import Drawer from "../../components/ui/Drawer";
 import CurrencyInput from "../../components/ui/CurrencyInput";
@@ -88,6 +89,7 @@ export default function FixedExpensesPage() {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedTemplate = useMemo(
@@ -686,8 +688,7 @@ export default function FixedExpensesPage() {
                     ) : (
                       <Button
                         disabled={Boolean(selectedTemplate?.archivedFromMonth)}
-                        loading={isArchiving}
-                        onClick={() => void onArchive()}
+                        onClick={() => setIsArchiveConfirmOpen(true)}
                         type="button"
                         variant={
                           selectedTemplate?.archivedFromMonth
@@ -703,6 +704,18 @@ export default function FixedExpensesPage() {
                   </div>
                 </form>
               </div>
+              <ConfirmAction
+                confirmLabel={t("fixedTransactions.archiveAction")}
+                loading={isArchiving}
+                message={t("confirmations.archiveFixedExpense")}
+                onCancel={() => setIsArchiveConfirmOpen(false)}
+                onConfirm={() => {
+                  setIsArchiveConfirmOpen(false);
+                  void onArchive();
+                }}
+                open={isArchiveConfirmOpen}
+                title={t("fixedTransactions.archiveAction")}
+              />
             </Drawer>
           ) : null}
         </section>

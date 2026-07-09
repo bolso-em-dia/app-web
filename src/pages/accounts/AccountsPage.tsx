@@ -17,6 +17,7 @@ import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
+import ConfirmAction from "../../components/ui/ConfirmAction";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
@@ -73,6 +74,7 @@ export default function AccountsPage() {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedAccount = useMemo(
@@ -495,6 +497,7 @@ export default function AccountsPage() {
           </Card>
 
           {isCreating || selectedAccount ? (
+            <>
             <Drawer
               description={
                 isCreating
@@ -652,11 +655,9 @@ export default function AccountsPage() {
                     ) : (
                       <Button
                         disabled={
-                          isArchiving ||
                           Boolean(selectedAccount?.archivedFromMonth)
                         }
-                        loading={isArchiving}
-                        onClick={() => void onArchive()}
+                        onClick={() => setIsArchiveConfirmOpen(true)}
                         type="button"
                         variant={
                           selectedAccount?.archivedFromMonth
@@ -673,6 +674,19 @@ export default function AccountsPage() {
                 </form>
               </div>
             </Drawer>
+            <ConfirmAction
+              confirmLabel={t("accounts.archiveAction")}
+              loading={isArchiving}
+              message={t("confirmations.archiveAccount")}
+              onCancel={() => setIsArchiveConfirmOpen(false)}
+              onConfirm={() => {
+                setIsArchiveConfirmOpen(false);
+                void onArchive();
+              }}
+              open={isArchiveConfirmOpen}
+              title={t("accounts.archiveAction")}
+            />
+            </>
           ) : null}
         </section>
       )}

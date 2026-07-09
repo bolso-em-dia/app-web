@@ -17,6 +17,7 @@ import Spinner from "../../components/feedback/Spinner";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Checkbox from "../../components/ui/Checkbox";
+import ConfirmAction from "../../components/ui/ConfirmAction";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
@@ -63,6 +64,8 @@ export default function FamilyPage() {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
+  const [isRestoreConfirmOpen, setIsRestoreConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedMember = useMemo(
@@ -556,8 +559,11 @@ export default function FamilyPage() {
                       </Button>
                     ) : (
                       <Button
-                        loading={isArchiving}
-                        onClick={() => void handleArchiveToggle()}
+                        onClick={
+                          selectedMember?.active
+                            ? () => setIsArchiveConfirmOpen(true)
+                            : () => setIsRestoreConfirmOpen(true)
+                        }
                         type="button"
                         variant={
                           selectedMember?.active ? "danger" : "secondary"
@@ -573,6 +579,31 @@ export default function FamilyPage() {
               </div>
             </Drawer>
           ) : null}
+
+          <ConfirmAction
+            confirmLabel={t("family.archiveMember")}
+            loading={isArchiving}
+            message={t("confirmations.archiveMember")}
+            onCancel={() => setIsArchiveConfirmOpen(false)}
+            onConfirm={() => {
+              setIsArchiveConfirmOpen(false);
+              void handleArchiveToggle();
+            }}
+            open={isArchiveConfirmOpen}
+            title={t("family.archiveMember")}
+          />
+          <ConfirmAction
+            confirmLabel={t("family.restoreMember")}
+            loading={isArchiving}
+            message={t("confirmations.restoreMember")}
+            onCancel={() => setIsRestoreConfirmOpen(false)}
+            onConfirm={() => {
+              setIsRestoreConfirmOpen(false);
+              void handleArchiveToggle();
+            }}
+            open={isRestoreConfirmOpen}
+            title={t("family.restoreMember")}
+          />
         </section>
       )}
     </AppShell>

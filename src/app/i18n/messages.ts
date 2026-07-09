@@ -353,6 +353,12 @@ export const ptBRMessages = {
     "Esta transação não faz parte de um grupo de parcelamento.",
   "transactions.deleteAction": "Excluir transação",
   "transactions.closeDeleteConfirm": "Fechar confirmação de exclusão",
+  "confirmations.archiveBudget": "Tem certeza que deseja arquivar este orçamento? Ele deixará de aparecer a partir do mês atual.",
+  "confirmations.archiveCategory": "Tem certeza que deseja arquivar esta categoria? A categoria substituta será usada a partir do mês atual.",
+  "confirmations.archiveAccount": "Tem certeza que deseja arquivar esta conta? Transações passadas preservam o vínculo e a conta não aparecerá em novos lançamentos.",
+  "confirmations.archiveFixedExpense": "Tem certeza que deseja arquivar esta transação fixa? As transações já materializadas serão preservadas, mas o modelo deixará de gerar novas.",
+  "confirmations.archiveMember": "Tem certeza que deseja arquivar este membro? Ele não poderá mais fazer login.",
+  "confirmations.restoreMember": "Tem certeza que deseja reativar este membro?",
 } as const;
 
 export type MessageKey = keyof typeof ptBRMessages;

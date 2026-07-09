@@ -25,6 +25,7 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import ConfirmAction from "../../components/ui/ConfirmAction";
 import CategoryMultiSelect from "../../components/ui/CategoryMultiSelect";
 import Drawer from "../../components/ui/Drawer";
 import CurrencyInput from "../../components/ui/CurrencyInput";
@@ -107,6 +108,7 @@ export default function BudgetsPage() {
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedBudgetSummary = useMemo(
@@ -791,8 +793,7 @@ export default function BudgetsPage() {
                         disabled={Boolean(
                           selectedBudgetSummary?.archivedFromMonth,
                         )}
-                        loading={isArchiving}
-                        onClick={() => void onArchive()}
+                        onClick={() => setIsArchiveConfirmOpen(true)}
                         type="button"
                         variant={
                           selectedBudgetSummary?.archivedFromMonth
@@ -939,6 +940,19 @@ export default function BudgetsPage() {
                   </Card>
                 ) : null}
               </div>
+
+              <ConfirmAction
+                confirmLabel={t("budgets.archiveAction")}
+                loading={isArchiving}
+                message={t("confirmations.archiveBudget")}
+                onCancel={() => setIsArchiveConfirmOpen(false)}
+                onConfirm={() => {
+                  setIsArchiveConfirmOpen(false);
+                  void onArchive();
+                }}
+                open={isArchiveConfirmOpen}
+                title={t("budgets.archiveTitle")}
+              />
             </Drawer>
           ) : null}
         </section>

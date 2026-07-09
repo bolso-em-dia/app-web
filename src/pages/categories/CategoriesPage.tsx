@@ -18,6 +18,7 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import CategorySelect from "../../components/ui/CategorySelect";
 import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
+import ConfirmAction from "../../components/ui/ConfirmAction";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
@@ -64,6 +65,7 @@ export default function CategoriesPage() {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedCategory = useMemo(
@@ -628,8 +630,8 @@ export default function CategoriesPage() {
 
                     <div className={styles.formActions}>
                       <Button
-                        loading={isArchiving}
-                        type="submit"
+                        type="button"
+                        onClick={() => setIsArchiveConfirmOpen(true)}
                         variant="danger"
                       >
                         {t("categories.archiveAction")}
@@ -638,6 +640,18 @@ export default function CategoriesPage() {
                   </form>
                 ) : null}
               </div>
+            <ConfirmAction
+                confirmLabel={t("categories.archiveAction")}
+                loading={isArchiving}
+                message={t("confirmations.archiveCategory")}
+                onCancel={() => setIsArchiveConfirmOpen(false)}
+                onConfirm={() => {
+                  setIsArchiveConfirmOpen(false);
+                  void archiveForm.handleSubmit(onArchive)();
+                }}
+                open={isArchiveConfirmOpen}
+                title={t("categories.archiveTitle")}
+              />
             </Drawer>
           ) : null}
         </>
