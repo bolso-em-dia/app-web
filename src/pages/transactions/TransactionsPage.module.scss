@@ -316,45 +316,6 @@
   gap: var(--space-3);
 }
 
-.confirmBackdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  border: 0;
-  background: color-mix(in srgb, var(--color-surface) 58%, transparent);
-}
-
-.confirmDialog {
-  position: fixed;
-  inset-block-start: 50%;
-  inset-inline-start: 50%;
-  z-index: 61;
-  width: min(100% - (var(--space-6) * 2), 32rem);
-  transform: translate(-50%, -50%);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-panel);
-  box-shadow: var(--shadow-popover);
-}
-
-.confirmContent {
-  display: grid;
-  gap: var(--space-4);
-  padding: var(--space-6);
-}
-
-.confirmTitle {
-  margin: 0;
-  font-size: var(--font-size-200);
-}
-
-.confirmActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-
 @media (width <= 72rem) {
   .filtersGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -378,8 +339,7 @@
 
   .transactionTop,
   .formActions,
-  .paginationButtons,
-  .confirmActions {
+  .paginationButtons {
     flex-direction: column;
   }
 
