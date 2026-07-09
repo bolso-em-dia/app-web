@@ -1149,6 +1149,150 @@ describe("TransactionsPage", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("derives the initial transaction date from the selected reference month when opening the creation form", async () => {
+    const currentReferenceMonth = getCurrentReferenceMonth();
+    const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
+
+    vi.mocked(fetch).mockImplementation((input) => {
+      const url = String(input);
+      const referenceMonth = url.includes("referenceMonth=")
+        ? new URL(url).searchParams.get("referenceMonth")
+        : null;
+
+      if (url.includes("/api/transactions?")) {
+        return Promise.resolve(
+          jsonResponse({
+            items:
+              referenceMonth === previousReferenceMonth
+                ? []
+                : [
+                    {
+                      id: "tx-1",
+                      type: "EXPENSE",
+                      ownershipType: "SHARED",
+                      sourceType: "MANUAL",
+                      description: "Groceries",
+                      amount: 125.5,
+                      transactionDate: "2026-06-10",
+                      referenceMonth: currentReferenceMonth,
+                      accountId: "account-1",
+                      accountName: "Main checking",
+                      categoryId: "cat-1",
+                      categoryName: "Groceries",
+                      memberId: null,
+                      memberName: null,
+                      installmentGroupId: null,
+                      installmentNumber: null,
+                      installmentTotal: null,
+                      createdAt: "2026-06-01T10:00:00Z",
+                      updatedAt: "2026-06-01T10:00:00Z",
+                    },
+                  ],
+            page: 0,
+            size: 12,
+            totalItems: referenceMonth === previousReferenceMonth ? 0 : 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/accounts?")) {
+        return Promise.resolve(
+          jsonResponse([
+            {
+              id: "account-1",
+              name: "Main checking",
+              type: "CHECKING",
+              brand: null,
+              color: "#2254d1",
+              closingDay: null,
+              dueDay: null,
+              createdInMonth: "2026-06-01",
+              archivedFromMonth: null,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ]),
+        );
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve(
+          jsonResponse(
+            referenceMonth === previousReferenceMonth
+              ? []
+              : [
+                  {
+                    id: "cat-1",
+                    name: "Groceries",
+                    icon: "shopping-cart",
+                    color: "#2254d1",
+                  },
+                  {
+                    id: "cat-2",
+                    name: "Transport",
+                    icon: "car",
+                    color: "#14a44d",
+                  },
+                ],
+          ),
+        );
+      }
+
+      if (url.includes("/api/family-members")) {
+        return Promise.resolve(
+          jsonResponse([
+            {
+              id: "member-1",
+              name: "Taylor",
+              email: "taylor@bolso-em-dia.local",
+              role: "USER",
+              active: true,
+              allowanceEnabled: true,
+              createdAt: "2026-06-01T10:00:00Z",
+              updatedAt: "2026-06-01T10:00:00Z",
+            },
+          ]),
+        );
+      }
+
+      return Promise.reject(new Error(`Unhandled request: ${url}`));
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("1-1 de 1")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mês de referência", { selector: "input" }).parentElement).toHaveAttribute("data-current-month", "false");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
+
+    const drawer = screen.getByRole("dialog");
+    const dateInput = within(drawer).getByLabelText("Data da transação");
+
+    await waitFor(() => {
+      expect(dateInput).toHaveValue(previousReferenceMonth);
+    });
+  });
+
   it("filters transactions by multiple categories without expanding the active chip list", async () => {
     vi.mocked(fetch).mockImplementation((input) => {
       const url = String(input);
