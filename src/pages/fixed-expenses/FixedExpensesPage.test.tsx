@@ -343,6 +343,116 @@ describe("FixedExpensesPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("cancels delete confirmation without calling the API", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      const method = init?.method ?? "GET";
+
+      if (method === "GET" && url.includes("/api/fixed-transactions?")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                id: "template-1",
+                name: "Rent",
+                type: "EXPENSE",
+                amount: 1800,
+                categoryId: "cat-1",
+                categoryName: "Housing",
+                accountId: "account-1",
+                accountName: "Main checking",
+                dueDay: 5,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                active: true,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "cat-1", name: "Housing", icon: "home", color: "#2254d1" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      if (method === "GET" && url.includes("/api/accounts/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [
+            { id: "account-1", name: "Main checking", type: "CHECKING" },
+          ],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
+
+    const deleteButton = await screen.findByRole("button", {
+      name: "Excluir",
+    });
+    fireEvent.click(deleteButton);
+
+    const alertDialog = screen.getByRole("alertdialog");
+    expect(alertDialog).toBeInTheDocument();
+
+    fireEvent.click(within(alertDialog).getByRole("button", { name: "Cancelar" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+
+    const deleteCalls = vi.mocked(fetch).mock.calls.filter(
+      ([input, init]) =>
+        String(input).includes("/api/fixed-transactions/") &&
+        init?.method === "DELETE",
+    );
+    expect(deleteCalls.length).toBe(0);
+  });
+
   it("shows error feedback when delete fails", async () => {
     vi.mocked(fetch).mockReset();
     vi.mocked(fetch).mockImplementation((input, init) => {

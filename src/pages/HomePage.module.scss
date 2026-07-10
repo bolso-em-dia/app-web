@@ -1,4 +1,6 @@
 .summaryHeader {
+  display: grid;
+  gap: var(--space-4);
   margin-bottom: var(--space-4);
 }
 

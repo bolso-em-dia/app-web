@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import HomePage from "./HomePage";
@@ -532,5 +532,55 @@ describe("HomePage", () => {
     );
 
     expect(await screen.findByText("100.0%")).toBeInTheDocument();
+  });
+
+  it("shows loading spinner while dashboard data is being fetched", async () => {
+    vi.mocked(fetch).mockReset();
+    let resolveFetch: (value: Response) => void;
+    const promise = new Promise<Response>((resolve) => {
+      resolveFetch = resolve;
+    });
+    vi.mocked(fetch).mockReturnValue(promise);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Carregando dashboard")).toBeInTheDocument();
+
+    resolveFetch!({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 195,
+          balance: 4805,
+          availableBalance: 3955,
+          reservedBudgetAmount: 850,
+        },
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      }),
+      text: async () => "",
+    } as Response);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Carregando dashboard")).not.toBeInTheDocument();
+    });
   });
 });

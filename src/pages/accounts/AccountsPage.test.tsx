@@ -8,36 +8,20 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { createAccount, jsonResponse } from "../../test/fixtures";
 import AccountsPage from "./AccountsPage";
 
 describe("AccountsPage", () => {
   beforeEach(() => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        items: [
-          {
-            id: "account-1",
-            name: "Main checking",
-            type: "CHECKING",
-            brand: null,
-            color: "#2254d1",
-            closingDay: null,
-            dueDay: null,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({
+        items: [createAccount()],
         page: 0,
         size: 12,
         totalItems: 1,
         totalPages: 1,
       }),
-      text: async () => "",
-    } as Response);
+    );
   });
 
   afterEach(() => {

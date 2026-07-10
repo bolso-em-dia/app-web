@@ -512,6 +512,7 @@ export default function AccountsPage() {
               <div className={styles.drawerStack}>
                 <form
                   className={styles.form}
+                  noValidate
                   onSubmit={form.handleSubmit(onSubmit)}
                 >
                   <Field
