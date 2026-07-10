@@ -199,6 +199,33 @@
   gap: var(--space-3);
 }
 
+.exchangeRate {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-inline-start: auto;
+}
+
+.exchangeRateValue {
+  font-size: var(--font-size-100);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.exchangeRateRefresh {
+  min-width: 2rem;
+  padding-inline: 0;
+}
+
+.rateRefreshing {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .menuButton {
   flex-shrink: 0;
   min-width: 2.75rem;
