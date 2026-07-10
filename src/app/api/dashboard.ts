@@ -15,6 +15,8 @@ export type DashboardTransaction = {
   sourceType: string;
   description: string;
   amount: number;
+  originalAmount?: number | null;
+  currency?: string | null;
   transactionDate: string;
   referenceMonth: string;
   accountId: string;
