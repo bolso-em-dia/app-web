@@ -127,6 +127,7 @@ export const ptBRMessages = {
   "home.referenceMonth": "Mês de referência",
   "home.income": "Receitas",
   "home.expense": "Despesas",
+  "home.expenseWithBudgets": "Despesas + Orçamentos",
   "home.balance": "Saldo realizado",
   "home.loading": "Carregando dashboard",
   "home.unavailable": "Dashboard indisponível",

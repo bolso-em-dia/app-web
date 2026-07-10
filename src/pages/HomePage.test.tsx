@@ -583,4 +583,100 @@ describe("HomePage", () => {
       expect(screen.queryByText("Carregando dashboard")).not.toBeInTheDocument();
     });
   });
+
+  it("shows projected badge on recent transactions for future months", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        referenceMonth: "2026-07-01",
+        summary: { totalIncome: 1000, totalExpense: 200, balance: 800, availableBalance: 800, reservedBudgetAmount: 0 },
+        budgets: [],
+        recentTransactions: [{
+          id: "proj-1", type: "EXPENSE", ownershipType: "SHARED", sourceType: "FIXED_EXPENSE",
+          description: "Projected Rent", amount: 200, transactionDate: "2026-07-05",
+          referenceMonth: "2026-07-01", accountId: "a-1", accountName: "Main",
+          categoryId: "c-1", categoryName: "Housing", memberId: null, memberName: null,
+          installmentGroupId: null, installmentNumber: null, installmentTotal: null,
+          projected: true, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
+        }],
+        categoryBreakdown: [],
+      }),
+      text: async () => "",
+    } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Projected Rent")).toBeInTheDocument();
+    expect(screen.getByText("Prevista")).toBeInTheDocument();
+  });
+
+  it("shows expense with reserved budget amount when budgets are considered", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        referenceMonth: "2026-06-01",
+        summary: { totalIncome: 5000, totalExpense: 195, balance: 4805, availableBalance: 3955, reservedBudgetAmount: 850 },
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      }),
+      text: async () => "",
+    } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Saldo realizado")).toBeInTheDocument();
+
+    const switchEl = screen.getByRole("switch", { name: "Considerar orçamentos no saldo" });
+    fireEvent.click(switchEl);
+
+    await waitFor(() => {
+      expect(screen.getByText("Saldo livre")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Despesas + Orçamentos")).toBeInTheDocument();
+  });
+
+  it("shows raw expense when budgets are not considered", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        referenceMonth: "2026-06-01",
+        summary: { totalIncome: 5000, totalExpense: 195, balance: 4805, availableBalance: 3955, reservedBudgetAmount: 850 },
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      }),
+      text: async () => "",
+    } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Despesas")).toBeInTheDocument();
+    expect(screen.queryByText("Despesas + Orçamentos")).not.toBeInTheDocument();
+  });
 });

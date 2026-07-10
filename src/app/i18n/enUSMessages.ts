@@ -85,6 +85,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "home.referenceMonth": "Reference month",
   "home.income": "Income",
   "home.expense": "Expenses",
+  "home.expenseWithBudgets": "Expenses + Budgets",
   "home.balance": "Booked balance",
   "home.loading": "Loading dashboard",
   "home.unavailable": "Dashboard unavailable",
