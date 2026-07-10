@@ -90,6 +90,14 @@ export default function HomePage() {
         ? styles.amountNegative
         : styles.amountNeutral;
 
+  const displayExpense = considerBudgetsInBalance
+    ? (dashboard?.summary.totalExpense ?? 0) + (dashboard?.summary.reservedBudgetAmount ?? 0)
+    : (dashboard?.summary.totalExpense ?? 0);
+
+  const expenseLabel = considerBudgetsInBalance
+    ? t("home.expenseWithBudgets")
+    : t("home.expense");
+
   const recentTxPages = Math.ceil(
     (dashboard?.recentTransactions.length ?? 0) / ITEMS_PER_PAGE,
   );
@@ -142,9 +150,9 @@ export default function HomePage() {
           </strong>
         </Card>
         <Card className={styles.summaryCard}>
-          <span className={styles.summaryLabel}>{t("home.expense")}</span>
+          <span className={styles.summaryLabel}>{expenseLabel}</span>
           <strong className={styles.summaryValue}>
-            <MoneyAmount amount={dashboard?.summary.totalExpense ?? 0} type="EXPENSE" />
+            <MoneyAmount amount={displayExpense} type="EXPENSE" />
           </strong>
         </Card>
         <Card className={styles.summaryCard}>
@@ -265,13 +273,24 @@ export default function HomePage() {
               {recentTxSlice.map((transaction) => (
                 <li key={transaction.id} className={styles.itemRow}>
                   <div>
-                    <strong>{transaction.description}</strong>
+                    <strong>
+                      {transaction.description}
+                      {transaction.projected ? (
+                        <span className={styles.projectedBadge}>
+                          {" "}
+                          {t("transactions.projected")}
+                        </span>
+                      ) : null}
+                    </strong>
                     <p className={styles.itemMeta}>
                       {transaction.categoryName} · {transaction.accountName} ·{" "}
                       {formatDay(transaction.transactionDate)}
                     </p>
                   </div>
-                  <strong>{formatCurrency(transaction.amount)}</strong>
+                  <MoneyAmount
+                    amount={transaction.amount}
+                    type={transaction.type as "INCOME" | "EXPENSE"}
+                  />
                 </li>
               ))}
             </ul>
