@@ -7,7 +7,6 @@ import {
 } from "../../app/api/categories";
 import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import {
-  archiveFixedExpenseTemplate,
   createFixedExpenseTemplate,
   deleteFixedExpenseTemplate,
   listFixedExpenseTemplates,
@@ -89,8 +88,6 @@ export default function FixedExpensesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isArchiving, setIsArchiving] = useState(false);
-  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -216,37 +213,6 @@ export default function FixedExpensesPage() {
       setError(t("fixedTransactions.saveError"));
     } finally {
       setIsSaving(false);
-    }
-  }
-
-  async function onArchive() {
-    if (
-      !accessToken ||
-      !selectedTemplate ||
-      selectedTemplate.archivedFromMonth
-    ) {
-      return;
-    }
-
-    setIsArchiving(true);
-    setError(null);
-
-    try {
-      const archived = await archiveFixedExpenseTemplate(
-        selectedTemplate.id,
-        accessToken,
-      );
-      setSelectedId(archived.id);
-      await loadTemplates({
-        page,
-        size: pageSize,
-        search,
-        status: statusFilter,
-      });
-    } catch {
-      setError(t("fixedTransactions.archiveError"));
-    } finally {
-      setIsArchiving(false);
     }
   }
 
@@ -712,48 +678,21 @@ export default function FixedExpensesPage() {
                       >
                         {t("common.cancel")}
                       </Button>
-                    ) : (
-                      <Button
-                        disabled={Boolean(selectedTemplate?.archivedFromMonth)}
-                        onClick={() => setIsArchiveConfirmOpen(true)}
-                        type="button"
-                        variant={
-                          selectedTemplate?.archivedFromMonth
-                            ? "subtle"
-                            : "danger"
-                        }
-                      >
-                        {selectedTemplate?.archivedFromMonth
-                          ? t("fixedTransactions.archived")
-                          : t("fixedTransactions.archiveAction")}
-                      </Button>
-                    )}
+                    ) : null}
                     {!isCreating ? (
                       <Button
                         onClick={() => setIsDeleteConfirmOpen(true)}
                         type="button"
                         variant="danger"
                       >
-                        {t("fixedTransactions.deleteAction")}
+                        {t("common.delete")}
                       </Button>
                     ) : null}
                   </div>
                 </form>
               </div>
               <ConfirmAction
-                confirmLabel={t("fixedTransactions.archiveAction")}
-                loading={isArchiving}
-                message={t("confirmations.archiveFixedExpense")}
-                onCancel={() => setIsArchiveConfirmOpen(false)}
-                onConfirm={() => {
-                  setIsArchiveConfirmOpen(false);
-                  void onArchive();
-                }}
-                open={isArchiveConfirmOpen}
-                title={t("fixedTransactions.archiveAction")}
-              />
-              <ConfirmAction
-                confirmLabel={t("fixedTransactions.deleteAction")}
+                confirmLabel={t("common.delete")}
                 loading={isDeleting}
                 message={t("confirmations.deleteFixedExpense")}
                 onCancel={() => setIsDeleteConfirmOpen(false)}

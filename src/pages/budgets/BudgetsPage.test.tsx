@@ -550,7 +550,7 @@ describe("BudgetsPage", () => {
     const householdButton = await screen.findByText("Household");
     fireEvent.click(householdButton.closest("button")!);
 
-    fireEvent.click(screen.getByRole("button", { name: "Arquivar orçamento" }));
+    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
 
     const confirmDialog = screen.getByRole("alertdialog");
     expect(confirmDialog).toBeInTheDocument();
@@ -652,10 +652,10 @@ describe("BudgetsPage", () => {
     const householdButton = await screen.findByText("Household");
     fireEvent.click(householdButton.closest("button")!);
 
-    fireEvent.click(screen.getByRole("button", { name: "Arquivar orçamento" }));
+    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
 
     const dialog = screen.getByRole("alertdialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Arquivar orçamento" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Arquivar" }));
 
     await waitFor(() => {
       expect(archiveCalled).toBe(true);

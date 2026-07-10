@@ -547,7 +547,7 @@ export default function FamilyPage() {
                     <Button loading={isSaving} type="submit">
                       {isCreating
                         ? t("family.create")
-                        : t("common.saveChanges")}
+                        : t("common.save")}
                     </Button>
                     {isCreating ? (
                       <Button
@@ -570,7 +570,7 @@ export default function FamilyPage() {
                         }
                       >
                         {selectedMember?.active
-                          ? t("family.archiveMember")
+                          ? t("common.archive")
                           : t("family.restoreMember")}
                       </Button>
                     )}
@@ -581,7 +581,7 @@ export default function FamilyPage() {
           ) : null}
 
           <ConfirmAction
-            confirmLabel={t("family.archiveMember")}
+            confirmLabel={t("common.archive")}
             loading={isArchiving}
             message={t("confirmations.archiveMember")}
             onCancel={() => setIsArchiveConfirmOpen(false)}

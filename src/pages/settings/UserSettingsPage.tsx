@@ -215,7 +215,7 @@ export default function UserSettingsPage() {
 
               <div className={styles.formActions}>
                 <Button loading={isSaving} type="submit">
-                  {t("settings.save")}
+                  {t("common.save")}
                 </Button>
               </div>
             </form>
@@ -223,7 +223,7 @@ export default function UserSettingsPage() {
 
           <Card className={styles.formCard}>
             <PasswordChangeForm
-              submitLabel={t("settings.password.save")}
+              submitLabel={t("common.save")}
               subtitle={t("settings.password.subtitle")}
               successMessage={t("settings.password.success")}
               title={t("settings.password.title")}

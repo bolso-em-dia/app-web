@@ -151,7 +151,7 @@ describe("AccountsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
 
     const archiveButton = await screen.findByRole("button", {
-      name: "Arquivar conta",
+      name: "Arquivar",
     });
     fireEvent.click(archiveButton);
 
@@ -255,13 +255,13 @@ describe("AccountsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
 
     const archiveButton = await screen.findByRole("button", {
-      name: "Arquivar conta",
+      name: "Arquivar",
     });
     fireEvent.click(archiveButton);
 
     const alertDialog = screen.getByRole("alertdialog");
     const confirmButton = within(alertDialog).getByRole("button", {
-      name: "Arquivar conta",
+      name: "Arquivar",
     });
     fireEvent.click(confirmButton);
 
@@ -368,7 +368,7 @@ describe("AccountsPage", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Salvar alterações" }));
+    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
 
     await waitFor(() => {
       expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveValue(
@@ -461,13 +461,13 @@ describe("AccountsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
 
     const archiveButton = await screen.findByRole("button", {
-      name: "Arquivar conta",
+      name: "Arquivar",
     });
     fireEvent.click(archiveButton);
 
     const alertDialog = screen.getByRole("alertdialog");
     const confirmButton = within(alertDialog).getByRole("button", {
-      name: "Arquivar conta",
+      name: "Arquivar",
     });
     fireEvent.click(confirmButton);
 

@@ -642,7 +642,7 @@ export default function AccountsPage() {
                     <Button disabled={isSaving} type="submit">
                       {isCreating
                         ? t("accounts.create")
-                        : t("common.saveChanges")}
+                        : t("common.save")}
                     </Button>
                     {isCreating ? (
                       <Button
@@ -667,7 +667,7 @@ export default function AccountsPage() {
                       >
                         {selectedAccount?.archivedFromMonth
                           ? t("accounts.archived")
-                          : t("accounts.archiveAction")}
+                          : t("common.archive")}
                       </Button>
                     )}
                   </div>
@@ -675,7 +675,7 @@ export default function AccountsPage() {
               </div>
             </Drawer>
             <ConfirmAction
-              confirmLabel={t("accounts.archiveAction")}
+              confirmLabel={t("common.archive")}
               loading={isArchiving}
               message={t("confirmations.archiveAccount")}
               onCancel={() => setIsArchiveConfirmOpen(false)}
@@ -684,7 +684,7 @@ export default function AccountsPage() {
                 void onArchive();
               }}
               open={isArchiveConfirmOpen}
-              title={t("accounts.archiveAction")}
+              title={t("accounts.archiveTitle")}
             />
             </>
           ) : null}

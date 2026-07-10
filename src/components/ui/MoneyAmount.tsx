@@ -16,8 +16,9 @@ export default function MoneyAmount({
   as: Tag = "span",
   className,
 }: MoneyAmountProps) {
-  const signedAmount = type === "EXPENSE" ? -Math.abs(amount) : Math.abs(amount);
-  const colorClass = type === "EXPENSE" ? styles.expense : styles.income;
+  const isZero = amount === 0;
+  const signedAmount = isZero ? 0 : type === "EXPENSE" ? -Math.abs(amount) : Math.abs(amount);
+  const colorClass = isZero ? "" : type === "EXPENSE" ? styles.expense : styles.income;
 
   return (
     <Tag className={`${colorClass} ${className ?? ""}`.trim()}>

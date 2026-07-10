@@ -34,10 +34,11 @@ describe("MoneyAmount", () => {
     expect(element.tagName).toBe("SPAN");
   });
 
-  it("formats zero with the expense sign and color class", () => {
+  it("formats zero with neutral color and no negative sign", () => {
     render(<MoneyAmount amount={0} type="EXPENSE" />);
 
-    const element = screen.getByText("-R$ 0,00");
-    expect(element.className).toContain("expense");
+    const element = screen.getByText("R$ 0,00");
+    expect(element.className).not.toContain("expense");
+    expect(element.className).not.toContain("income");
   });
 });

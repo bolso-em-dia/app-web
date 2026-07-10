@@ -41,7 +41,7 @@ describe("FamilyPage", () => {
     vi.clearAllMocks();
   });
 
-  it('opens "Arquivar membro" confirmation for an active member', async () => {
+  it('opens "Arquivar" confirmation for an active member', async () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
@@ -63,7 +63,7 @@ describe("FamilyPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Admin/ }));
 
     const archiveButton = await screen.findByRole("button", {
-      name: "Arquivar membro",
+      name: "Arquivar",
     });
     fireEvent.click(archiveButton);
 
@@ -220,13 +220,13 @@ describe("FamilyPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Alice/ }));
 
     const archiveButton = await screen.findByRole("button", {
-      name: "Arquivar membro",
+      name: "Arquivar",
     });
     fireEvent.click(archiveButton);
 
     const alertDialog = screen.getByRole("alertdialog");
     fireEvent.click(
-      within(alertDialog).getByRole("button", { name: "Arquivar membro" }),
+      within(alertDialog).getByRole("button", { name: "Arquivar" }),
     );
 
     await waitFor(() => {
@@ -307,13 +307,13 @@ describe("FamilyPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Bob/ }));
 
     const archiveButton = await screen.findByRole("button", {
-      name: "Arquivar membro",
+      name: "Arquivar",
     });
     fireEvent.click(archiveButton);
 
     const alertDialog = screen.getByRole("alertdialog");
     fireEvent.click(
-      within(alertDialog).getByRole("button", { name: "Arquivar membro" }),
+      within(alertDialog).getByRole("button", { name: "Arquivar" }),
     );
 
     await waitFor(() => {

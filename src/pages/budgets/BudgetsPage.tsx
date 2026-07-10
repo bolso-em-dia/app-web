@@ -721,7 +721,7 @@ export default function BudgetsPage() {
                     <Button loading={isSaving} type="submit">
                       {isCreating
                         ? t("budgets.create")
-                        : t("common.saveChanges")}
+                        : t("common.save")}
                     </Button>
                     {isCreating ? (
                       <Button
@@ -746,7 +746,7 @@ export default function BudgetsPage() {
                       >
                         {selectedBudgetSummary?.archivedFromMonth
                           ? t("budgets.archived")
-                          : t("budgets.archiveAction")}
+                          : t("common.archive")}
                       </Button>
                     )}
                   </div>
@@ -885,7 +885,7 @@ export default function BudgetsPage() {
               </div>
 
               <ConfirmAction
-                confirmLabel={t("budgets.archiveAction")}
+                confirmLabel={t("common.archive")}
                 loading={isArchiving}
                 message={t("confirmations.archiveBudget")}
                 onCancel={() => setIsArchiveConfirmOpen(false)}

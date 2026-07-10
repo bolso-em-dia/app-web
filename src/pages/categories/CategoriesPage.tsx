@@ -579,7 +579,7 @@ export default function CategoriesPage() {
                     <Button loading={isSaving} type="submit">
                       {isCreating
                         ? t("categories.create")
-                        : t("common.saveChanges")}
+                        : t("common.save")}
                     </Button>
                     {isCreating ? (
                       <Button
@@ -634,14 +634,14 @@ export default function CategoriesPage() {
                         onClick={() => setIsArchiveConfirmOpen(true)}
                         variant="danger"
                       >
-                        {t("categories.archiveAction")}
+{t("common.archive")}
                       </Button>
                     </div>
                   </form>
                 ) : null}
               </div>
             <ConfirmAction
-                confirmLabel={t("categories.archiveAction")}
+                confirmLabel={t("common.archive")}
                 loading={isArchiving}
                 message={t("confirmations.archiveCategory")}
                 onCancel={() => setIsArchiveConfirmOpen(false)}

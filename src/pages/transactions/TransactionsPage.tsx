@@ -1253,7 +1253,7 @@ export default function TransactionsPage() {
                     ) : (
                       <>
                         <Button loading={isSaving} type="submit">
-                          {t("common.saveChanges")}
+                          {t("common.save")}
                         </Button>
                         <Button
                           disabled={isDeleting}
@@ -1261,7 +1261,7 @@ export default function TransactionsPage() {
                           type="button"
                           variant="danger"
                         >
-                          {t("transactions.deleteAction")}
+{t("common.delete")}
                         </Button>
                       </>
                     )}
@@ -1271,7 +1271,7 @@ export default function TransactionsPage() {
             </Drawer>
           ) : null}
             <ConfirmAction
-              confirmLabel={t("transactions.deleteAction")}
+              confirmLabel={t("common.delete")}
               loading={isDeleting}
               message={t(
                 supportsGroupedDelete

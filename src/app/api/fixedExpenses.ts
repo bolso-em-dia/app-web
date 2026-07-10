@@ -92,16 +92,6 @@ export function updateFixedExpenseTemplate(
   );
 }
 
-export function archiveFixedExpenseTemplate(id: string, accessToken: string) {
-  return apiRequest<FixedExpenseTemplate>(
-    `/api/fixed-transactions/${id}/archive`,
-    {
-      method: "PATCH",
-      accessToken,
-    },
-  );
-}
-
 export function deleteFixedExpenseTemplate(id: string, accessToken: string) {
   return apiRequest<void>(`/api/fixed-transactions/${id}`, {
     method: "DELETE",

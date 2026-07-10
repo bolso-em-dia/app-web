@@ -334,7 +334,7 @@ describe("CategoriesPage", () => {
     );
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Arquivar categoria" }),
+      screen.getByRole("button", { name: "Arquivar" }),
     );
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
@@ -464,14 +464,14 @@ describe("CategoriesPage", () => {
     );
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Arquivar categoria" }),
+      screen.getByRole("button", { name: "Arquivar" }),
     );
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
 
     fireEvent.click(
       within(screen.getByRole("alertdialog")).getByRole("button", {
-        name: "Arquivar categoria",
+        name: "Arquivar",
       }),
     );
 
@@ -586,14 +586,14 @@ describe("CategoriesPage", () => {
     );
 
     fireEvent.click(
-      screen.getByRole("button", { name: "Arquivar categoria" }),
+      screen.getByRole("button", { name: "Arquivar" }),
     );
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
 
     fireEvent.click(
       within(screen.getByRole("alertdialog")).getByRole("button", {
-        name: "Arquivar categoria",
+        name: "Arquivar",
       }),
     );
 

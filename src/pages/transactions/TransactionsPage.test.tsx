@@ -532,7 +532,7 @@ describe("TransactionsPage", () => {
       screen.queryByRole("alertdialog", { name: "Excluir transação" }),
     ).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Excluir transação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
     const modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
     expect(within(modal).getByText("Confirme a exclusão da transação selecionada.")).toBeInTheDocument();
@@ -683,10 +683,10 @@ describe("TransactionsPage", () => {
     }
 
     fireEvent.click(transactionButton);
-    fireEvent.click(screen.getByRole("button", { name: "Excluir transação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
     const modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
-    fireEvent.click(within(modal).getByRole("button", { name: "Excluir transação" }));
+    fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
 
     await waitFor(() => {
       expect(
@@ -829,14 +829,14 @@ describe("TransactionsPage", () => {
     }
 
     fireEvent.click(transactionButton);
-    fireEvent.click(screen.getByRole("button", { name: "Excluir transação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
     let modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
     expect(within(modal).getByLabelText("Escopo da exclusão")).toBeInTheDocument();
     fireEvent.change(within(modal).getByLabelText("Escopo da exclusão"), {
       target: { value: "FUTURE" },
     });
-    fireEvent.click(within(modal).getByRole("button", { name: "Excluir transação" }));
+    fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
 
     await waitFor(() => {
       expect(
@@ -849,13 +849,13 @@ describe("TransactionsPage", () => {
     });
 
     fireEvent.click(transactionButton);
-    fireEvent.click(screen.getByRole("button", { name: "Excluir transação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
     modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
     fireEvent.change(within(modal).getByLabelText("Escopo da exclusão"), {
       target: { value: "ALL" },
     });
-    fireEvent.click(within(modal).getByRole("button", { name: "Excluir transação" }));
+    fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
 
     await waitFor(() => {
       expect(
