@@ -1,9 +1,11 @@
-import { LogOut, Menu, UserRound } from "lucide-react";
+import { LogOut, Menu, RefreshCw, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { getLatestExchangeRate, refreshExchangeRate } from "../../app/api/exchangeRate";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { formatCurrency } from "../../lib/formatters/currency";
 import {
   managementNavigation,
   operationalNavigation,
@@ -11,6 +13,7 @@ import {
 import { getNavigationIcon } from "../../lib/icons";
 import Button from "../ui/Button";
 import Drawer from "../ui/Drawer";
+import Tooltip from "../ui/Tooltip";
 import styles from "./AppShell.module.scss";
 
 type AppShellProps = {
@@ -43,10 +46,40 @@ export default function AppShell({
   actions,
   children,
 }: AppShellProps) {
-  const { logout, user } = useAuth();
+  const { accessToken, logout, user } = useAuth();
   const { t } = useI18n();
   const isCompactNavigation = useCompactNavigation();
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
+  const [rateStale, setRateStale] = useState(false);
+  const [rateError, setRateError] = useState(false);
+  const [rateRefreshing, setRateRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (!accessToken || import.meta.env.MODE === "test") return;
+    getLatestExchangeRate(accessToken)
+      .then((data) => {
+        setExchangeRate(data.rate);
+        setRateStale(data.stale);
+        setRateError(false);
+      })
+      .catch(() => setRateError(true));
+  }, [accessToken]);
+
+  async function handleRefreshRate() {
+    if (!accessToken || rateRefreshing) return;
+    setRateRefreshing(true);
+    try {
+      const data = await refreshExchangeRate(accessToken);
+      setExchangeRate(data.rate);
+      setRateStale(false);
+      setRateError(false);
+    } catch {
+      setRateError(true);
+    } finally {
+      setRateRefreshing(false);
+    }
+  }
 
   useEffect(() => {
     if (!isCompactNavigation) {
@@ -173,6 +206,37 @@ export default function AppShell({
               {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
             </div>
           </div>
+          {exchangeRate != null ? (
+            <div className={styles.exchangeRate}>
+              <Tooltip
+                content={
+                  rateError
+                    ? t("exchangeRate.fetchError")
+                    : rateStale
+                      ? t("exchangeRate.staleTooltip")
+                      : t("exchangeRate.updated")
+                }
+              >
+                <span className={styles.exchangeRateValue}>
+                  US$ 1 = {formatCurrency(exchangeRate)}
+                </span>
+              </Tooltip>
+              <Button
+                aria-label={t("exchangeRate.refresh")}
+                className={styles.exchangeRateRefresh}
+                disabled={rateRefreshing}
+                onClick={() => void handleRefreshRate()}
+                type="button"
+                variant="subtle"
+              >
+                <RefreshCw
+                  aria-hidden="true"
+                  className={rateRefreshing ? styles.rateRefreshing : undefined}
+                  size={14}
+                />
+              </Button>
+            </div>
+          ) : null}
           {actions ? <div className={styles.actions}>{actions}</div> : null}
         </header>
         <main className={styles.content}>{children}</main>

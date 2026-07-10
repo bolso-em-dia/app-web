@@ -79,6 +79,10 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "errorBoundary.details": "Technical details",
   "errorBoundary.retry": "Try again",
   "errorBoundary.goToDashboard": "Go to Dashboard",
+  "exchangeRate.updated": "Exchange rate updated",
+  "exchangeRate.staleTooltip": "Exchange rate is stale. Last update may be incorrect.",
+  "exchangeRate.fetchError": "Failed to fetch exchange rate. Using last known value.",
+  "exchangeRate.refresh": "Refresh exchange rate",
 
   // Home
   "home.title": "Dashboard",
