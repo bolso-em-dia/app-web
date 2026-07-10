@@ -1134,6 +1134,13 @@ describe("TransactionsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
 
     await waitFor(() => {
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(([input]) =>
+            String(input).includes(`referenceMonth=${currentReferenceMonth}`),
+          ),
+      ).toBe(true);
     });
 
     expect(
@@ -1276,6 +1283,13 @@ describe("TransactionsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
     await waitFor(() => {
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(([input]) =>
+            String(input).includes(`referenceMonth=${previousReferenceMonth}`),
+          ),
+      ).toBe(true);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
@@ -1495,5 +1509,144 @@ describe("TransactionsPage", () => {
     expect(
       screen.getByText("Buscar: mercado"),
     ).toBeInTheDocument();
+  });
+
+  it("shows error feedback when delete fails", async () => {
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+
+      if (url.includes("/api/transactions/tx-1") && init?.method === "DELETE") {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: "Server error" }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.includes("/api/transactions?") && (!init?.method || init.method === "GET")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [
+              {
+                id: "tx-1",
+                type: "EXPENSE",
+                ownershipType: "INDIVIDUAL",
+                sourceType: "MANUAL",
+                description: "Groceries",
+                amount: 150,
+                transactionDate: "2026-06-10",
+                referenceMonth: "2026-06-01",
+                accountId: "account-1",
+                accountName: "Main checking",
+                categoryId: "cat-1",
+                categoryName: "Groceries",
+                memberId: null,
+                memberName: null,
+                installmentGroupId: null,
+                installmentNumber: null,
+                installmentTotal: null,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 12,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/accounts?")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [
+              {
+                id: "account-1",
+                name: "Main checking",
+                type: "CHECKING",
+                brand: null,
+                color: "#2254d1",
+                closingDay: null,
+                dueDay: null,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                createdAt: "2026-06-01T10:00:00Z",
+                updatedAt: "2026-06-01T10:00:00Z",
+              },
+            ],
+            page: 0,
+            size: 200,
+            totalItems: 1,
+            totalPages: 1,
+          }),
+        );
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve(
+          jsonResponse([
+            { id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" },
+          ]),
+        );
+      }
+
+      if (url.includes("/api/members")) {
+        return Promise.resolve(
+          jsonResponse({
+            items: [],
+            page: 0,
+            size: 200,
+            totalItems: 0,
+            totalPages: 0,
+          }),
+        );
+      }
+
+      if (url.includes("/api/transactions/descriptions")) {
+        return Promise.resolve(
+          jsonResponse([]),
+        );
+      }
+
+      return Promise.resolve(
+        jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
+      );
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const transactionLabel = await screen.findByText("Groceries");
+    const transactionButton = transactionLabel.closest("button");
+    if (!transactionButton) {
+      throw new Error("Transaction button not found.");
+    }
+
+    fireEvent.click(transactionButton);
+    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
+
+    const modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
+    fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Não foi possível excluir a transação."),
+      ).toBeInTheDocument();
+    });
   });
 });

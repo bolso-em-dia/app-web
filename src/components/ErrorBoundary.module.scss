@@ -1,0 +1,51 @@
+.fallback {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+  padding: var(--space-6);
+}
+
+.fallbackCard {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 36rem;
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.fallbackTitle {
+  margin: 0;
+  font-size: var(--font-size-300);
+  color: var(--color-text);
+}
+
+.fallbackMessage {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.fallbackDetails {
+  text-align: left;
+
+  summary {
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-100);
+  }
+
+  pre {
+    margin-top: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-muted);
+    font-size: var(--font-size-100);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+.fallbackActions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+}

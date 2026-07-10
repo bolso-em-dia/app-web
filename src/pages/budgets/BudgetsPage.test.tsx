@@ -453,14 +453,14 @@ describe("BudgetsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
     await waitFor(() => {
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(([input]) =>
+            String(input).includes(`referenceMonth=${previousReferenceMonth}`),
+          ),
+      ).toBe(true);
     });
-
-    const previousMonthCall = vi
-      .mocked(fetch)
-      .mock.calls.find(([input]) =>
-        String(input).includes(`referenceMonth=${previousReferenceMonth}`),
-      );
-    expect(previousMonthCall).toBeTruthy();
 
     vi.mocked(fetch)
       .mockResolvedValueOnce({
@@ -520,14 +520,14 @@ describe("BudgetsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
 
     await waitFor(() => {
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(([input]) =>
+            String(input).includes(`referenceMonth=${currentReferenceMonth}`),
+          ),
+      ).toBe(true);
     });
-
-    const currentMonthCalls = vi
-      .mocked(fetch)
-      .mock.calls.filter(([input]) =>
-        String(input).includes(`referenceMonth=${currentReferenceMonth}`),
-      );
-    expect(currentMonthCalls.length).toBeGreaterThan(0);
   });
 
   it("archive opens confirmation and cancels without calling API", async () => {
@@ -587,30 +587,62 @@ describe("BudgetsPage", () => {
         } as Response);
       }
 
-      if (url.includes("/api/budgets?") && (!init?.method || init.method === "GET")) {
+      if ((!init?.method || init.method === "GET") && url.includes("/api/budgets")) {
+        if (url.includes("category-breakdown")) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => [],
+            text: async () => "",
+          } as Response);
+        }
+
+        if (url.includes("/api/budgets?")) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              items: [{
+                id: "env-1",
+                name: "Household",
+                type: "GLOBAL",
+                ownerMemberId: null,
+                ownerMemberName: null,
+                monthlyLimit: 1200,
+                consumedAmount: 320,
+                remainingAmount: 880,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                active: true,
+                categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
+                transactions: [],
+              }],
+              page: 0,
+              size: 12,
+              totalItems: 1,
+              totalPages: 1,
+            }),
+            text: async () => "",
+          } as Response);
+        }
+
         return Promise.resolve({
           ok: true,
           status: 200,
           json: async () => ({
-            items: [{
-              id: "env-1",
-              name: "Household",
-              type: "GLOBAL",
-              ownerMemberId: null,
-              ownerMemberName: null,
-              monthlyLimit: 1200,
-              consumedAmount: 320,
-              remainingAmount: 880,
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              active: true,
-              categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
-              transactions: [],
-            }],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
+            id: "env-1",
+            name: "Household",
+            type: "GLOBAL",
+            ownerMemberId: null,
+            ownerMemberName: null,
+            monthlyLimit: 1200,
+            consumedAmount: 320,
+            remainingAmount: 880,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
+            transactions: [],
           }),
           text: async () => "",
         } as Response);
@@ -659,6 +691,164 @@ describe("BudgetsPage", () => {
 
     await waitFor(() => {
       expect(archiveCalled).toBe(true);
+    });
+  });
+
+  it("shows error feedback when archive fails", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+
+      if (url.includes("/api/budgets") && init?.method === "PATCH") {
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: "Server error" }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if ((!init?.method || init.method === "GET") && url.includes("/api/budgets")) {
+        if (url.includes("/api/budgets?")) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              items: [{
+                id: "env-1",
+                name: "Household",
+                type: "GLOBAL",
+                ownerMemberId: null,
+                ownerMemberName: null,
+                monthlyLimit: 1200,
+                consumedAmount: 320,
+                remainingAmount: 880,
+                createdInMonth: "2026-06-01",
+                archivedFromMonth: null,
+                active: true,
+                categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
+                transactions: [],
+              }],
+              page: 0,
+              size: 12,
+              totalItems: 1,
+              totalPages: 1,
+            }),
+            text: async () => "",
+          } as Response);
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            id: "env-1",
+            name: "Household",
+            type: "GLOBAL",
+            ownerMemberId: null,
+            ownerMemberName: null,
+            monthlyLimit: 1200,
+            consumedAmount: 320,
+            remainingAmount: 880,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
+            transactions: [],
+          }),
+          text: async () => "",
+        } as Response);
+      }
+
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => [{ id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" }],
+          text: async () => "",
+        } as Response);
+      }
+
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
+        text: async () => "",
+      } as Response);
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const householdButton = await screen.findByText("Household");
+    fireEvent.click(householdButton.closest("button")!);
+
+    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
+
+    const dialog = screen.getByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Arquivar" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Não foi possível arquivar o orçamento."),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("shows loading spinner while budgets are being fetched", async () => {
+    vi.mocked(fetch).mockReset();
+    let resolveFetch: (value: Response) => void;
+    const promise = new Promise<Response>((resolve) => {
+      resolveFetch = resolve;
+    });
+    vi.mocked(fetch).mockReturnValue(promise);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Carregando orçamentos")).toBeInTheDocument();
+
+    resolveFetch!({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        items: [],
+        page: 0,
+        size: 12,
+        totalItems: 0,
+        totalPages: 0,
+      }),
+      text: async () => "",
+    } as Response);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Carregando orçamentos")).not.toBeInTheDocument();
     });
   });
 });

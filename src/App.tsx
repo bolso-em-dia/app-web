@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "./app/auth/useAuth";
 import { useI18n } from "./app/i18n/I18nContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Spinner from "./components/feedback/Spinner";
 import AccountsPage from "./pages/accounts/AccountsPage";
 import CategoriesPage from "./pages/categories/CategoriesPage";
@@ -41,7 +42,9 @@ export default function App() {
         path="/change-password"
         element={
           <ProtectedRoute>
-            <ChangePasswordPage />
+            <ErrorBoundary>
+              <ChangePasswordPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />
@@ -50,7 +53,9 @@ export default function App() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <HomePage />
+            <ErrorBoundary>
+              <HomePage />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />
@@ -58,7 +63,9 @@ export default function App() {
         path="/family"
         element={
           <ProtectedRoute>
-            <FamilyPage />
+            <ErrorBoundary>
+              <FamilyPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />
@@ -66,7 +73,9 @@ export default function App() {
         path="/categories"
         element={
           <ProtectedRoute>
-            <CategoriesPage />
+            <ErrorBoundary>
+              <CategoriesPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />
@@ -74,7 +83,9 @@ export default function App() {
         path="/accounts"
         element={
           <ProtectedRoute>
-            <AccountsPage />
+            <ErrorBoundary>
+              <AccountsPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />
@@ -82,7 +93,9 @@ export default function App() {
         path="/budgets"
         element={
           <ProtectedRoute>
-            <BudgetsPage />
+            <ErrorBoundary>
+              <BudgetsPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />
@@ -90,7 +103,9 @@ export default function App() {
         path="/fixed-transactions"
         element={
           <ProtectedRoute>
-            <FixedExpensesPage />
+            <ErrorBoundary>
+              <FixedExpensesPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />
@@ -98,7 +113,9 @@ export default function App() {
         path="/transactions"
         element={
           <ProtectedRoute>
-            <TransactionsPage />
+            <ErrorBoundary>
+              <TransactionsPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />
@@ -106,7 +123,9 @@ export default function App() {
         path="/settings"
         element={
           <ProtectedRoute>
-            <UserSettingsPage />
+            <ErrorBoundary>
+              <UserSettingsPage />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       />

@@ -108,7 +108,7 @@ export default function HomePage() {
   );
 
   return (
-    <AppShell title={t("home.title")} subtitle={t("home.subtitle")}>
+    <AppShell title={t("home.title")}>
       <section className={styles.summaryHeader}>
         <Card className={styles.balanceModeCard}>
           <Switch
@@ -122,9 +122,6 @@ export default function HomePage() {
             {t("home.reservedBudgetAmount")}: {formatCurrency(dashboard?.summary.reservedBudgetAmount ?? 0)}
           </span>
         </Card>
-      </section>
-
-      <section className={styles.summaryGrid}>
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>
             {t("home.referenceMonth")}
@@ -135,6 +132,9 @@ export default function HomePage() {
             value={referenceMonth}
           />
         </Card>
+      </section>
+
+      <section className={styles.summaryGrid}>
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>{t("home.income")}</span>
           <strong className={styles.summaryValue}>
