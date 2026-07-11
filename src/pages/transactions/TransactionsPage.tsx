@@ -828,7 +828,12 @@ export default function TransactionsPage() {
                         </div>
                       </div>
                       <strong className={styles.transactionAmount}>
-                        <MoneyAmount amount={transaction.amount} type={transaction.type} />
+                        <MoneyAmount
+                          amount={transaction.amount}
+                          originalAmount={transaction.originalAmount}
+                          currency={transaction.currency as "BRL" | "USD" | null}
+                          type={transaction.type}
+                        />
                       </strong>
                     </div>
 

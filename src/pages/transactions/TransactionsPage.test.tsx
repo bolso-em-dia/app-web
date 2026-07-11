@@ -1649,4 +1649,47 @@ describe("TransactionsPage", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("shows USD secondary line for foreign currency transactions", async () => {
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      if (url.includes("/api/transactions?") && (!init?.method || init.method === "GET")) {
+        return Promise.resolve(jsonResponse({
+          items: [{
+            id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
+            description: "Amazon", amount: 510, originalAmount: 100, currency: "USD",
+            transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
+            accountId: "account-1", accountName: "US Account",
+            categoryId: "cat-1", categoryName: "Shopping", memberId: null, memberName: null,
+            installmentGroupId: null, installmentNumber: null, installmentTotal: null,
+            createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
+          }], page: 0, size: 12, totalItems: 1, totalPages: 1,
+        }));
+      }
+      if (url.includes("/api/accounts?")) {
+        return Promise.resolve(jsonResponse({ items: [{ id: "account-1", name: "US Account", type: "CHECKING", currency: "USD", brand: null, color: "#2254d1", closingDay: null, dueDay: null, createdInMonth: "2026-06-01", archivedFromMonth: null, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z" }], page: 0, size: 200, totalItems: 1, totalPages: 1 }));
+      }
+      if (url.includes("/api/categories/options")) {
+        return Promise.resolve(jsonResponse([{ id: "cat-1", name: "Shopping", icon: "shopping-cart", color: "#2254d1" }]));
+      }
+      if (url.includes("/api/members")) {
+        return Promise.resolve(jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+      }
+      if (url.includes("/api/transactions/descriptions")) {
+        return Promise.resolve(jsonResponse([]));
+      }
+      return Promise.resolve(jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+    });
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Amazon")).toBeInTheDocument();
+    expect(screen.getByText(/cot\. 5\.10/)).toBeInTheDocument();
+  });
 });
