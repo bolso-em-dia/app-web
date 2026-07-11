@@ -153,22 +153,25 @@
   font-size: var(--font-size-200);
 }
 
-@media (width <= 60rem) {
+@media (width <= 40rem) {
+  .footer {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .paginationControls {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
   .filterGroup {
     grid-template-columns: 1fr;
     width: 100%;
   }
 
-  .footer,
-  .paginationControls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-@media (width <= 40rem) {
-  .formActions,
-  .paginationButtons {
+  .formActions {
     flex-direction: column;
   }
 }

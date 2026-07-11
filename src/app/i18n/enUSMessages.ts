@@ -108,7 +108,6 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
 
   // Settings
   "settings.title": "Settings",
-  "settings.subtitle": "Manage your personal preferences for the application.",
   "settings.account.label": "Default account",
   "settings.account.description":
     "Initial account preselected in account-based forms.",
@@ -153,8 +152,6 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
 
   // Fixed Transactions
   "fixedTransactions.title": "Fixed transactions",
-  "fixedTransactions.subtitle":
-    "Manage recurring income and expense transactions.",
   "fixedTransactions.loading": "Loading fixed transactions",
   "fixedTransactions.error": "Unable to load fixed transactions.",
   "fixedTransactions.saveError":
@@ -183,8 +180,6 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "fixedTransactions.deleteAction": "Delete fixed transaction",
   // Transactions
   "transactions.title": "Transactions",
-  "transactions.subtitle":
-    "View, create and manage the monthly transactions.",
   "transactions.loading": "Loading transactions",
   "transactions.error": "Unable to load transactions.",
   "transactions.categoryRefreshError":
@@ -225,7 +220,6 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
 
   // Budgets
   "budgets.title": "Budgets",
-  "budgets.subtitle": "Manage global budgets and allowance budgets.",
   "budgets.loading": "Loading budgets",
   "budgets.error": "Unable to load budgets.",
   "budgets.detailsError": "Unable to load budget details.",
@@ -267,7 +261,6 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
 
   // Categories
   "categories.title": "Categories",
-  "categories.subtitle": "Manage categories for transactions and budgets.",
   "categories.loading": "Loading categories",
   "categories.error": "Unable to load categories.",
   "categories.saveError": "Unable to save the category.",
@@ -288,7 +281,6 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
 
   // Accounts
   "accounts.title": "Accounts",
-  "accounts.subtitle": "Manage bank, card, savings and investment accounts.",
   "accounts.loading": "Loading accounts",
   "accounts.error": "Unable to load accounts.",
   "accounts.saveError": "Unable to save the account.",
@@ -314,7 +306,6 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
 
   // Family
   "family.title": "Family",
-  "family.subtitle": "Manage members, permissions and allowance eligibility.",
   "family.loading": "Loading family members",
   "family.error": "Unable to load family members.",
   "family.saveError": "Unable to save the member.",

@@ -24,8 +24,9 @@ export type Transaction = {
   installmentTotal: number | null;
   fixedExpenseTemplateId?: string | null;
   projected?: boolean;
-  originalAmount?: number | null;
-  currency?: string | null;
+  convertedAmount: number;
+  exchangeRate?: number | null;
+  currency: string;
   createdAt: string | null;
   updatedAt: string | null;
 };

@@ -41,6 +41,8 @@ import Switch from "../../components/ui/Switch";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { getStoredIcon } from "../../lib/icons";
 import MoneyAmount from "../../components/ui/MoneyAmount";
+import PaginationBar from "../../components/ui/PaginationBar";
+import { formatCurrency } from "../../lib/formatters/currency";
 import {
   formatDay,
   formatReferenceMonth,
@@ -591,7 +593,6 @@ export default function TransactionsPage() {
   return (
     <AppShell
       title={t("transactions.title")}
-      subtitle={t("transactions.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
           {t("transactions.new")}
@@ -828,15 +829,22 @@ export default function TransactionsPage() {
                               {transaction.categoryName} ·{" "}
                               {transaction.accountName} ·{" "}
                               {formatDay(transaction.transactionDate)}
+                              {transaction.currency === "USD" &&
+                              transaction.exchangeRate != null
+                                ? ` · ${formatCurrency(
+                                    transaction.type === "EXPENSE"
+                                      ? -Math.abs(transaction.amount)
+                                      : Math.abs(transaction.amount),
+                                    "USD",
+                                  )} (cot. ${transaction.exchangeRate.toFixed(2)})`
+                                : null}
                             </span>
                           </div>
                         </div>
                       </div>
                       <strong className={styles.transactionAmount}>
                         <MoneyAmount
-                          amount={transaction.amount}
-                          originalAmount={transaction.originalAmount}
-                          currency={transaction.currency as "BRL" | "USD" | null}
+                          amount={transaction.convertedAmount}
                           type={transaction.type}
                         />
                       </strong>
@@ -917,53 +925,20 @@ export default function TransactionsPage() {
             )}
           </section>
 
-          <Card className={styles.footerPanel}>
-            <div className={styles.footer}>
-              <span className={styles.rangeLabel}>
-                {t("common.range", {
-                  start: rangeStart,
-                  end: rangeEnd,
-                  total: totalItems,
-                })}
-              </span>
-
-              <div className={styles.paginationControls}>
-                <label className={styles.rowsControl}>
-                  <span>{t("common.rows")}</span>
-                  <Select
-                    onChange={(event) => {
-                      setPageSize(Number(event.target.value));
-                      setPage(0);
-                    }}
-                    value={String(pageSize)}
-                  >
-                    <option value="12">12</option>
-                    <option value="24">24</option>
-                    <option value="48">48</option>
-                  </Select>
-                </label>
-
-                <div className={styles.paginationButtons}>
-                  <Button
-                    disabled={!hasPreviousPage}
-                    onClick={() => setPage((current) => current - 1)}
-                    type="button"
-                    variant="subtle"
-                  >
-                    {t("common.previous")}
-                  </Button>
-                  <Button
-                    disabled={!hasNextPage}
-                    onClick={() => setPage((current) => current + 1)}
-                    type="button"
-                    variant="subtle"
-                  >
-                    {t("common.next")}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <PaginationBar
+            start={rangeStart}
+            end={rangeEnd}
+            total={totalItems}
+            pageSize={pageSize}
+            hasPrevious={hasPreviousPage}
+            hasNext={hasNextPage}
+            onPrevious={() => setPage((p) => p - 1)}
+            onNext={() => setPage((p) => p + 1)}
+            onPageSizeChange={(s) => {
+              setPageSize(s);
+              setPage(0);
+            }}
+          />
 
           {isCreating || selectedTransaction ? (
             <Drawer
@@ -1101,29 +1076,31 @@ export default function TransactionsPage() {
                   </Field>
 
                   <div className={styles.switchGrid}>
-                    <Field
-                      htmlFor="transaction-ownership-switch"
-                      label={t("common.ownership")}
-                    >
-                      <Controller
-                        control={form.control}
-                        name="ownershipType"
-                        render={({ field }) => (
-                          <Switch
-                            checked={field.value === "INDIVIDUAL"}
-                            id="transaction-ownership-switch"
-                            label={t("ownershipTypes.INDIVIDUAL")}
-                            onBlur={field.onBlur}
-                            onChange={(event) =>
-                              field.onChange(
-                                event.target.checked ? "INDIVIDUAL" : "SHARED",
-                              )
-                            }
-                            ref={field.ref}
-                          />
-                        )}
-                      />
-                    </Field>
+                    {user?.allowanceEnabled ? (
+                      <Field
+                        htmlFor="transaction-ownership-switch"
+                        label={t("common.ownership")}
+                      >
+                        <Controller
+                          control={form.control}
+                          name="ownershipType"
+                          render={({ field }) => (
+                            <Switch
+                              checked={field.value === "INDIVIDUAL"}
+                              id="transaction-ownership-switch"
+                              label={t("ownershipTypes.INDIVIDUAL")}
+                              onBlur={field.onBlur}
+                              onChange={(event) =>
+                                field.onChange(
+                                  event.target.checked ? "INDIVIDUAL" : "SHARED",
+                                )
+                              }
+                              ref={field.ref}
+                            />
+                          )}
+                        />
+                      </Field>
+                    ) : null}
 
                     {isCreating && transactionType === "EXPENSE" ? (
                       <Field

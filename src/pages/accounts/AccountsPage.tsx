@@ -22,6 +22,7 @@ import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
 import FormError from "../../components/ui/FormError";
+import PaginationBar from "../../components/ui/PaginationBar";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { formatReferenceMonth } from "../../lib/formatters/date";
@@ -300,7 +301,6 @@ export default function AccountsPage() {
   return (
     <AppShell
       title={t("accounts.title")}
-      subtitle={t("accounts.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
           {t("accounts.new")}
@@ -451,53 +451,20 @@ export default function AccountsPage() {
             )}
           </section>
 
-          <Card className={styles.footerPanel}>
-            <div className={styles.footer}>
-              <span className={styles.rangeLabel}>
-                {t("common.range", {
-                  start: rangeStart,
-                  end: rangeEnd,
-                  total: totalItems,
-                })}
-              </span>
-
-              <div className={styles.paginationControls}>
-                <label className={styles.rowsControl}>
-                  <span>{t("common.rows")}</span>
-                  <Select
-                    onChange={(event) => {
-                      setPageSize(Number(event.target.value));
-                      setPage(0);
-                    }}
-                    value={String(pageSize)}
-                  >
-                    <option value="12">12</option>
-                    <option value="24">24</option>
-                    <option value="48">48</option>
-                  </Select>
-                </label>
-
-                <div className={styles.paginationButtons}>
-                  <Button
-                    disabled={!hasPreviousPage}
-                    onClick={() => setPage((current) => current - 1)}
-                    type="button"
-                    variant="subtle"
-                  >
-                    {t("common.previous")}
-                  </Button>
-                  <Button
-                    disabled={!hasNextPage}
-                    onClick={() => setPage((current) => current + 1)}
-                    type="button"
-                    variant="subtle"
-                  >
-                    {t("common.next")}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <PaginationBar
+            start={rangeStart}
+            end={rangeEnd}
+            total={totalItems}
+            pageSize={pageSize}
+            hasPrevious={hasPreviousPage}
+            hasNext={hasNextPage}
+            onPrevious={() => setPage((p) => p - 1)}
+            onNext={() => setPage((p) => p + 1)}
+            onPageSizeChange={(s) => {
+              setPageSize(s);
+              setPage(0);
+            }}
+          />
 
           {isCreating || selectedAccount ? (
             <>

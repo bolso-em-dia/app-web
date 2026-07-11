@@ -136,7 +136,7 @@ export default function UserSettingsPage() {
   }
 
   return (
-    <AppShell title={t("settings.title")} subtitle={t("settings.subtitle")}>
+    <AppShell title={t("settings.title")}>
       {isLoading ? (
         <Card className={styles.feedbackCard}>
           <Spinner label={t("settings.loading")} />

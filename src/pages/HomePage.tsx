@@ -285,12 +285,19 @@ export default function HomePage() {
                     <p className={styles.itemMeta}>
                       {transaction.categoryName} · {transaction.accountName} ·{" "}
                       {formatDay(transaction.transactionDate)}
+                      {transaction.currency === "USD" &&
+                      transaction.exchangeRate != null
+                        ? ` · ${formatCurrency(
+                            transaction.type === "EXPENSE"
+                              ? -Math.abs(transaction.amount)
+                              : Math.abs(transaction.amount),
+                            "USD",
+                          )} (cot. ${transaction.exchangeRate.toFixed(2)})`
+                        : null}
                     </p>
                   </div>
                   <MoneyAmount
-                    amount={transaction.amount}
-                    originalAmount={transaction.originalAmount}
-                    currency={transaction.currency as "BRL" | "USD" | null}
+                    amount={transaction.convertedAmount}
                     type={transaction.type as "INCOME" | "EXPENSE"}
                   />
                 </li>

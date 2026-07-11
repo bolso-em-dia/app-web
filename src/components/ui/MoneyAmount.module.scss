@@ -5,15 +5,3 @@
 .expense {
   color: var(--color-danger);
 }
-
-.foreignBlock {
-  display: grid;
-  justify-items: end;
-  gap: var(--space-1);
-}
-
-.foreignMeta {
-  font-size: var(--font-size-100);
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}

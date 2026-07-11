@@ -11,8 +11,10 @@
 }
 
 .refresh {
-  min-width: 2rem;
-  padding-inline: 0;
+  flex-shrink: 0;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
 }
 
 .spinning {
