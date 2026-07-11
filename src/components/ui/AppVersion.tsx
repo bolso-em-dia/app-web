@@ -7,6 +7,7 @@ export default function AppVersion() {
   const [apiVersion, setApiVersion] = useState<string | null>(null);
 
   useEffect(() => {
+    if (import.meta.env.MODE === "test") return;
     fetch("/api/version")
       .then(async (r) => {
         if (r.ok) setApiVersion(await r.text());
