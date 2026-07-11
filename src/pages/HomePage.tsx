@@ -289,6 +289,8 @@ export default function HomePage() {
                   </div>
                   <MoneyAmount
                     amount={transaction.amount}
+                    originalAmount={transaction.originalAmount}
+                    currency={transaction.currency as "BRL" | "USD" | null}
                     type={transaction.type as "INCOME" | "EXPENSE"}
                   />
                 </li>
