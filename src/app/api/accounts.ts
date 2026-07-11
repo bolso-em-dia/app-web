@@ -6,6 +6,7 @@ export type Account = {
   id: string;
   name: string;
   type: AccountType;
+  currency?: string;
   brand: string | null;
   color: string | null;
   closingDay: number | null;
@@ -19,6 +20,7 @@ export type Account = {
 export type AccountPayload = {
   name: string;
   type: AccountType;
+  currency?: string;
   brand?: string;
   color?: string;
   closingDay?: number;

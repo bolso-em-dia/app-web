@@ -24,6 +24,7 @@ export function createAccountSchema(t: Translate) {
       type: z.enum(ACCOUNT_TYPE_VALUES, {
         errorMap: () => ({ message: message("validation.requiredType") }),
       }),
+      currency: z.enum(["BRL", "USD"]).optional().default("BRL"),
       brand: z.string().trim().max(80, message("validation.brandMax80")),
       color: z.string().trim().max(20, message("validation.colorMax20")),
       closingDay: z.preprocess(
