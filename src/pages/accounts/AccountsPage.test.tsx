@@ -462,4 +462,52 @@ describe("AccountsPage", () => {
     });
   });
 
+  it("shows currency Select in create form", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
+    const drawer = screen.getByRole("dialog");
+
+    expect(within(drawer).getByLabelText("Moeda")).toBeInTheDocument();
+  });
+
+  it("currency select defaults to BRL", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
+    const drawer = screen.getByRole("dialog");
+
+    expect(within(drawer).getByDisplayValue("Real (BRL)")).toBeInTheDocument();
+  });
+
+  it("currency select can switch to USD", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText("Moeda"), { target: { value: "USD" } });
+    expect(within(drawer).getByDisplayValue("Dólar (USD)")).toBeInTheDocument();
+  });
 });

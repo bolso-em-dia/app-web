@@ -679,4 +679,39 @@ describe("HomePage", () => {
     expect(await screen.findByText("Despesas")).toBeInTheDocument();
     expect(screen.queryByText("Despesas + Orçamentos")).not.toBeInTheDocument();
   });
+
+  it("shows USD secondary line for foreign currency transactions in recent list", async () => {
+    vi.mocked(fetch).mockReset();
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        referenceMonth: "2026-06-01",
+        summary: { totalIncome: 5000, totalExpense: 510, balance: 4490, availableBalance: 4490, reservedBudgetAmount: 0 },
+        budgets: [],
+        recentTransactions: [{
+          id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
+          description: "Amazon purchase", amount: 510, originalAmount: 100, currency: "USD",
+          transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
+          accountId: "a-1", accountName: "US Account", categoryId: "c-1", categoryName: "Shopping",
+          memberId: null, memberName: null, installmentGroupId: null,
+          installmentNumber: null, installmentTotal: null,
+          projected: false, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
+        }],
+        categoryBreakdown: [],
+      }),
+      text: async () => "",
+    } as Response);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Amazon purchase")).toBeInTheDocument();
+    expect(screen.getByText(/cot\. 5\.10/)).toBeInTheDocument();
+  });
 });
