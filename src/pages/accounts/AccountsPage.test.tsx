@@ -465,7 +465,7 @@ describe("AccountsPage", () => {
   it("shows currency Select in create form", async () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false, preferences: { defaultAccountId: null, locale: "pt-BR", showBalanceWithBudgets: false, showForeignCurrency: true } }}>
           <AccountsPage />
         </TestAuthProvider>
       </MemoryRouter>,
@@ -481,7 +481,7 @@ describe("AccountsPage", () => {
   it("currency select defaults to BRL", async () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false, preferences: { defaultAccountId: null, locale: "pt-BR", showBalanceWithBudgets: false, showForeignCurrency: true } }}>
           <AccountsPage />
         </TestAuthProvider>
       </MemoryRouter>,
@@ -497,7 +497,7 @@ describe("AccountsPage", () => {
   it("currency select can switch to USD", async () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false, preferences: { defaultAccountId: null, locale: "pt-BR", showBalanceWithBudgets: false, showForeignCurrency: true } }}>
           <AccountsPage />
         </TestAuthProvider>
       </MemoryRouter>,

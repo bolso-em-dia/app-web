@@ -4,10 +4,16 @@ import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import ExchangeRateIndicator from "./ExchangeRateIndicator";
 
+const userWithForeignCurrency = {
+  id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN" as const,
+  allowanceEnabled: false,
+  preferences: { defaultAccountId: null, locale: "pt-BR" as const, showBalanceWithBudgets: false, showForeignCurrency: true },
+};
+
 function renderIndicator() {
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+      <TestAuthProvider user={userWithForeignCurrency}>
         <ExchangeRateIndicator />
       </TestAuthProvider>
     </MemoryRouter>,

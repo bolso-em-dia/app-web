@@ -138,6 +138,7 @@ describe("UserSettingsPage", () => {
       defaultAccountId: null,
       locale: "pt-BR",
       showBalanceWithBudgets: false,
+      showForeignCurrency: false,
     });
   });
 
@@ -243,6 +244,7 @@ describe("UserSettingsPage", () => {
       defaultAccountId: "acc-1",
       locale: "en-US",
       showBalanceWithBudgets: true,
+      showForeignCurrency: false,
     });
   });
 

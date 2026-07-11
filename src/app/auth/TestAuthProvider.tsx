@@ -12,6 +12,7 @@ const defaultPreferences: UserPreferences = {
   defaultAccountId: null,
   locale: "pt-BR",
   showBalanceWithBudgets: false,
+  showForeignCurrency: false,
 };
 
 export function TestAuthProvider({

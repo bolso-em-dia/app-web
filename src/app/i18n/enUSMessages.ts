@@ -123,6 +123,10 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
     "Defines whether the Home screen initially considers budgets in free balance.",
   "settings.balance.withBudgets": "Consider budgets",
   "settings.balance.withoutBudgets": "Ignore budgets",
+  "settings.foreignCurrency.label": "Foreign currencies",
+  "settings.foreignCurrency.description": "Enable US Dollar (USD) support with real-time exchange rates.",
+  "settings.foreignCurrency.enabled": "Enabled",
+  "settings.foreignCurrency.disabled": "Disabled",
   "settings.loading": "Loading settings",
   "settings.formTitle": "Personal preferences",
   "settings.formSubtitle":

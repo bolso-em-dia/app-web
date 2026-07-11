@@ -4,12 +4,14 @@ export type UserPreferences = {
   defaultAccountId: string | null;
   locale: "pt-BR" | "en-US";
   showBalanceWithBudgets: boolean;
+  showForeignCurrency: boolean;
 };
 
 export type UpdateUserPreferencesPayload = {
   defaultAccountId: string | null;
   locale: "pt-BR" | "en-US";
   showBalanceWithBudgets: boolean;
+  showForeignCurrency: boolean;
 };
 
 export function getCurrentUserPreferences(accessToken: string) {

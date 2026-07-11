@@ -9,7 +9,7 @@ import Tooltip from "./Tooltip";
 import styles from "./ExchangeRateIndicator.module.scss";
 
 export default function ExchangeRateIndicator() {
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const { t } = useI18n();
   const [rate, setRate] = useState<number | null>(null);
   const [stale, setStale] = useState(false);
@@ -48,7 +48,7 @@ export default function ExchangeRateIndicator() {
     }
   }
 
-  if (rate == null) return null;
+  if (!user?.preferences.showForeignCurrency || rate == null) return null;
 
   const tooltipContent = error
     ? t("exchangeRate.fetchError")
