@@ -1,0 +1,10 @@
+.root {
+  position: fixed;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  font-size: 0.625rem;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 100;
+}
