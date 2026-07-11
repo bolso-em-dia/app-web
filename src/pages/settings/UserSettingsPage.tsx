@@ -1,4 +1,4 @@
-import { Landmark, Languages, WalletCards } from "lucide-react";
+import { DollarSign, Landmark, Languages, WalletCards } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -27,6 +27,7 @@ type UserSettingsFormValues = {
   defaultAccountId: string;
   locale: UserPreferences["locale"];
   showBalanceWithBudgets: boolean;
+  showForeignCurrency: boolean;
 };
 
 function mapPreferencesToFormValues(
@@ -36,6 +37,7 @@ function mapPreferencesToFormValues(
     defaultAccountId: preferences?.defaultAccountId ?? "",
     locale: preferences?.locale ?? "pt-BR",
     showBalanceWithBudgets: preferences?.showBalanceWithBudgets ?? false,
+    showForeignCurrency: preferences?.showForeignCurrency ?? false,
   };
 }
 
@@ -120,6 +122,7 @@ export default function UserSettingsPage() {
           defaultAccountId: values.defaultAccountId || null,
           locale: values.locale,
           showBalanceWithBudgets: values.showBalanceWithBudgets,
+          showForeignCurrency: values.showForeignCurrency,
         },
         accessToken,
       );
@@ -202,6 +205,29 @@ export default function UserSettingsPage() {
                   onChange={(event) =>
                     form.setValue(
                       "showBalanceWithBudgets",
+                      event.currentTarget.checked,
+                    )
+                  }
+                />
+              </div>
+
+              <div className={styles.fieldGroup}>
+                <SettingFieldHeader
+                  icon={DollarSign}
+                  label={t("settings.foreignCurrency.label")}
+                  tooltip={t("settings.foreignCurrency.description")}
+                />
+                <Switch
+                  id="showForeignCurrency"
+                  checked={form.watch("showForeignCurrency")}
+                  label={
+                    form.watch("showForeignCurrency")
+                      ? t("settings.foreignCurrency.enabled")
+                      : t("settings.foreignCurrency.disabled")
+                  }
+                  onChange={(event) =>
+                    form.setValue(
+                      "showForeignCurrency",
                       event.currentTarget.checked,
                     )
                   }

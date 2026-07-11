@@ -56,7 +56,7 @@ function mapFormValuesToPayload(values: AccountFormValues): AccountPayload {
 }
 
 export default function AccountsPage() {
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const { t } = useI18n();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -556,12 +556,14 @@ export default function AccountsPage() {
                       </Select>
                     </Field>
 
-                    <Field htmlFor="account-currency" label="Moeda">
-                      <Select id="account-currency" {...form.register("currency")}>
-                        <option value="BRL">Real (BRL)</option>
-                        <option value="USD">Dólar (USD)</option>
-                      </Select>
-                    </Field>
+                    {user?.preferences.showForeignCurrency ? (
+                      <Field htmlFor="account-currency" label="Moeda">
+                        <Select id="account-currency" {...form.register("currency")}>
+                          <option value="BRL">Real (BRL)</option>
+                          <option value="USD">Dólar (USD)</option>
+                        </Select>
+                      </Field>
+                    ) : null}
 
                     <Field
                       error={form.formState.errors.color?.message}
