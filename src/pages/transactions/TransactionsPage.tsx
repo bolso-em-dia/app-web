@@ -185,6 +185,11 @@ export default function TransactionsPage() {
   const descriptionValue = form.watch("description");
   const transactionDate = form.watch("transactionDate");
   const isInstallment = form.watch("isInstallment");
+  const formAccountId = form.watch("accountId");
+  const selectedAccountCurrency = useMemo(
+    () => accounts.find((a) => a.id === formAccountId)?.currency as "BRL" | "USD" | undefined,
+    [accounts, formAccountId],
+  );
   const currentReferenceMonth = useMemo(
     () => referenceMonthFromDate(transactionDate || filters.referenceMonth),
     [filters.referenceMonth, transactionDate],
@@ -1022,6 +1027,7 @@ export default function TransactionsPage() {
                       name="amount"
                       render={({ field }) => (
                         <CurrencyInput
+                          currency={selectedAccountCurrency}
                           hasError={Boolean(form.formState.errors.amount)}
                           id="transaction-amount"
                           onBlur={field.onBlur}

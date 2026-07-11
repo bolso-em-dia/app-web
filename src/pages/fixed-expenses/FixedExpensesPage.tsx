@@ -109,6 +109,11 @@ export default function FixedExpensesPage() {
     defaultValues: createDefaultValues(user?.preferences.defaultAccountId ?? ""),
   });
   const selectedType = form.watch("type");
+  const formAccountId = form.watch("accountId");
+  const selectedAccountCurrency = useMemo(
+    () => accountOptions.find((a) => a.id === formAccountId)?.currency as "BRL" | "USD" | undefined,
+    [accountOptions, formAccountId],
+  );
 
   const loadTemplates = useCallback(
     async (params: FixedExpenseTemplateListParams) => {
@@ -591,6 +596,7 @@ export default function FixedExpensesPage() {
                       name="amount"
                       render={({ field }) => (
                         <CurrencyInput
+                          currency={selectedAccountCurrency}
                           hasError={Boolean(form.formState.errors.amount)}
                           id="fixed-expense-amount"
                           onBlur={field.onBlur}

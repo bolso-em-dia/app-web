@@ -78,6 +78,8 @@ export type AccountOption = {
   id: string;
   name: string;
   type: AccountType;
+  currency?: string;
+  color?: string;
 };
 
 export function listAccountOptions(

@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import type { InputHTMLAttributes } from "react";
+import type { Currency } from "../../lib/formatters/currency";
 import {
   formatCurrencyInput,
   parseCurrencyInput,
@@ -12,12 +13,13 @@ type CurrencyInputProps = Omit<
 > & {
   hasError?: boolean;
   value: number | null | undefined;
+  currency?: Currency;
   onValueChange: (value: number) => void;
 };
 
 const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
   function CurrencyInput(
-    { hasError = false, onValueChange, value, ...props },
+    { hasError = false, onValueChange, value, currency, ...props },
     ref,
   ) {
     return (
@@ -30,7 +32,7 @@ const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
           onValueChange(parseCurrencyInput(event.target.value));
         }}
         type="text"
-        value={formatCurrencyInput(value)}
+        value={formatCurrencyInput(value, currency)}
       />
     );
   },
