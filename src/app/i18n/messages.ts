@@ -142,7 +142,6 @@ export const ptBRMessages = {
   "home.reservedBudgetAmount": "Reservado em orçamentos",
   "home.considerBudgetsInBalance": "Considerar orçamentos no saldo",
   "settings.title": "Configurações",
-  "settings.subtitle": "Gerencie suas preferências pessoais do aplicativo.",
   "settings.account.label": "Conta padrão",
   "settings.account.description": "Conta inicial pré-selecionada em formulários com conta.",
   "settings.account.empty": "Nenhuma conta padrão",
@@ -184,8 +183,6 @@ export const ptBRMessages = {
   "home.linkedCategories": "{{count}} categorias vinculadas",
   "home.usedAmount": "{{amount}} consumido",
   "categories.title": "Categorias",
-  "categories.subtitle":
-    "Gerencie categorias de lançamentos e categorias substitutas para arquivamento.",
   "categories.loading": "Carregando categorias",
   "categories.error": "Não foi possível carregar as categorias.",
   "categories.saveError": "Não foi possível salvar a categoria.",
@@ -211,7 +208,6 @@ export const ptBRMessages = {
   "categories.replacementCategory": "Categoria substituta",
   "categories.selectReplacement": "Selecione uma substituta",
   "family.title": "Família",
-  "family.subtitle": "Gerencie membros, permissões e elegibilidade de mesada.",
   "family.loading": "Carregando membros da família",
   "family.error": "Não foi possível carregar os membros da família.",
   "family.saveError": "Não foi possível salvar o membro da família.",
@@ -234,8 +230,6 @@ export const ptBRMessages = {
   "family.archiveMember": "Arquivar membro",
   "family.restoreMember": "Reativar membro",
   "accounts.title": "Contas",
-  "accounts.subtitle":
-    "Gerencie contas bancárias, investimentos e cartões de crédito.",
   "accounts.loading": "Carregando contas",
   "accounts.error": "Não foi possível carregar as contas.",
   "accounts.saveError": "Não foi possível salvar a conta.",
@@ -259,7 +253,6 @@ export const ptBRMessages = {
   "accounts.archived": "Conta arquivada",
   "accounts.placeholder": "Conta principal",
   "fixedTransactions.title": "Transações fixas",
-  "fixedTransactions.subtitle": "Gerencie transações recorrentes de receita e despesa.",
   "fixedTransactions.loading": "Carregando transações fixas",
   "fixedTransactions.error": "Não foi possível carregar as transações fixas.",
   "fixedTransactions.saveError": "Não foi possível salvar a transação fixa.",
@@ -282,7 +275,6 @@ export const ptBRMessages = {
   "fixedTransactions.deleteAction": "Excluir transação fixa",
   "fixedTransactions.deleteError": "Não foi possível excluir a transação fixa.",
   "budgets.title": "Orçamentos",
-  "budgets.subtitle": "Gerencie orçamentos globais e orçamentos de mesada.",
   "budgets.loading": "Carregando orçamentos",
   "budgets.error": "Não foi possível carregar os orçamentos.",
   "budgets.detailsError": "Não foi possível carregar os detalhes do orçamento.",
@@ -330,8 +322,6 @@ export const ptBRMessages = {
   "budgets.archived": "Orçamento arquivado",
 
   "transactions.title": "Transações",
-  "transactions.subtitle":
-    "Revise, filtre, crie, edite e exclua transações mensais.",
   "transactions.searchPlaceholder": "Buscar por descrição",
   "transactions.loading": "Carregando transações",
   "transactions.error": "Não foi possível carregar as transações.",

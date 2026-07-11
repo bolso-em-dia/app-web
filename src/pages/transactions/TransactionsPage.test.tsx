@@ -135,7 +135,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -266,7 +266,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -392,7 +392,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -491,7 +491,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -570,7 +570,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -631,7 +631,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -702,7 +702,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -805,7 +805,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -923,7 +923,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -1065,7 +1065,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -1110,7 +1110,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -1165,7 +1165,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -1211,7 +1211,7 @@ describe("TransactionsPage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
+            allowanceEnabled: true,
           }}
         >
           <TransactionsPage />
@@ -1244,7 +1244,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions?", mockJsonResponse({
       items: [{
         id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
-        description: "Amazon", amount: 510, originalAmount: 100, currency: "USD",
+        description: "Amazon", amount: 100, convertedAmount: 510, exchangeRate: 5.10, currency: "USD",
         transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
         accountId: "account-1", accountName: "US Account",
         categoryId: "cat-1", categoryName: "Shopping", memberId: null, memberName: null,
@@ -1267,5 +1267,43 @@ describe("TransactionsPage", () => {
 
     expect(await screen.findByText("Amazon")).toBeInTheDocument();
     expect(screen.getByText(/cot\. 5\.10/)).toBeInTheDocument();
+  });
+
+  it("loads USD originalAmount when editing a foreign currency transaction", async () => {
+    resetFetchMocks();
+
+    const usdTransaction = {
+      id: "tx-usd", type: "EXPENSE" as const, ownershipType: "SHARED" as const, sourceType: "MANUAL" as const,
+      description: "Amazon", amount: 100, convertedAmount: 510, exchangeRate: 5.10, currency: "USD",
+      transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
+      accountId: "account-1", accountName: "US Account",
+      categoryId: "cat-1", categoryName: "Shopping", memberId: null, memberName: null,
+      installmentGroupId: null, installmentNumber: null, installmentTotal: null,
+      createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
+    };
+
+    mockFetchUrl("/api/transactions?", mockJsonResponse({
+      items: [usdTransaction], page: 0, size: 12, totalItems: 1, totalPages: 1,
+    }));
+    mockFetchUrl("/api/accounts?", mockJsonResponse({ items: [{ id: "account-1", name: "US Account", type: "CHECKING" as const, currency: "USD", brand: null, color: "#2254d1", closingDay: null, dueDay: null, createdInMonth: "2026-06-01", archivedFromMonth: null, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z" }], page: 0, size: 200, totalItems: 1, totalPages: 1 }));
+    mockFetchUrl("/api/categories/options", mockJsonResponse([{ id: "cat-1", name: "Shopping", icon: "shopping-cart", color: "#2254d1" }]));
+    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    // Open the edit drawer by clicking the transaction
+    const transactionButton = await screen.findByText("Amazon");
+    fireEvent.click(transactionButton.closest("button")!);
+
+    // The amount field should show the USD value (100), not the BRL value (510)
+    const amountInput = screen.getByLabelText("Valor");
+    expect(amountInput).toHaveValue("$100.00");
   });
 });

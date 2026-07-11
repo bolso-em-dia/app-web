@@ -30,6 +30,8 @@ import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import MoneyAmount from "../../components/ui/MoneyAmount";
+import PaginationBar from "../../components/ui/PaginationBar";
+import { formatCurrency } from "../../lib/formatters/currency";
 import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
@@ -311,7 +313,6 @@ export default function FixedExpensesPage() {
   return (
     <AppShell
       title={t("fixedTransactions.title")}
-      subtitle={t("fixedTransactions.subtitle")}
       actions={
         <Button onClick={handleStartCreate} type="button">
           {t("fixedTransactions.new")}
@@ -437,12 +438,21 @@ export default function FixedExpensesPage() {
                                 : t("fixedTransactions.dueOnDay", {
                                     day: String(template.dueDay).padStart(2, "0"),
                                   })}
+                              {template.currency === "USD" &&
+                              template.exchangeRate != null
+                                ? ` · ${formatCurrency(
+                                    template.type === "EXPENSE"
+                                      ? -Math.abs(template.amount)
+                                      : Math.abs(template.amount),
+                                    "USD",
+                                  )} (cot. ${template.exchangeRate.toFixed(2)})`
+                                : null}
                             </p>
                           </div>
                         </div>
                       </div>
                       <strong className={styles.templateAmount}>
-                        <MoneyAmount amount={template.amount} type={template.type} />
+                        <MoneyAmount amount={template.convertedAmount ?? template.amount} type={template.type} />
                       </strong>
                     </div>
 
@@ -476,68 +486,23 @@ export default function FixedExpensesPage() {
             })}
           </section>
 
-          <Card className={styles.footerPanel}>
-            <div className={styles.footerBar}>
-              <p className={styles.resultSummary}>
-                {totalItems === 0
-                  ? t("fixedTransactions.empty")
-                  : t("common.range", {
-                      start: rangeStart,
-                      end: rangeEnd,
-                      total: totalItems,
-                    })}
-              </p>
-
-              <div className={styles.paginationControls}>
-                <label
-                  className={styles.pageSizeControl}
-                  htmlFor="fixed-expense-page-size"
-                >
-                  <span className={styles.pageSizeLabel}>
-                    {t("common.rows")}
-                  </span>
-                  <Select
-                    className={styles.pageSizeSelect}
-                    id="fixed-expense-page-size"
-                    onChange={(event) => {
-                      setPageSize(Number(event.target.value));
-                      setPage(0);
-                    }}
-                    value={String(pageSize)}
-                  >
-                    <option value="12">12</option>
-                    <option value="24">24</option>
-                    <option value="48">48</option>
-                  </Select>
-                </label>
-
-                <div className={styles.pageButtons}>
-                  <Button
-                    disabled={!hasPreviousPage}
-                    onClick={() => setPage((current) => current - 1)}
-                    type="button"
-                    variant="subtle"
-                  >
-                    {t("common.previous")}
-                  </Button>
-                  <span className={styles.pageIndicator}>
-                    {t("common.pageOf", {
-                      page: totalPages === 0 ? 0 : page + 1,
-                      total: totalPages,
-                    })}
-                  </span>
-                  <Button
-                    disabled={!hasNextPage}
-                    onClick={() => setPage((current) => current + 1)}
-                    type="button"
-                    variant="subtle"
-                  >
-                    {t("common.next")}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <PaginationBar
+            start={rangeStart}
+            end={rangeEnd}
+            total={totalItems}
+            pageSize={pageSize}
+            hasPrevious={hasPreviousPage}
+            hasNext={hasNextPage}
+            onPrevious={() => setPage((p) => p - 1)}
+            onNext={() => setPage((p) => p + 1)}
+            onPageSizeChange={(s) => {
+              setPageSize(s);
+              setPage(0);
+            }}
+            showPageIndicator
+            page={totalPages === 0 ? 0 : page + 1}
+            totalPages={totalPages}
+          />
 
           {isCreating || selectedTemplate ? (
             <Drawer

@@ -5,6 +5,9 @@ export type FixedExpenseTemplate = {
   name: string;
   type: "INCOME" | "EXPENSE";
   amount: number;
+  convertedAmount?: number | null;
+  exchangeRate?: number | null;
+  currency?: string | null;
   categoryId: string;
   categoryName: string;
   accountId: string;

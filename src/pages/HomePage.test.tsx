@@ -663,7 +663,7 @@ describe("HomePage", () => {
       budgets: [],
       recentTransactions: [{
         id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
-        description: "Amazon purchase", amount: 510, originalAmount: 100, currency: "USD",
+        description: "Amazon purchase", amount: 100, convertedAmount: 510, exchangeRate: 5.10, currency: "USD",
         transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
         accountId: "a-1", accountName: "US Account", categoryId: "c-1", categoryName: "Shopping",
         memberId: null, memberName: null, installmentGroupId: null,

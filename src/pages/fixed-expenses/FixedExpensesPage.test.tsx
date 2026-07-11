@@ -18,6 +18,8 @@ const defaultTemplatesResponse = {
       name: "Rent",
       type: "EXPENSE",
       amount: 1800,
+      convertedAmount: 1800,
+      currency: "BRL",
       categoryId: "cat-1",
       categoryName: "Housing",
       accountId: "account-1",
@@ -216,7 +218,7 @@ describe("FixedExpensesPage", () => {
     );
 
     expect(
-      await screen.findByText("Nenhuma transação fixa encontrada para os filtros atuais."),
+      await screen.findByText("0-0 de 0"),
     ).toBeInTheDocument();
   });
 
@@ -347,5 +349,60 @@ describe("FixedExpensesPage", () => {
         screen.getByText("Não foi possível excluir a transação fixa."),
       ).toBeInTheDocument();
     });
+  });
+
+  it("loads USD originalAmount when editing a foreign currency fixed expense", async () => {
+    resetFetchMocks();
+
+    const usdTemplate = {
+      id: "template-usd",
+      name: "Netflix",
+      type: "EXPENSE" as const,
+      amount: 100,
+      convertedAmount: 510,
+      exchangeRate: 5.10,
+      currency: "USD",
+      categoryId: "cat-1",
+      categoryName: "Streaming",
+      accountId: "account-1",
+      accountName: "US Account",
+      dueDay: 15,
+      createdInMonth: "2026-06-01",
+      archivedFromMonth: null,
+      active: true,
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-06-01T10:00:00Z",
+    };
+
+    mockFetchUrl("/api/fixed-transactions?", mockJsonResponse({
+      items: [usdTemplate], page: 0, size: 12, totalItems: 1, totalPages: 1,
+    }));
+    mockFetchUrl("/api/categories/options", mockJsonResponse([
+      { id: "cat-1", name: "Streaming", icon: "tv", color: "#e91e63" },
+    ]));
+    mockFetchUrl("/api/accounts/options", mockJsonResponse([
+      { id: "account-1", name: "US Account", type: "CHECKING", currency: "USD" },
+    ]));
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1", name: "Admin", email: "admin@bolso-em-dia.local",
+            role: "ADMIN", allowanceEnabled: false,
+          }}
+        >
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    // Open the edit drawer by clicking the template
+    const templateButton = await screen.findByText("Netflix");
+    fireEvent.click(templateButton.closest("button")!);
+
+    // The amount field should show the USD value (100), not the BRL value (510)
+    const amountInput = screen.getByLabelText("Valor");
+    expect(amountInput).toHaveValue("$100.00");
   });
 });

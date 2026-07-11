@@ -176,41 +176,6 @@
   color: var(--color-text-muted);
 }
 
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
-
-.rangeLabel {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-100);
-}
-
-.paginationControls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.rowsControl {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-100);
-}
-
-.rowsControl select {
-  min-width: 4.5rem;
-}
-
-.paginationButtons {
-  display: flex;
-  gap: var(--space-2);
-}
-
 .drawerStack {
   display: grid;
   gap: var(--space-4);
@@ -302,14 +267,6 @@
   }
 }
 
-@media (width <= 60rem) {
-  .footer,
-  .paginationControls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
 @media (width <= 40rem) {
   .filtersGrid,
   .switchGrid,
@@ -318,8 +275,7 @@
   }
 
   .transactionTop,
-  .formActions,
-  .paginationButtons {
+  .formActions {
     flex-direction: column;
   }
 

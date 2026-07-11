@@ -151,6 +151,7 @@ export default function AppShell({
           </div>
 
           {renderNavigation()}
+          <ExchangeRateIndicator />
           {renderAccountSection()}
         </aside>
       ) : null}
@@ -175,7 +176,6 @@ export default function AppShell({
               {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
             </div>
           </div>
-          <ExchangeRateIndicator />
           {actions ? <div className={styles.actions}>{actions}</div> : null}
         </header>
         <main className={styles.content}>{children}</main>
@@ -185,6 +185,7 @@ export default function AppShell({
         <Drawer onClose={() => setIsNavigationOpen(false)} title={t("app.brand")}>
           <div className={styles.mobileNavContent}>
             {renderNavigation()}
+            <ExchangeRateIndicator />
             {renderAccountSection()}
           </div>
         </Drawer>

@@ -137,4 +137,26 @@ describe("ExchangeRateIndicator", () => {
       expect(screen.getByText(/US\$ 1 = R\$ 5,10/)).toBeInTheDocument();
     });
   });
+
+  it("button does not overlap the rate text visually", async () => {
+    mockFetchUrl("/api/exchange-rate", mockJsonResponse({
+      rate: 5.10,
+      fetchedAt: "2026-07-10T18:00:00Z",
+      stale: false,
+    }));
+
+    const { container } = renderIndicator();
+
+    await screen.findByText(/US\$ 1 = R\$ 5,10/);
+
+    const root = container.firstElementChild as HTMLElement;
+    const valueEl = root.querySelector('[class*="value"]') as HTMLElement;
+    const buttonEl = screen.getByRole("button", { name: "Atualizar cotação" });
+
+    const valueRect = valueEl.getBoundingClientRect();
+    const buttonRect = buttonEl.getBoundingClientRect();
+
+    // Button must be to the right of (or at most touching) the text
+    expect(buttonRect.left).toBeGreaterThanOrEqual(valueRect.right - 1);
+  });
 });
