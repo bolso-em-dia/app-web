@@ -48,6 +48,7 @@ function mapFormValuesToPayload(values: AccountFormValues): AccountPayload {
   return {
     name: values.name,
     type: values.type,
+    currency: values.currency,
     brand: values.brand || undefined,
     color: values.color || undefined,
     closingDay: values.type === "CREDIT_CARD" ? values.closingDay : undefined,
