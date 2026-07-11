@@ -11,6 +11,7 @@ import {
 import { getNavigationIcon } from "../../lib/icons";
 import Button from "../ui/Button";
 import Drawer from "../ui/Drawer";
+import AppVersion from "../ui/AppVersion";
 import ExchangeRateIndicator from "../ui/ExchangeRateIndicator";
 import styles from "./AppShell.module.scss";
 
@@ -188,6 +189,7 @@ export default function AppShell({
           </div>
         </Drawer>
       ) : null}
+      <AppVersion />
     </div>
   );
 }
