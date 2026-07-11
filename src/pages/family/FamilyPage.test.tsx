@@ -8,33 +8,35 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import FamilyPage from "./FamilyPage";
+
+const defaultMemberResponse = {
+  items: [
+    {
+      id: "member-1",
+      name: "Admin",
+      email: "admin@bolso-em-dia.local",
+      role: "ADMIN",
+      active: true,
+      allowanceEnabled: false,
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-06-01T10:00:00Z",
+    },
+  ],
+  page: 0,
+  size: 12,
+  totalItems: 1,
+  totalPages: 1,
+};
+
+function setupDefaultMocks() {
+  mockFetchUrl("/api/family-members?", mockJsonResponse(defaultMemberResponse));
+}
 
 describe("FamilyPage", () => {
   beforeEach(() => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        items: [
-          {
-            id: "member-1",
-            name: "Admin",
-            email: "admin@bolso-em-dia.local",
-            role: "ADMIN",
-            active: true,
-            allowanceEnabled: false,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
-        page: 0,
-        size: 12,
-        totalItems: 1,
-        totalPages: 1,
-      }),
-      text: async () => "",
-    } as Response);
+    resetFetchMocks();
   });
 
   afterEach(() => {
@@ -42,6 +44,8 @@ describe("FamilyPage", () => {
   });
 
   it('opens "Arquivar" confirmation for an active member', async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
@@ -77,6 +81,8 @@ describe("FamilyPage", () => {
   });
 
   it("cancels archive confirmation without calling the API", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
@@ -121,44 +127,26 @@ describe("FamilyPage", () => {
   });
 
   it('opens "Reativar membro" confirmation for an inactive member', async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      const method = init?.method ?? "GET";
+    resetFetchMocks();
 
-      if (method === "GET" && url.includes("/api/family-members?")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            items: [
-              {
-                id: "member-2",
-                name: "Jane",
-                email: "jane@bolso-em-dia.local",
-                role: "USER",
-                active: false,
-                allowanceEnabled: false,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-07-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({}),
-        text: async () => "",
-      } as Response);
-    });
+    mockFetchUrl("/api/family-members?", mockJsonResponse({
+      items: [
+        {
+          id: "member-2",
+          name: "Jane",
+          email: "jane@bolso-em-dia.local",
+          role: "USER",
+          active: false,
+          allowanceEnabled: false,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-07-01T10:00:00Z",
+        },
+      ],
+      page: 0,
+      size: 12,
+      totalItems: 1,
+      totalPages: 1,
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
@@ -195,44 +183,26 @@ describe("FamilyPage", () => {
   });
 
   it("cancels restore confirmation without calling the API", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      const method = init?.method ?? "GET";
+    resetFetchMocks();
 
-      if (method === "GET" && url.includes("/api/family-members?")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            items: [
-              {
-                id: "member-2",
-                name: "Jane",
-                email: "jane@bolso-em-dia.local",
-                role: "USER",
-                active: false,
-                allowanceEnabled: false,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-07-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({}),
-        text: async () => "",
-      } as Response);
-    });
+    mockFetchUrl("/api/family-members?", mockJsonResponse({
+      items: [
+        {
+          id: "member-2",
+          name: "Jane",
+          email: "jane@bolso-em-dia.local",
+          role: "USER",
+          active: false,
+          allowanceEnabled: false,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-07-01T10:00:00Z",
+        },
+      ],
+      page: 0,
+      size: 12,
+      totalItems: 1,
+      totalPages: 1,
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
@@ -278,41 +248,30 @@ describe("FamilyPage", () => {
   });
 
   it("confirms archive and calls PATCH /api/family-members/{id}/archive", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      const method = init?.method ?? "GET";
+    resetFetchMocks();
 
-      if (method === "GET" && url.includes("/api/family-members?")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            items: [
-              {
-                id: "member-3",
-                name: "Alice",
-                email: "alice@bolso-em-dia.local",
-                role: "USER",
-                active: true,
-                allowanceEnabled: false,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-          text: async () => "",
-        } as Response);
-      }
+    mockFetchUrl("/api/family-members?", mockJsonResponse({
+      items: [
+        {
+          id: "member-3",
+          name: "Alice",
+          email: "alice@bolso-em-dia.local",
+          role: "USER",
+          active: true,
+          allowanceEnabled: false,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-06-01T10:00:00Z",
+        },
+      ],
+      page: 0,
+      size: 12,
+      totalItems: 1,
+      totalPages: 1,
+    }));
 
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
+    mockFetchUrl("/api/family-members/member-3/archive", (input, init) => {
+      if (init?.method === "PATCH") {
+        return mockJsonResponse({
           id: "member-3",
           name: "Alice",
           email: "alice@bolso-em-dia.local",
@@ -321,9 +280,9 @@ describe("FamilyPage", () => {
           allowanceEnabled: false,
           createdAt: "2026-06-01T10:00:00Z",
           updatedAt: "2026-07-09T10:00:00Z",
-        }),
-        text: async () => "",
-      } as Response);
+        });
+      }
+      return mockErrorResponse(404);
     });
 
     render(
@@ -365,52 +324,32 @@ describe("FamilyPage", () => {
   });
 
   it("shows error feedback when archive fails", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      const method = init?.method ?? "GET";
+    resetFetchMocks();
 
-      if (method === "GET" && url.includes("/api/family-members?")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            items: [
-              {
-                id: "member-4",
-                name: "Bob",
-                email: "bob@bolso-em-dia.local",
-                role: "USER",
-                active: true,
-                allowanceEnabled: false,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-          text: async () => "",
-        } as Response);
+    mockFetchUrl("/api/family-members?", mockJsonResponse({
+      items: [
+        {
+          id: "member-4",
+          name: "Bob",
+          email: "bob@bolso-em-dia.local",
+          role: "USER",
+          active: true,
+          allowanceEnabled: false,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-06-01T10:00:00Z",
+        },
+      ],
+      page: 0,
+      size: 12,
+      totalItems: 1,
+      totalPages: 1,
+    }));
+
+    mockFetchUrl("/api/family-members/member-4/archive", (input, init) => {
+      if (init?.method === "PATCH") {
+        return mockErrorResponse(500, "Server error");
       }
-
-      if (method === "PATCH" && url.includes("/archive")) {
-        return Promise.resolve({
-          ok: false,
-          status: 500,
-          json: async () => ({}),
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({}),
-        text: async () => "",
-      } as Response);
+      return mockErrorResponse(404);
     });
 
     render(
@@ -451,6 +390,8 @@ describe("FamilyPage", () => {
   });
 
   it("loads members and validates the create form", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider

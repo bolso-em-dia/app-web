@@ -29,7 +29,6 @@ export default function ExchangeRateIndicator() {
   }, [accessToken]);
 
   useEffect(() => {
-    if (import.meta.env.MODE === "test") return;
     void fetchRate();
   }, [fetchRate]);
 

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import UserSettingsPage from "./UserSettingsPage";
 
 describe("UserSettingsPage", () => {
@@ -9,6 +10,7 @@ describe("UserSettingsPage", () => {
 
   beforeEach(() => {
     savedPayload = null;
+    resetFetchMocks();
     Object.defineProperty(window, "innerWidth", {
       configurable: true,
       value: 1280,
@@ -16,60 +18,53 @@ describe("UserSettingsPage", () => {
     });
     window.dispatchEvent(new Event("resize"));
 
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
+    // Configure GET mocks first
+    mockFetchUrl("/api/accounts/options", mockJsonResponse([
+      {
+        id: "acc-1",
+        name: "Main Checking",
+        type: "CHECKING",
+      },
+    ]));
 
-      if (url.includes("/api/accounts/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [
-            {
-              id: "acc-1",
-              name: "Main Checking",
-              type: "CHECKING",
-            },
-          ],
-          text: async () => "",
-        } as Response);
-      }
-
-      if (url.endsWith("/api/me/preferences") && init?.method === "PUT") {
+    // Configure GET for /api/me/preferences
+    mockFetchUrl("/api/me/preferences", (input, init) => {
+      if (init?.method === "PUT") {
         savedPayload = JSON.parse(String(init.body ?? "{}")) as Record<string, unknown>;
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
+        return mockJsonResponse({
+          defaultAccountId: "acc-1",
+          locale: "en-US",
+          showBalanceWithBudgets: true,
+          showForeignCurrency: false,
+        });
+      }
+      // Handle GET request for initial load
+      return mockJsonResponse({
+        defaultAccountId: null,
+        locale: "pt-BR",
+        showBalanceWithBudgets: false,
+        showForeignCurrency: false,
+      });
+    });
+
+    mockFetchUrl("/api/auth/change-password", (input, init) => {
+      if (init?.method === "POST") {
+        return mockJsonResponse({
+          id: "1",
+          name: "Admin",
+          email: "admin@bolso-em-dia.local",
+          role: "ADMIN",
+          allowanceEnabled: false,
+          mustChangePassword: false,
+          preferences: {
             defaultAccountId: "acc-1",
             locale: "en-US",
             showBalanceWithBudgets: true,
-          }),
-          text: async () => "",
-        } as Response);
+            showForeignCurrency: false,
+          },
+        });
       }
-
-      if (url.endsWith("/api/auth/change-password") && init?.method === "POST") {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            id: "1",
-            name: "Admin",
-            email: "admin@bolso-em-dia.local",
-            role: "ADMIN",
-            allowanceEnabled: false,
-            mustChangePassword: false,
-            preferences: {
-              defaultAccountId: "acc-1",
-              locale: "en-US",
-              showBalanceWithBudgets: true,
-            },
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
+      return mockErrorResponse(404);
     });
   });
 
@@ -78,35 +73,26 @@ describe("UserSettingsPage", () => {
   });
 
   it("saves null as the default account when no account is selected", async () => {
-    vi.mocked(fetch).mockReset();
+    resetFetchMocks();
     savedPayload = null;
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
 
-      if (url.includes("/api/accounts/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [],
-          text: async () => "",
-        } as Response);
-      }
+    mockFetchUrl("/api/accounts/options", mockJsonResponse([]));
 
-      if (url.endsWith("/api/me/preferences") && init?.method === "PUT") {
+    mockFetchUrl("/api/me/preferences", (input, init) => {
+      if (init?.method === "PUT") {
         savedPayload = JSON.parse(String(init.body ?? "{}")) as Record<string, unknown>;
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            defaultAccountId: null,
-            locale: "pt-BR",
-            showBalanceWithBudgets: false,
-          }),
-          text: async () => "",
-        } as Response);
+        return mockJsonResponse({
+          defaultAccountId: null,
+          locale: "pt-BR",
+          showBalanceWithBudgets: false,
+        });
       }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
+      // Handle GET request for initial load
+      return mockJsonResponse({
+        defaultAccountId: null,
+        locale: "pt-BR",
+        showBalanceWithBudgets: false,
+      });
     });
 
     render(
@@ -143,34 +129,34 @@ describe("UserSettingsPage", () => {
   });
 
   it("shows an error message when saving the preferences fails", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
+    resetFetchMocks();
 
-      if (url.includes("/api/accounts/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [
-            {
-              id: "acc-1",
-              name: "Main Checking",
-              type: "CHECKING",
-            },
-          ],
-          text: async () => "",
-        } as Response);
+    mockFetchUrl("/api/accounts/options", mockJsonResponse([
+      {
+        id: "acc-1",
+        name: "Main Checking",
+        type: "CHECKING",
+      },
+    ]));
+
+    mockFetchUrl("/api/me/preferences", (input, init) => {
+      if (init?.method === "PUT") {
+        // Return a function that rejects when called by resolveResponse
+        return () => Promise.reject(new Error("save failed"));
       }
+      // Handle GET request for initial load
+      return mockJsonResponse({
+        defaultAccountId: null,
+        locale: "pt-BR",
+        showBalanceWithBudgets: false,
+      });
+    });
 
-      if (url.endsWith("/api/me/preferences") && init?.method === "PUT") {
-        return Promise.reject(new Error("save failed"));
+    mockFetchUrl("/api/auth/change-password", (input, init) => {
+      if (init?.method === "POST") {
+        return () => Promise.reject(new Error("password failed"));
       }
-
-      if (url.endsWith("/api/auth/change-password") && init?.method === "POST") {
-        return Promise.reject(new Error("password failed"));
-      }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
+      return mockErrorResponse(404);
     });
 
     render(

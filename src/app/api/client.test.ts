@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { apiRequest, configureApiClientAuth } from "./client";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 
 describe("apiRequest", () => {
   beforeEach(() => {
+    resetFetchMocks();
     configureApiClientAuth({});
   });
 
@@ -24,18 +26,13 @@ describe("apiRequest", () => {
       onUnauthorized: vi.fn(),
     });
 
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        text: async () => "Forbidden",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ items: [] }),
-        text: async () => "",
-      } as Response);
+    let callCount = 0;
+    mockFetchUrl("/api/fixed-transactions", () => {
+      if (++callCount === 1) {
+        return mockErrorResponse(403, "Forbidden");
+      }
+      return mockJsonResponse({ items: [] });
+    });
 
     await expect(
       apiRequest<{ items: unknown[] }>("/api/fixed-transactions", {
@@ -65,12 +62,7 @@ describe("apiRequest", () => {
       getAccessToken: () => "fresh-token",
     });
 
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ ok: true }),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/fixed-transactions", mockJsonResponse({ ok: true }));
 
     await expect(
       apiRequest<{ ok: boolean }>("/api/fixed-transactions", {
@@ -99,29 +91,21 @@ describe("apiRequest", () => {
       onUnauthorized: vi.fn(),
     });
 
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        text: async () => "Forbidden",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        text: async () => "Forbidden",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ id: 1 }),
-        text: async () => "",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ id: 2 }),
-        text: async () => "",
-      } as Response);
+    let callCount = 0;
+    mockFetchUrl("/api/fixed-transactions", () => {
+      if (++callCount === 1) {
+        return mockErrorResponse(403, "Forbidden");
+      }
+      return mockJsonResponse({ id: 1 });
+    });
+
+    let accountCallCount = 0;
+    mockFetchUrl("/api/accounts", () => {
+      if (++accountCallCount === 1) {
+        return mockErrorResponse(403, "Forbidden");
+      }
+      return mockJsonResponse({ id: 2 });
+    });
 
     const [first, second] = await Promise.all([
       apiRequest<{ id: number }>("/api/fixed-transactions", {
@@ -149,11 +133,7 @@ describe("apiRequest", () => {
       onUnauthorized: vi.fn(),
     });
 
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 401,
-      text: async () => "Unauthorized",
-    } as Response);
+    mockFetchUrl("/api/auth/me", mockErrorResponse(401, "Unauthorized"));
 
     await expect(
       apiRequest("/api/auth/me", {
@@ -175,11 +155,7 @@ describe("apiRequest", () => {
       onUnauthorized,
     });
 
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 403,
-      text: async () => "Forbidden",
-    } as Response);
+    mockFetchUrl("/api/fixed-transactions", mockErrorResponse(403, "Forbidden"));
 
     await expect(
       apiRequest("/api/fixed-transactions", {
