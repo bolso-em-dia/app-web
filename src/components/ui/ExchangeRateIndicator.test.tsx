@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import ExchangeRateIndicator from "./ExchangeRateIndicator";
 
 const userWithForeignCurrency = {
@@ -22,21 +23,15 @@ function renderIndicator() {
 
 describe("ExchangeRateIndicator", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    vi.stubEnv("MODE", "production");
+    resetFetchMocks();
   });
 
   afterEach(() => {
-    vi.unstubAllEnvs();
+    vi.clearAllMocks();
   });
 
   it("shows nothing when rate fetch fails", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: async () => ({}),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/exchange-rate", mockErrorResponse(404));
 
     const { container } = renderIndicator();
 
@@ -46,12 +41,11 @@ describe("ExchangeRateIndicator", () => {
   });
 
   it("shows rate when API returns data", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ rate: 5.10, fetchedAt: "2026-07-10T18:00:00Z", stale: false }),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/exchange-rate", mockJsonResponse({
+      rate: 5.10,
+      fetchedAt: "2026-07-10T18:00:00Z",
+      stale: false,
+    }));
 
     renderIndicator();
 
@@ -59,12 +53,11 @@ describe("ExchangeRateIndicator", () => {
   });
 
   it("shows stale warning when isStale is true", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ rate: 5.10, fetchedAt: "2026-07-09T18:00:00Z", stale: true }),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/exchange-rate", mockJsonResponse({
+      rate: 5.10,
+      fetchedAt: "2026-07-09T18:00:00Z",
+      stale: true,
+    }));
 
     renderIndicator();
 
@@ -75,12 +68,11 @@ describe("ExchangeRateIndicator", () => {
   });
 
   it("formats rate with 4 decimal places", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ rate: 5.1064, fetchedAt: "2026-07-10T18:27:00Z", stale: false }),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/exchange-rate", mockJsonResponse({
+      rate: 5.1064,
+      fetchedAt: "2026-07-10T18:27:00Z",
+      stale: false,
+    }));
 
     renderIndicator();
 
@@ -88,12 +80,7 @@ describe("ExchangeRateIndicator", () => {
   });
 
   it("shows error tooltip on fetch failure", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: async () => ({}),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/exchange-rate", mockErrorResponse(500));
 
     const { container } = renderIndicator();
 
@@ -103,17 +90,21 @@ describe("ExchangeRateIndicator", () => {
   });
 
   it("refresh button triggers manual update", async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: true, status: 200,
-        json: async () => ({ rate: 5.10, fetchedAt: "2026-07-10T18:00:00Z", stale: false }),
-        text: async () => "",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true, status: 200,
-        json: async () => ({ rate: 5.20, fetchedAt: "2026-07-10T18:30:00Z", stale: false }),
-        text: async () => "",
-      } as Response);
+    let callCount = 0;
+    mockFetchUrl("/api/exchange-rate", () => {
+      if (++callCount === 1) {
+        return mockJsonResponse({
+          rate: 5.10,
+          fetchedAt: "2026-07-10T18:00:00Z",
+          stale: false,
+        });
+      }
+      return mockJsonResponse({
+        rate: 5.20,
+        fetchedAt: "2026-07-10T18:30:00Z",
+        stale: false,
+      });
+    });
 
     renderIndicator();
 
@@ -124,17 +115,17 @@ describe("ExchangeRateIndicator", () => {
   });
 
   it("refresh button shows error on failure", async () => {
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: true, status: 200,
-        json: async () => ({ rate: 5.10, fetchedAt: "2026-07-10T18:00:00Z", stale: false }),
-        text: async () => "",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: false, status: 500,
-        json: async () => ({}),
-        text: async () => "",
-      } as Response);
+    let callCount = 0;
+    mockFetchUrl("/api/exchange-rate", () => {
+      if (++callCount === 1) {
+        return mockJsonResponse({
+          rate: 5.10,
+          fetchedAt: "2026-07-10T18:00:00Z",
+          stale: false,
+        });
+      }
+      return mockErrorResponse(500);
+    });
 
     renderIndicator();
 

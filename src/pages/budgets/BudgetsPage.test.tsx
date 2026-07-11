@@ -9,88 +9,85 @@ import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import BudgetsPage from "./BudgetsPage";
+
+const defaultBudgetsResponse = {
+  items: [
+    {
+      id: "env-1",
+      name: "Household",
+      type: "GLOBAL",
+      ownerMemberId: null,
+      ownerMemberName: null,
+      monthlyLimit: 1200,
+      consumedAmount: 320,
+      remainingAmount: 880,
+      createdInMonth: "2026-06-01",
+      archivedFromMonth: null,
+      active: true,
+      categories: [
+        {
+          id: "cat-1",
+          name: "Groceries",
+          color: "#2254d1",
+        },
+      ],
+      transactions: [],
+    },
+  ],
+  page: 0,
+  size: 12,
+  totalItems: 1,
+  totalPages: 1,
+};
+
+const defaultCategoriesResponse = [
+  {
+    id: "cat-1",
+    name: "Groceries",
+    icon: "shopping-cart",
+    color: "#2254d1",
+  },
+  {
+    id: "cat-2",
+    name: "Transport",
+    icon: "car",
+    color: "#14a44d",
+  },
+];
+
+const defaultMembersResponse = {
+  items: [
+    {
+      id: "member-1",
+      name: "Taylor",
+      email: "taylor@bolso-em-dia.local",
+      role: "USER",
+      active: true,
+      allowanceEnabled: true,
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-06-01T10:00:00Z",
+    },
+  ],
+  page: 0,
+  size: 200,
+  totalItems: 1,
+  totalPages: 1,
+};
+
+function setupDefaultMocks() {
+  mockFetchUrl("/api/budgets?", mockJsonResponse(defaultBudgetsResponse));
+  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+  mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+  // Mock detail view calls
+  mockFetchUrl("/api/budgets/env-1?", mockJsonResponse(defaultBudgetsResponse.items[0]));
+}
 
 describe("BudgetsPage", () => {
   beforeEach(() => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "env-1",
-              name: "Household",
-              type: "GLOBAL",
-              ownerMemberId: null,
-              ownerMemberName: null,
-              monthlyLimit: 1200,
-              consumedAmount: 320,
-              remainingAmount: 880,
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              active: true,
-              categories: [
-                {
-                  id: "cat-1",
-                  name: "Groceries",
-                  color: "#2254d1",
-                },
-              ],
-              transactions: [],
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => [
-          {
-            id: "cat-1",
-            name: "Groceries",
-            icon: "shopping-cart",
-            color: "#2254d1",
-          },
-          {
-            id: "cat-2",
-            name: "Transport",
-            icon: "car",
-            color: "#14a44d",
-          },
-        ],
-        text: async () => "",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "member-1",
-              name: "Taylor",
-              email: "taylor@bolso-em-dia.local",
-              role: "USER",
-              active: true,
-              allowanceEnabled: true,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ],
-          page: 0,
-          size: 200,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response);
+    resetFetchMocks();
+    setupDefaultMocks();
   });
 
   afterEach(() => {
@@ -173,91 +170,36 @@ describe("BudgetsPage", () => {
   });
 
   it("sends only the compatible payload for an allowance budget", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input, init) => {
+    resetFetchMocks();
+
+    // Setup GET mocks
+    mockFetchUrl("/api/budgets?", mockJsonResponse({ items: [], page: 0, size: 12, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl("/api/categories/options", mockJsonResponse([
+      { id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" },
+    ]));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+
+    // Setup POST mock
+    mockFetchUrl("/api/budgets", (input, init) => {
       const url = String(input);
-
-      if (url.includes("/api/budgets?") && (!init?.method || init.method === "GET")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            items: [],
-            page: 0,
-            size: 12,
-            totalItems: 0,
-            totalPages: 0,
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-          ],
-          text: async () => "",
-        } as Response);
-      }
-
-      if (url.includes("/api/family-members")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            items: [
-              {
-                id: "member-1",
-                name: "Taylor",
-                email: "taylor@bolso-em-dia.local",
-                role: "USER",
-                active: true,
-                allowanceEnabled: true,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 200,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
       if (url.endsWith("/api/budgets") && init?.method === "POST") {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            id: "budget-1",
-            name: "Allowance budget",
-            type: "ALLOWANCE",
-            ownerMemberId: "member-1",
-            ownerMemberName: "Taylor",
-            monthlyLimit: 4.5,
-            consumedAmount: 0,
-            remainingAmount: 450,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            active: true,
-            categories: [],
-            transactions: [],
-          }),
-          text: async () => "",
-        } as Response);
+        return mockJsonResponse({
+          id: "budget-1",
+          name: "Allowance budget",
+          type: "ALLOWANCE",
+          ownerMemberId: "member-1",
+          ownerMemberName: "Taylor",
+          monthlyLimit: 4.5,
+          consumedAmount: 0,
+          remainingAmount: 450,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: null,
+          active: true,
+          categories: [],
+          transactions: [],
+        });
       }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
+      return mockErrorResponse(404);
     });
 
     render(
@@ -323,45 +265,11 @@ describe("BudgetsPage", () => {
   });
 
   it("builds the budget list request with combined search, status and type filters", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input) => {
-      const url = String(input);
+    resetFetchMocks();
 
-      if (url.includes("/api/budgets?")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            items: [],
-            page: 0,
-            size: 12,
-            totalItems: 0,
-            totalPages: 0,
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [],
-          text: async () => "",
-        } as Response);
-      }
-
-      if (url.includes("/api/family-members")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
-    });
+    mockFetchUrl("/api/budgets?", mockJsonResponse({ items: [], page: 0, size: 12, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl("/api/categories/options", mockJsonResponse([]));
+    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
@@ -429,26 +337,16 @@ describe("BudgetsPage", () => {
 
     expect(await screen.findByText("Household")).toBeInTheDocument();
 
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [],
-          page: 0,
-          size: 12,
-          totalItems: 0,
-          totalPages: 0,
-        }),
-        text: async () => "",
-      } as Response)
-      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => [], text: async () => "" } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
-        text: async () => "",
-      } as Response);
+    // Setup mocks for previous month
+    mockFetchUrl("/api/budgets?", (input) => {
+      const url = String(input);
+      if (url.includes(`referenceMonth=${previousReferenceMonth}`)) {
+        return mockJsonResponse({ items: [], page: 0, size: 12, totalItems: 0, totalPages: 0 });
+      }
+      return mockJsonResponse(defaultBudgetsResponse);
+    });
+    mockFetchUrl("/api/categories/options", mockJsonResponse([]));
+    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
 
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
@@ -462,60 +360,18 @@ describe("BudgetsPage", () => {
       ).toBe(true);
     });
 
-    vi.mocked(fetch)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "env-1",
-              name: "Household",
-              type: "GLOBAL",
-              ownerMemberId: null,
-              ownerMemberName: null,
-              monthlyLimit: 1200,
-              consumedAmount: 320,
-              remainingAmount: 880,
-              createdInMonth: currentReferenceMonth,
-              archivedFromMonth: null,
-              active: true,
-              categories: [
-                {
-                  id: "cat-1",
-                  name: "Groceries",
-                  color: "#2254d1",
-                },
-              ],
-              transactions: [],
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => [
-          {
-            id: "cat-1",
-            name: "Groceries",
-            icon: "shopping-cart",
-            color: "#2254d1",
-          },
-        ],
-        text: async () => "",
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
-        text: async () => "",
-      } as Response);
+    // Setup mocks for next month (back to current)
+    mockFetchUrl("/api/budgets?", (input) => {
+      const url = String(input);
+      if (url.includes(`referenceMonth=${currentReferenceMonth}`)) {
+        return mockJsonResponse(defaultBudgetsResponse);
+      }
+      return mockJsonResponse({ items: [], page: 0, size: 12, totalItems: 0, totalPages: 0 });
+    });
+    mockFetchUrl("/api/categories/options", mockJsonResponse([
+      { id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" },
+    ]));
+    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
 
     fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
 
@@ -560,109 +416,58 @@ describe("BudgetsPage", () => {
   });
 
   it("archive confirms and calls API then reloads list", async () => {
-    vi.mocked(fetch).mockReset();
+    resetFetchMocks();
+
     let archiveCalled = false;
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
+    // Configure GET mocks first (more specific URLs)
+    mockFetchUrl("/api/budgets?", mockJsonResponse({
+      items: [{
+        id: "env-1",
+        name: "Household",
+        type: "GLOBAL",
+        ownerMemberId: null,
+        ownerMemberName: null,
+        monthlyLimit: 1200,
+        consumedAmount: 320,
+        remainingAmount: 880,
+        createdInMonth: "2026-06-01",
+        archivedFromMonth: null,
+        active: true,
+        categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
+        transactions: [],
+      }],
+      page: 0,
+      size: 12,
+      totalItems: 1,
+      totalPages: 1,
+    }));
 
-      if (url.includes("/api/budgets") && init?.method === "PATCH") {
+    mockFetchUrl("/api/categories/options", mockJsonResponse([
+      { id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" },
+    ]));
+
+    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+
+    // Configure PATCH mock after GET mocks (more specific URL)
+    mockFetchUrl("/api/budgets/env-1/archive", (input, init) => {
+      if (init?.method === "PATCH") {
         archiveCalled = true;
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            id: "env-1",
-            name: "Household",
-            type: "GLOBAL",
-            monthlyLimit: 1200,
-            consumedAmount: 320,
-            remainingAmount: 880,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: "2026-07-01",
-            active: false,
-            categories: [],
-            transactions: [],
-          }),
-          text: async () => "",
-        } as Response);
+        return mockJsonResponse({
+          id: "env-1",
+          name: "Household",
+          type: "GLOBAL",
+          monthlyLimit: 1200,
+          consumedAmount: 320,
+          remainingAmount: 880,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: "2026-07-01",
+          active: false,
+          categories: [],
+          transactions: [],
+        });
       }
 
-      if ((!init?.method || init.method === "GET") && url.includes("/api/budgets")) {
-        if (url.includes("category-breakdown")) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: async () => [],
-            text: async () => "",
-          } as Response);
-        }
-
-        if (url.includes("/api/budgets?")) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: async () => ({
-              items: [{
-                id: "env-1",
-                name: "Household",
-                type: "GLOBAL",
-                ownerMemberId: null,
-                ownerMemberName: null,
-                monthlyLimit: 1200,
-                consumedAmount: 320,
-                remainingAmount: 880,
-                createdInMonth: "2026-06-01",
-                archivedFromMonth: null,
-                active: true,
-                categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
-                transactions: [],
-              }],
-              page: 0,
-              size: 12,
-              totalItems: 1,
-              totalPages: 1,
-            }),
-            text: async () => "",
-          } as Response);
-        }
-
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            id: "env-1",
-            name: "Household",
-            type: "GLOBAL",
-            ownerMemberId: null,
-            ownerMemberName: null,
-            monthlyLimit: 1200,
-            consumedAmount: 320,
-            remainingAmount: 880,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            active: true,
-            categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
-            transactions: [],
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [{ id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" }],
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
-        text: async () => "",
-      } as Response);
+      return mockErrorResponse(404);
     });
 
     render(
@@ -695,86 +500,43 @@ describe("BudgetsPage", () => {
   });
 
   it("shows error feedback when archive fails", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
+    resetFetchMocks();
 
-      if (url.includes("/api/budgets") && init?.method === "PATCH") {
-        return Promise.resolve({
-          ok: false,
-          status: 500,
-          json: async () => ({ message: "Server error" }),
-          text: async () => "",
-        } as Response);
+    // Configure GET mocks first (more specific URLs)
+    mockFetchUrl("/api/budgets?", mockJsonResponse({
+      items: [{
+        id: "env-1",
+        name: "Household",
+        type: "GLOBAL",
+        ownerMemberId: null,
+        ownerMemberName: null,
+        monthlyLimit: 1200,
+        consumedAmount: 320,
+        remainingAmount: 880,
+        createdInMonth: "2026-06-01",
+        archivedFromMonth: null,
+        active: true,
+        categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
+        transactions: [],
+      }],
+      page: 0,
+      size: 12,
+      totalItems: 1,
+      totalPages: 1,
+    }));
+
+    mockFetchUrl("/api/categories/options", mockJsonResponse([
+      { id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" },
+    ]));
+
+    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+
+    // Configure PATCH mock after GET mocks
+    mockFetchUrl("/api/budgets/env-1/archive", (input, init) => {
+      if (init?.method === "PATCH") {
+        return mockErrorResponse(500, "Server error");
       }
-
-      if ((!init?.method || init.method === "GET") && url.includes("/api/budgets")) {
-        if (url.includes("/api/budgets?")) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: async () => ({
-              items: [{
-                id: "env-1",
-                name: "Household",
-                type: "GLOBAL",
-                ownerMemberId: null,
-                ownerMemberName: null,
-                monthlyLimit: 1200,
-                consumedAmount: 320,
-                remainingAmount: 880,
-                createdInMonth: "2026-06-01",
-                archivedFromMonth: null,
-                active: true,
-                categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
-                transactions: [],
-              }],
-              page: 0,
-              size: 12,
-              totalItems: 1,
-              totalPages: 1,
-            }),
-            text: async () => "",
-          } as Response);
-        }
-
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            id: "env-1",
-            name: "Household",
-            type: "GLOBAL",
-            ownerMemberId: null,
-            ownerMemberName: null,
-            monthlyLimit: 1200,
-            consumedAmount: 320,
-            remainingAmount: 880,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            active: true,
-            categories: [{ id: "cat-1", name: "Groceries", color: "#2254d1" }],
-            transactions: [],
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [{ id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" }],
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
-        text: async () => "",
-      } as Response);
+      return mockErrorResponse(404);
     });
 
     render(
@@ -809,12 +571,14 @@ describe("BudgetsPage", () => {
   });
 
   it("shows loading spinner while budgets are being fetched", async () => {
-    vi.mocked(fetch).mockReset();
+    resetFetchMocks();
+
     let resolveFetch: (value: Response) => void;
     const promise = new Promise<Response>((resolve) => {
       resolveFetch = resolve;
     });
-    vi.mocked(fetch).mockReturnValue(promise);
+
+    mockFetchUrl("/api/budgets?", () => promise);
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>

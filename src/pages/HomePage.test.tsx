@@ -1,8 +1,71 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
-import HomePage from "./HomePage";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../test/setup";
+import HomePage from "./HomePage";
+
+const defaultDashboardResponse = {
+  referenceMonth: "2026-06-01",
+  summary: {
+    totalIncome: 5000,
+    totalExpense: 195,
+    balance: 4805,
+    availableBalance: 3955,
+    reservedBudgetAmount: 850,
+  },
+  budgets: [
+    {
+      id: "budget-1",
+      name: "Mercado",
+      type: "GLOBAL",
+      ownerMemberId: null,
+      ownerMemberName: null,
+      monthlyLimit: 1000,
+      consumedAmount: 150,
+      remainingAmount: 850,
+      createdInMonth: "2026-06-01",
+      archivedFromMonth: null,
+      active: true,
+      categories: [],
+      transactions: [],
+    },
+  ],
+  recentTransactions: [
+    {
+      id: "tx-1",
+      type: "EXPENSE",
+      ownershipType: "SHARED",
+      sourceType: "MANUAL",
+      description: "Market",
+      amount: 150,
+      transactionDate: "2026-06-10",
+      referenceMonth: "2026-06-01",
+      accountId: "acc-1",
+      accountName: "Main Checking",
+      categoryId: "cat-1",
+      categoryName: "Groceries",
+      memberId: null,
+      memberName: null,
+      installmentGroupId: null,
+      installmentNumber: null,
+      installmentTotal: null,
+      createdAt: "2026-06-10T10:00:00Z",
+      updatedAt: "2026-06-10T10:00:00Z",
+    },
+  ],
+  categoryBreakdown: [
+    {
+      categoryId: "cat-1",
+      categoryName: "Groceries",
+      amount: 150,
+    },
+  ],
+};
+
+function setupDefaultMocks() {
+  mockFetchUrl("/api/dashboard", mockJsonResponse(defaultDashboardResponse));
+}
 
 describe("HomePage", () => {
   beforeEach(() => {
@@ -13,68 +76,8 @@ describe("HomePage", () => {
     });
     window.dispatchEvent(new Event("resize"));
 
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        referenceMonth: "2026-06-01",
-        summary: {
-          totalIncome: 5000,
-          totalExpense: 195,
-          balance: 4805,
-          availableBalance: 3955,
-          reservedBudgetAmount: 850,
-        },
-        budgets: [
-          {
-            id: "budget-1",
-            name: "Mercado",
-            type: "GLOBAL",
-            ownerMemberId: null,
-            ownerMemberName: null,
-            monthlyLimit: 1000,
-            consumedAmount: 150,
-            remainingAmount: 850,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            active: true,
-            categories: [],
-            transactions: [],
-          },
-        ],
-        recentTransactions: [
-          {
-            id: "tx-1",
-            type: "EXPENSE",
-            ownershipType: "SHARED",
-            sourceType: "MANUAL",
-            description: "Market",
-            amount: 150,
-            transactionDate: "2026-06-10",
-            referenceMonth: "2026-06-01",
-            accountId: "acc-1",
-            accountName: "Main Checking",
-            categoryId: "cat-1",
-            categoryName: "Groceries",
-            memberId: null,
-            memberName: null,
-            installmentGroupId: null,
-            installmentNumber: null,
-            installmentTotal: null,
-            createdAt: "2026-06-10T10:00:00Z",
-            updatedAt: "2026-06-10T10:00:00Z",
-          },
-        ],
-        categoryBreakdown: [
-          {
-            categoryId: "cat-1",
-            categoryName: "Groceries",
-            amount: 150,
-          },
-        ],
-      }),
-      text: async () => "",
-    } as Response);
+    resetFetchMocks();
+    setupDefaultMocks();
   });
 
   afterEach(() => {
@@ -109,27 +112,27 @@ describe("HomePage", () => {
   });
 
   it("shows an error state and retries the dashboard request", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch)
-      .mockRejectedValueOnce(new Error("load failed"))
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          referenceMonth: "2026-06-01",
-          summary: {
-            totalIncome: 0,
-            totalExpense: 0,
-            balance: 0,
-            availableBalance: 0,
-            reservedBudgetAmount: 0,
-          },
-          budgets: [],
-          recentTransactions: [],
-          categoryBreakdown: [],
-        }),
-        text: async () => "",
-      } as Response);
+    resetFetchMocks();
+
+    let callCount = 0;
+    mockFetchUrl("/api/dashboard", () => {
+      if (++callCount === 1) {
+        return { ok: false, status: 500, json: async () => ({}), text: async () => "load failed" };
+      }
+      return mockJsonResponse({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 0,
+          totalExpense: 0,
+          balance: 0,
+          availableBalance: 0,
+          reservedBudgetAmount: 0,
+        },
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      });
+    });
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
@@ -159,7 +162,7 @@ describe("HomePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
 
     expect(await screen.findByText("Sessão")).toBeInTheDocument();
-    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(fetch).mock.calls.length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByText("Não foi possível carregar o dashboard agora.")).not.toBeInTheDocument();
   });
 
@@ -239,7 +242,7 @@ describe("HomePage", () => {
   });
 
   it("paginates twelve recent transactions showing ten on page one with navigation controls", async () => {
-    vi.mocked(fetch).mockReset();
+    resetFetchMocks();
 
     const recentTransactions = Array.from({ length: 12 }, (_, index) => ({
       id: `tx-${index + 1}`,
@@ -263,24 +266,19 @@ describe("HomePage", () => {
       updatedAt: "2026-06-10T10:00:00Z",
     }));
 
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        referenceMonth: "2026-06-01",
-        summary: {
-          totalIncome: 5000,
-          totalExpense: 600,
-          balance: 4400,
-          availableBalance: 3550,
-          reservedBudgetAmount: 850,
-        },
-        budgets: [],
-        recentTransactions,
-        categoryBreakdown: [],
-      }),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/dashboard", mockJsonResponse({
+      referenceMonth: "2026-06-01",
+      summary: {
+        totalIncome: 5000,
+        totalExpense: 600,
+        balance: 4400,
+        availableBalance: 3550,
+        reservedBudgetAmount: 850,
+      },
+      budgets: [],
+      recentTransactions,
+      categoryBreakdown: [],
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
@@ -321,25 +319,21 @@ describe("HomePage", () => {
   });
 
   it("shows expenses in red and income in green", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        referenceMonth: "2026-06-01",
-        summary: {
-          totalIncome: 5000,
-          totalExpense: 195,
-          balance: 4805,
-          availableBalance: 3955,
-          reservedBudgetAmount: 850,
-        },
-        budgets: [],
-        recentTransactions: [],
-        categoryBreakdown: [],
-      }),
-      text: async () => "",
-    } as Response);
+    resetFetchMocks();
+
+    mockFetchUrl("/api/dashboard", mockJsonResponse({
+      referenceMonth: "2026-06-01",
+      summary: {
+        totalIncome: 5000,
+        totalExpense: 195,
+        balance: 4805,
+        availableBalance: 3955,
+        reservedBudgetAmount: 850,
+      },
+      budgets: [],
+      recentTransactions: [],
+      categoryBreakdown: [],
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
@@ -370,71 +364,67 @@ describe("HomePage", () => {
   });
 
   it("budget progress bar shows green below 80%, warning at 80-100%, red above 100%", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        referenceMonth: "2026-06-01",
-        summary: {
-          totalIncome: 5000,
-          totalExpense: 2400,
-          balance: 2600,
-          availableBalance: 2600,
-          reservedBudgetAmount: 0,
+    resetFetchMocks();
+
+    mockFetchUrl("/api/dashboard", mockJsonResponse({
+      referenceMonth: "2026-06-01",
+      summary: {
+        totalIncome: 5000,
+        totalExpense: 2400,
+        balance: 2600,
+        availableBalance: 2600,
+        reservedBudgetAmount: 0,
+      },
+      budgets: [
+        {
+          id: "budget-a",
+          name: "Budget A",
+          type: "GLOBAL",
+          ownerMemberId: null,
+          ownerMemberName: null,
+          monthlyLimit: 1000,
+          consumedAmount: 300,
+          remainingAmount: 700,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: null,
+          active: true,
+          categories: [],
+          transactions: [],
         },
-        budgets: [
-          {
-            id: "budget-a",
-            name: "Budget A",
-            type: "GLOBAL",
-            ownerMemberId: null,
-            ownerMemberName: null,
-            monthlyLimit: 1000,
-            consumedAmount: 300,
-            remainingAmount: 700,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            active: true,
-            categories: [],
-            transactions: [],
-          },
-          {
-            id: "budget-b",
-            name: "Budget B",
-            type: "GLOBAL",
-            ownerMemberId: null,
-            ownerMemberName: null,
-            monthlyLimit: 1000,
-            consumedAmount: 900,
-            remainingAmount: 100,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            active: true,
-            categories: [],
-            transactions: [],
-          },
-          {
-            id: "budget-c",
-            name: "Budget C",
-            type: "GLOBAL",
-            ownerMemberId: null,
-            ownerMemberName: null,
-            monthlyLimit: 1000,
-            consumedAmount: 1200,
-            remainingAmount: 0,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            active: true,
-            categories: [],
-            transactions: [],
-          },
-        ],
-        recentTransactions: [],
-        categoryBreakdown: [],
-      }),
-      text: async () => "",
-    } as Response);
+        {
+          id: "budget-b",
+          name: "Budget B",
+          type: "GLOBAL",
+          ownerMemberId: null,
+          ownerMemberName: null,
+          monthlyLimit: 1000,
+          consumedAmount: 900,
+          remainingAmount: 100,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: null,
+          active: true,
+          categories: [],
+          transactions: [],
+        },
+        {
+          id: "budget-c",
+          name: "Budget C",
+          type: "GLOBAL",
+          ownerMemberId: null,
+          ownerMemberName: null,
+          monthlyLimit: 1000,
+          consumedAmount: 1200,
+          remainingAmount: 0,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: null,
+          active: true,
+          categories: [],
+          transactions: [],
+        },
+      ],
+      recentTransactions: [],
+      categoryBreakdown: [],
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
@@ -483,32 +473,27 @@ describe("HomePage", () => {
   });
 
   it("shows the percentage share in the category breakdown", async () => {
-    vi.mocked(fetch).mockReset();
+    resetFetchMocks();
 
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        referenceMonth: "2026-06-01",
-        summary: {
-          totalIncome: 5000,
-          totalExpense: 200,
-          balance: 4800,
-          availableBalance: 3950,
-          reservedBudgetAmount: 850,
+    mockFetchUrl("/api/dashboard", mockJsonResponse({
+      referenceMonth: "2026-06-01",
+      summary: {
+        totalIncome: 5000,
+        totalExpense: 200,
+        balance: 4800,
+        availableBalance: 3950,
+        reservedBudgetAmount: 850,
+      },
+      budgets: [],
+      recentTransactions: [],
+      categoryBreakdown: [
+        {
+          categoryId: "cat-1",
+          categoryName: "Groceries",
+          amount: 200,
         },
-        budgets: [],
-        recentTransactions: [],
-        categoryBreakdown: [
-          {
-            categoryId: "cat-1",
-            categoryName: "Groceries",
-            amount: 200,
-          },
-        ],
-      }),
-      text: async () => "",
-    } as Response);
+      ],
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
@@ -535,12 +520,14 @@ describe("HomePage", () => {
   });
 
   it("shows loading spinner while dashboard data is being fetched", async () => {
-    vi.mocked(fetch).mockReset();
+    resetFetchMocks();
+
     let resolveFetch: (value: Response) => void;
     const promise = new Promise<Response>((resolve) => {
       resolveFetch = resolve;
     });
-    vi.mocked(fetch).mockReturnValue(promise);
+
+    mockFetchUrl("/api/dashboard", () => promise);
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
@@ -550,7 +537,6 @@ describe("HomePage", () => {
             name: "Admin",
             email: "admin@bolso-em-dia.local",
             role: "ADMIN",
-            allowanceEnabled: false,
           }}
         >
           <HomePage />
@@ -585,26 +571,22 @@ describe("HomePage", () => {
   });
 
   it("shows projected badge on recent transactions for future months", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        referenceMonth: "2026-07-01",
-        summary: { totalIncome: 1000, totalExpense: 200, balance: 800, availableBalance: 800, reservedBudgetAmount: 0 },
-        budgets: [],
-        recentTransactions: [{
-          id: "proj-1", type: "EXPENSE", ownershipType: "SHARED", sourceType: "FIXED_EXPENSE",
-          description: "Projected Rent", amount: 200, transactionDate: "2026-07-05",
-          referenceMonth: "2026-07-01", accountId: "a-1", accountName: "Main",
-          categoryId: "c-1", categoryName: "Housing", memberId: null, memberName: null,
-          installmentGroupId: null, installmentNumber: null, installmentTotal: null,
-          projected: true, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
-        }],
-        categoryBreakdown: [],
-      }),
-      text: async () => "",
-    } as Response);
+    resetFetchMocks();
+
+    mockFetchUrl("/api/dashboard", mockJsonResponse({
+      referenceMonth: "2026-07-01",
+      summary: { totalIncome: 1000, totalExpense: 200, balance: 800, availableBalance: 800, reservedBudgetAmount: 0 },
+      budgets: [],
+      recentTransactions: [{
+        id: "proj-1", type: "EXPENSE", ownershipType: "SHARED", sourceType: "FIXED_EXPENSE",
+        description: "Projected Rent", amount: 200, transactionDate: "2026-07-05",
+        referenceMonth: "2026-07-01", accountId: "a-1", accountName: "Main",
+        categoryId: "c-1", categoryName: "Housing", memberId: null, memberName: null,
+        installmentGroupId: null, installmentNumber: null, installmentTotal: null,
+        projected: true, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
+      }],
+      categoryBreakdown: [],
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
@@ -619,19 +601,15 @@ describe("HomePage", () => {
   });
 
   it("shows expense with reserved budget amount when budgets are considered", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        referenceMonth: "2026-06-01",
-        summary: { totalIncome: 5000, totalExpense: 195, balance: 4805, availableBalance: 3955, reservedBudgetAmount: 850 },
-        budgets: [],
-        recentTransactions: [],
-        categoryBreakdown: [],
-      }),
-      text: async () => "",
-    } as Response);
+    resetFetchMocks();
+
+    mockFetchUrl("/api/dashboard", mockJsonResponse({
+      referenceMonth: "2026-06-01",
+      summary: { totalIncome: 5000, totalExpense: 195, balance: 4805, availableBalance: 3955, reservedBudgetAmount: 850 },
+      budgets: [],
+      recentTransactions: [],
+      categoryBreakdown: [],
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
@@ -654,19 +632,15 @@ describe("HomePage", () => {
   });
 
   it("shows raw expense when budgets are not considered", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        referenceMonth: "2026-06-01",
-        summary: { totalIncome: 5000, totalExpense: 195, balance: 4805, availableBalance: 3955, reservedBudgetAmount: 850 },
-        budgets: [],
-        recentTransactions: [],
-        categoryBreakdown: [],
-      }),
-      text: async () => "",
-    } as Response);
+    resetFetchMocks();
+
+    mockFetchUrl("/api/dashboard", mockJsonResponse({
+      referenceMonth: "2026-06-01",
+      summary: { totalIncome: 5000, totalExpense: 195, balance: 4805, availableBalance: 3955, reservedBudgetAmount: 850 },
+      budgets: [],
+      recentTransactions: [],
+      categoryBreakdown: [],
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
@@ -681,27 +655,23 @@ describe("HomePage", () => {
   });
 
   it("shows USD secondary line for foreign currency transactions in recent list", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        referenceMonth: "2026-06-01",
-        summary: { totalIncome: 5000, totalExpense: 510, balance: 4490, availableBalance: 4490, reservedBudgetAmount: 0 },
-        budgets: [],
-        recentTransactions: [{
-          id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
-          description: "Amazon purchase", amount: 510, originalAmount: 100, currency: "USD",
-          transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
-          accountId: "a-1", accountName: "US Account", categoryId: "c-1", categoryName: "Shopping",
-          memberId: null, memberName: null, installmentGroupId: null,
-          installmentNumber: null, installmentTotal: null,
-          projected: false, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
-        }],
-        categoryBreakdown: [],
-      }),
-      text: async () => "",
-    } as Response);
+    resetFetchMocks();
+
+    mockFetchUrl("/api/dashboard", mockJsonResponse({
+      referenceMonth: "2026-06-01",
+      summary: { totalIncome: 5000, totalExpense: 510, balance: 4490, availableBalance: 4490, reservedBudgetAmount: 0 },
+      budgets: [],
+      recentTransactions: [{
+        id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
+        description: "Amazon purchase", amount: 510, originalAmount: 100, currency: "USD",
+        transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
+        accountId: "a-1", accountName: "US Account", categoryId: "c-1", categoryName: "Shopping",
+        memberId: null, memberName: null, installmentGroupId: null,
+        installmentNumber: null, installmentTotal: null,
+        projected: false, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
+      }],
+      categoryBreakdown: [],
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>

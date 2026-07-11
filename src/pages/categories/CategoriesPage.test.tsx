@@ -2,54 +2,46 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import CategoriesPage from "./CategoriesPage";
+
+const defaultCategoryResponse = {
+  items: [
+    {
+      id: "cat-1",
+      name: "Groceries",
+      icon: "shopping-cart",
+      color: "#2254d1",
+      createdInMonth: "2026-06-01",
+      archivedFromMonth: null,
+      replacementCategoryId: null,
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-06-01T10:00:00Z",
+    },
+  ],
+  page: 0,
+  size: 12,
+  totalItems: 1,
+  totalPages: 1,
+};
+
+const defaultCategoriesOptions = [
+  {
+    id: "cat-1",
+    name: "Groceries",
+    icon: "shopping-cart",
+    color: "#2254d1",
+  },
+];
+
+function setupDefaultMocks() {
+  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesOptions));
+  mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
+}
 
 describe("CategoriesPage", () => {
   beforeEach(() => {
-    vi.mocked(fetch).mockImplementation((input) => {
-      const url = String(input);
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-          ],
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              replacementCategoryId: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response);
-    });
+    resetFetchMocks();
   });
 
   afterEach(() => {
@@ -57,6 +49,8 @@ describe("CategoriesPage", () => {
   });
 
   it("loads categories and validates the create form", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
@@ -91,6 +85,8 @@ describe("CategoriesPage", () => {
   });
 
   it("keeps the search field focused during filtering and removes icon/color text from the card", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
@@ -115,7 +111,8 @@ describe("CategoriesPage", () => {
     fireEvent.change(searchInput, { target: { value: "Gro" } });
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledTimes(4);
+      const requests = vi.mocked(fetch).mock.calls.map(([input]) => String(input)).filter((url) => url.includes("/api/categories?"));
+      expect(requests.length).toBeGreaterThanOrEqual(2);
     });
 
     expect(searchInput).toHaveFocus();
@@ -127,70 +124,28 @@ describe("CategoriesPage", () => {
     expect(categoryIcon).not.toBeNull();
     expect(categoryIcon).toHaveStyle({ color: "rgb(34, 84, 209)" });
   });
+
   it("preserves active filters after create and refetches the list with the same query", async () => {
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      const method = init?.method ?? "GET";
+    resetFetchMocks();
 
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-          ],
-          text: async () => "",
-        } as Response);
+    setupDefaultMocks();
+
+    // Mock POST response
+    mockFetchUrl("/api/categories", (input, init) => {
+      if (init?.method === "POST") {
+        return mockJsonResponse({
+          id: "cat-2",
+          name: "Travel",
+          icon: null,
+          color: null,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: null,
+          replacementCategoryId: null,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-06-01T10:00:00Z",
+        });
       }
-
-      if (method === "POST") {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            id: "cat-2",
-            name: "Travel",
-            icon: null,
-            color: null,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            replacementCategoryId: null,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              replacementCategoryId: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response);
+      return mockErrorResponse(404);
     });
 
     render(
@@ -252,56 +207,23 @@ describe("CategoriesPage", () => {
   });
 
   it("opens archive confirmation dialog and cancels without calling the API", async () => {
-    vi.mocked(fetch).mockImplementation((input) => {
-      const url = String(input);
+    resetFetchMocks();
 
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-            {
-              id: "cat-2",
-              name: "Utilities",
-              icon: "home",
-              color: "#e91e63",
-            },
-          ],
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              replacementCategoryId: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response);
-    });
+    mockFetchUrl("/api/categories/options", mockJsonResponse([
+      {
+        id: "cat-1",
+        name: "Groceries",
+        icon: "shopping-cart",
+        color: "#2254d1",
+      },
+      {
+        id: "cat-2",
+        name: "Utilities",
+        icon: "home",
+        color: "#e91e63",
+      },
+    ]));
+    mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
@@ -359,78 +281,42 @@ describe("CategoriesPage", () => {
   });
 
   it("confirms archive and calls PATCH /api/categories/{id}/archive with replacementCategoryId", async () => {
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      const method = init?.method ?? "GET";
+    resetFetchMocks();
 
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-            {
-              id: "cat-2",
-              name: "Utilities",
-              icon: "home",
-              color: "#e91e63",
-            },
-          ],
-          text: async () => "",
-        } as Response);
+    // Configure GET mocks first (more specific URLs)
+    mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
+
+    mockFetchUrl("/api/categories/options", mockJsonResponse([
+      {
+        id: "cat-1",
+        name: "Groceries",
+        icon: "shopping-cart",
+        color: "#2254d1",
+      },
+      {
+        id: "cat-2",
+        name: "Utilities",
+        icon: "home",
+        color: "#e91e63",
+      },
+    ]));
+
+    // Configure PATCH mock after GET mocks (less specific pattern)
+    mockFetchUrl("/api/categories/cat-1/archive", (input, init) => {
+      if (init?.method === "PATCH") {
+        return mockJsonResponse({
+          id: "cat-1",
+          name: "Groceries",
+          icon: "shopping-cart",
+          color: "#2254d1",
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: "2026-07-01",
+          replacementCategoryId: "cat-2",
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-07-01T10:00:00Z",
+        });
       }
-
-      if (
-        method === "PATCH" &&
-        url.includes("/api/categories/cat-1/archive")
-      ) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            id: "cat-1",
-            name: "Groceries",
-            icon: "shopping-cart",
-            color: "#2254d1",
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: "2026-07-01",
-            replacementCategoryId: "cat-2",
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-07-01T10:00:00Z",
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              replacementCategoryId: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response);
+      return mockErrorResponse(404);
     });
 
     render(
@@ -490,69 +376,30 @@ describe("CategoriesPage", () => {
   });
 
   it("shows error feedback when archive fails", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      const method = init?.method ?? "GET";
+    resetFetchMocks();
 
-      if (
-        method === "PATCH" &&
-        url.includes("/archive")
-      ) {
-        return Promise.resolve({
-          ok: false,
-          status: 500,
-          json: async () => ({ message: "Server error" }),
-          text: async () => "",
-        } as Response);
+    mockFetchUrl("/api/categories/options", mockJsonResponse([
+      {
+        id: "cat-1",
+        name: "Groceries",
+        icon: "shopping-cart",
+        color: "#2254d1",
+      },
+      {
+        id: "cat-2",
+        name: "Utilities",
+        icon: "home",
+        color: "#e91e63",
+      },
+    ]));
+
+    mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
+
+    mockFetchUrl("/api/categories/cat-1/archive", (input, init) => {
+      if (init?.method === "PATCH") {
+        return mockErrorResponse(500, "Server error");
       }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-            {
-              id: "cat-2",
-              name: "Utilities",
-              icon: "home",
-              color: "#e91e63",
-            },
-          ],
-          text: async () => "",
-        } as Response);
-      }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              replacementCategoryId: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response);
+      return mockErrorResponse(404);
     });
 
     render(

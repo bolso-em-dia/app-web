@@ -1,14 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 import { getLatestExchangeRate, refreshExchangeRate } from "./exchangeRate";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 
 describe("exchangeRate API", () => {
+  beforeEach(() => {
+    resetFetchMocks();
+  });
+
   it("getLatestExchangeRate calls correct endpoint", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ rate: 5.1064, fetchedAt: "2026-07-10T18:27:00Z", stale: false }),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/exchange-rate/latest", mockJsonResponse({
+      rate: 5.1064,
+      fetchedAt: "2026-07-10T18:27:00Z",
+      stale: false,
+    }));
 
     const result = await getLatestExchangeRate("test-token");
 
@@ -17,12 +21,11 @@ describe("exchangeRate API", () => {
   });
 
   it("getLatestExchangeRate detects stale rate", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ rate: 5.00, fetchedAt: "2026-07-09T18:00:00Z", stale: true }),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/exchange-rate/latest", mockJsonResponse({
+      rate: 5.00,
+      fetchedAt: "2026-07-09T18:00:00Z",
+      stale: true,
+    }));
 
     const result = await getLatestExchangeRate("test-token");
 
@@ -30,12 +33,11 @@ describe("exchangeRate API", () => {
   });
 
   it("refreshExchangeRate calls POST endpoint", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ rate: 5.15, fetchedAt: "2026-07-10T18:30:00Z", stale: false }),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/exchange-rate/refresh", mockJsonResponse({
+      rate: 5.15,
+      fetchedAt: "2026-07-10T18:30:00Z",
+      stale: false,
+    }));
 
     const result = await refreshExchangeRate("test-token");
 
@@ -44,12 +46,7 @@ describe("exchangeRate API", () => {
   });
 
   it("getLatestExchangeRate handles 404 gracefully", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      status: 404,
-      json: async () => ({}),
-      text: async () => "",
-    } as Response);
+    mockFetchUrl("/api/exchange-rate/latest", mockErrorResponse(404));
 
     await expect(getLatestExchangeRate("test-token")).rejects.toThrow();
   });

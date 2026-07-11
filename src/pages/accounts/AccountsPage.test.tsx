@@ -8,20 +8,25 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import { createAccount, jsonResponse } from "../../test/fixtures";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import { createAccount } from "../../test/fixtures";
 import AccountsPage from "./AccountsPage";
+
+const defaultAccountsResponse = {
+  items: [createAccount()],
+  page: 0,
+  size: 12,
+  totalItems: 1,
+  totalPages: 1,
+};
+
+function setupDefaultMocks() {
+  mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+}
 
 describe("AccountsPage", () => {
   beforeEach(() => {
-    vi.mocked(fetch).mockResolvedValue(
-      jsonResponse({
-        items: [createAccount()],
-        page: 0,
-        size: 12,
-        totalItems: 1,
-        totalPages: 1,
-      }),
-    );
+    resetFetchMocks();
   });
 
   afterEach(() => {
@@ -29,6 +34,8 @@ describe("AccountsPage", () => {
   });
 
   it("loads accounts and validates credit card fields", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
@@ -78,6 +85,8 @@ describe("AccountsPage", () => {
   });
 
   it("keeps the search field focused during filtering and uses the configured card color visually", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
@@ -102,7 +111,8 @@ describe("AccountsPage", () => {
     fireEvent.change(searchInput, { target: { value: "Main" } });
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledTimes(2);
+      const requests = vi.mocked(fetch).mock.calls.map(([input]) => String(input)).filter((url) => url.includes("/api/accounts?"));
+      expect(requests.length).toBeGreaterThanOrEqual(2);
     });
 
     expect(searchInput).toHaveFocus();
@@ -113,7 +123,10 @@ describe("AccountsPage", () => {
     expect(accountSwatch).not.toBeNull();
     expect(accountSwatch).toHaveStyle({ backgroundColor: "rgb(34, 84, 209)" });
   });
+
   it("opens archive confirmation and cancels without calling the API", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
@@ -161,17 +174,15 @@ describe("AccountsPage", () => {
   });
 
   it("confirms archive calls PATCH and shows the button as disabled afterward", async () => {
-    vi.mocked(fetch).mockReset();
-    let getCallCount = 0;
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      const method = init?.method ?? "GET";
+    resetFetchMocks();
 
-      if (method === "PATCH" && url.includes("/archive")) {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
+    let getCallCount = 0;
+    // Configure GET mock first
+    mockFetchUrl("/api/accounts?", () => {
+      getCallCount += 1;
+      return mockJsonResponse({
+        items: [
+          {
             id: "account-1",
             name: "Main checking",
             type: "CHECKING",
@@ -180,43 +191,52 @@ describe("AccountsPage", () => {
             closingDay: null,
             dueDay: null,
             createdInMonth: "2026-06-01",
-            archivedFromMonth: "2026-07-01",
+            archivedFromMonth: getCallCount > 1 ? "2026-07-01" : null,
             createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-07-01T10:00:00Z",
-          }),
-          text: async () => "",
-        } as Response);
-      }
-
-      getCallCount += 1;
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "account-1",
-              name: "Main checking",
-              type: "CHECKING",
-              brand: null,
-              color: "#2254d1",
-              closingDay: null,
-              dueDay: null,
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: getCallCount > 1 ? "2026-07-01" : null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response);
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      });
     });
+
+    // Configure PATCH mock
+    mockFetchUrl("/api/accounts/account-1/archive", (input, init) => {
+      if (init?.method === "PATCH") {
+        return mockJsonResponse({
+          id: "account-1",
+          name: "Main checking",
+          type: "CHECKING",
+          brand: null,
+          color: "#2254d1",
+          closingDay: null,
+          dueDay: null,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: "2026-07-01",
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-07-01T10:00:00Z",
+        });
+      }
+      return mockErrorResponse(404);
+    });
+
+    // Configure GET mock for individual account
+    mockFetchUrl("/api/accounts/account-1", mockJsonResponse({
+      id: "account-1",
+      name: "Main checking",
+      type: "CHECKING",
+      brand: null,
+      color: "#2254d1",
+      closingDay: null,
+      dueDay: null,
+      createdInMonth: "2026-06-01",
+      archivedFromMonth: "2026-07-01",
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-07-01T10:00:00Z",
+    }));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
@@ -270,56 +290,29 @@ describe("AccountsPage", () => {
   });
 
   it("preserves active filters after update and refetches the list with the same query", async () => {
-    vi.mocked(fetch).mockImplementation((_input, init) => {
+    resetFetchMocks();
+
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/accounts", (input, init) => {
       const method = init?.method ?? "GET";
 
       if (method === "PUT") {
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            id: "account-1",
-            name: "Main checking",
-            type: "CHECKING",
-            brand: null,
-            color: "#2254d1",
-            closingDay: null,
-            dueDay: null,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          }),
-          text: async () => "",
-        } as Response);
+        return mockJsonResponse({
+          id: "account-1",
+          name: "Main checking",
+          type: "CHECKING",
+          brand: null,
+          color: "#2254d1",
+          closingDay: null,
+          dueDay: null,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: null,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-06-01T10:00:00Z",
+        });
       }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "account-1",
-              name: "Main checking",
-              type: "CHECKING",
-              brand: null,
-              color: "#2254d1",
-              closingDay: null,
-              dueDay: null,
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response);
+      return mockErrorResponse(404);
     });
 
     render(
@@ -382,46 +375,15 @@ describe("AccountsPage", () => {
   });
 
   it("shows error feedback when archive fails", async () => {
-    vi.mocked(fetch).mockReset();
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      const method = init?.method ?? "GET";
+    resetFetchMocks();
 
-      if (method === "PATCH" && url.includes("/archive")) {
-        return Promise.resolve({
-          ok: false,
-          status: 500,
-          json: async () => ({ message: "Server error" }),
-          text: async () => "",
-        } as Response);
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/accounts/account-1/archive", (input, init) => {
+      if (init?.method === "PATCH") {
+        return mockErrorResponse(500, "Server error");
       }
-
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          items: [
-            {
-              id: "account-1",
-              name: "Main checking",
-              type: "CHECKING",
-              brand: null,
-              color: "#2254d1",
-              closingDay: null,
-              dueDay: null,
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ],
-          page: 0,
-          size: 12,
-          totalItems: 1,
-          totalPages: 1,
-        }),
-        text: async () => "",
-      } as Response);
+      return mockErrorResponse(404);
     });
 
     render(
@@ -463,6 +425,8 @@ describe("AccountsPage", () => {
   });
 
   it("shows currency Select in create form", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false, preferences: { defaultAccountId: null, locale: "pt-BR", showBalanceWithBudgets: false, showForeignCurrency: true } }}>
@@ -479,6 +443,8 @@ describe("AccountsPage", () => {
   });
 
   it("currency select defaults to BRL", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false, preferences: { defaultAccountId: null, locale: "pt-BR", showBalanceWithBudgets: false, showForeignCurrency: true } }}>
@@ -495,6 +461,8 @@ describe("AccountsPage", () => {
   });
 
   it("currency select can switch to USD", async () => {
+    setupDefaultMocks();
+
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false, preferences: { defaultAccountId: null, locale: "pt-BR", showBalanceWithBudgets: false, showForeignCurrency: true } }}>

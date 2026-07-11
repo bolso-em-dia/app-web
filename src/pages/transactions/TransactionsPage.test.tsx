@@ -9,109 +9,101 @@ import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import TransactionsPage from "./TransactionsPage";
 
-function jsonResponse(payload: unknown) {
-  return {
-    ok: true,
-    status: 200,
-    json: async () => payload,
-    text: async () => "",
-  } as Response;
-}
+const defaultTransactionsResponse = {
+  items: [
+    {
+      id: "tx-1",
+      type: "EXPENSE",
+      ownershipType: "SHARED",
+      sourceType: "MANUAL",
+      description: "Groceries",
+      amount: 125.5,
+      transactionDate: "2026-06-10",
+      referenceMonth: "2026-06-01",
+      accountId: "account-1",
+      accountName: "Main checking",
+      categoryId: "cat-1",
+      categoryName: "Groceries",
+      memberId: null,
+      memberName: null,
+      installmentGroupId: null,
+      installmentNumber: null,
+      installmentTotal: null,
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-06-01T10:00:00Z",
+    },
+  ],
+  page: 0,
+  size: 12,
+  totalItems: 1,
+  totalPages: 1,
+};
 
-function queueInitialLoads() {
-  vi.mocked(fetch)
-    .mockResolvedValueOnce(
-      jsonResponse({
-        items: [
-          {
-            id: "tx-1",
-            type: "EXPENSE",
-            ownershipType: "SHARED",
-            sourceType: "MANUAL",
-            description: "Groceries",
-            amount: 125.5,
-            transactionDate: "2026-06-10",
-            referenceMonth: "2026-06-01",
-            accountId: "account-1",
-            accountName: "Main checking",
-            categoryId: "cat-1",
-            categoryName: "Groceries",
-            memberId: null,
-            memberName: null,
-            installmentGroupId: null,
-            installmentNumber: null,
-            installmentTotal: null,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
-        page: 0,
-        size: 12,
-        totalItems: 1,
-        totalPages: 1,
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        items: [
-          {
-            id: "account-1",
-            name: "Main checking",
-            type: "CHECKING",
-            brand: null,
-            color: "#2254d1",
-            closingDay: null,
-            dueDay: null,
-            createdInMonth: "2026-06-01",
-            archivedFromMonth: null,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
-        page: 0,
-        size: 200,
-        totalItems: 1,
-        totalPages: 1,
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse([
-        {
-          id: "cat-1",
-          name: "Groceries",
-          icon: "shopping-cart",
-          color: "#2254d1",
-        },
-        {
-          id: "cat-2",
-          name: "Transport",
-          icon: "car",
-          color: "#14a44d",
-        },
-      ]),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        items: [
-          {
-            id: "member-1",
-            name: "Taylor",
-            email: "taylor@bolso-em-dia.local",
-            role: "USER",
-            active: true,
-            allowanceEnabled: true,
-            createdAt: "2026-06-01T10:00:00Z",
-            updatedAt: "2026-06-01T10:00:00Z",
-          },
-        ],
-        page: 0,
-        size: 200,
-        totalItems: 1,
-        totalPages: 1,
-      }),
-    );
+const defaultAccountsResponse = {
+  items: [
+    {
+      id: "account-1",
+      name: "Main checking",
+      type: "CHECKING",
+      brand: null,
+      color: "#2254d1",
+      closingDay: null,
+      dueDay: null,
+      createdInMonth: "2026-06-01",
+      archivedFromMonth: null,
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-06-01T10:00:00Z",
+    },
+  ],
+  page: 0,
+  size: 200,
+  totalItems: 1,
+  totalPages: 1,
+};
+
+const defaultCategoriesResponse = [
+  {
+    id: "cat-1",
+    name: "Groceries",
+    icon: "shopping-cart",
+    color: "#2254d1",
+  },
+  {
+    id: "cat-2",
+    name: "Transport",
+    icon: "car",
+    color: "#14a44d",
+  },
+];
+
+const defaultMembersResponse = {
+  items: [
+    {
+      id: "member-1",
+      name: "Taylor",
+      email: "taylor@bolso-em-dia.local",
+      role: "USER",
+      active: true,
+      allowanceEnabled: true,
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-06-01T10:00:00Z",
+    },
+  ],
+  page: 0,
+  size: 200,
+  totalItems: 1,
+  totalPages: 1,
+};
+
+function setupDefaultMocks() {
+  mockFetchUrl("/api/transactions?", mockJsonResponse(defaultTransactionsResponse));
+  mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+  mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+  mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 }
 
 function selectCategory(container: HTMLElement, categoryName: string) {
@@ -125,7 +117,7 @@ function selectCategory(container: HTMLElement, categoryName: string) {
 
 describe("TransactionsPage", () => {
   beforeEach(() => {
-    vi.mocked(fetch).mockReset();
+    resetFetchMocks();
   });
 
   afterEach(() => {
@@ -133,7 +125,7 @@ describe("TransactionsPage", () => {
   });
 
   it("loads transactions and validates member selection for individual ownership", async () => {
-    queueInitialLoads();
+    setupDefaultMocks();
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -190,35 +182,81 @@ describe("TransactionsPage", () => {
   });
 
   it("shows description suggestions and preserves non-varying fields on save and create new", async () => {
-    queueInitialLoads();
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(jsonResponse(["Groceries", "Groceries monthly"]))
-      .mockResolvedValueOnce(
-        jsonResponse([
-          {
-            id: "tx-2",
-            type: "INCOME",
-            ownershipType: "SHARED",
-            sourceType: "MANUAL",
-            description: "Groceries monthly",
-            amount: 0.9,
-            transactionDate: "2026-07-01",
-            referenceMonth: "2026-07-01",
-            accountId: "account-1",
-            accountName: "Main checking",
-            categoryId: "cat-1",
-            categoryName: "Groceries",
-            memberId: null,
-            memberName: null,
-            installmentGroupId: null,
-            installmentNumber: null,
-            installmentTotal: null,
-            createdAt: "2026-07-01T10:00:00Z",
-            updatedAt: "2026-07-01T10:00:00Z",
-          },
-        ]),
-      );
-    queueInitialLoads();
+    resetFetchMocks();
+
+    setupDefaultMocks();
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse(["Groceries", "Groceries monthly"]));
+
+    // Mock POST response
+    let postCallCount = 0;
+    mockFetchUrl("/api/transactions", (input, init) => {
+      if (init?.method === "POST") {
+        postCallCount++;
+        if (postCallCount === 1) {
+          return mockJsonResponse([
+            {
+              id: "tx-2",
+              type: "INCOME",
+              ownershipType: "SHARED",
+              sourceType: "MANUAL",
+              description: "Groceries monthly",
+              amount: 0.9,
+              transactionDate: "2026-07-01",
+              referenceMonth: "2026-07-01",
+              accountId: "account-1",
+              accountName: "Main checking",
+              categoryId: "cat-1",
+              categoryName: "Groceries",
+              memberId: null,
+              memberName: null,
+              installmentGroupId: null,
+              installmentNumber: null,
+              installmentTotal: null,
+              createdAt: "2026-07-01T10:00:00Z",
+              updatedAt: "2026-07-01T10:00:00Z",
+            },
+          ]);
+        }
+      }
+      return mockErrorResponse(404);
+    });
+
+    // Mock reload after create
+    mockFetchUrl("/api/transactions?", (input) => {
+      const url = String(input);
+      if (url.includes("referenceMonth=2026-07")) {
+        return mockJsonResponse({
+          items: [
+            {
+              id: "tx-2",
+              type: "INCOME",
+              ownershipType: "SHARED",
+              sourceType: "MANUAL",
+              description: "Groceries monthly",
+              amount: 0.9,
+              transactionDate: "2026-07-01",
+              referenceMonth: "2026-07-01",
+              accountId: "account-1",
+              accountName: "Main checking",
+              categoryId: "cat-1",
+              categoryName: "Groceries",
+              memberId: null,
+              memberName: null,
+              installmentGroupId: null,
+              installmentNumber: null,
+              installmentTotal: null,
+              createdAt: "2026-07-01T10:00:00Z",
+              updatedAt: "2026-07-01T10:00:00Z",
+            },
+          ],
+          page: 0,
+          size: 12,
+          totalItems: 1,
+          totalPages: 1,
+        });
+      }
+      return mockJsonResponse(defaultTransactionsResponse);
+    });
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -298,33 +336,53 @@ describe("TransactionsPage", () => {
   });
 
   it("sends only the supported payload for an income transaction", async () => {
-    queueInitialLoads();
-    vi.mocked(fetch).mockResolvedValueOnce(
-      jsonResponse([
-        {
-          id: "tx-created",
-          type: "INCOME",
-          ownershipType: "SHARED",
-          sourceType: "MANUAL",
-          description: "A",
-          amount: 90,
-          transactionDate: "2026-06-10",
-          referenceMonth: "2026-06-01",
-          accountId: "account-1",
-          accountName: "Main checking",
-          categoryId: "cat-1",
-          categoryName: "Groceries",
-          memberId: null,
-          memberName: null,
-          installmentGroupId: null,
-          installmentNumber: null,
-          installmentTotal: null,
-          createdAt: "2026-06-01T10:00:00Z",
-          updatedAt: "2026-06-01T10:00:00Z",
-        },
-      ]),
-    );
-    queueInitialLoads();
+    resetFetchMocks();
+
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/transactions", mockJsonResponse([
+      {
+        id: "tx-created",
+        type: "INCOME",
+        ownershipType: "SHARED",
+        sourceType: "MANUAL",
+        description: "A",
+        amount: 90,
+        transactionDate: "2026-06-10",
+        referenceMonth: "2026-06-01",
+        accountId: "account-1",
+        accountName: "Main checking",
+        categoryId: "cat-1",
+        categoryName: "Groceries",
+        memberId: null,
+        memberName: null,
+        installmentGroupId: null,
+        installmentNumber: null,
+        installmentTotal: null,
+        createdAt: "2026-06-01T10:00:00Z",
+        updatedAt: "2026-06-01T10:00:00Z",
+      },
+    ]));
+
+    // Mock reload after create
+    mockFetchUrl("/api/transactions?", (input) => {
+      const url = String(input);
+      if (vi.mocked(fetch).mock.calls.filter(([u]) => String(u).includes("/api/transactions") && u !== url).length > 5) {
+        return mockJsonResponse({
+          items: [
+            {
+              ...defaultTransactionsResponse.items[0],
+              id: "tx-created",
+              description: "A",
+              amount: 90,
+              type: "INCOME",
+            },
+          ],
+          ...defaultTransactionsResponse,
+        });
+      }
+      return mockJsonResponse(defaultTransactionsResponse);
+    });
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -397,33 +455,33 @@ describe("TransactionsPage", () => {
   });
 
   it("sends member and installmentCount only when the expense requires them", async () => {
-    queueInitialLoads();
-    vi.mocked(fetch).mockResolvedValueOnce(
-      jsonResponse([
-        {
-          id: "tx-created",
-          type: "EXPENSE",
-          ownershipType: "INDIVIDUAL",
-          sourceType: "INSTALLMENT",
-          description: "A",
-          amount: 25,
-          transactionDate: "2026-06-10",
-          referenceMonth: "2026-06-01",
-          accountId: "account-1",
-          accountName: "Main checking",
-          categoryId: "cat-1",
-          categoryName: "Groceries",
-          memberId: "member-1",
-          memberName: "Taylor",
-          installmentGroupId: "grp-1",
-          installmentNumber: 1,
-          installmentTotal: 4,
-          createdAt: "2026-06-01T10:00:00Z",
-          updatedAt: "2026-06-01T10:00:00Z",
-        },
-      ]),
-    );
-    queueInitialLoads();
+    resetFetchMocks();
+
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/transactions", mockJsonResponse([
+      {
+        id: "tx-created",
+        type: "EXPENSE",
+        ownershipType: "INDIVIDUAL",
+        sourceType: "INSTALLMENT",
+        description: "A",
+        amount: 25,
+        transactionDate: "2026-06-10",
+        referenceMonth: "2026-06-01",
+        accountId: "account-1",
+        accountName: "Main checking",
+        categoryId: "cat-1",
+        categoryName: "Groceries",
+        memberId: "member-1",
+        memberName: "Taylor",
+        installmentGroupId: "grp-1",
+        installmentNumber: 1,
+        installmentTotal: 4,
+        createdAt: "2026-06-01T10:00:00Z",
+        updatedAt: "2026-06-01T10:00:00Z",
+      },
+    ]));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -502,7 +560,7 @@ describe("TransactionsPage", () => {
   });
 
   it("opens a delete confirmation modal and cancels without calling the API", async () => {
-    queueInitialLoads();
+    setupDefaultMocks();
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -554,110 +612,15 @@ describe("TransactionsPage", () => {
   });
 
   it("confirms simple transaction deletion with SINGLE scope", async () => {
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
+    resetFetchMocks();
 
-      if (url.includes("/api/transactions?") && (!init?.method || init.method === "GET")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "tx-1",
-                type: "EXPENSE",
-                ownershipType: "SHARED",
-                sourceType: "MANUAL",
-                description: "Groceries",
-                amount: 125.5,
-                transactionDate: "2026-06-10",
-                referenceMonth: "2026-06-01",
-                accountId: "account-1",
-                accountName: "Main checking",
-                categoryId: "cat-1",
-                categoryName: "Groceries",
-                memberId: null,
-                memberName: null,
-                installmentGroupId: null,
-                installmentNumber: null,
-                installmentTotal: null,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/transactions/tx-1?", (input, init) => {
+      if (init?.method === "DELETE") {
+        return mockJsonResponse(undefined);
       }
-
-      if (url.includes("/api/accounts?")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "account-1",
-                name: "Main checking",
-                type: "CHECKING",
-                brand: null,
-                color: "#2254d1",
-                closingDay: null,
-                dueDay: null,
-                createdInMonth: "2026-06-01",
-                archivedFromMonth: null,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 200,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-          ]),
-        );
-      }
-
-      if (url.includes("/api/family-members")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "member-1",
-                name: "Taylor",
-                email: "taylor@bolso-em-dia.local",
-                role: "USER",
-                active: true,
-                allowanceEnabled: true,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 200,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/transactions/tx-1?") && init?.method === "DELETE") {
-        return Promise.resolve(jsonResponse(undefined));
-      }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
+      return mockErrorResponse(404);
     });
 
     render(
@@ -700,6 +663,8 @@ describe("TransactionsPage", () => {
   });
 
   it("confirms grouped transaction deletion with FUTURE and ALL scopes", async () => {
+    resetFetchMocks();
+
     const groupedTransaction = {
       id: "tx-1",
       type: "EXPENSE",
@@ -722,89 +687,12 @@ describe("TransactionsPage", () => {
       updatedAt: "2026-06-01T10:00:00Z",
     };
 
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-
-      if (url.includes("/api/transactions?") && (!init?.method || init.method === "GET")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [groupedTransaction],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/accounts?")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "account-1",
-                name: "Main checking",
-                type: "CHECKING",
-                brand: null,
-                color: "#2254d1",
-                closingDay: null,
-                dueDay: null,
-                createdInMonth: "2026-06-01",
-                archivedFromMonth: null,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 200,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-          ]),
-        );
-      }
-
-      if (url.includes("/api/family-members")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "member-1",
-                name: "Taylor",
-                email: "taylor@bolso-em-dia.local",
-                role: "USER",
-                active: true,
-                allowanceEnabled: true,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 200,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/transactions/tx-1?") && init?.method === "DELETE") {
-        return Promise.resolve(jsonResponse(undefined));
-      }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
-    });
+    mockFetchUrl("/api/transactions?", mockJsonResponse({ items: [groupedTransaction], page: 0, size: 12, totalItems: 1, totalPages: 1 }));
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
+    mockFetchUrl("/api/transactions/tx-1?", mockJsonResponse(undefined));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -869,100 +757,45 @@ describe("TransactionsPage", () => {
   });
 
   it("shows projected fixed transactions without allowing edit from the transaction list", async () => {
+    resetFetchMocks();
+
     const futureReferenceMonth = shiftReferenceMonth(getCurrentReferenceMonth(), 1);
 
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-
-      if (url.includes("/api/transactions?")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "projected-rent",
-                type: "EXPENSE",
-                ownershipType: "SHARED",
-                sourceType: "FIXED_EXPENSE",
-                description: "Projected Rent",
-                amount: 880,
-                transactionDate: `${futureReferenceMonth.slice(0, 8)}12`,
-                referenceMonth: futureReferenceMonth,
-                accountId: "account-1",
-                accountName: "Main checking",
-                categoryId: "cat-1",
-                categoryName: "Groceries",
-                memberId: null,
-                memberName: null,
-                installmentGroupId: null,
-                installmentNumber: null,
-                installmentTotal: null,
-                fixedExpenseTemplateId: "template-1",
-                projected: true,
-                createdAt: null,
-                updatedAt: null,
-              },
-            ],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/accounts?")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "account-1",
-                name: "Main checking",
-                type: "CHECKING",
-                brand: null,
-                color: "#2254d1",
-                closingDay: null,
-                dueDay: null,
-                createdInMonth: "2026-06-01",
-                archivedFromMonth: null,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 200,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-          ]),
-        );
-      }
-
-      if (url.includes("/api/family-members")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [],
-            page: 0,
-            size: 200,
-            totalItems: 0,
-            totalPages: 0,
-          }),
-        );
-      }
-
-      return Promise.reject(new Error(`Unhandled request: ${url} ${init?.method ?? "GET"}`));
-    });
+    mockFetchUrl("/api/transactions?", mockJsonResponse({
+      items: [
+        {
+          id: "projected-rent",
+          type: "EXPENSE",
+          ownershipType: "SHARED",
+          sourceType: "FIXED_EXPENSE",
+          description: "Projected Rent",
+          amount: 880,
+          transactionDate: `${futureReferenceMonth.slice(0, 8)}12`,
+          referenceMonth: futureReferenceMonth,
+          accountId: "account-1",
+          accountName: "Main checking",
+          categoryId: "cat-1",
+          categoryName: "Groceries",
+          memberId: null,
+          memberName: null,
+          installmentGroupId: null,
+          installmentNumber: null,
+          installmentTotal: null,
+          fixedExpenseTemplateId: "template-1",
+          projected: true,
+          createdAt: null,
+          updatedAt: null,
+        },
+      ],
+      page: 0,
+      size: 12,
+      totalItems: 1,
+      totalPages: 1,
+    }));
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -992,114 +825,95 @@ describe("TransactionsPage", () => {
   });
 
   it("lets the user move to previous and next months and highlights non-current months", async () => {
+    resetFetchMocks();
+
     const currentReferenceMonth = getCurrentReferenceMonth();
     const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
 
-    vi.mocked(fetch).mockImplementation((input) => {
+    mockFetchUrl("/api/transactions?", (input) => {
       const url = String(input);
       const referenceMonth = url.includes("referenceMonth=")
         ? new URL(url).searchParams.get("referenceMonth")
         : null;
 
-      if (url.includes("/api/transactions?")) {
-        return Promise.resolve(
-          jsonResponse({
-            items:
-              referenceMonth === previousReferenceMonth
-                ? []
-                : [
-                    {
-                      id: "tx-1",
-                      type: "EXPENSE",
-                      ownershipType: "SHARED",
-                      sourceType: "MANUAL",
-                      description: "Groceries",
-                      amount: 125.5,
-                      transactionDate: "2026-06-10",
-                      referenceMonth: currentReferenceMonth,
-                      accountId: "account-1",
-                      accountName: "Main checking",
-                      categoryId: "cat-1",
-                      categoryName: "Groceries",
-                      memberId: null,
-                      memberName: null,
-                      installmentGroupId: null,
-                      installmentNumber: null,
-                      installmentTotal: null,
-                      createdAt: "2026-06-01T10:00:00Z",
-                      updatedAt: "2026-06-01T10:00:00Z",
-                    },
-                  ],
-            page: 0,
-            size: 12,
-            totalItems: referenceMonth === previousReferenceMonth ? 0 : 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/accounts?")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "account-1",
-              name: "Main checking",
-              type: "CHECKING",
-              brand: null,
-              color: "#2254d1",
-              closingDay: null,
-              dueDay: null,
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ]),
-        );
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve(
-          jsonResponse(
-            referenceMonth === previousReferenceMonth
-              ? []
-              : [
-                  {
-                    id: "cat-1",
-                    name: "Groceries",
-                    icon: "shopping-cart",
-                    color: "#2254d1",
-                  },
-                  {
-                    id: "cat-2",
-                    name: "Transport",
-                    icon: "car",
-                    color: "#14a44d",
-                  },
-                ],
-          ),
-        );
-      }
-
-      if (url.includes("/api/family-members")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "member-1",
-              name: "Taylor",
-              email: "taylor@bolso-em-dia.local",
-              role: "USER",
-              active: true,
-              allowanceEnabled: true,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ]),
-        );
-      }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
+      return mockJsonResponse({
+        items:
+          referenceMonth === previousReferenceMonth
+            ? []
+            : [
+                {
+                  id: "tx-1",
+                  type: "EXPENSE",
+                  ownershipType: "SHARED",
+                  sourceType: "MANUAL",
+                  description: "Groceries",
+                  amount: 125.5,
+                  transactionDate: "2026-06-10",
+                  referenceMonth: currentReferenceMonth,
+                  accountId: "account-1",
+                  accountName: "Main checking",
+                  categoryId: "cat-1",
+                  categoryName: "Groceries",
+                  memberId: null,
+                  memberName: null,
+                  installmentGroupId: null,
+                  installmentNumber: null,
+                  installmentTotal: null,
+                  createdAt: "2026-06-01T10:00:00Z",
+                  updatedAt: "2026-06-01T10:00:00Z",
+                },
+              ],
+        page: 0,
+        size: 12,
+        totalItems: referenceMonth === previousReferenceMonth ? 0 : 1,
+        totalPages: 1,
+      });
     });
+
+    mockFetchUrl("/api/accounts?", mockJsonResponse([
+      {
+        id: "account-1",
+        name: "Main checking",
+        type: "CHECKING",
+        brand: null,
+        color: "#2254d1",
+        closingDay: null,
+        dueDay: null,
+        createdInMonth: "2026-06-01",
+        archivedFromMonth: null,
+        createdAt: "2026-06-01T10:00:00Z",
+        updatedAt: "2026-06-01T10:00:00Z",
+      },
+    ]));
+
+    mockFetchUrl("/api/categories/options", (input) => {
+      const url = String(input);
+      const referenceMonth = url.includes("referenceMonth=")
+        ? new URL(url).searchParams.get("referenceMonth")
+        : null;
+
+      return mockJsonResponse(
+        referenceMonth === previousReferenceMonth
+          ? []
+          : [
+              {
+                id: "cat-1",
+                name: "Groceries",
+                icon: "shopping-cart",
+                color: "#2254d1",
+              },
+              {
+                id: "cat-2",
+                name: "Transport",
+                icon: "car",
+                color: "#14a44d",
+              },
+            ],
+      );
+    });
+
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -1153,114 +967,95 @@ describe("TransactionsPage", () => {
   });
 
   it("derives the initial transaction date from the selected reference month when opening the creation form", async () => {
+    resetFetchMocks();
+
     const currentReferenceMonth = getCurrentReferenceMonth();
     const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
 
-    vi.mocked(fetch).mockImplementation((input) => {
+    mockFetchUrl("/api/transactions?", (input) => {
       const url = String(input);
       const referenceMonth = url.includes("referenceMonth=")
         ? new URL(url).searchParams.get("referenceMonth")
         : null;
 
-      if (url.includes("/api/transactions?")) {
-        return Promise.resolve(
-          jsonResponse({
-            items:
-              referenceMonth === previousReferenceMonth
-                ? []
-                : [
-                    {
-                      id: "tx-1",
-                      type: "EXPENSE",
-                      ownershipType: "SHARED",
-                      sourceType: "MANUAL",
-                      description: "Groceries",
-                      amount: 125.5,
-                      transactionDate: "2026-06-10",
-                      referenceMonth: currentReferenceMonth,
-                      accountId: "account-1",
-                      accountName: "Main checking",
-                      categoryId: "cat-1",
-                      categoryName: "Groceries",
-                      memberId: null,
-                      memberName: null,
-                      installmentGroupId: null,
-                      installmentNumber: null,
-                      installmentTotal: null,
-                      createdAt: "2026-06-01T10:00:00Z",
-                      updatedAt: "2026-06-01T10:00:00Z",
-                    },
-                  ],
-            page: 0,
-            size: 12,
-            totalItems: referenceMonth === previousReferenceMonth ? 0 : 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/accounts?")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "account-1",
-              name: "Main checking",
-              type: "CHECKING",
-              brand: null,
-              color: "#2254d1",
-              closingDay: null,
-              dueDay: null,
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ]),
-        );
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve(
-          jsonResponse(
-            referenceMonth === previousReferenceMonth
-              ? []
-              : [
-                  {
-                    id: "cat-1",
-                    name: "Groceries",
-                    icon: "shopping-cart",
-                    color: "#2254d1",
-                  },
-                  {
-                    id: "cat-2",
-                    name: "Transport",
-                    icon: "car",
-                    color: "#14a44d",
-                  },
-                ],
-          ),
-        );
-      }
-
-      if (url.includes("/api/family-members")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "member-1",
-              name: "Taylor",
-              email: "taylor@bolso-em-dia.local",
-              role: "USER",
-              active: true,
-              allowanceEnabled: true,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ]),
-        );
-      }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
+      return mockJsonResponse({
+        items:
+          referenceMonth === previousReferenceMonth
+            ? []
+            : [
+                {
+                  id: "tx-1",
+                  type: "EXPENSE",
+                  ownershipType: "SHARED",
+                  sourceType: "MANUAL",
+                  description: "Groceries",
+                  amount: 125.5,
+                  transactionDate: "2026-06-10",
+                  referenceMonth: currentReferenceMonth,
+                  accountId: "account-1",
+                  accountName: "Main checking",
+                  categoryId: "cat-1",
+                  categoryName: "Groceries",
+                  memberId: null,
+                  memberName: null,
+                  installmentGroupId: null,
+                  installmentNumber: null,
+                  installmentTotal: null,
+                  createdAt: "2026-06-01T10:00:00Z",
+                  updatedAt: "2026-06-01T10:00:00Z",
+                },
+              ],
+        page: 0,
+        size: 12,
+        totalItems: referenceMonth === previousReferenceMonth ? 0 : 1,
+        totalPages: 1,
+      });
     });
+
+    mockFetchUrl("/api/accounts?", mockJsonResponse([
+      {
+        id: "account-1",
+        name: "Main checking",
+        type: "CHECKING",
+        brand: null,
+        color: "#2254d1",
+        closingDay: null,
+        dueDay: null,
+        createdInMonth: "2026-06-01",
+        archivedFromMonth: null,
+        createdAt: "2026-06-01T10:00:00Z",
+        updatedAt: "2026-06-01T10:00:00Z",
+      },
+    ]));
+
+    mockFetchUrl("/api/categories/options", (input) => {
+      const url = String(input);
+      const referenceMonth = url.includes("referenceMonth=")
+        ? new URL(url).searchParams.get("referenceMonth")
+        : null;
+
+      return mockJsonResponse(
+        referenceMonth === previousReferenceMonth
+          ? []
+          : [
+              {
+                id: "cat-1",
+                name: "Groceries",
+                icon: "shopping-cart",
+                color: "#2254d1",
+              },
+              {
+                id: "cat-2",
+                name: "Transport",
+                icon: "car",
+                color: "#14a44d",
+              },
+            ],
+      );
+    });
+
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -1303,101 +1098,9 @@ describe("TransactionsPage", () => {
   });
 
   it("filters transactions by multiple categories without expanding the active chip list", async () => {
-    vi.mocked(fetch).mockImplementation((input) => {
-      const url = String(input);
+    resetFetchMocks();
 
-      if (url.includes("/api/transactions?")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "tx-1",
-                type: "EXPENSE",
-                ownershipType: "SHARED",
-                sourceType: "MANUAL",
-                description: "Groceries",
-                amount: 125.5,
-                transactionDate: "2026-06-10",
-                referenceMonth: "2026-06-01",
-                accountId: "account-1",
-                accountName: "Main checking",
-                categoryId: "cat-1",
-                categoryName: "Groceries",
-                memberId: null,
-                memberName: null,
-                installmentGroupId: null,
-                installmentNumber: null,
-                installmentTotal: null,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/accounts?")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "account-1",
-              name: "Main checking",
-              type: "CHECKING",
-              brand: null,
-              color: "#2254d1",
-              closingDay: null,
-              dueDay: null,
-              createdInMonth: "2026-06-01",
-              archivedFromMonth: null,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ]),
-        );
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "cat-1",
-              name: "Groceries",
-              icon: "shopping-cart",
-              color: "#2254d1",
-            },
-            {
-              id: "cat-2",
-              name: "Transport",
-              icon: "car",
-              color: "#14a44d",
-            },
-          ]),
-        );
-      }
-
-      if (url.includes("/api/family-members")) {
-        return Promise.resolve(
-          jsonResponse([
-            {
-              id: "member-1",
-              name: "Taylor",
-              email: "taylor@bolso-em-dia.local",
-              role: "USER",
-              active: true,
-              allowanceEnabled: true,
-              createdAt: "2026-06-01T10:00:00Z",
-              updatedAt: "2026-06-01T10:00:00Z",
-            },
-          ]),
-        );
-      }
-
-      return Promise.reject(new Error(`Unhandled request: ${url}`));
-    });
+    setupDefaultMocks();
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -1446,36 +1149,13 @@ describe("TransactionsPage", () => {
   });
 
   it("filters transactions by search term and shows an active filter chip", async () => {
-    vi.mocked(fetch).mockImplementation((input) => {
-      const url = String(input);
+    resetFetchMocks();
 
-      if (url.includes("/api/transactions?")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [],
-            page: 0,
-            size: 12,
-            totalItems: 0,
-            totalPages: 0,
-          }),
-        );
-      }
-      if (url.includes("/api/accounts")) {
-        return Promise.resolve(jsonResponse([]));
-      }
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve(jsonResponse([]));
-      }
-      if (url.includes("/api/family-members")) {
-        return Promise.resolve(
-          jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
-        );
-      }
-      if (url.includes("/api/transactions/descriptions")) {
-        return Promise.resolve(jsonResponse([]));
-      }
-      return Promise.reject(new Error(`Unhandled: ${url}`));
-    });
+    mockFetchUrl("/api/transactions?", mockJsonResponse({ items: [], page: 0, size: 12, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl("/api/accounts", mockJsonResponse([]));
+    mockFetchUrl("/api/categories/options", mockJsonResponse([]));
+    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
@@ -1512,107 +1192,15 @@ describe("TransactionsPage", () => {
   });
 
   it("shows error feedback when delete fails", async () => {
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
+    resetFetchMocks();
 
-      if (url.includes("/api/transactions/tx-1") && init?.method === "DELETE") {
-        return Promise.resolve({
-          ok: false,
-          status: 500,
-          json: async () => ({ message: "Server error" }),
-          text: async () => "",
-        } as Response);
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/transactions/tx-1?", (input, init) => {
+      if (init?.method === "DELETE") {
+        return mockErrorResponse(500, "Server error");
       }
-
-      if (url.includes("/api/transactions?") && (!init?.method || init.method === "GET")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "tx-1",
-                type: "EXPENSE",
-                ownershipType: "INDIVIDUAL",
-                sourceType: "MANUAL",
-                description: "Groceries",
-                amount: 150,
-                transactionDate: "2026-06-10",
-                referenceMonth: "2026-06-01",
-                accountId: "account-1",
-                accountName: "Main checking",
-                categoryId: "cat-1",
-                categoryName: "Groceries",
-                memberId: null,
-                memberName: null,
-                installmentGroupId: null,
-                installmentNumber: null,
-                installmentTotal: null,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 12,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/accounts?")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [
-              {
-                id: "account-1",
-                name: "Main checking",
-                type: "CHECKING",
-                brand: null,
-                color: "#2254d1",
-                closingDay: null,
-                dueDay: null,
-                createdInMonth: "2026-06-01",
-                archivedFromMonth: null,
-                createdAt: "2026-06-01T10:00:00Z",
-                updatedAt: "2026-06-01T10:00:00Z",
-              },
-            ],
-            page: 0,
-            size: 200,
-            totalItems: 1,
-            totalPages: 1,
-          }),
-        );
-      }
-
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve(
-          jsonResponse([
-            { id: "cat-1", name: "Groceries", icon: "shopping-cart", color: "#2254d1" },
-          ]),
-        );
-      }
-
-      if (url.includes("/api/members")) {
-        return Promise.resolve(
-          jsonResponse({
-            items: [],
-            page: 0,
-            size: 200,
-            totalItems: 0,
-            totalPages: 0,
-          }),
-        );
-      }
-
-      if (url.includes("/api/transactions/descriptions")) {
-        return Promise.resolve(
-          jsonResponse([]),
-        );
-      }
-
-      return Promise.resolve(
-        jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }),
-      );
+      return mockErrorResponse(404);
     });
 
     render(
@@ -1651,35 +1239,23 @@ describe("TransactionsPage", () => {
   });
 
   it("shows USD secondary line for foreign currency transactions", async () => {
-    vi.mocked(fetch).mockImplementation((input, init) => {
-      const url = String(input);
-      if (url.includes("/api/transactions?") && (!init?.method || init.method === "GET")) {
-        return Promise.resolve(jsonResponse({
-          items: [{
-            id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
-            description: "Amazon", amount: 510, originalAmount: 100, currency: "USD",
-            transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
-            accountId: "account-1", accountName: "US Account",
-            categoryId: "cat-1", categoryName: "Shopping", memberId: null, memberName: null,
-            installmentGroupId: null, installmentNumber: null, installmentTotal: null,
-            createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
-          }], page: 0, size: 12, totalItems: 1, totalPages: 1,
-        }));
-      }
-      if (url.includes("/api/accounts?")) {
-        return Promise.resolve(jsonResponse({ items: [{ id: "account-1", name: "US Account", type: "CHECKING", currency: "USD", brand: null, color: "#2254d1", closingDay: null, dueDay: null, createdInMonth: "2026-06-01", archivedFromMonth: null, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z" }], page: 0, size: 200, totalItems: 1, totalPages: 1 }));
-      }
-      if (url.includes("/api/categories/options")) {
-        return Promise.resolve(jsonResponse([{ id: "cat-1", name: "Shopping", icon: "shopping-cart", color: "#2254d1" }]));
-      }
-      if (url.includes("/api/members")) {
-        return Promise.resolve(jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
-      }
-      if (url.includes("/api/transactions/descriptions")) {
-        return Promise.resolve(jsonResponse([]));
-      }
-      return Promise.resolve(jsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
-    });
+    resetFetchMocks();
+
+    mockFetchUrl("/api/transactions?", mockJsonResponse({
+      items: [{
+        id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
+        description: "Amazon", amount: 510, originalAmount: 100, currency: "USD",
+        transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
+        accountId: "account-1", accountName: "US Account",
+        categoryId: "cat-1", categoryName: "Shopping", memberId: null, memberName: null,
+        installmentGroupId: null, installmentNumber: null, installmentTotal: null,
+        createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
+      }], page: 0, size: 12, totalItems: 1, totalPages: 1,
+    }));
+    mockFetchUrl("/api/accounts?", mockJsonResponse({ items: [{ id: "account-1", name: "US Account", type: "CHECKING", currency: "USD", brand: null, color: "#2254d1", closingDay: null, dueDay: null, createdInMonth: "2026-06-01", archivedFromMonth: null, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z" }], page: 0, size: 200, totalItems: 1, totalPages: 1 }));
+    mockFetchUrl("/api/categories/options", mockJsonResponse([{ id: "cat-1", name: "Shopping", icon: "shopping-cart", color: "#2254d1" }]));
+    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
