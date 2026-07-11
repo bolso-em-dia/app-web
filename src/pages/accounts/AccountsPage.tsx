@@ -36,6 +36,7 @@ import styles from "./AccountsPage.module.scss";
 const DEFAULT_VALUES: AccountFormValues = {
   name: "",
   type: "CHECKING",
+  currency: "BRL",
   brand: "",
   color: "",
   closingDay: undefined,
@@ -144,6 +145,7 @@ export default function AccountsPage() {
       form.reset({
         name: selectedAccount.name,
         type: selectedAccount.type,
+        currency: (selectedAccount.currency as "BRL" | "USD") ?? "BRL",
         brand: selectedAccount.brand ?? "",
         color: selectedAccount.color ?? "",
         closingDay: selectedAccount.closingDay ?? undefined,
@@ -551,6 +553,13 @@ export default function AccountsPage() {
                         <option value="INVESTMENT">
                           {t("accountTypes.INVESTMENT")}
                         </option>
+                      </Select>
+                    </Field>
+
+                    <Field htmlFor="account-currency" label="Moeda">
+                      <Select id="account-currency" {...form.register("currency")}>
+                        <option value="BRL">Real (BRL)</option>
+                        <option value="USD">Dólar (USD)</option>
                       </Select>
                     </Field>
 
