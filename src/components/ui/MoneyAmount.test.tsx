@@ -41,4 +41,31 @@ describe("MoneyAmount", () => {
     expect(element.className).not.toContain("expense");
     expect(element.className).not.toContain("income");
   });
+
+  it("shows USD secondary line when currency is USD", () => {
+    render(<MoneyAmount amount={510} type="EXPENSE" originalAmount={100} currency="USD" />);
+
+    expect(screen.getByText(/cot\./)).toBeInTheDocument();
+  });
+
+  it("does not show secondary line for BRL transactions", () => {
+    render(<MoneyAmount amount={150} type="EXPENSE" />);
+
+    expect(screen.queryByText(/cot\./)).not.toBeInTheDocument();
+  });
+
+  it("shows foreign meta with rate in secondary line", () => {
+    render(<MoneyAmount amount={510} type="EXPENSE" originalAmount={100} currency="USD" />);
+
+    expect(screen.getByText(/cot\. 5\.10/)).toBeInTheDocument();
+  });
+
+  it("renders USD expense in red", () => {
+    const { container } = render(
+      <MoneyAmount amount={510} type="EXPENSE" originalAmount={100} currency="USD" />,
+    );
+
+    const expenseEl = container.querySelector('[class*="expense"]');
+    expect(expenseEl).toBeTruthy();
+  });
 });
