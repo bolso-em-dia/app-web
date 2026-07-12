@@ -8,11 +8,11 @@ import styles from "./BudgetsPage.module.scss";
 
 interface BudgetCardProps {
   budget: Budget;
-  isSelected: boolean;
+  isSelected?: boolean;
   onSelect: (id: string) => void;
 }
 
-export default function BudgetCard({ budget, isSelected, onSelect }: BudgetCardProps) {
+export default function BudgetCard({ budget, onSelect }: BudgetCardProps) {
   const { t } = useI18n();
 
   return (
@@ -57,9 +57,7 @@ export default function BudgetCard({ budget, isSelected, onSelect }: BudgetCardP
           >
             {budget.archivedFromMonth
               ? t("budgets.archivedFrom", {
-                  month: formatReferenceMonth(
-                    budget.archivedFromMonth,
-                  ),
+                  month: formatReferenceMonth(budget.archivedFromMonth),
                 })
               : t("common.active")}
           </span>

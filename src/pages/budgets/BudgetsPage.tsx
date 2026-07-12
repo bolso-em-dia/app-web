@@ -9,12 +9,9 @@ import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
 import {
   archiveBudget,
   createBudget,
-  getBudget,
-  listBudgetCategoryBreakdown,
   listBudgets,
   updateBudget,
   type Budget,
-  type BudgetCategoryBreakdown,
   type BudgetListParams,
   type BudgetPayload,
   type BudgetType,
@@ -54,7 +51,6 @@ const DEFAULT_VALUES: BudgetFormValues = {
   monthlyLimit: 0,
 };
 
-
 function mapFormValuesToPayload(values: BudgetFormValues): BudgetPayload {
   return {
     name: values.name,
@@ -77,10 +73,6 @@ export default function BudgetsPage() {
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
-  const [categoryBreakdown, setCategoryBreakdown] = useState<
-    BudgetCategoryBreakdown[]
-  >([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "ACTIVE" | "ARCHIVED"
@@ -93,7 +85,6 @@ export default function BudgetsPage() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
@@ -104,13 +95,11 @@ export default function BudgetsPage() {
     [budgets, selectedId],
   );
 
-  const budgetSchema = useMemo(() => createBudgetSchema(t), [t]  );
+  const budgetSchema = useMemo(() => createBudgetSchema(t), [t]);
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
     defaultValues: DEFAULT_VALUES,
   });
-
-  const budgetType = form.watch("type");
 
   const availableAllowanceMembers = useMemo(
     () => members.filter((member) => member.active && member.allowanceEnabled),
@@ -156,38 +145,6 @@ export default function BudgetsPage() {
     [accessToken, t],
   );
 
-  const loadBudgetDetails = useCallback(async () => {
-    if (!accessToken || !selectedId || isCreating) {
-      setSelectedBudget(null);
-      setCategoryBreakdown([]);
-      return;
-    }
-
-    setIsDetailLoading(true);
-
-    try {
-      const [budgetResponse, categoryBreakdownResponse] = await Promise.all([
-        getBudget(selectedId, referenceMonth, accessToken),
-        listBudgetCategoryBreakdown(selectedId, referenceMonth, accessToken),
-      ]);
-      setSelectedBudget(budgetResponse);
-      setCategoryBreakdown(categoryBreakdownResponse);
-      form.reset({
-        name: budgetResponse.name,
-        type: budgetResponse.type,
-        ownerMemberId: budgetResponse.ownerMemberId ?? "",
-        categoryIds: budgetResponse.categories.map((c) => c.id),
-        monthlyLimit: budgetResponse.monthlyLimit,
-      });
-    } catch {
-      setError(t("budgets.detailsError"));
-      setSelectedBudget(null);
-      setCategoryBreakdown([]);
-    } finally {
-      setIsDetailLoading(false);
-    }
-  }, [accessToken, isCreating, referenceMonth, selectedId, t]);
-
   useEffect(() => {
     void loadBudgetsData({
       referenceMonth,
@@ -206,10 +163,6 @@ export default function BudgetsPage() {
     statusFilter,
     typeFilter,
   ]);
-
-  useEffect(() => {
-    void loadBudgetDetails();
-  }, [loadBudgetDetails]);
 
   async function onSubmit(values: BudgetFormValues) {
     if (!accessToken) {
@@ -291,8 +244,6 @@ export default function BudgetsPage() {
   function handleStartCreate() {
     setIsCreating(true);
     setSelectedId(null);
-    setSelectedBudget(null);
-    setCategoryBreakdown([]);
     setError(null);
     form.reset(DEFAULT_VALUES);
   }
@@ -307,8 +258,6 @@ export default function BudgetsPage() {
   function handleCloseDrawer() {
     setIsCreating(false);
     setSelectedId(null);
-    setSelectedBudget(null);
-    setCategoryBreakdown([]);
     setError(null);
     form.reset(DEFAULT_VALUES);
   }
@@ -405,7 +354,9 @@ export default function BudgetsPage() {
                       value={referenceMonth}
                     />
                   </Field>
-                  <Field htmlFor="budget-search" label={t("common.search")}>                     <Input
+                  <Field htmlFor="budget-search" label={t("common.search")}>
+                    {" "}
+                    <Input
                       id="budget-search"
                       onChange={(event) => {
                         setSearch(event.target.value);
@@ -467,7 +418,6 @@ export default function BudgetsPage() {
             onCardSelect={(id, budget) => {
               setIsCreating(false);
               setSelectedId(id);
-              setSelectedBudget(budget);
               setError(null);
               form.reset({
                 name: budget.name,

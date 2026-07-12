@@ -11,14 +11,13 @@ import styles from "./FixedExpensesPage.module.scss";
 interface FixedExpenseCardProps {
   template: FixedExpenseTemplate;
   categoryOption: CategoryOption | undefined;
-  isSelected: boolean;
+  isSelected?: boolean;
   onSelect: (id: string) => void;
 }
 
 export default function FixedExpenseCard({
   template,
   categoryOption,
-  isSelected,
   onSelect,
 }: FixedExpenseCardProps) {
   const { t } = useI18n();
@@ -31,9 +30,7 @@ export default function FixedExpenseCard({
         className={styles.templateButton}
         onClick={() => onSelect(template.id)}
         style={
-          categoryColor
-            ? { borderInlineStartColor: categoryColor }
-            : undefined
+          categoryColor ? { borderInlineStartColor: categoryColor } : undefined
         }
         type="button"
       >
@@ -44,9 +41,7 @@ export default function FixedExpenseCard({
                 <span
                   aria-hidden="true"
                   className={styles.categoryLead}
-                  style={
-                    categoryColor ? { color: categoryColor } : undefined
-                  }
+                  style={categoryColor ? { color: categoryColor } : undefined}
                 >
                   <CategoryIcon className={styles.categoryIcon} />
                 </span>
@@ -60,12 +55,8 @@ export default function FixedExpenseCard({
                 </span>
               ) : null}
               <div className={styles.templateLine}>
-                <strong className={styles.templateName}>
-                  {template.name}
-                </strong>
-                <span className={styles.templateMetaSeparator}>
-                  ·
-                </span>
+                <strong className={styles.templateName}>{template.name}</strong>
+                <span className={styles.templateMetaSeparator}>·</span>
                 <p className={styles.templateMeta}>
                   {template.categoryName} · {template.accountName} ·{" "}
                   {template.type === "INCOME"
@@ -75,8 +66,7 @@ export default function FixedExpenseCard({
                     : t("fixedTransactions.dueOnDay", {
                         day: String(template.dueDay).padStart(2, "0"),
                       })}
-                  {template.currency === "USD" &&
-                  template.exchangeRate != null
+                  {template.currency === "USD" && template.exchangeRate != null
                     ? ` · ${formatCurrency(
                         template.type === "EXPENSE"
                           ? -Math.abs(template.amount)
@@ -89,7 +79,10 @@ export default function FixedExpenseCard({
             </div>
           </div>
           <strong className={styles.templateAmount}>
-            <MoneyAmount amount={template.convertedAmount ?? template.amount} type={template.type} />
+            <MoneyAmount
+              amount={template.convertedAmount ?? template.amount}
+              type={template.type}
+            />
           </strong>
         </div>
 

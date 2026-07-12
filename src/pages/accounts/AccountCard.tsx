@@ -6,11 +6,11 @@ import styles from "./AccountsPage.module.scss";
 
 interface AccountCardProps {
   account: Account;
-  isSelected: boolean;
+  isSelected?: boolean;
   onSelect: (id: string) => void;
 }
 
-export default function AccountCard({ account, isSelected, onSelect }: AccountCardProps) {
+export default function AccountCard({ account, onSelect }: AccountCardProps) {
   const { t } = useI18n();
 
   return (
@@ -19,9 +19,7 @@ export default function AccountCard({ account, isSelected, onSelect }: AccountCa
         className={styles.accountButton}
         onClick={() => onSelect(account.id)}
         style={
-          account.color
-            ? { borderInlineStartColor: account.color }
-            : undefined
+          account.color ? { borderInlineStartColor: account.color } : undefined
         }
         type="button"
       >

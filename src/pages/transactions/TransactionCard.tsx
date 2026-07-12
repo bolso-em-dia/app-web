@@ -11,14 +11,13 @@ import { formatCurrency } from "../../lib/formatters/currency";
 type TransactionCardProps = {
   transaction: Transaction;
   categoryOption: CategoryOption | undefined;
-  isSelected: boolean;
+  isSelected?: boolean;
   onSelect: (id: string) => void;
 };
 
 export default function TransactionCard({
   transaction,
   categoryOption,
-  isSelected,
   onSelect,
 }: TransactionCardProps) {
   const { t } = useI18n();
@@ -34,9 +33,7 @@ export default function TransactionCard({
               <span
                 aria-hidden="true"
                 className={styles.categoryLead}
-                style={
-                  categoryColor ? { color: categoryColor } : undefined
-                }
+                style={categoryColor ? { color: categoryColor } : undefined}
               >
                 <CategoryIcon className={styles.categoryIcon} />
               </span>
@@ -53,12 +50,9 @@ export default function TransactionCard({
               <strong className={styles.transactionDescription}>
                 {transaction.description}
               </strong>
-              <span className={styles.transactionMetaSeparator}>
-                ·
-              </span>
+              <span className={styles.transactionMetaSeparator}>·</span>
               <span className={styles.transactionMeta}>
-                {transaction.categoryName} ·{" "}
-                {transaction.accountName} ·{" "}
+                {transaction.categoryName} · {transaction.accountName} ·{" "}
                 {formatDay(transaction.transactionDate)}
                 {transaction.currency === "USD" &&
                 transaction.exchangeRate != null
@@ -88,29 +82,20 @@ export default function TransactionCard({
           {t(`transactionTypes.${transaction.type}` as const)}
         </span>
         <span className={styles.badge}>
-          {t(
-            `ownershipTypes.${transaction.ownershipType}` as const,
-          )}
+          {t(`ownershipTypes.${transaction.ownershipType}` as const)}
         </span>
         {transaction.memberName ? (
-          <span
-            className={`${styles.badge} ${styles.badgeMuted}`}
-          >
+          <span className={`${styles.badge} ${styles.badgeMuted}`}>
             {transaction.memberName}
           </span>
         ) : null}
         {transaction.installmentTotal ? (
-          <span
-            className={`${styles.badge} ${styles.badgeMuted}`}
-          >
-            {transaction.installmentNumber}/
-            {transaction.installmentTotal}
+          <span className={`${styles.badge} ${styles.badgeMuted}`}>
+            {transaction.installmentNumber}/{transaction.installmentTotal}
           </span>
         ) : null}
         {transaction.projected ? (
-          <span
-            className={`${styles.badge} ${styles.badgeMuted}`}
-          >
+          <span className={`${styles.badge} ${styles.badgeMuted}`}>
             {t("transactions.projected")}
           </span>
         ) : null}
