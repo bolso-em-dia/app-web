@@ -41,6 +41,7 @@ import Select from "../../components/ui/Select";
 import Switch from "../../components/ui/Switch";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
+import { usePagination } from "../../lib/usePagination";
 import { getStoredIcon } from "../../lib/icons";
 import MoneyAmount from "../../components/ui/MoneyAmount";
 import PaginationBar from "../../components/ui/PaginationBar";
@@ -571,11 +572,7 @@ export default function TransactionsPage() {
     selectedTransaction?.installmentGroupId,
   );
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
-  const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
-  const rangeEnd =
-    totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
-  const hasPreviousPage = page > 0;
-  const hasNextPage = page + 1 < totalPages;
+  const pagination = usePagination(page, pageSize, totalItems, totalPages);
 
   return (
     <AppShell
@@ -926,12 +923,12 @@ export default function TransactionsPage() {
           </section>
 
           <PaginationBar
-            start={rangeStart}
-            end={rangeEnd}
+            start={pagination.rangeStart}
+            end={pagination.rangeEnd}
             total={totalItems}
             pageSize={pageSize}
-            hasPrevious={hasPreviousPage}
-            hasNext={hasNextPage}
+            hasPrevious={pagination.hasPreviousPage}
+            hasNext={pagination.hasNextPage}
             onPrevious={() => setPage((p) => p - 1)}
             onNext={() => setPage((p) => p + 1)}
             onPageSizeChange={(s) => {
