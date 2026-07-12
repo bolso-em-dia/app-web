@@ -1,5 +1,4 @@
 import type { Category } from "../../app/api/categories";
-import Card from "../../components/ui/Card";
 import CategoryCard from "./CategoryCard";
 import styles from "./CategoriesPage.module.scss";
 

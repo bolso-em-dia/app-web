@@ -3,7 +3,7 @@ import { apiRequest, type PageResponse } from "./client";
 export type TransactionType = "INCOME" | "EXPENSE";
 export type OwnershipType = "SHARED" | "INDIVIDUAL";
 export type DeleteScope = "SINGLE" | "FUTURE" | "ALL";
-export type SourceType = "MANUAL" | "INSTALLMENT" | "FIXED_EXPENSE";
+type SourceType = "MANUAL" | "INSTALLMENT" | "FIXED_EXPENSE";
 
 export type Transaction = {
   id: string;

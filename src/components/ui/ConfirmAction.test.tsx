@@ -4,11 +4,15 @@ import { describe, expect, it, vi } from "vitest";
 import ConfirmAction from "./ConfirmAction";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 
-function renderConfirmAction(props: Partial<React.ComponentProps<typeof ConfirmAction>> = {}) {
+function renderConfirmAction(
+  props: Partial<React.ComponentProps<typeof ConfirmAction>> = {},
+) {
   const onConfirm = vi.fn();
   const onCancel = vi.fn();
   const utils = render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <TestAuthProvider
         user={{
           id: "1",
@@ -36,7 +40,9 @@ function renderConfirmAction(props: Partial<React.ComponentProps<typeof ConfirmA
 describe("ConfirmAction", () => {
   it("renders nothing when closed", () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -82,7 +88,9 @@ describe("ConfirmAction", () => {
 
     const dialog = screen.getByRole("alertdialog");
     fireEvent.click(
-      dialog.querySelector('button[type="button"]:not([aria-label])') as HTMLElement,
+      dialog.querySelector(
+        'button[type="button"]:not([aria-label])',
+      ) as HTMLElement,
     );
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
@@ -125,7 +133,9 @@ describe("ConfirmAction", () => {
   });
 
   it("renders children when provided", () => {
-    renderConfirmAction({ children: <div data-testid="custom-content">Custom</div> });
+    renderConfirmAction({
+      children: <div data-testid="custom-content">Custom</div>,
+    });
 
     expect(screen.getByTestId("custom-content")).toBeInTheDocument();
   });

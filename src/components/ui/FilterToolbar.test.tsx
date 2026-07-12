@@ -44,7 +44,9 @@ describe("FilterToolbar", () => {
     render(<Harness />);
 
     expect(screen.getByText("Buscar: Mercado")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Status secundário")).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("Status secundário"),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
 

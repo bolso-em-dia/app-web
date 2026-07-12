@@ -12,7 +12,8 @@ export function usePagination(
   totalPages: number,
 ): UsePaginationReturn {
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
-  const rangeEnd = totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
+  const rangeEnd =
+    totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
   const hasPreviousPage = page > 0;
   const hasNextPage = page + 1 < totalPages;
 

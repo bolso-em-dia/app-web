@@ -18,34 +18,35 @@ type RichSelectProps<TValue extends string> = {
   options: RichSelectOption<TValue>[];
   placeholder: string;
   onValueChange: (value: TValue) => void;
-  renderOption?: (option: RichSelectOption<TValue>, selected: boolean) => ReactNode;
+  renderOption?: (
+    option: RichSelectOption<TValue>,
+    selected: boolean,
+  ) => ReactNode;
   renderValue?: (option: RichSelectOption<TValue> | null) => ReactNode;
   hasError?: boolean;
   className?: string;
 };
 
 type SelectProps<TValue extends string = string> =
-  | NativeSelectProps
-  | RichSelectProps<TValue>;
+  NativeSelectProps | RichSelectProps<TValue>;
 
-const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  props,
-  ref,
-) {
-  if ("options" in props) {
-    return <RichSelect {...props} />;
-  }
+const Select = forwardRef<HTMLSelectElement, SelectProps>(
+  function Select(props, ref) {
+    if ("options" in props) {
+      return <RichSelect {...props} />;
+    }
 
-  const { className, hasError = false, ...nativeProps } = props;
+    const { className, hasError = false, ...nativeProps } = props;
 
-  return (
-    <select
-      ref={ref}
-      className={clsx(styles.root, hasError ? styles.error : "", className)}
-      {...nativeProps}
-    />
-  );
-});
+    return (
+      <select
+        ref={ref}
+        className={clsx(styles.root, hasError ? styles.error : "", className)}
+        {...nativeProps}
+      />
+    );
+  },
+);
 
 function RichSelect<TValue extends string>({
   id,
@@ -61,7 +62,8 @@ function RichSelect<TValue extends string>({
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const listboxId = useId();
-  const selectedOption = options.find((option) => option.value === value) ?? null;
+  const selectedOption =
+    options.find((option) => option.value === value) ?? null;
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -115,7 +117,10 @@ function RichSelect<TValue extends string>({
         <div className={styles.dropdown} id={listboxId} role="listbox">
           <button
             aria-selected={value === ""}
-            className={clsx(styles.option, value === "" ? styles.optionSelected : "")}
+            className={clsx(
+              styles.option,
+              value === "" ? styles.optionSelected : "",
+            )}
             onClick={() => {
               onValueChange("" as TValue);
               setIsOpen(false);
@@ -132,7 +137,10 @@ function RichSelect<TValue extends string>({
             return (
               <button
                 aria-selected={selected}
-                className={clsx(styles.option, selected ? styles.optionSelected : "")}
+                className={clsx(
+                  styles.option,
+                  selected ? styles.optionSelected : "",
+                )}
                 key={option.value}
                 onClick={() => {
                   onValueChange(option.value);

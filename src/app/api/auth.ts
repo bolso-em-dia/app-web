@@ -30,13 +30,6 @@ export function refresh() {
   });
 }
 
-export function me(accessToken: string) {
-  return apiRequest<AuthUser>("/api/auth/me", {
-    method: "GET",
-    accessToken,
-  });
-}
-
 export function logout() {
   return apiRequest<void>("/api/auth/logout", {
     method: "POST",

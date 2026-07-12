@@ -354,9 +354,8 @@ export default function CategoriesPage() {
                   color: category.color ?? "",
                 });
                 archiveForm.reset({
-                  replacementCategoryId: options.find(
-                    (o) => o.id !== category.id,
-                  )?.id ?? "",
+                  replacementCategoryId:
+                    options.find((o) => o.id !== category.id)?.id ?? "",
                 });
               }}
             />

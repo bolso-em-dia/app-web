@@ -2,7 +2,6 @@ import { Controller, type UseFormReturn } from "react-hook-form";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { CategoryOption } from "../../app/api/categories";
 import type { AccountOption } from "../../app/api/accounts";
-import type { FixedExpenseTemplate } from "../../app/api/fixedExpenses";
 import type { FixedExpenseFormValues } from "../../lib/validation/fixedExpenseSchema";
 import Button from "../../components/ui/Button";
 import CategorySelect from "../../components/ui/CategorySelect";
@@ -16,7 +15,6 @@ import styles from "./FixedExpensesPage.module.scss";
 
 type FixedExpenseFormProps = {
   isCreating: boolean;
-  selectedTemplate: FixedExpenseTemplate | null;
   form: UseFormReturn<FixedExpenseFormValues>;
   categoryOptions: CategoryOption[];
   accountOptions: AccountOption[];
@@ -34,7 +32,6 @@ type FixedExpenseFormProps = {
 
 export default function FixedExpenseForm({
   isCreating,
-  selectedTemplate,
   form,
   categoryOptions,
   accountOptions,
@@ -182,11 +179,7 @@ export default function FixedExpenseForm({
             </Button>
           ) : null}
           {!isCreating ? (
-            <Button
-              onClick={onDeleteOpen}
-              type="button"
-              variant="danger"
-            >
+            <Button onClick={onDeleteOpen} type="button" variant="danger">
               {t("common.delete")}
             </Button>
           ) : null}

@@ -1,10 +1,7 @@
 import { DollarSign, Landmark, Languages, WalletCards } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-  listAccountOptions,
-  type AccountOption,
-} from "../../app/api/accounts";
+import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import {
   updateCurrentUserPreferences,
   type UserPreferences,
@@ -64,8 +61,11 @@ function SettingFieldHeader({
 }
 
 export default function UserSettingsPage() {
-  const { accessToken, user, updateUserPreferences: applyUserPreferences } =
-    useAuth();
+  const {
+    accessToken,
+    user,
+    updateUserPreferences: applyUserPreferences,
+  } = useAuth();
   const { t } = useI18n();
   const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -153,7 +153,9 @@ export default function UserSettingsPage() {
             >
               <div className={styles.formIntro}>
                 <h2 className={styles.formTitle}>{t("settings.formTitle")}</h2>
-                <p className={styles.formSubtitle}>{t("settings.formSubtitle")}</p>
+                <p className={styles.formSubtitle}>
+                  {t("settings.formSubtitle")}
+                </p>
               </div>
 
               <div className={styles.fieldGroup}>

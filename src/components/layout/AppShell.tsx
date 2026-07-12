@@ -115,7 +115,10 @@ export default function AppShell({
             title={t("settings.title")}
             to="/settings"
           >
-            <UserRound aria-hidden="true" className={styles.accountActionIcon} />
+            <UserRound
+              aria-hidden="true"
+              className={styles.accountActionIcon}
+            />
           </Link>
           <Button onClick={() => void logout()} type="button" variant="subtle">
             <LogOut aria-hidden="true" className={styles.signOutIcon} />
@@ -166,7 +169,10 @@ export default function AppShell({
       </div>
 
       {isCompactNavigation && isNavigationOpen ? (
-        <Drawer onClose={() => setIsNavigationOpen(false)} title={t("app.brand")}>
+        <Drawer
+          onClose={() => setIsNavigationOpen(false)}
+          title={t("app.brand")}
+        >
           <div className={styles.mobileNavContent}>
             {renderNavigation()}
             <ExchangeRateIndicator />

@@ -155,7 +155,6 @@ services:
       - app-api
 ```
 
-
 ## CI
 
 - push validation workflow: `.github/workflows/ci.yml`

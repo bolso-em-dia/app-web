@@ -79,18 +79,12 @@ export default function AccountForm({
               {...form.register("type")}
               hasError={Boolean(form.formState.errors.type)}
             >
-              <option value="CHECKING">
-                {t("accountTypes.CHECKING")}
-              </option>
-              <option value="SAVINGS">
-                {t("accountTypes.SAVINGS")}
-              </option>
+              <option value="CHECKING">{t("accountTypes.CHECKING")}</option>
+              <option value="SAVINGS">{t("accountTypes.SAVINGS")}</option>
               <option value="CREDIT_CARD">
                 {t("accountTypes.CREDIT_CARD")}
               </option>
-              <option value="INVESTMENT">
-                {t("accountTypes.INVESTMENT")}
-              </option>
+              <option value="INVESTMENT">{t("accountTypes.INVESTMENT")}</option>
             </Select>
           </Field>
 
@@ -180,8 +174,7 @@ export default function AccountForm({
               style={{ backgroundColor: colorValue }}
             />
             <span>
-              {getColorLabel(colorValue) ||
-                t("common.clearSelection")}
+              {getColorLabel(colorValue) || t("common.clearSelection")}
             </span>
           </div>
         ) : null}
@@ -190,30 +183,18 @@ export default function AccountForm({
 
         <div className={styles.formActions}>
           <Button disabled={isSaving} type="submit">
-            {isCreating
-              ? t("accounts.create")
-              : t("common.save")}
+            {isCreating ? t("accounts.create") : t("common.save")}
           </Button>
           {isCreating ? (
-            <Button
-              onClick={onCancelCreate}
-              type="button"
-              variant="subtle"
-            >
+            <Button onClick={onCancelCreate} type="button" variant="subtle">
               {t("common.cancel")}
             </Button>
           ) : (
             <Button
-              disabled={
-                Boolean(selectedAccount?.archivedFromMonth)
-              }
+              disabled={Boolean(selectedAccount?.archivedFromMonth)}
               onClick={onArchiveOpen}
               type="button"
-              variant={
-                selectedAccount?.archivedFromMonth
-                  ? "subtle"
-                  : "danger"
-              }
+              variant={selectedAccount?.archivedFromMonth ? "subtle" : "danger"}
             >
               {selectedAccount?.archivedFromMonth
                 ? t("accounts.archived")

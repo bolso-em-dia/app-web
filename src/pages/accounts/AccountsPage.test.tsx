@@ -8,7 +8,12 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import {
+  resetFetchMocks,
+  mockJsonResponse,
+  mockErrorResponse,
+  mockFetchUrl,
+} from "../../test/setup";
 import { createAccount } from "../../test/fixtures";
 import AccountsPage from "./AccountsPage";
 
@@ -37,7 +42,10 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -88,7 +96,10 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -111,14 +122,17 @@ describe("AccountsPage", () => {
     fireEvent.change(searchInput, { target: { value: "Main" } });
 
     await waitFor(() => {
-      const requests = vi.mocked(fetch).mock.calls.map(([input]) => String(input)).filter((url) => url.includes("/api/accounts?"));
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/accounts?"));
       expect(requests.length).toBeGreaterThanOrEqual(2);
     });
 
     expect(searchInput).toHaveFocus();
     expect(screen.queryByText("#2254d1")).not.toBeInTheDocument();
     const accountButton = screen.getByRole("button", { name: /Main checking/ });
-    const accountSwatch = accountButton.querySelector('span[style]');
+    const accountSwatch = accountButton.querySelector("span[style]");
 
     expect(accountSwatch).not.toBeNull();
     expect(accountSwatch).toHaveStyle({ backgroundColor: "rgb(34, 84, 209)" });
@@ -128,7 +142,10 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -166,9 +183,10 @@ describe("AccountsPage", () => {
 
     const archiveCalls = vi
       .mocked(fetch)
-      .mock.calls.filter(([input]) =>
-        String(input).includes("/api/accounts/") &&
-        String(input).includes("/archive"),
+      .mock.calls.filter(
+        ([input]) =>
+          String(input).includes("/api/accounts/") &&
+          String(input).includes("/archive"),
       );
     expect(archiveCalls).toHaveLength(0);
   });
@@ -224,22 +242,28 @@ describe("AccountsPage", () => {
     });
 
     // Configure GET mock for individual account
-    mockFetchUrl("/api/accounts/account-1", mockJsonResponse({
-      id: "account-1",
-      name: "Main checking",
-      type: "CHECKING",
-      brand: null,
-      color: "#2254d1",
-      closingDay: null,
-      dueDay: null,
-      createdInMonth: "2026-06-01",
-      archivedFromMonth: "2026-07-01",
-      createdAt: "2026-06-01T10:00:00Z",
-      updatedAt: "2026-07-01T10:00:00Z",
-    }));
+    mockFetchUrl(
+      "/api/accounts/account-1",
+      mockJsonResponse({
+        id: "account-1",
+        name: "Main checking",
+        type: "CHECKING",
+        brand: null,
+        color: "#2254d1",
+        closingDay: null,
+        dueDay: null,
+        createdInMonth: "2026-06-01",
+        archivedFromMonth: "2026-07-01",
+        createdAt: "2026-06-01T10:00:00Z",
+        updatedAt: "2026-07-01T10:00:00Z",
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -316,7 +340,10 @@ describe("AccountsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -353,7 +380,9 @@ describe("AccountsPage", () => {
       );
     });
 
-    if (!screen.queryByLabelText("Tipo", { selector: "#account-type-filter" })) {
+    if (
+      !screen.queryByLabelText("Tipo", { selector: "#account-type-filter" })
+    ) {
       fireEvent.click(screen.getByRole("button", { name: "Filtros (2)" }));
     }
 
@@ -364,7 +393,9 @@ describe("AccountsPage", () => {
     const accountRequests = vi
       .mocked(fetch)
       .mock.calls.map(([input]) => String(input))
-      .filter((url) => url.includes("/api/accounts?") && !url.includes("options"));
+      .filter(
+        (url) => url.includes("/api/accounts?") && !url.includes("options"),
+      );
 
     expect(accountRequests.some((url) => url.includes("search=Main"))).toBe(
       true,
@@ -387,7 +418,10 @@ describe("AccountsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -428,8 +462,25 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false, preferences: { defaultAccountId: null, locale: "pt-BR", showBalanceWithBudgets: false, showForeignCurrency: true } }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+              showForeignCurrency: true,
+            },
+          }}
+        >
           <AccountsPage />
         </TestAuthProvider>
       </MemoryRouter>,
@@ -446,8 +497,25 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false, preferences: { defaultAccountId: null, locale: "pt-BR", showBalanceWithBudgets: false, showForeignCurrency: true } }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+              showForeignCurrency: true,
+            },
+          }}
+        >
           <AccountsPage />
         </TestAuthProvider>
       </MemoryRouter>,
@@ -464,8 +532,25 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false, preferences: { defaultAccountId: null, locale: "pt-BR", showBalanceWithBudgets: false, showForeignCurrency: true } }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+              showForeignCurrency: true,
+            },
+          }}
+        >
           <AccountsPage />
         </TestAuthProvider>
       </MemoryRouter>,
@@ -475,7 +560,9 @@ describe("AccountsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
     const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(within(drawer).getByLabelText("Moeda"), { target: { value: "USD" } });
+    fireEvent.change(within(drawer).getByLabelText("Moeda"), {
+      target: { value: "USD" },
+    });
     expect(within(drawer).getByDisplayValue("Dólar (USD)")).toBeInTheDocument();
   });
 });

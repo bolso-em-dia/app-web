@@ -8,8 +8,16 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
-import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import {
+  getCurrentReferenceMonth,
+  shiftReferenceMonth,
+} from "../../lib/formatters/date";
+import {
+  resetFetchMocks,
+  mockJsonResponse,
+  mockErrorResponse,
+  mockFetchUrl,
+} from "../../test/setup";
 import TransactionsPage from "./TransactionsPage";
 
 const defaultTransactionsResponse = {
@@ -100,9 +108,15 @@ const defaultMembersResponse = {
 
 function setupDefaultMocks() {
   mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
-  mockFetchUrl("/api/transactions?", mockJsonResponse(defaultTransactionsResponse));
+  mockFetchUrl(
+    "/api/transactions?",
+    mockJsonResponse(defaultTransactionsResponse),
+  );
   mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
-  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+  mockFetchUrl(
+    "/api/categories/options",
+    mockJsonResponse(defaultCategoriesResponse),
+  );
   mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
   mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 }
@@ -112,7 +126,9 @@ function selectCategory(container: HTMLElement, categoryName: string) {
     within(container).getByLabelText("Categoria", { selector: "button" }),
   );
   fireEvent.click(
-    within(container).getByRole("option", { name: new RegExp(categoryName, "i") }),
+    within(container).getByRole("option", {
+      name: new RegExp(categoryName, "i"),
+    }),
   );
 }
 
@@ -129,7 +145,10 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -186,7 +205,10 @@ describe("TransactionsPage", () => {
     resetFetchMocks();
 
     setupDefaultMocks();
-    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse(["Groceries", "Groceries monthly"]));
+    mockFetchUrl(
+      "/api/transactions/descriptions",
+      mockJsonResponse(["Groceries", "Groceries monthly"]),
+    );
 
     // Mock POST response
     let postCallCount = 0;
@@ -260,7 +282,10 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -319,10 +344,9 @@ describe("TransactionsPage", () => {
       expect(within(drawer).getByLabelText("Descrição")).toHaveValue("");
     });
 
-    expect(within(drawer).getByRole("radio", { name: "Receita" })).toHaveAttribute(
-      "aria-checked",
-      "true",
-    );
+    expect(
+      within(drawer).getByRole("radio", { name: "Receita" }),
+    ).toHaveAttribute("aria-checked", "true");
     expect(within(drawer).getByLabelText("Data da transação")).toHaveValue(
       "2026-07-03",
     );
@@ -331,9 +355,7 @@ describe("TransactionsPage", () => {
         selector: "#transaction-account",
       }),
     ).toHaveValue("account-1");
-    expect(
-      within(drawer).getByText("Groceries"),
-    ).toBeInTheDocument();
+    expect(within(drawer).getByText("Groceries")).toBeInTheDocument();
   });
 
   it("sends only the supported payload for an income transaction", async () => {
@@ -341,34 +363,43 @@ describe("TransactionsPage", () => {
 
     setupDefaultMocks();
 
-    mockFetchUrl("/api/transactions", mockJsonResponse([
-      {
-        id: "tx-created",
-        type: "INCOME",
-        ownershipType: "SHARED",
-        sourceType: "MANUAL",
-        description: "A",
-        amount: 90,
-        transactionDate: "2026-06-10",
-        referenceMonth: "2026-06-01",
-        accountId: "account-1",
-        accountName: "Main checking",
-        categoryId: "cat-1",
-        categoryName: "Groceries",
-        memberId: null,
-        memberName: null,
-        installmentGroupId: null,
-        installmentNumber: null,
-        installmentTotal: null,
-        createdAt: "2026-06-01T10:00:00Z",
-        updatedAt: "2026-06-01T10:00:00Z",
-      },
-    ]));
+    mockFetchUrl(
+      "/api/transactions",
+      mockJsonResponse([
+        {
+          id: "tx-created",
+          type: "INCOME",
+          ownershipType: "SHARED",
+          sourceType: "MANUAL",
+          description: "A",
+          amount: 90,
+          transactionDate: "2026-06-10",
+          referenceMonth: "2026-06-01",
+          accountId: "account-1",
+          accountName: "Main checking",
+          categoryId: "cat-1",
+          categoryName: "Groceries",
+          memberId: null,
+          memberName: null,
+          installmentGroupId: null,
+          installmentNumber: null,
+          installmentTotal: null,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-06-01T10:00:00Z",
+        },
+      ]),
+    );
 
     // Mock reload after create
     mockFetchUrl("/api/transactions?", (input) => {
       const url = String(input);
-      if (vi.mocked(fetch).mock.calls.filter(([u]) => String(u).includes("/api/transactions") && u !== url).length > 5) {
+      if (
+        vi
+          .mocked(fetch)
+          .mock.calls.filter(
+            ([u]) => String(u).includes("/api/transactions") && u !== url,
+          ).length > 5
+      ) {
         return mockJsonResponse({
           items: [
             {
@@ -386,7 +417,10 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -401,7 +435,9 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: /Groceries/i }),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
     const drawer = screen.getByRole("dialog");
@@ -431,16 +467,23 @@ describe("TransactionsPage", () => {
           .mocked(fetch)
           .mock.calls.some(
             ([input, init]) =>
-              String(input).endsWith("/api/transactions") && init?.method === "POST",
+              String(input).endsWith("/api/transactions") &&
+              init?.method === "POST",
           ),
       ).toBe(true);
     });
 
-    const createCall = vi.mocked(fetch).mock.calls.find(
-      ([input, init]) =>
-        String(input).endsWith("/api/transactions") && init?.method === "POST",
-    );
-    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<string, unknown>;
+    const createCall = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([input, init]) =>
+          String(input).endsWith("/api/transactions") &&
+          init?.method === "POST",
+      );
+    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<
+      string,
+      unknown
+    >;
 
     expect(payload).toMatchObject({
       type: "INCOME",
@@ -460,32 +503,38 @@ describe("TransactionsPage", () => {
 
     setupDefaultMocks();
 
-    mockFetchUrl("/api/transactions", mockJsonResponse([
-      {
-        id: "tx-created",
-        type: "EXPENSE",
-        ownershipType: "INDIVIDUAL",
-        sourceType: "INSTALLMENT",
-        description: "A",
-        amount: 25,
-        transactionDate: "2026-06-10",
-        referenceMonth: "2026-06-01",
-        accountId: "account-1",
-        accountName: "Main checking",
-        categoryId: "cat-1",
-        categoryName: "Groceries",
-        memberId: "member-1",
-        memberName: "Taylor",
-        installmentGroupId: "grp-1",
-        installmentNumber: 1,
-        installmentTotal: 4,
-        createdAt: "2026-06-01T10:00:00Z",
-        updatedAt: "2026-06-01T10:00:00Z",
-      },
-    ]));
+    mockFetchUrl(
+      "/api/transactions",
+      mockJsonResponse([
+        {
+          id: "tx-created",
+          type: "EXPENSE",
+          ownershipType: "INDIVIDUAL",
+          sourceType: "INSTALLMENT",
+          description: "A",
+          amount: 25,
+          transactionDate: "2026-06-10",
+          referenceMonth: "2026-06-01",
+          accountId: "account-1",
+          accountName: "Main checking",
+          categoryId: "cat-1",
+          categoryName: "Groceries",
+          memberId: "member-1",
+          memberName: "Taylor",
+          installmentGroupId: "grp-1",
+          installmentNumber: 1,
+          installmentTotal: 4,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-06-01T10:00:00Z",
+        },
+      ]),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -500,7 +549,9 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: /Groceries/i }),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
     const drawer = screen.getByRole("dialog");
@@ -520,7 +571,9 @@ describe("TransactionsPage", () => {
       },
     );
     selectCategory(drawer, "Groceries");
-    fireEvent.click(within(drawer).getByRole("switch", { name: "Titularidade Individual" }));
+    fireEvent.click(
+      within(drawer).getByRole("switch", { name: "Titularidade Individual" }),
+    );
     fireEvent.change(within(drawer).getByLabelText("Membro"), {
       target: { value: "member-1" },
     });
@@ -537,16 +590,23 @@ describe("TransactionsPage", () => {
           .mocked(fetch)
           .mock.calls.some(
             ([input, init]) =>
-              String(input).endsWith("/api/transactions") && init?.method === "POST",
+              String(input).endsWith("/api/transactions") &&
+              init?.method === "POST",
           ),
       ).toBe(true);
     });
 
-    const createCall = vi.mocked(fetch).mock.calls.find(
-      ([input, init]) =>
-        String(input).endsWith("/api/transactions") && init?.method === "POST",
-    );
-    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<string, unknown>;
+    const createCall = vi
+      .mocked(fetch)
+      .mock.calls.find(
+        ([input, init]) =>
+          String(input).endsWith("/api/transactions") &&
+          init?.method === "POST",
+      );
+    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<
+      string,
+      unknown
+    >;
 
     expect(payload).toMatchObject({
       type: "EXPENSE",
@@ -564,7 +624,10 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -593,8 +656,12 @@ describe("TransactionsPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
-    const modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
-    expect(within(modal).getByText("Confirme a exclusão da transação selecionada.")).toBeInTheDocument();
+    const modal = screen.getByRole("alertdialog", {
+      name: "Excluir transação",
+    });
+    expect(
+      within(modal).getByText("Confirme a exclusão da transação selecionada."),
+    ).toBeInTheDocument();
 
     fireEvent.click(within(modal).getByRole("button", { name: "Cancelar" }));
 
@@ -604,11 +671,13 @@ describe("TransactionsPage", () => {
       ).not.toBeInTheDocument();
     });
     expect(
-      vi.mocked(fetch).mock.calls.some(
-        ([input, init]) =>
-          String(input).includes("/api/transactions/tx-1?") &&
-          init?.method === "DELETE",
-      ),
+      vi
+        .mocked(fetch)
+        .mock.calls.some(
+          ([input, init]) =>
+            String(input).includes("/api/transactions/tx-1?") &&
+            init?.method === "DELETE",
+        ),
     ).toBe(false);
   });
 
@@ -625,7 +694,10 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -649,16 +721,20 @@ describe("TransactionsPage", () => {
     fireEvent.click(transactionButton);
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
-    const modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
+    const modal = screen.getByRole("alertdialog", {
+      name: "Excluir transação",
+    });
     fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
 
     await waitFor(() => {
       expect(
-        vi.mocked(fetch).mock.calls.some(
-          ([input, init]) =>
-            String(input).endsWith("/api/transactions/tx-1?scope=SINGLE") &&
-            init?.method === "DELETE",
-        ),
+        vi
+          .mocked(fetch)
+          .mock.calls.some(
+            ([input, init]) =>
+              String(input).endsWith("/api/transactions/tx-1?scope=SINGLE") &&
+              init?.method === "DELETE",
+          ),
       ).toBe(true);
     });
   });
@@ -688,15 +764,33 @@ describe("TransactionsPage", () => {
       updatedAt: "2026-06-01T10:00:00Z",
     };
 
-    mockFetchUrl("/api/transactions?", mockJsonResponse({ items: [groupedTransaction], page: 0, size: 12, totalItems: 1, totalPages: 1 }));
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        items: [groupedTransaction],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
     mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
-    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
-    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl(
+      "/api/categories/options",
+      mockJsonResponse(defaultCategoriesResponse),
+    );
+    mockFetchUrl(
+      "/api/family-members",
+      mockJsonResponse(defaultMembersResponse),
+    );
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
     mockFetchUrl("/api/transactions/tx-1?", mockJsonResponse(undefined));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -721,7 +815,9 @@ describe("TransactionsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
     let modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
-    expect(within(modal).getByLabelText("Escopo da exclusão")).toBeInTheDocument();
+    expect(
+      within(modal).getByLabelText("Escopo da exclusão"),
+    ).toBeInTheDocument();
     fireEvent.change(within(modal).getByLabelText("Escopo da exclusão"), {
       target: { value: "FUTURE" },
     });
@@ -729,11 +825,13 @@ describe("TransactionsPage", () => {
 
     await waitFor(() => {
       expect(
-        vi.mocked(fetch).mock.calls.some(
-          ([input, init]) =>
-            String(input).endsWith("/api/transactions/tx-1?scope=FUTURE") &&
-            init?.method === "DELETE",
-        ),
+        vi
+          .mocked(fetch)
+          .mock.calls.some(
+            ([input, init]) =>
+              String(input).endsWith("/api/transactions/tx-1?scope=FUTURE") &&
+              init?.method === "DELETE",
+          ),
       ).toBe(true);
     });
 
@@ -748,11 +846,13 @@ describe("TransactionsPage", () => {
 
     await waitFor(() => {
       expect(
-        vi.mocked(fetch).mock.calls.some(
-          ([input, init]) =>
-            String(input).endsWith("/api/transactions/tx-1?scope=ALL") &&
-            init?.method === "DELETE",
-        ),
+        vi
+          .mocked(fetch)
+          .mock.calls.some(
+            ([input, init]) =>
+              String(input).endsWith("/api/transactions/tx-1?scope=ALL") &&
+              init?.method === "DELETE",
+          ),
       ).toBe(true);
     });
   });
@@ -760,46 +860,67 @@ describe("TransactionsPage", () => {
   it("shows projected fixed transactions without allowing edit from the transaction list", async () => {
     resetFetchMocks();
 
-    const futureReferenceMonth = shiftReferenceMonth(getCurrentReferenceMonth(), 1);
+    const futureReferenceMonth = shiftReferenceMonth(
+      getCurrentReferenceMonth(),
+      1,
+    );
 
-    mockFetchUrl("/api/transactions?", mockJsonResponse({
-      items: [
-        {
-          id: "projected-rent",
-          type: "EXPENSE",
-          ownershipType: "SHARED",
-          sourceType: "FIXED_EXPENSE",
-          description: "Projected Rent",
-          amount: 880,
-          transactionDate: `${futureReferenceMonth.slice(0, 8)}12`,
-          referenceMonth: futureReferenceMonth,
-          accountId: "account-1",
-          accountName: "Main checking",
-          categoryId: "cat-1",
-          categoryName: "Groceries",
-          memberId: null,
-          memberName: null,
-          installmentGroupId: null,
-          installmentNumber: null,
-          installmentTotal: null,
-          fixedExpenseTemplateId: "template-1",
-          projected: true,
-          createdAt: null,
-          updatedAt: null,
-        },
-      ],
-      page: 0,
-      size: 12,
-      totalItems: 1,
-      totalPages: 1,
-    }));
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "projected-rent",
+            type: "EXPENSE",
+            ownershipType: "SHARED",
+            sourceType: "FIXED_EXPENSE",
+            description: "Projected Rent",
+            amount: 880,
+            transactionDate: `${futureReferenceMonth.slice(0, 8)}12`,
+            referenceMonth: futureReferenceMonth,
+            accountId: "account-1",
+            accountName: "Main checking",
+            categoryId: "cat-1",
+            categoryName: "Groceries",
+            memberId: null,
+            memberName: null,
+            installmentGroupId: null,
+            installmentNumber: null,
+            installmentTotal: null,
+            fixedExpenseTemplateId: "template-1",
+            projected: true,
+            createdAt: null,
+            updatedAt: null,
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
     mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
-    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
-    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl(
+      "/api/categories/options",
+      mockJsonResponse(defaultCategoriesResponse),
+    );
+    mockFetchUrl(
+      "/api/family-members",
+      mockJsonResponse({
+        items: [],
+        page: 0,
+        size: 200,
+        totalItems: 0,
+        totalPages: 0,
+      }),
+    );
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -829,7 +950,10 @@ describe("TransactionsPage", () => {
     resetFetchMocks();
 
     const currentReferenceMonth = getCurrentReferenceMonth();
-    const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
+    const previousReferenceMonth = shiftReferenceMonth(
+      currentReferenceMonth,
+      -1,
+    );
 
     mockFetchUrl("/api/transactions?", (input) => {
       const url = String(input);
@@ -871,21 +995,24 @@ describe("TransactionsPage", () => {
       });
     });
 
-    mockFetchUrl("/api/accounts?", mockJsonResponse([
-      {
-        id: "account-1",
-        name: "Main checking",
-        type: "CHECKING",
-        brand: null,
-        color: "#2254d1",
-        closingDay: null,
-        dueDay: null,
-        createdInMonth: "2026-06-01",
-        archivedFromMonth: null,
-        createdAt: "2026-06-01T10:00:00Z",
-        updatedAt: "2026-06-01T10:00:00Z",
-      },
-    ]));
+    mockFetchUrl(
+      "/api/accounts?",
+      mockJsonResponse([
+        {
+          id: "account-1",
+          name: "Main checking",
+          type: "CHECKING",
+          brand: null,
+          color: "#2254d1",
+          closingDay: null,
+          dueDay: null,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: null,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-06-01T10:00:00Z",
+        },
+      ]),
+    );
 
     mockFetchUrl("/api/categories/options", (input) => {
       const url = String(input);
@@ -913,11 +1040,17 @@ describe("TransactionsPage", () => {
       );
     });
 
-    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl(
+      "/api/family-members",
+      mockJsonResponse(defaultMembersResponse),
+    );
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -971,7 +1104,10 @@ describe("TransactionsPage", () => {
     resetFetchMocks();
 
     const currentReferenceMonth = getCurrentReferenceMonth();
-    const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
+    const previousReferenceMonth = shiftReferenceMonth(
+      currentReferenceMonth,
+      -1,
+    );
 
     mockFetchUrl("/api/transactions?", (input) => {
       const url = String(input);
@@ -1013,21 +1149,24 @@ describe("TransactionsPage", () => {
       });
     });
 
-    mockFetchUrl("/api/accounts?", mockJsonResponse([
-      {
-        id: "account-1",
-        name: "Main checking",
-        type: "CHECKING",
-        brand: null,
-        color: "#2254d1",
-        closingDay: null,
-        dueDay: null,
-        createdInMonth: "2026-06-01",
-        archivedFromMonth: null,
-        createdAt: "2026-06-01T10:00:00Z",
-        updatedAt: "2026-06-01T10:00:00Z",
-      },
-    ]));
+    mockFetchUrl(
+      "/api/accounts?",
+      mockJsonResponse([
+        {
+          id: "account-1",
+          name: "Main checking",
+          type: "CHECKING",
+          brand: null,
+          color: "#2254d1",
+          closingDay: null,
+          dueDay: null,
+          createdInMonth: "2026-06-01",
+          archivedFromMonth: null,
+          createdAt: "2026-06-01T10:00:00Z",
+          updatedAt: "2026-06-01T10:00:00Z",
+        },
+      ]),
+    );
 
     mockFetchUrl("/api/categories/options", (input) => {
       const url = String(input);
@@ -1055,11 +1194,17 @@ describe("TransactionsPage", () => {
       );
     });
 
-    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl(
+      "/api/family-members",
+      mockJsonResponse(defaultMembersResponse),
+    );
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -1104,7 +1249,10 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -1127,12 +1275,18 @@ describe("TransactionsPage", () => {
     );
 
     const listbox = screen.getByRole("listbox");
-    fireEvent.click(within(listbox).getByRole("option", { name: /Groceries/i }));
-    fireEvent.click(within(listbox).getByRole("option", { name: /Transport/i }));
+    fireEvent.click(
+      within(listbox).getByRole("option", { name: /Groceries/i }),
+    );
+    fireEvent.click(
+      within(listbox).getByRole("option", { name: /Transport/i }),
+    );
     fireEvent.click(screen.getByRole("button", { name: /^Filtros/ }));
 
     await waitFor(() => {
-      expect(screen.getByText("Categorias: Groceries, Transport")).toBeInTheDocument();
+      expect(
+        screen.getByText("Categorias: Groceries, Transport"),
+      ).toBeInTheDocument();
     });
 
     const transactionRequests = vi
@@ -1152,14 +1306,35 @@ describe("TransactionsPage", () => {
   it("filters transactions by search term and shows an active filter chip", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/transactions?", mockJsonResponse({ items: [], page: 0, size: 12, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        items: [],
+        page: 0,
+        size: 12,
+        totalItems: 0,
+        totalPages: 0,
+      }),
+    );
     mockFetchUrl("/api/accounts", mockJsonResponse([]));
     mockFetchUrl("/api/categories/options", mockJsonResponse([]));
-    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl(
+      "/api/family-members",
+      mockJsonResponse({
+        items: [],
+        page: 0,
+        size: 200,
+        totalItems: 0,
+        totalPages: 0,
+      }),
+    );
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -1182,14 +1357,10 @@ describe("TransactionsPage", () => {
         .mocked(fetch)
         .mock.calls.map(([input]) => String(input))
         .filter((url) => url.includes("/api/transactions?"));
-      expect(
-        requests.some((url) => url.includes("search=mercado")),
-      ).toBe(true);
+      expect(requests.some((url) => url.includes("search=mercado"))).toBe(true);
     });
 
-    expect(
-      screen.getByText("Buscar: mercado"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Buscar: mercado")).toBeInTheDocument();
   });
 
   it("shows error feedback when delete fails", async () => {
@@ -1205,7 +1376,10 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -1229,7 +1403,9 @@ describe("TransactionsPage", () => {
     fireEvent.click(transactionButton);
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
-    const modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
+    const modal = screen.getByRole("alertdialog", {
+      name: "Excluir transação",
+    });
     fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
 
     await waitFor(() => {
@@ -1242,25 +1418,103 @@ describe("TransactionsPage", () => {
   it("shows USD secondary line for foreign currency transactions", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/transactions?", mockJsonResponse({
-      items: [{
-        id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
-        description: "Amazon", amount: 100, convertedAmount: 510, exchangeRate: 5.10, currency: "USD",
-        transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
-        accountId: "account-1", accountName: "US Account",
-        categoryId: "cat-1", categoryName: "Shopping", memberId: null, memberName: null,
-        installmentGroupId: null, installmentNumber: null, installmentTotal: null,
-        createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
-      }], page: 0, size: 12, totalItems: 1, totalPages: 1,
-    }));
-    mockFetchUrl("/api/accounts?", mockJsonResponse({ items: [{ id: "account-1", name: "US Account", type: "CHECKING", currency: "USD", brand: null, color: "#2254d1", closingDay: null, dueDay: null, createdInMonth: "2026-06-01", archivedFromMonth: null, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z" }], page: 0, size: 200, totalItems: 1, totalPages: 1 }));
-    mockFetchUrl("/api/categories/options", mockJsonResponse([{ id: "cat-1", name: "Shopping", icon: "shopping-cart", color: "#2254d1" }]));
-    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "tx-usd",
+            type: "EXPENSE",
+            ownershipType: "SHARED",
+            sourceType: "MANUAL",
+            description: "Amazon",
+            amount: 100,
+            convertedAmount: 510,
+            exchangeRate: 5.1,
+            currency: "USD",
+            transactionDate: "2026-06-10",
+            referenceMonth: "2026-06-01",
+            accountId: "account-1",
+            accountName: "US Account",
+            categoryId: "cat-1",
+            categoryName: "Shopping",
+            memberId: null,
+            memberName: null,
+            installmentGroupId: null,
+            installmentNumber: null,
+            installmentTotal: null,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
+    mockFetchUrl(
+      "/api/accounts?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "account-1",
+            name: "US Account",
+            type: "CHECKING",
+            currency: "USD",
+            brand: null,
+            color: "#2254d1",
+            closingDay: null,
+            dueDay: null,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 200,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
+    mockFetchUrl(
+      "/api/categories/options",
+      mockJsonResponse([
+        {
+          id: "cat-1",
+          name: "Shopping",
+          icon: "shopping-cart",
+          color: "#2254d1",
+        },
+      ]),
+    );
+    mockFetchUrl(
+      "/api/family-members",
+      mockJsonResponse({
+        items: [],
+        page: 0,
+        size: 200,
+        totalItems: 0,
+        totalPages: 0,
+      }),
+    );
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
           <TransactionsPage />
         </TestAuthProvider>
       </MemoryRouter>,
@@ -1274,26 +1528,102 @@ describe("TransactionsPage", () => {
     resetFetchMocks();
 
     const usdTransaction = {
-      id: "tx-usd", type: "EXPENSE" as const, ownershipType: "SHARED" as const, sourceType: "MANUAL" as const,
-      description: "Amazon", amount: 100, convertedAmount: 510, exchangeRate: 5.10, currency: "USD",
-      transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
-      accountId: "account-1", accountName: "US Account",
-      categoryId: "cat-1", categoryName: "Shopping", memberId: null, memberName: null,
-      installmentGroupId: null, installmentNumber: null, installmentTotal: null,
-      createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
+      id: "tx-usd",
+      type: "EXPENSE" as const,
+      ownershipType: "SHARED" as const,
+      sourceType: "MANUAL" as const,
+      description: "Amazon",
+      amount: 100,
+      convertedAmount: 510,
+      exchangeRate: 5.1,
+      currency: "USD",
+      transactionDate: "2026-06-10",
+      referenceMonth: "2026-06-01",
+      accountId: "account-1",
+      accountName: "US Account",
+      categoryId: "cat-1",
+      categoryName: "Shopping",
+      memberId: null,
+      memberName: null,
+      installmentGroupId: null,
+      installmentNumber: null,
+      installmentTotal: null,
+      createdAt: "2026-06-01T10:00:00Z",
+      updatedAt: "2026-06-01T10:00:00Z",
     };
 
-    mockFetchUrl("/api/transactions?", mockJsonResponse({
-      items: [usdTransaction], page: 0, size: 12, totalItems: 1, totalPages: 1,
-    }));
-    mockFetchUrl("/api/accounts?", mockJsonResponse({ items: [{ id: "account-1", name: "US Account", type: "CHECKING" as const, currency: "USD", brand: null, color: "#2254d1", closingDay: null, dueDay: null, createdInMonth: "2026-06-01", archivedFromMonth: null, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z" }], page: 0, size: 200, totalItems: 1, totalPages: 1 }));
-    mockFetchUrl("/api/categories/options", mockJsonResponse([{ id: "cat-1", name: "Shopping", icon: "shopping-cart", color: "#2254d1" }]));
-    mockFetchUrl("/api/family-members", mockJsonResponse({ items: [], page: 0, size: 200, totalItems: 0, totalPages: 0 }));
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        items: [usdTransaction],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
+    mockFetchUrl(
+      "/api/accounts?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "account-1",
+            name: "US Account",
+            type: "CHECKING" as const,
+            currency: "USD",
+            brand: null,
+            color: "#2254d1",
+            closingDay: null,
+            dueDay: null,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 200,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
+    mockFetchUrl(
+      "/api/categories/options",
+      mockJsonResponse([
+        {
+          id: "cat-1",
+          name: "Shopping",
+          icon: "shopping-cart",
+          color: "#2254d1",
+        },
+      ]),
+    );
+    mockFetchUrl(
+      "/api/family-members",
+      mockJsonResponse({
+        items: [],
+        page: 0,
+        size: 200,
+        totalItems: 0,
+        totalPages: 0,
+      }),
+    );
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/transactions"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
           <TransactionsPage />
         </TestAuthProvider>
       </MemoryRouter>,

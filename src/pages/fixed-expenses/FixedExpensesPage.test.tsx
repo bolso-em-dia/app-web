@@ -8,7 +8,12 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import {
+  resetFetchMocks,
+  mockJsonResponse,
+  mockErrorResponse,
+  mockFetchUrl,
+} from "../../test/setup";
 import FixedExpensesPage from "./FixedExpensesPage";
 
 const defaultTemplatesResponse = {
@@ -56,9 +61,18 @@ const defaultAccountsResponse = [
 ];
 
 function setupDefaultMocks() {
-  mockFetchUrl("/api/fixed-transactions?", mockJsonResponse(defaultTemplatesResponse));
-  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
-  mockFetchUrl("/api/accounts/options", mockJsonResponse(defaultAccountsResponse));
+  mockFetchUrl(
+    "/api/fixed-transactions?",
+    mockJsonResponse(defaultTemplatesResponse),
+  );
+  mockFetchUrl(
+    "/api/categories/options",
+    mockJsonResponse(defaultCategoriesResponse),
+  );
+  mockFetchUrl(
+    "/api/accounts/options",
+    mockJsonResponse(defaultAccountsResponse),
+  );
 }
 
 describe("FixedExpensesPage", () => {
@@ -73,7 +87,10 @@ describe("FixedExpensesPage", () => {
 
   it("loads templates and validates required form fields", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/fixed-transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -94,7 +111,9 @@ describe("FixedExpensesPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova transação fixa" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Nova transação fixa" }),
+    );
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Nome"), {
       target: { value: "Water bill" },
@@ -110,7 +129,9 @@ describe("FixedExpensesPage", () => {
       target: { value: "12" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Criar transação fixa" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Criar transação fixa" }),
+    );
 
     await waitFor(() => {
       expect(
@@ -123,52 +144,58 @@ describe("FixedExpensesPage", () => {
   it("renders templates as full-width single-column list", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/fixed-transactions?", mockJsonResponse({
-      items: [
-        {
-          id: "t1",
-          name: "Rent",
-          type: "EXPENSE",
-          amount: 1800,
-          categoryId: "cat-1",
-          categoryName: "Housing",
-          accountId: "account-1",
-          accountName: "Main checking",
-          dueDay: 5,
-          createdInMonth: "2026-06-01",
-          archivedFromMonth: null,
-          active: true,
-          createdAt: "2026-06-01T10:00:00Z",
-          updatedAt: "2026-06-01T10:00:00Z",
-        },
-        {
-          id: "t2",
-          name: "Salary",
-          type: "INCOME",
-          amount: 5000,
-          categoryId: "cat-2",
-          categoryName: "Income",
-          accountId: "account-1",
-          accountName: "Main checking",
-          dueDay: 1,
-          createdInMonth: "2026-06-01",
-          archivedFromMonth: null,
-          active: true,
-          createdAt: "2026-06-01T10:00:00Z",
-          updatedAt: "2026-06-01T10:00:00Z",
-        },
-      ],
-      page: 0,
-      size: 12,
-      totalItems: 2,
-      totalPages: 1,
-    }));
+    mockFetchUrl(
+      "/api/fixed-transactions?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "t1",
+            name: "Rent",
+            type: "EXPENSE",
+            amount: 1800,
+            categoryId: "cat-1",
+            categoryName: "Housing",
+            accountId: "account-1",
+            accountName: "Main checking",
+            dueDay: 5,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+          {
+            id: "t2",
+            name: "Salary",
+            type: "INCOME",
+            amount: 5000,
+            categoryId: "cat-2",
+            categoryName: "Income",
+            accountId: "account-1",
+            accountName: "Main checking",
+            dueDay: 1,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 2,
+        totalPages: 1,
+      }),
+    );
     // Use fallback for remaining calls
     mockFetchUrl("/api/categories", mockJsonResponse([]));
     mockFetchUrl("/api/accounts", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/fixed-transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -191,18 +218,24 @@ describe("FixedExpensesPage", () => {
   it("shows range text when no templates exist", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/fixed-transactions?", mockJsonResponse({
-      items: [],
-      page: 0,
-      size: 12,
-      totalItems: 0,
-      totalPages: 0,
-    }));
+    mockFetchUrl(
+      "/api/fixed-transactions?",
+      mockJsonResponse({
+        items: [],
+        page: 0,
+        size: 12,
+        totalItems: 0,
+        totalPages: 0,
+      }),
+    );
     mockFetchUrl("/api/categories", mockJsonResponse([]));
     mockFetchUrl("/api/accounts", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/fixed-transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -217,14 +250,15 @@ describe("FixedExpensesPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByText("0-0 de 0"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("0-0 de 0")).toBeInTheDocument();
   });
 
   it("opens delete confirmation alertdialog when the delete button is clicked", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/fixed-transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -259,7 +293,10 @@ describe("FixedExpensesPage", () => {
 
   it("cancels delete confirmation without calling the API", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/fixed-transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -286,17 +323,21 @@ describe("FixedExpensesPage", () => {
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
 
-    fireEvent.click(within(alertDialog).getByRole("button", { name: "Cancelar" }));
+    fireEvent.click(
+      within(alertDialog).getByRole("button", { name: "Cancelar" }),
+    );
 
     await waitFor(() => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     });
 
-    const deleteCalls = vi.mocked(fetch).mock.calls.filter(
-      ([input, init]) =>
-        String(input).includes("/api/fixed-transactions/") &&
-        init?.method === "DELETE",
-    );
+    const deleteCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(
+        ([input, init]) =>
+          String(input).includes("/api/fixed-transactions/") &&
+          init?.method === "DELETE",
+      );
     expect(deleteCalls.length).toBe(0);
   });
 
@@ -314,7 +355,10 @@ describe("FixedExpensesPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/fixed-transactions"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -360,7 +404,7 @@ describe("FixedExpensesPage", () => {
       type: "EXPENSE" as const,
       amount: 100,
       convertedAmount: 510,
-      exchangeRate: 5.10,
+      exchangeRate: 5.1,
       currency: "USD",
       categoryId: "cat-1",
       categoryName: "Streaming",
@@ -374,22 +418,46 @@ describe("FixedExpensesPage", () => {
       updatedAt: "2026-06-01T10:00:00Z",
     };
 
-    mockFetchUrl("/api/fixed-transactions?", mockJsonResponse({
-      items: [usdTemplate], page: 0, size: 12, totalItems: 1, totalPages: 1,
-    }));
-    mockFetchUrl("/api/categories/options", mockJsonResponse([
-      { id: "cat-1", name: "Streaming", icon: "tv", color: "#e91e63" },
-    ]));
-    mockFetchUrl("/api/accounts/options", mockJsonResponse([
-      { id: "account-1", name: "US Account", type: "CHECKING", currency: "USD" },
-    ]));
+    mockFetchUrl(
+      "/api/fixed-transactions?",
+      mockJsonResponse({
+        items: [usdTemplate],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
+    mockFetchUrl(
+      "/api/categories/options",
+      mockJsonResponse([
+        { id: "cat-1", name: "Streaming", icon: "tv", color: "#e91e63" },
+      ]),
+    );
+    mockFetchUrl(
+      "/api/accounts/options",
+      mockJsonResponse([
+        {
+          id: "account-1",
+          name: "US Account",
+          type: "CHECKING",
+          currency: "USD",
+        },
+      ]),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/fixed-transactions"]}
+      >
         <TestAuthProvider
           user={{
-            id: "1", name: "Admin", email: "admin@bolso-em-dia.local",
-            role: "ADMIN", allowanceEnabled: false,
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
           }}
         >
           <FixedExpensesPage />

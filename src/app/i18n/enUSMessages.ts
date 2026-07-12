@@ -80,8 +80,10 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "errorBoundary.retry": "Try again",
   "errorBoundary.goToDashboard": "Go to Dashboard",
   "exchangeRate.updated": "Exchange rate updated",
-  "exchangeRate.staleTooltip": "Exchange rate is stale. Last update may be incorrect.",
-  "exchangeRate.fetchError": "Failed to fetch exchange rate. Using last known value.",
+  "exchangeRate.staleTooltip":
+    "Exchange rate is stale. Last update may be incorrect.",
+  "exchangeRate.fetchError":
+    "Failed to fetch exchange rate. Using last known value.",
   "exchangeRate.refresh": "Refresh exchange rate",
 
   // Home
@@ -113,8 +115,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
     "Initial account preselected in account-based forms.",
   "settings.account.empty": "No default account",
   "settings.locale.label": "Language",
-  "settings.locale.description":
-    "Language used when loading the application.",
+  "settings.locale.description": "Language used when loading the application.",
   "settings.locale.pt-BR": "Portuguese (Brazil)",
   "settings.locale.en-US": "English (United States)",
   "settings.balance.label": "Initial free balance mode",
@@ -123,13 +124,13 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "settings.balance.withBudgets": "Consider budgets",
   "settings.balance.withoutBudgets": "Ignore budgets",
   "settings.foreignCurrency.label": "Foreign currencies",
-  "settings.foreignCurrency.description": "Enable US Dollar (USD) support with real-time exchange rates.",
+  "settings.foreignCurrency.description":
+    "Enable US Dollar (USD) support with real-time exchange rates.",
   "settings.foreignCurrency.enabled": "Enabled",
   "settings.foreignCurrency.disabled": "Disabled",
   "settings.loading": "Loading settings",
   "settings.formTitle": "Personal preferences",
-  "settings.formSubtitle":
-    "Adjust how the application loads for your account.",
+  "settings.formSubtitle": "Adjust how the application loads for your account.",
   "settings.error": "Unable to load settings.",
   "settings.saveError": "Unable to save settings.",
   "settings.saveSuccess": "Settings saved.",
@@ -154,16 +155,12 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "fixedTransactions.title": "Fixed transactions",
   "fixedTransactions.loading": "Loading fixed transactions",
   "fixedTransactions.error": "Unable to load fixed transactions.",
-  "fixedTransactions.saveError":
-    "Unable to save the fixed transaction.",
-  "fixedTransactions.archiveError":
-    "Unable to archive the fixed transaction.",
-  "fixedTransactions.deleteError":
-    "Unable to delete the fixed transaction.",
+  "fixedTransactions.saveError": "Unable to save the fixed transaction.",
+  "fixedTransactions.archiveError": "Unable to archive the fixed transaction.",
+  "fixedTransactions.deleteError": "Unable to delete the fixed transaction.",
   "fixedTransactions.new": "New fixed transaction",
   "fixedTransactions.newTitle": "New fixed transaction",
-  "fixedTransactions.newDescription":
-    "Create a recurring fixed transaction.",
+  "fixedTransactions.newDescription": "Create a recurring fixed transaction.",
   "fixedTransactions.detailsTitle": "Fixed transaction details",
   "fixedTransactions.editDescription":
     "Update the recurring name, type, amount, category, account, and recurring day.",
@@ -182,15 +179,13 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.title": "Transactions",
   "transactions.loading": "Loading transactions",
   "transactions.error": "Unable to load transactions.",
-  "transactions.categoryRefreshError":
-    "Unable to refresh the category list.",
+  "transactions.categoryRefreshError": "Unable to refresh the category list.",
   "transactions.saveError": "Unable to save the transaction.",
   "transactions.deleteError": "Unable to delete the transaction.",
   "transactions.searchPlaceholder": "Search by description",
   "transactions.new": "New transaction",
   "transactions.newTitle": "New transaction",
-  "transactions.newDescription":
-    "Create a transaction for the selected month.",
+  "transactions.newDescription": "Create a transaction for the selected month.",
   "transactions.detailsTitle": "Transaction details",
   "transactions.editDescription":
     "Update the transaction fields such as description, amount, and date.",
@@ -215,8 +210,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.deleteAction": "Delete transaction",
   "transactions.closeDeleteConfirm": "Close delete confirmation",
   "transactions.projected": "Projected",
-  "transactions.empty":
-    "No transactions found for the current filters.",
+  "transactions.empty": "No transactions found for the current filters.",
 
   // Budgets
   "budgets.title": "Budgets",
@@ -241,8 +235,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "budgets.globalHelper":
     "Global budgets limit spending across the household. Allowance budgets limit spending for a specific member.",
   "budgets.currentImpact": "Current impact",
-  "budgets.currentImpactSubtitle":
-    "Budget consumption for {{month}}.",
+  "budgets.currentImpactSubtitle": "Budget consumption for {{month}}.",
   "budgets.limit": "Limit",
   "budgets.consumed": "Consumed",
   "budgets.remaining": "Remaining",
@@ -272,8 +265,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "categories.newTitle": "New category",
   "categories.newDescription": "Create a new category with an icon and color.",
   "categories.detailsTitle": "Category details",
-  "categories.editDescription":
-    "Update the category name, icon, and color.",
+  "categories.editDescription": "Update the category name, icon, and color.",
   "categories.create": "Create category",
   "categories.icon": "Icon",
   "categories.color": "Color",
@@ -323,8 +315,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
     "Update the member role, allowance settings, or set a new password.",
   "family.create": "Create member",
   "family.password": "Password",
-  "family.passwordOptional":
-    "Leave blank to keep the current password.",
+  "family.passwordOptional": "Leave blank to keep the current password.",
   "family.allowanceEnabled": "Allowance enabled",
   "family.archiveMember": "Archive member",
   "family.restoreMember": "Restore member",
@@ -367,8 +358,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   // Additional budgets keys
   "budgets.linkedCategories": "Linked categories",
   "budgets.loadingDetails": "Loading budget details",
-  "budgets.noSharedCategories":
-    "This budget is not linked to any categories.",
+  "budgets.noSharedCategories": "This budget is not linked to any categories.",
   "budgets.selectToReview": "Select a budget to review current month details.",
   "budgets.archiveSubtitle":
     "Stop using this budget starting from a future month.",
@@ -400,8 +390,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "validation.requiredAccount": "Account is required.",
   "validation.requiredOwnership": "Ownership is required.",
   "validation.requiredDescription": "Description is required.",
-  "validation.descriptionMax160":
-    "Description must be at most 160 characters.",
+  "validation.descriptionMax160": "Description must be at most 160 characters.",
   "validation.amountPositive": "Amount must be greater than zero.",
   "validation.invalidNumber": "Enter a valid number.",
   "validation.requiredTransactionDate": "Transaction date is required.",
@@ -417,15 +406,12 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
     "Select the member who receives this allowance.",
   "validation.requiredGlobalBudgetCategory":
     "Select at least one category for a global budget.",
-  "validation.monthlyLimitPositive":
-    "Monthly limit must be greater than zero.",
+  "validation.monthlyLimitPositive": "Monthly limit must be greater than zero.",
   "validation.iconMax80": "Icon name must be at most 80 characters.",
   "validation.colorMax20": "Color must be at most 20 characters.",
-  "validation.requiredReplacementCategory":
-    "Select a replacement category.",
+  "validation.requiredReplacementCategory": "Select a replacement category.",
   "validation.brandMax80": "Brand must be at most 80 characters.",
-  "validation.requiredCreditCardBrand":
-    "Brand is required for credit cards.",
+  "validation.requiredCreditCardBrand": "Brand is required for credit cards.",
   "validation.requiredCreditCardClosingDay":
     "Closing day is required for credit cards.",
   "validation.requiredCreditCardDueDay":

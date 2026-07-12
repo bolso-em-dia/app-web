@@ -14,13 +14,6 @@ export type UpdateUserPreferencesPayload = {
   showForeignCurrency: boolean;
 };
 
-export function getCurrentUserPreferences(accessToken: string) {
-  return apiRequest<UserPreferences>("/api/me/preferences", {
-    method: "GET",
-    accessToken,
-  });
-}
-
 export function updateCurrentUserPreferences(
   payload: UpdateUserPreferencesPayload,
   accessToken: string,

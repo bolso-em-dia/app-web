@@ -16,7 +16,6 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import ConfirmAction from "../../components/ui/ConfirmAction";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
@@ -43,7 +42,6 @@ const DEFAULT_VALUES: AccountFormValues = {
   closingDay: undefined,
   dueDay: undefined,
 };
-
 
 function mapFormValuesToPayload(values: AccountFormValues): AccountPayload {
   return {
@@ -90,10 +88,6 @@ export default function AccountsPage() {
     resolver: zodResolver(accountSchema),
     defaultValues: DEFAULT_VALUES,
   });
-
-  const accountType = form.watch("type");
-  const colorValue = form.watch("color");
-  const isCreditCard = accountType === "CREDIT_CARD";
 
   const loadAccounts = useCallback(
     async (params: AccountListParams) => {
@@ -426,7 +420,9 @@ export default function AccountsPage() {
                   onArchiveOpen={() => setIsArchiveConfirmOpen(true)}
                   onSubmit={onSubmit}
                   selectedAccount={selectedAccount}
-                  showForeignCurrency={user?.preferences.showForeignCurrency ?? false}
+                  showForeignCurrency={
+                    user?.preferences.showForeignCurrency ?? false
+                  }
                 />
               </div>
             </Drawer>

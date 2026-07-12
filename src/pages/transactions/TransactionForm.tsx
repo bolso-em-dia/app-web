@@ -8,7 +8,6 @@ import type { DeleteScope, Transaction } from "../../app/api/transactions";
 import type { AuthUser } from "../../app/api/auth";
 import type { TransactionFormValues } from "../../lib/validation/transactionSchema";
 import Button from "../../components/ui/Button";
-import CategoryMultiSelect from "../../components/ui/CategoryMultiSelect";
 import CategorySelect from "../../components/ui/CategorySelect";
 import ConfirmAction from "../../components/ui/ConfirmAction";
 import CurrencyInput from "../../components/ui/CurrencyInput";
@@ -34,7 +33,10 @@ interface TransactionFormProps {
   error: string | null;
   isDeleteConfirmOpen: boolean;
   deleteScope: DeleteScope;
-  onSubmit: (values: TransactionFormValues, event?: BaseSyntheticEvent) => Promise<void>;
+  onSubmit: (
+    values: TransactionFormValues,
+    event?: BaseSyntheticEvent,
+  ) => Promise<void>;
   onCancelCreate: () => void;
   onOpenDeleteConfirm: () => void;
   onCloseDeleteConfirm: () => void;
@@ -69,7 +71,9 @@ export default function TransactionForm({
   const ownershipType = form.watch("ownershipType");
   const isInstallment = form.watch("isInstallment");
 
-  const supportsGroupedDelete = Boolean(selectedTransaction?.installmentGroupId);
+  const supportsGroupedDelete = Boolean(
+    selectedTransaction?.installmentGroupId,
+  );
 
   return (
     <>
@@ -317,17 +321,22 @@ export default function TransactionForm({
         <div className={styles.formActions}>
           {isCreating ? (
             <>
-              <Button loading={isSaving} type="submit" value="save-and-create-new">
+              <Button
+                loading={isSaving}
+                type="submit"
+                value="save-and-create-new"
+              >
                 {t("transactions.saveAndCreateNew")}
               </Button>
-              <Button loading={isSaving} type="submit" value="save" variant="secondary">
+              <Button
+                loading={isSaving}
+                type="submit"
+                value="save"
+                variant="secondary"
+              >
                 {t("transactions.save")}
               </Button>
-              <Button
-                onClick={onCancelCreate}
-                type="button"
-                variant="subtle"
-              >
+              <Button onClick={onCancelCreate} type="button" variant="subtle">
                 {t("common.cancel")}
               </Button>
             </>
@@ -374,8 +383,12 @@ export default function TransactionForm({
               }
               value={deleteScope}
             >
-              <option value="SINGLE">{t("transactions.deleteScope.single")}</option>
-              <option value="FUTURE">{t("transactions.deleteScope.future")}</option>
+              <option value="SINGLE">
+                {t("transactions.deleteScope.single")}
+              </option>
+              <option value="FUTURE">
+                {t("transactions.deleteScope.future")}
+              </option>
               <option value="ALL">{t("transactions.deleteScope.all")}</option>
             </Select>
           </Field>

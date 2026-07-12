@@ -44,7 +44,12 @@ export default function FilterToolbar({
       <div className={styles.primaryRow}>
         <div className={styles.primaryContent}>{primaryContent}</div>
         <div className={styles.actions}>
-          <Button aria-expanded={isPanelOpen} onClick={onTogglePanel} type="button" variant="secondary">
+          <Button
+            aria-expanded={isPanelOpen}
+            onClick={onTogglePanel}
+            type="button"
+            variant="secondary"
+          >
             {filtersLabel}
           </Button>
           {activeCount > 0 ? (

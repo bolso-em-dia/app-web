@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from "./currency";
+import {
+  formatCurrency,
+  formatCurrencyInput,
+  parseCurrencyInput,
+} from "./currency";
 
 describe("formatCurrency", () => {
   it("formats BRL with R$ prefix", () => {

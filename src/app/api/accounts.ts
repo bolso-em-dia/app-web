@@ -95,13 +95,6 @@ export function listAccountOptions(
   );
 }
 
-export function getAccountById(id: string, accessToken: string) {
-  return apiRequest<Account>(`/api/accounts/${id}`, {
-    method: "GET",
-    accessToken,
-  });
-}
-
 export function createAccount(payload: AccountPayload, accessToken: string) {
   return apiRequest<Account>("/api/accounts", {
     method: "POST",
@@ -126,5 +119,5 @@ export function archiveAccount(id: string, accessToken: string) {
   return apiRequest<Account>(`/api/accounts/${id}/archive`, {
     method: "PATCH",
     accessToken,
-      });
+  });
 }

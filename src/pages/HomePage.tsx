@@ -12,15 +12,15 @@ import Button from "../components/ui/Button";
 import Switch from "../components/ui/Switch";
 import SimplePagination from "../components/ui/SimplePagination";
 import { formatCurrency } from "../lib/formatters/currency";
-import {
-  formatDay,
-  getCurrentReferenceMonth,
-} from "../lib/formatters/date";
+import { formatDay, getCurrentReferenceMonth } from "../lib/formatters/date";
 import styles from "./HomePage.module.scss";
 
 const ITEMS_PER_PAGE = 10;
 
-function getBudgetConsumptionPercent(consumedAmount: number, monthlyLimit: number) {
+function getBudgetConsumptionPercent(
+  consumedAmount: number,
+  monthlyLimit: number,
+) {
   if (monthlyLimit <= 0) {
     return 0;
   }
@@ -34,7 +34,9 @@ export default function HomePage() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [referenceMonth, setReferenceMonth] = useState(getCurrentReferenceMonth);
+  const [referenceMonth, setReferenceMonth] = useState(
+    getCurrentReferenceMonth,
+  );
   const [considerBudgetsInBalance, setConsiderBudgetsInBalance] = useState(
     user?.preferences.showBalanceWithBudgets ?? false,
   );
@@ -42,7 +44,9 @@ export default function HomePage() {
   const [catPage, setCatPage] = useState(0);
 
   useEffect(() => {
-    setConsiderBudgetsInBalance(user?.preferences.showBalanceWithBudgets ?? false);
+    setConsiderBudgetsInBalance(
+      user?.preferences.showBalanceWithBudgets ?? false,
+    );
   }, [user?.preferences.showBalanceWithBudgets]);
 
   useEffect(() => {
@@ -62,10 +66,7 @@ export default function HomePage() {
       // Materialize fixed expenses for this month before fetching dashboard
       await materializeTransactions(referenceMonth, accessToken);
 
-      const response = await getDashboard(
-        referenceMonth,
-        accessToken,
-      );
+      const response = await getDashboard(referenceMonth, accessToken);
       setDashboard(response);
     } catch {
       setError(t("home.error"));
@@ -95,7 +96,8 @@ export default function HomePage() {
         : styles.amountNeutral;
 
   const displayExpense = considerBudgetsInBalance
-    ? (dashboard?.summary.totalExpense ?? 0) + (dashboard?.summary.reservedBudgetAmount ?? 0)
+    ? (dashboard?.summary.totalExpense ?? 0) +
+      (dashboard?.summary.reservedBudgetAmount ?? 0)
     : (dashboard?.summary.totalExpense ?? 0);
 
   const expenseLabel = considerBudgetsInBalance
@@ -131,7 +133,8 @@ export default function HomePage() {
             }
           />
           <span className={styles.balanceModeMeta}>
-            {t("home.reservedBudgetAmount")}: {formatCurrency(dashboard?.summary.reservedBudgetAmount ?? 0)}
+            {t("home.reservedBudgetAmount")}:{" "}
+            {formatCurrency(dashboard?.summary.reservedBudgetAmount ?? 0)}
           </span>
         </Card>
         <Card className={styles.summaryCard}>
@@ -150,7 +153,10 @@ export default function HomePage() {
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>{t("home.income")}</span>
           <strong className={styles.summaryValue}>
-            <MoneyAmount amount={dashboard?.summary.totalIncome ?? 0} type="INCOME" />
+            <MoneyAmount
+              amount={dashboard?.summary.totalIncome ?? 0}
+              type="INCOME"
+            />
           </strong>
         </Card>
         <Card className={styles.summaryCard}>
@@ -237,9 +243,7 @@ export default function HomePage() {
           </Card>
 
           <Card className={styles.panel}>
-            <h2 className={styles.panelTitle}>
-              {t("home.categoryBreakdown")}
-            </h2>
+            <h2 className={styles.panelTitle}>{t("home.categoryBreakdown")}</h2>
             <ul className={styles.itemList}>
               {catSlice.map((category) => {
                 const percent =
@@ -253,16 +257,16 @@ export default function HomePage() {
                       <div className={styles.categoryRow}>
                         <strong>{category.categoryName}</strong>
                         <span className={styles.categoryMetrics}>
-                          <MoneyAmount amount={category.amount} type="EXPENSE" />
+                          <MoneyAmount
+                            amount={category.amount}
+                            type="EXPENSE"
+                          />
                           <span className={styles.categoryPercent}>
                             {percent}%
                           </span>
                         </span>
                       </div>
-                      <div
-                        aria-hidden="true"
-                        className={styles.progressTrack}
-                      >
+                      <div aria-hidden="true" className={styles.progressTrack}>
                         <span
                           className={styles.progressFill}
                           style={{ width: `${percent}%` }}
