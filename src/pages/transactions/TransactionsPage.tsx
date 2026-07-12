@@ -263,42 +263,6 @@ export default function TransactionsPage() {
   }, [loadPageData]);
 
   useEffect(() => {
-    if (isCreating) {
-      form.reset(
-        createDefaultValues(
-          filters.referenceMonth,
-          user?.preferences.defaultAccountId ?? "",
-        ),
-      );
-      focusDescriptionField();
-      return;
-    }
-
-    if (selectedTransaction) {
-      form.reset({
-        type: selectedTransaction.type,
-        ownershipType: selectedTransaction.ownershipType,
-        description: selectedTransaction.description,
-        amount: selectedTransaction.amount,
-        transactionDate: selectedTransaction.transactionDate,
-        accountId: selectedTransaction.accountId,
-        categoryId: selectedTransaction.categoryId,
-        memberId: selectedTransaction.memberId ?? "",
-        isInstallment: Boolean(selectedTransaction.installmentTotal),
-        installmentCount: selectedTransaction.installmentTotal ?? 2,
-      });
-      setDeleteScope("SINGLE");
-    }
-  }, [
-    filters.referenceMonth,
-    focusDescriptionField,
-    form,
-    isCreating,
-    selectedTransaction,
-    user?.preferences.defaultAccountId,
-  ]);
-
-  useEffect(() => {
     if (currentReferenceMonth === filters.referenceMonth) {
       return;
     }
@@ -449,6 +413,13 @@ export default function TransactionsPage() {
     setSelectedId(null);
     setIsDeleteConfirmOpen(false);
     setError(null);
+    form.reset(
+      createDefaultValues(
+        filters.referenceMonth,
+        user?.preferences.defaultAccountId ?? "",
+      ),
+    );
+    focusDescriptionField();
   }
 
   function handleCancelCreate() {
@@ -456,6 +427,12 @@ export default function TransactionsPage() {
     setSelectedId(null);
     setIsDeleteConfirmOpen(false);
     setError(null);
+    form.reset(
+      createDefaultValues(
+        filters.referenceMonth,
+        user?.preferences.defaultAccountId ?? "",
+      ),
+    );
   }
 
   function handleCloseDrawer() {
@@ -463,6 +440,12 @@ export default function TransactionsPage() {
     setSelectedId(null);
     setIsDeleteConfirmOpen(false);
     setError(null);
+    form.reset(
+      createDefaultValues(
+        filters.referenceMonth,
+        user?.preferences.defaultAccountId ?? "",
+      ),
+    );
   }
 
   function handleOpenDeleteConfirm() {
@@ -911,6 +894,19 @@ export default function TransactionsPage() {
                           setSelectedId(transaction.id);
                           setIsDeleteConfirmOpen(false);
                           setError(null);
+                          form.reset({
+                            type: transaction.type,
+                            ownershipType: transaction.ownershipType,
+                            description: transaction.description,
+                            amount: transaction.amount,
+                            transactionDate: transaction.transactionDate,
+                            accountId: transaction.accountId,
+                            categoryId: transaction.categoryId,
+                            memberId: transaction.memberId ?? "",
+                            isInstallment: Boolean(transaction.installmentTotal),
+                            installmentCount: transaction.installmentTotal ?? 2,
+                          });
+                          setDeleteScope("SINGLE");
                         }}
                         style={
                           categoryColor

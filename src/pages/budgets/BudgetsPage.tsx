@@ -175,6 +175,13 @@ export default function BudgetsPage() {
       ]);
       setSelectedBudget(budgetResponse);
       setCategoryBreakdown(categoryBreakdownResponse);
+      form.reset({
+        name: budgetResponse.name,
+        type: budgetResponse.type,
+        ownerMemberId: budgetResponse.ownerMemberId ?? "",
+        categoryIds: budgetResponse.categories.map((c) => c.id),
+        monthlyLimit: budgetResponse.monthlyLimit,
+      });
     } catch {
       setError(t("budgets.detailsError"));
       setSelectedBudget(null);
@@ -206,33 +213,6 @@ export default function BudgetsPage() {
   useEffect(() => {
     void loadBudgetDetails();
   }, [loadBudgetDetails]);
-
-  useEffect(() => {
-    if (isCreating) {
-      form.reset(DEFAULT_VALUES);
-      return;
-    }
-
-    if (selectedBudget) {
-      form.reset({
-        name: selectedBudget.name,
-        type: selectedBudget.type,
-        ownerMemberId: selectedBudget.ownerMemberId ?? "",
-        categoryIds: selectedBudget.categories.map((category) => category.id),
-        monthlyLimit: selectedBudget.monthlyLimit,
-      });
-    } else if (selectedBudgetSummary) {
-      form.reset({
-        name: selectedBudgetSummary.name,
-        type: selectedBudgetSummary.type,
-        ownerMemberId: selectedBudgetSummary.ownerMemberId ?? "",
-        categoryIds: selectedBudgetSummary.categories.map(
-          (category) => category.id,
-        ),
-        monthlyLimit: selectedBudgetSummary.monthlyLimit,
-      });
-    }
-  }, [form, isCreating, selectedBudget, selectedBudgetSummary]);
 
   async function onSubmit(values: BudgetFormValues) {
     if (!accessToken) {
@@ -317,12 +297,14 @@ export default function BudgetsPage() {
     setSelectedBudget(null);
     setCategoryBreakdown([]);
     setError(null);
+    form.reset(DEFAULT_VALUES);
   }
 
   function handleCancelCreate() {
     setIsCreating(false);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
   }
 
   function handleCloseDrawer() {
@@ -331,6 +313,7 @@ export default function BudgetsPage() {
     setSelectedBudget(null);
     setCategoryBreakdown([]);
     setError(null);
+    form.reset(DEFAULT_VALUES);
   }
 
   const activeFilters = useMemo(
@@ -497,7 +480,15 @@ export default function BudgetsPage() {
                     onClick={() => {
                       setIsCreating(false);
                       setSelectedId(budget.id);
+                      setSelectedBudget(null);
                       setError(null);
+                      form.reset({
+                        name: budget.name,
+                        type: budget.type,
+                        ownerMemberId: budget.ownerMemberId ?? "",
+                        categoryIds: budget.categories.map((c) => c.id),
+                        monthlyLimit: budget.monthlyLimit,
+                      });
                     }}
                     type="button"
                   >

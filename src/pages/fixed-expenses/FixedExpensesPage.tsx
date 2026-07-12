@@ -164,24 +164,6 @@ export default function FixedExpensesPage() {
     });
   }, [loadTemplates, page, pageSize, search, statusFilter]);
 
-  useEffect(() => {
-    if (isCreating) {
-      form.reset(createDefaultValues(user?.preferences.defaultAccountId ?? ""));
-      return;
-    }
-
-    if (selectedTemplate) {
-      form.reset({
-        name: selectedTemplate.name,
-        type: selectedTemplate.type,
-        amount: selectedTemplate.amount,
-        categoryId: selectedTemplate.categoryId,
-        accountId: selectedTemplate.accountId,
-        dueDay: selectedTemplate.dueDay,
-      });
-    }
-  }, [form, isCreating, selectedTemplate, user?.preferences.defaultAccountId]);
-
   async function onSubmit(values: FixedExpenseFormValues) {
     if (!accessToken) {
       return;
@@ -249,18 +231,21 @@ export default function FixedExpensesPage() {
     setIsCreating(true);
     setSelectedId(null);
     setError(null);
+    form.reset(createDefaultValues(user?.preferences.defaultAccountId ?? ""));
   }
 
   function handleCancelCreate() {
     setIsCreating(false);
     setSelectedId(null);
     setError(null);
+    form.reset(createDefaultValues(user?.preferences.defaultAccountId ?? ""));
   }
 
   function handleCloseDrawer() {
     setIsCreating(false);
     setSelectedId(null);
     setError(null);
+    form.reset(createDefaultValues(user?.preferences.defaultAccountId ?? ""));
   }
 
   const activeFilters = useMemo(
@@ -389,6 +374,14 @@ export default function FixedExpensesPage() {
                       setIsCreating(false);
                       setSelectedId(template.id);
                       setError(null);
+                      form.reset({
+                        name: template.name,
+                        type: template.type,
+                        amount: template.amount,
+                        categoryId: template.categoryId,
+                        accountId: template.accountId,
+                        dueDay: template.dueDay,
+                      });
                     }}
                     style={
                       categoryColor
