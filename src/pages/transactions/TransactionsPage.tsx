@@ -42,19 +42,13 @@ import Switch from "../../components/ui/Switch";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
-import { getStoredIcon } from "../../lib/icons";
-import MoneyAmount from "../../components/ui/MoneyAmount";
 import PaginationBar from "../../components/ui/PaginationBar";
-import { formatCurrency } from "../../lib/formatters/currency";
-import {
-  formatDay,
-  formatReferenceMonth,
-  getCurrentReferenceMonth,
-} from "../../lib/formatters/date";
+import { formatReferenceMonth, getCurrentReferenceMonth } from "../../lib/formatters/date";
 import {
   createTransactionSchema,
   type TransactionFormValues,
 } from "../../lib/validation/transactionSchema";
+import TransactionCard from "./TransactionCard";
 import styles from "./TransactionsPage.module.scss";
 
 
@@ -774,149 +768,32 @@ export default function TransactionsPage() {
                 const categoryOption = categoryOptionsById.get(
                   transaction.categoryId,
                 );
-                const CategoryIcon = getStoredIcon(categoryOption?.icon);
-                const categoryColor = categoryOption?.color ?? undefined;
-                const cardContent = (
-                  <>
-                    <div className={styles.transactionTop}>
-                      <div className={styles.transactionMain}>
-                        <div className={styles.transactionTitleRow}>
-                          {CategoryIcon ? (
-                            <span
-                              aria-hidden="true"
-                              className={styles.categoryLead}
-                              style={
-                                categoryColor
-                                  ? { color: categoryColor }
-                                  : undefined
-                              }
-                            >
-                              <CategoryIcon className={styles.categoryIcon} />
-                            </span>
-                          ) : categoryColor ? (
-                            <span
-                              aria-hidden="true"
-                              className={styles.categoryLead}
-                              style={{ color: categoryColor }}
-                            >
-                              <span className={styles.categoryDot} />
-                            </span>
-                          ) : null}
-                          <div className={styles.transactionLine}>
-                            <strong className={styles.transactionDescription}>
-                              {transaction.description}
-                            </strong>
-                            <span className={styles.transactionMetaSeparator}>
-                              ·
-                            </span>
-                            <span className={styles.transactionMeta}>
-                              {transaction.categoryName} ·{" "}
-                              {transaction.accountName} ·{" "}
-                              {formatDay(transaction.transactionDate)}
-                              {transaction.currency === "USD" &&
-                              transaction.exchangeRate != null
-                                ? ` · ${formatCurrency(
-                                    transaction.type === "EXPENSE"
-                                      ? -Math.abs(transaction.amount)
-                                      : Math.abs(transaction.amount),
-                                    "USD",
-                                  )} (cot. ${transaction.exchangeRate.toFixed(2)})`
-                                : null}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <strong className={styles.transactionAmount}>
-                        <MoneyAmount
-                          amount={transaction.convertedAmount}
-                          type={transaction.type}
-                        />
-                      </strong>
-                    </div>
-
-                    <div className={styles.badgeRow}>
-                      <span
-                        className={`${styles.badge} ${transaction.type === "INCOME" ? styles.badgeIncome : styles.badgeExpense}`}
-                      >
-                        {t(`transactionTypes.${transaction.type}` as const)}
-                      </span>
-                      <span className={styles.badge}>
-                        {t(
-                          `ownershipTypes.${transaction.ownershipType}` as const,
-                        )}
-                      </span>
-                      {transaction.memberName ? (
-                        <span
-                          className={`${styles.badge} ${styles.badgeMuted}`}
-                        >
-                          {transaction.memberName}
-                        </span>
-                      ) : null}
-                      {transaction.installmentTotal ? (
-                        <span
-                          className={`${styles.badge} ${styles.badgeMuted}`}
-                        >
-                          {transaction.installmentNumber}/
-                          {transaction.installmentTotal}
-                        </span>
-                      ) : null}
-                      {transaction.projected ? (
-                        <span
-                          className={`${styles.badge} ${styles.badgeMuted}`}
-                        >
-                          {t("transactions.projected")}
-                        </span>
-                      ) : null}
-                    </div>
-                  </>
-                );
-
                 return (
-                  <Card key={transaction.id} className={styles.transactionCard}>
-                    {transaction.projected ? (
-                      <div
-                        className={styles.transactionStatic}
-                        style={
-                          categoryColor
-                            ? { borderInlineStartColor: categoryColor }
-                            : undefined
-                        }
-                      >
-                        {cardContent}
-                      </div>
-                    ) : (
-                      <button
-                        className={styles.transactionButton}
-                        onClick={() => {
-                          setIsCreating(false);
-                          setSelectedId(transaction.id);
-                          setIsDeleteConfirmOpen(false);
-                          setError(null);
-                          form.reset({
-                            type: transaction.type,
-                            ownershipType: transaction.ownershipType,
-                            description: transaction.description,
-                            amount: transaction.amount,
-                            transactionDate: transaction.transactionDate,
-                            accountId: transaction.accountId,
-                            categoryId: transaction.categoryId,
-                            memberId: transaction.memberId ?? "",
-                            isInstallment: Boolean(transaction.installmentTotal),
-                            installmentCount: transaction.installmentTotal ?? 2,
-                          });
-                          setDeleteScope("SINGLE");
-                        }}
-                        style={
-                          categoryColor
-                            ? { borderInlineStartColor: categoryColor }
-                            : undefined
-                        }
-                        type="button"
-                      >
-                        {cardContent}
-                      </button>
-                    )}
-                  </Card>
+                  <TransactionCard
+                    key={transaction.id}
+                    transaction={transaction}
+                    categoryOption={categoryOption}
+                    isSelected={selectedId === transaction.id}
+                    onSelect={(id) => {
+                      setIsCreating(false);
+                      setSelectedId(id);
+                      setIsDeleteConfirmOpen(false);
+                      setError(null);
+                      form.reset({
+                        type: transaction.type,
+                        ownershipType: transaction.ownershipType,
+                        description: transaction.description,
+                        amount: transaction.amount,
+                        transactionDate: transaction.transactionDate,
+                        accountId: transaction.accountId,
+                        categoryId: transaction.categoryId,
+                        memberId: transaction.memberId ?? "",
+                        isInstallment: Boolean(transaction.installmentTotal),
+                        installmentCount: transaction.installmentTotal ?? 2,
+                      });
+                      setDeleteScope("SINGLE");
+                    }}
+                  />
                 );
               })
             )}

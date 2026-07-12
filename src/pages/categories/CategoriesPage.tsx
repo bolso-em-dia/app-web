@@ -28,7 +28,6 @@ import IconSelect from "../../components/ui/IconSelect";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
-import { getStoredIcon } from "../../lib/icons";
 import { COLOR_OPTIONS, ICON_OPTIONS } from "../../lib/uiOptions";
 import {
   createArchiveCategorySchema,
@@ -39,6 +38,7 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
+import CategoryCard from "./CategoryCard";
 import styles from "./CategoriesPage.module.scss";
 
 const DEFAULT_VALUES: CategoryFormValues = {
@@ -349,71 +349,28 @@ export default function CategoriesPage() {
             </Card>
 
             <section className={styles.categoryGrid}>
-              {categories.map((category) => {
-                const Icon = getStoredIcon(category.icon);
-
-                return (
-                  <Card key={category.id} className={styles.categoryCard}>
-                    <button
-                      className={styles.categoryButton}
-                      onClick={() => {
-                        setIsCreating(false);
-                        setSelectedId(category.id);
-                        setError(null);
-                        form.reset({
-                          name: category.name,
-                          icon: category.icon ?? "",
-                          color: category.color ?? "",
-                        });
-                        archiveForm.reset({
-                          replacementCategoryId: options.find(
-                            (o) => o.id !== category.id,
-                          )?.id ?? "",
-                        });
-                      }}
-                      style={
-                        category.color
-                          ? { borderInlineStartColor: category.color }
-                          : undefined
-                      }
-                      type="button"
-                    >
-                      <div className={styles.categoryCardHeader}>
-                        <div className={styles.categoryTitleRow}>
-                          {Icon ? (
-                            <span
-                              aria-hidden="true"
-                              className={styles.categoryTitleIcon}
-                              style={
-                                category.color
-                                  ? { color: category.color }
-                                  : undefined
-                              }
-                            >
-                              <Icon className={styles.categoryMetaIcon} />
-                            </span>
-                          ) : null}
-                          <strong>{category.name}</strong>
-                        </div>
-
-                        <div className={styles.categoryBadges}>
-                          <span
-                            className={
-                              category.archivedFromMonth
-                                ? `${styles.badge} ${styles.badgeMuted}`
-                                : `${styles.badge} ${styles.badgeSuccess}`
-                            }
-                          >
-                            {category.archivedFromMonth
-                              ? t("common.archived")
-                              : t("common.active")}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  </Card>
-                );
-              })}
+              {categories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  isSelected={selectedId === category.id}
+                  onSelect={(id) => {
+                    setIsCreating(false);
+                    setSelectedId(id);
+                    setError(null);
+                    form.reset({
+                      name: category.name,
+                      icon: category.icon ?? "",
+                      color: category.color ?? "",
+                    });
+                    archiveForm.reset({
+                      replacementCategoryId: options.find(
+                        (o) => o.id !== category.id,
+                      )?.id ?? "",
+                    });
+                  }}
+                />
+              ))}
             </section>
 
             <PaginationBar
