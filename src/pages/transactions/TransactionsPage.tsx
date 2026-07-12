@@ -40,6 +40,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Switch from "../../components/ui/Switch";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { getStoredIcon } from "../../lib/icons";
 import MoneyAmount from "../../components/ui/MoneyAmount";
 import PaginationBar from "../../components/ui/PaginationBar";
@@ -55,7 +56,7 @@ import {
 } from "../../lib/validation/transactionSchema";
 import styles from "./TransactionsPage.module.scss";
 
-const DEFAULT_PAGE_SIZE = 12;
+
 type Translate = ReturnType<typeof useI18n>["t"];
 
 function referenceMonthFromDate(value: string) {

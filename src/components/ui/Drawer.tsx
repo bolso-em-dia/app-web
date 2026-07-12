@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect, useRef } from "react";
+import { type ReactNode, useCallback, useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { useI18n } from "../../app/i18n/I18nContext";
 import Button from "./Button";
@@ -19,6 +19,7 @@ export default function Drawer({
 }: DrawerProps) {
   const { t } = useI18n();
   const panelRef = useRef<HTMLElement>(null);
+  const titleId = useId();
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -69,7 +70,7 @@ export default function Drawer({
         type="button"
       />
       <aside
-        aria-labelledby="drawer-title"
+        aria-labelledby={titleId}
         aria-modal="true"
         className={styles.panel}
         ref={panelRef}
@@ -77,7 +78,7 @@ export default function Drawer({
       >
         <header className={styles.header}>
           <div>
-            <h2 className={styles.title} id="drawer-title">
+            <h2 className={styles.title} id={titleId}>
               {title}
             </h2>
             {description ? (

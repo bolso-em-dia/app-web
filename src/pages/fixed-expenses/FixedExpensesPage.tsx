@@ -41,6 +41,7 @@ import {
   type FixedExpenseFormValues,
 } from "../../lib/validation/fixedExpenseSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { getStoredIcon } from "../../lib/icons";
 import styles from "./FixedExpensesPage.module.scss";
 
@@ -54,7 +55,7 @@ function createDefaultValues(defaultAccountId: string): FixedExpenseFormValues {
     dueDay: 1,
   };
 }
-const DEFAULT_PAGE_SIZE = 12;
+
 
 function mapFormValuesToPayload(
   values: FixedExpenseFormValues,

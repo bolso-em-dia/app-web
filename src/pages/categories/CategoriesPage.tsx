@@ -37,6 +37,7 @@ import {
   type CategoryFormValues,
 } from "../../lib/validation/categorySchema";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import styles from "./CategoriesPage.module.scss";
 
 const DEFAULT_VALUES: CategoryFormValues = {
@@ -44,7 +45,6 @@ const DEFAULT_VALUES: CategoryFormValues = {
   icon: "",
   color: "",
 };
-const DEFAULT_PAGE_SIZE = 12;
 
 export default function CategoriesPage() {
   const { accessToken } = useAuth();

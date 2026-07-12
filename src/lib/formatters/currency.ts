@@ -36,3 +36,8 @@ export function formatCurrencyInput(value: number | null | undefined, currency?:
 
   return formatCurrency(value, currency);
 }
+
+export function formatUsdWithExchangeRate(amount: number, type: "INCOME" | "EXPENSE", exchangeRate: number) {
+  const signed = type === "EXPENSE" ? -Math.abs(amount) : Math.abs(amount);
+  return `${formatCurrency(signed, "USD")} (cot. ${exchangeRate.toFixed(2)})`;
+}

@@ -32,6 +32,7 @@ import {
   type AccountFormValues,
 } from "../../lib/validation/accountSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import styles from "./AccountsPage.module.scss";
 
 const DEFAULT_VALUES: AccountFormValues = {
@@ -43,7 +44,7 @@ const DEFAULT_VALUES: AccountFormValues = {
   closingDay: undefined,
   dueDay: undefined,
 };
-const DEFAULT_PAGE_SIZE = 12;
+
 
 function mapFormValuesToPayload(values: AccountFormValues): AccountPayload {
   return {
