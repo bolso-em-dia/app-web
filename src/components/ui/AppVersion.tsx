@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import styles from "./AppVersion.module.scss";
 
-const WEB_VERSION = "1.0.20";
+const WEB_VERSION = "1.0.22";
 
 export default function AppVersion() {
   const [apiVersion, setApiVersion] = useState<string | null>(null);
