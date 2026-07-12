@@ -38,7 +38,8 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
-import FixedExpenseCard from "./FixedExpenseCard";
+import FixedExpenseList from "./FixedExpenseList";
+import FixedExpenseForm from "./FixedExpenseForm";
 import styles from "./FixedExpensesPage.module.scss";
 
 function createDefaultValues(defaultAccountId: string): FixedExpenseFormValues {
@@ -351,29 +352,24 @@ export default function FixedExpensesPage() {
             />
           </Card>
 
-          <section className={styles.templateGrid}>
-            {templates.map((template) => (
-              <FixedExpenseCard
-                key={template.id}
-                categoryOption={categoryOptionsById.get(template.categoryId)}
-                isSelected={selectedId === template.id}
-                template={template}
-                onSelect={(id) => {
-                  setIsCreating(false);
-                  setSelectedId(id);
-                  setError(null);
-                  form.reset({
-                    name: template.name,
-                    type: template.type,
-                    amount: template.amount,
-                    categoryId: template.categoryId,
-                    accountId: template.accountId,
-                    dueDay: template.dueDay,
-                  });
-                }}
-              />
-            ))}
-          </section>
+          <FixedExpenseList
+            templates={templates}
+            selectedId={selectedId}
+            categoryOptionsById={categoryOptionsById}
+            onCardSelect={(id, template) => {
+              setIsCreating(false);
+              setSelectedId(id);
+              setError(null);
+              form.reset({
+                name: template.name,
+                type: template.type,
+                amount: template.amount,
+                categoryId: template.categoryId,
+                accountId: template.accountId,
+                dueDay: template.dueDay,
+              });
+            }}
+          />
 
           <PaginationBar
             start={pagination.rangeStart}
@@ -407,161 +403,25 @@ export default function FixedExpensesPage() {
                   : t("fixedTransactions.detailsTitle")
               }
             >
-              <div className={styles.drawerStack}>
-                <form
-                  className={styles.form}
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  noValidate
-                >
-                  <Field
-                    error={form.formState.errors.name?.message}
-                    htmlFor="fixed-expense-name"
-                    label={t("common.name")}
-                  >
-                    <Input
-                      hasError={Boolean(form.formState.errors.name)}
-                      id="fixed-expense-name"
-                      {...form.register("name")}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.type?.message}
-                    htmlFor="fixed-transaction-type"
-                    label={t("common.type")}
-                  >
-                    <Select
-                      hasError={Boolean(form.formState.errors.type)}
-                      id="fixed-transaction-type"
-                      {...form.register("type")}
-                    >
-                      <option value="EXPENSE">{t("transactionTypes.EXPENSE")}</option>
-                      <option value="INCOME">{t("transactionTypes.INCOME")}</option>
-                    </Select>
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.amount?.message}
-                    htmlFor="fixed-expense-amount"
-                    label={t("fixedTransactions.amount")}
-                  >
-                    <Controller
-                      control={form.control}
-                      name="amount"
-                      render={({ field }) => (
-                        <CurrencyInput
-                          currency={selectedAccountCurrency}
-                          hasError={Boolean(form.formState.errors.amount)}
-                          id="fixed-expense-amount"
-                          onBlur={field.onBlur}
-                          onValueChange={field.onChange}
-                          ref={field.ref}
-                          value={field.value}
-                        />
-                      )}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.categoryId?.message}
-                    htmlFor="fixed-expense-category"
-                    label={t("common.category")}
-                  >
-                    <Controller
-                      control={form.control}
-                      name="categoryId"
-                      render={({ field }) => (
-                        <CategorySelect
-                          hasError={Boolean(form.formState.errors.categoryId)}
-                          id="fixed-expense-category"
-                          onChange={field.onChange}
-                          options={categoryOptions}
-                          placeholder={t("common.selectCategory")}
-                          value={field.value}
-                        />
-                      )}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.accountId?.message}
-                    htmlFor="fixed-expense-account"
-                    label={t("common.account")}
-                  >
-                    <Select
-                      hasError={Boolean(form.formState.errors.accountId)}
-                      id="fixed-expense-account"
-                      {...form.register("accountId")}
-                    >
-                      <option value="">{t("common.selectAccount")}</option>
-                      {accountOptions.map((account) => (
-                        <option key={account.id} value={account.id}>
-                          {account.name}
-                        </option>
-                      ))}
-                    </Select>
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.dueDay?.message}
-                    htmlFor="fixed-expense-due-day"
-                    label={t(
-                      selectedType === "INCOME"
-                        ? "fixedTransactions.receiptDay"
-                        : "accounts.dueDay",
-                    )}
-                  >
-                    <Input
-                      hasError={Boolean(form.formState.errors.dueDay)}
-                      id="fixed-expense-due-day"
-                      max="31"
-                      min="1"
-                      step="1"
-                      type="number"
-                      {...form.register("dueDay")}
-                    />
-                  </Field>
-
-                  {error ? <FormError>{error}</FormError> : null}
-
-                  <div className={styles.formActions}>
-                    <Button loading={isSaving} type="submit">
-                      {isCreating
-                        ? t("fixedTransactions.create")
-                        : t("common.saveChanges")}
-                    </Button>
-                    {isCreating ? (
-                      <Button
-                        onClick={handleCancelCreate}
-                        type="button"
-                        variant="subtle"
-                      >
-                        {t("common.cancel")}
-                      </Button>
-                    ) : null}
-                    {!isCreating ? (
-                      <Button
-                        onClick={() => setIsDeleteConfirmOpen(true)}
-                        type="button"
-                        variant="danger"
-                      >
-                        {t("common.delete")}
-                      </Button>
-                    ) : null}
-                  </div>
-                </form>
-              </div>
-              <ConfirmAction
-                confirmLabel={t("common.delete")}
-                loading={isDeleting}
-                message={t("confirmations.deleteFixedExpense")}
-                onCancel={() => setIsDeleteConfirmOpen(false)}
-                onConfirm={() => {
+              <FixedExpenseForm
+                accountOptions={accountOptions}
+                categoryOptions={categoryOptions}
+                error={error}
+                form={form}
+                isCreating={isCreating}
+                isDeleteConfirmOpen={isDeleteConfirmOpen}
+                isDeleting={isDeleting}
+                isSaving={isSaving}
+                onCancelCreate={handleCancelCreate}
+                onDeleteCancel={() => setIsDeleteConfirmOpen(false)}
+                onDeleteConfirm={() => {
                   setIsDeleteConfirmOpen(false);
                   void onDelete();
                 }}
-                open={isDeleteConfirmOpen}
-                title={t("fixedTransactions.deleteAction")}
+                onDeleteOpen={() => setIsDeleteConfirmOpen(true)}
+                onSubmit={onSubmit}
+                selectedAccountCurrency={selectedAccountCurrency}
+                selectedTemplate={selectedTemplate}
               />
             </Drawer>
           ) : null}

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BaseSyntheticEvent } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { listAccounts, type Account } from "../../app/api/accounts";
 import {
   listCategoryOptions,
@@ -27,18 +27,13 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import ConfirmAction from "../../components/ui/ConfirmAction";
 import CategoryMultiSelect from "../../components/ui/CategoryMultiSelect";
-import CategorySelect from "../../components/ui/CategorySelect";
 import Drawer from "../../components/ui/Drawer";
 import MonthSelector from "../../components/ui/MonthSelector";
-import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
-import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import Switch from "../../components/ui/Switch";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
@@ -48,7 +43,8 @@ import {
   createTransactionSchema,
   type TransactionFormValues,
 } from "../../lib/validation/transactionSchema";
-import TransactionCard from "./TransactionCard";
+import TransactionList from "./TransactionList";
+import TransactionForm from "./TransactionForm";
 import styles from "./TransactionsPage.module.scss";
 
 
@@ -758,46 +754,31 @@ export default function TransactionsPage() {
             />
           </Card>
 
-          <section className={styles.transactionGrid}>
-            {transactions.length === 0 ? (
-              <Card className={styles.emptyState}>
-                <p>{t("transactions.empty")}</p>
-              </Card>
-            ) : (
-              transactions.map((transaction) => {
-                const categoryOption = categoryOptionsById.get(
-                  transaction.categoryId,
-                );
-                return (
-                  <TransactionCard
-                    key={transaction.id}
-                    transaction={transaction}
-                    categoryOption={categoryOption}
-                    isSelected={selectedId === transaction.id}
-                    onSelect={(id) => {
-                      setIsCreating(false);
-                      setSelectedId(id);
-                      setIsDeleteConfirmOpen(false);
-                      setError(null);
-                      form.reset({
-                        type: transaction.type,
-                        ownershipType: transaction.ownershipType,
-                        description: transaction.description,
-                        amount: transaction.amount,
-                        transactionDate: transaction.transactionDate,
-                        accountId: transaction.accountId,
-                        categoryId: transaction.categoryId,
-                        memberId: transaction.memberId ?? "",
-                        isInstallment: Boolean(transaction.installmentTotal),
-                        installmentCount: transaction.installmentTotal ?? 2,
-                      });
-                      setDeleteScope("SINGLE");
-                    }}
-                  />
-                );
-              })
-            )}
-          </section>
+          <TransactionList
+            transactions={transactions}
+            selectedId={selectedId}
+            categoryOptionsById={categoryOptionsById}
+            emptyMessage={t("transactions.empty")}
+            onCardSelect={(id, transaction) => {
+              setIsCreating(false);
+              setSelectedId(id);
+              setIsDeleteConfirmOpen(false);
+              setError(null);
+              form.reset({
+                type: transaction.type,
+                ownershipType: transaction.ownershipType,
+                description: transaction.description,
+                amount: transaction.amount,
+                transactionDate: transaction.transactionDate,
+                accountId: transaction.accountId,
+                categoryId: transaction.categoryId,
+                memberId: transaction.memberId ?? "",
+                isInstallment: Boolean(transaction.installmentTotal),
+                installmentCount: transaction.installmentTotal ?? 2,
+              });
+              setDeleteScope("SINGLE");
+            }}
+          />
 
           <PaginationBar
             start={pagination.rangeStart}
@@ -831,345 +812,31 @@ export default function TransactionsPage() {
               }
             >
               <div className={styles.drawerStack}>
-                <form
-                  className={styles.form}
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  noValidate
-                >
-                  <Field
-                    error={form.formState.errors.description?.message}
-                    htmlFor="transaction-description"
-                    label={t("transactions.description")}
-                  >
-                    <>
-                      <Input
-                        id="transaction-description"
-                        autoComplete="off"
-                        hasError={Boolean(form.formState.errors.description)}
-                        list="transaction-description-suggestions"
-                        {...form.register("description")}
-                        ref={(element) => {
-                          form.register("description").ref(element);
-                          descriptionInputRef.current = element;
-                        }}
-                      />
-                      <datalist
-                        data-testid="transaction-description-suggestions"
-                        id="transaction-description-suggestions"
-                      >
-                        {descriptionSuggestions.map((suggestion) => (
-                          <option key={suggestion} value={suggestion}>
-                            {suggestion}
-                          </option>
-                        ))}
-                      </datalist>
-                    </>
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.amount?.message}
-                    htmlFor="transaction-amount"
-                    label={t("transactions.amount")}
-                  >
-                    <Controller
-                      control={form.control}
-                      name="amount"
-                      render={({ field }) => (
-                        <CurrencyInput
-                          currency={selectedAccountCurrency}
-                          hasError={Boolean(form.formState.errors.amount)}
-                          id="transaction-amount"
-                          onBlur={field.onBlur}
-                          onValueChange={field.onChange}
-                          ref={field.ref}
-                          value={field.value}
-                        />
-                      )}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.transactionDate?.message}
-                    htmlFor="transaction-date"
-                    label={t("transactions.transactionDate")}
-                  >
-                    <Input
-                      id="transaction-date"
-                      hasError={Boolean(form.formState.errors.transactionDate)}
-                      type="date"
-                      {...form.register("transactionDate")}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.type?.message}
-                    htmlFor="transaction-type-expense"
-                    label={t("common.type")}
-                  >
-                    <Controller
-                      control={form.control}
-                      name="type"
-                      render={({ field }) => (
-                        <div
-                          aria-label={t("common.type")}
-                          className={styles.segmentedControl}
-                          role="radiogroup"
-                        >
-                          {(["EXPENSE", "INCOME"] as const).map(
-                            (typeOption) => {
-                              const isActive = field.value === typeOption;
-                              const toneClass =
-                                typeOption === "INCOME"
-                                  ? styles.segmentButtonIncome
-                                  : styles.segmentButtonExpense;
-                              const activeClass = isActive
-                                ? (typeOption === "INCOME"
-                                    ? styles.segmentButtonIncomeActive
-                                    : styles.segmentButtonExpenseActive)
-                                : "";
-
-                              return (
-                                <button
-                                  aria-checked={field.value === typeOption}
-                                  className={`${styles.segmentButton} ${toneClass} ${activeClass}`.trim()}
-                                  id={`transaction-type-${typeOption.toLowerCase()}`}
-                                  key={typeOption}
-                                  onBlur={field.onBlur}
-                                  onClick={() => field.onChange(typeOption)}
-                                  role="radio"
-                                  type="button"
-                                >
-                                  {t(`transactionTypes.${typeOption}` as const)}
-                                </button>
-                              );
-                            },
-                          )}
-                        </div>
-                      )}
-                    />
-                  </Field>
-
-                  <div className={styles.switchGrid}>
-                    {user?.allowanceEnabled ? (
-                      <Field
-                        htmlFor="transaction-ownership-switch"
-                        label={t("common.ownership")}
-                      >
-                        <Controller
-                          control={form.control}
-                          name="ownershipType"
-                          render={({ field }) => (
-                            <Switch
-                              checked={field.value === "INDIVIDUAL"}
-                              id="transaction-ownership-switch"
-                              label={t("ownershipTypes.INDIVIDUAL")}
-                              onBlur={field.onBlur}
-                              onChange={(event) =>
-                                field.onChange(
-                                  event.target.checked ? "INDIVIDUAL" : "SHARED",
-                                )
-                              }
-                              ref={field.ref}
-                            />
-                          )}
-                        />
-                      </Field>
-                    ) : null}
-
-                    {isCreating && transactionType === "EXPENSE" ? (
-                      <Field
-                        htmlFor="transaction-installment-switch"
-                        label={t("transactions.installmentToggle")}
-                      >
-                        <Controller
-                          control={form.control}
-                          name="isInstallment"
-                          render={({ field }) => (
-                            <Switch
-                              checked={field.value}
-                              id="transaction-installment-switch"
-                              label={t("transactions.installmentToggle")}
-                              onBlur={field.onBlur}
-                              onChange={(event) =>
-                                field.onChange(event.target.checked)
-                              }
-                              ref={field.ref}
-                            />
-                          )}
-                        />
-                      </Field>
-                    ) : null}
-                  </div>
-
-                  <Field
-                    error={form.formState.errors.accountId?.message}
-                    htmlFor="transaction-account"
-                    label={t("common.account")}
-                  >
-                    <Select
-                      id="transaction-account"
-                      hasError={Boolean(form.formState.errors.accountId)}
-                      {...form.register("accountId")}
-                    >
-                      <option value="">{t("common.selectAccount")}</option>
-                      {accounts.map((account) => (
-                        <option key={account.id} value={account.id}>
-                          {account.name}
-                        </option>
-                      ))}
-                    </Select>
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.categoryId?.message}
-                    htmlFor="transaction-category"
-                    label={t("common.category")}
-                  >
-                    <Controller
-                      control={form.control}
-                      name="categoryId"
-                      render={({ field }) => (
-                        <CategorySelect
-                          hasError={Boolean(form.formState.errors.categoryId)}
-                          id="transaction-category"
-                          onChange={field.onChange}
-                          options={categoryOptions}
-                          placeholder={t("common.selectCategory")}
-                          value={field.value}
-                        />
-                      )}
-                    />
-                  </Field>
-
-                  {ownershipType === "INDIVIDUAL" ? (
-                    <Field
-                      error={form.formState.errors.memberId?.message}
-                      htmlFor="transaction-member"
-                      label={t("common.member")}
-                    >
-                      <Select
-                        id="transaction-member"
-                        hasError={Boolean(form.formState.errors.memberId)}
-                        {...form.register("memberId")}
-                      >
-                        <option value="">{t("common.selectMember")}</option>
-                        {allowanceMembers.map((member) => (
-                          <option key={member.id} value={member.id}>
-                            {member.name}
-                          </option>
-                        ))}
-                      </Select>
-                    </Field>
-                  ) : null}
-
-                  {isCreating &&
-                  transactionType === "EXPENSE" &&
-                  isInstallment ? (
-                    <Field
-                      error={form.formState.errors.installmentCount?.message}
-                      htmlFor="transaction-installment-count"
-                      label={t("transactions.installmentCount")}
-                    >
-                      <Input
-                        id="transaction-installment-count"
-                        hasError={Boolean(
-                          form.formState.errors.installmentCount,
-                        )}
-                        max="120"
-                        min="2"
-                        step="1"
-                        type="number"
-                        {...form.register("installmentCount")}
-                      />
-                    </Field>
-                  ) : null}
-
-                  <FormError>{error}</FormError>
-
-                  <div className={styles.formActions}>
-                    {isCreating ? (
-                      <>
-                        <Button
-                          loading={isSaving}
-                          type="submit"
-                          value="save-and-create-new"
-                        >
-                          {t("transactions.saveAndCreateNew")}
-                        </Button>
-                        <Button
-                          loading={isSaving}
-                          type="submit"
-                          value="save"
-                          variant="secondary"
-                        >
-                          {t("transactions.save")}
-                        </Button>
-                        <Button
-                          onClick={handleCancelCreate}
-                          type="button"
-                          variant="subtle"
-                        >
-                          {t("common.cancel")}
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button loading={isSaving} type="submit">
-                          {t("common.save")}
-                        </Button>
-                        <Button
-                          disabled={isDeleting}
-                          onClick={handleOpenDeleteConfirm}
-                          type="button"
-                          variant="danger"
-                        >
-{t("common.delete")}
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </form>
+                <TransactionForm
+                  accounts={accounts}
+                  allowanceMembers={allowanceMembers}
+                  categoryOptions={categoryOptions}
+                  deleteScope={deleteScope}
+                  descriptionSuggestions={descriptionSuggestions}
+                  error={error}
+                  form={form}
+                  isCreating={isCreating}
+                  isDeleteConfirmOpen={isDeleteConfirmOpen}
+                  isDeleting={isDeleting}
+                  isSaving={isSaving}
+                  onCancelCreate={handleCancelCreate}
+                  onCloseDeleteConfirm={handleCloseDeleteConfirm}
+                  onOpenDeleteConfirm={handleOpenDeleteConfirm}
+                  onDeleteConfirm={() => void handleDelete()}
+                  onSubmit={onSubmit}
+                  selectedAccountCurrency={selectedAccountCurrency}
+                  selectedTransaction={selectedTransaction}
+                  setDeleteScope={setDeleteScope}
+                  user={user}
+                />
               </div>
             </Drawer>
           ) : null}
-            <ConfirmAction
-              confirmLabel={t("common.delete")}
-              loading={isDeleting}
-              message={t(
-                supportsGroupedDelete
-                  ? "transactions.deleteSubtitle"
-                  : "transactions.deleteSingleSubtitle",
-              )}
-              onCancel={handleCloseDeleteConfirm}
-              onConfirm={() => void handleDelete()}
-              open={isDeleteConfirmOpen}
-              title={t("transactions.deleteTitle")}
-            >
-              {supportsGroupedDelete ? (
-                <Field
-                  htmlFor="transaction-delete-scope"
-                  label={t("transactions.deleteScope")}
-                >
-                  <Select
-                    id="transaction-delete-scope"
-                    onChange={(event) =>
-                      setDeleteScope(event.target.value as DeleteScope)
-                    }
-                    value={deleteScope}
-                  >
-                    <option value="SINGLE">
-                      {t("transactions.deleteScope.single")}
-                    </option>
-                    <option value="FUTURE">
-                      {t("transactions.deleteScope.future")}
-                    </option>
-                    <option value="ALL">
-                      {t("transactions.deleteScope.all")}
-                    </option>
-                  </Select>
-                </Field>
-              ) : null}
-            </ConfirmAction>
         </section>
       )}
     </AppShell>

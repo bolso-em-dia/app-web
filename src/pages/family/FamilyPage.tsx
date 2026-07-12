@@ -31,7 +31,7 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE, type StatusFilter } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
-import FamilyMemberCard from "./FamilyMemberCard";
+import FamilyMemberList from "./FamilyMemberList";
 import FamilyMemberForm from "./FamilyMemberForm";
 import styles from "./FamilyPage.module.scss";
 
@@ -329,33 +329,23 @@ export default function FamilyPage() {
             />
           </Card>
 
-          <section className={styles.memberGrid}>
-            {members.length === 0 ? (
-              <Card className={styles.emptyState}>
-                <p>{t("family.empty")}</p>
-              </Card>
-            ) : (
-              members.map((member) => (
-                <FamilyMemberCard
-                  key={member.id}
-                  member={member}
-                  isSelected={member.id === selectedId}
-                  onSelect={(id) => {
-                    setIsCreating(false);
-                    setSelectedId(id);
-                    setError(null);
-                    form.reset({
-                      name: member.name,
-                      email: member.email,
-                      password: "",
-                      role: member.role,
-                      allowanceEnabled: member.allowanceEnabled,
-                    });
-                  }}
-                />
-              ))
-            )}
-          </section>
+          <FamilyMemberList
+            members={members}
+            selectedId={selectedId}
+            emptyMessage={t("family.empty")}
+            onCardSelect={(id, member) => {
+              setIsCreating(false);
+              setSelectedId(id);
+              setError(null);
+              form.reset({
+                name: member.name,
+                email: member.email,
+                password: "",
+                role: member.role,
+                allowanceEnabled: member.allowanceEnabled,
+              });
+            }}
+          />
 
           <PaginationBar
             start={pagination.rangeStart}

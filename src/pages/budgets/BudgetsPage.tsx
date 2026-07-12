@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   listCategoryOptions,
   type CategoryOption,
@@ -24,21 +24,14 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import ConfirmAction from "../../components/ui/ConfirmAction";
-import CategoryMultiSelect from "../../components/ui/CategoryMultiSelect";
 import Drawer from "../../components/ui/Drawer";
 import MonthSelector from "../../components/ui/MonthSelector";
-import CurrencyInput from "../../components/ui/CurrencyInput";
+import Input from "../../components/ui/Input";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
-import FormError from "../../components/ui/FormError";
-import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import MoneyAmount from "../../components/ui/MoneyAmount";
 import PaginationBar from "../../components/ui/PaginationBar";
-import { formatCurrency } from "../../lib/formatters/currency";
 import {
-  formatDay,
   formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
@@ -49,7 +42,8 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
-import BudgetCard from "./BudgetCard";
+import BudgetList from "./BudgetList";
+import BudgetForm from "./BudgetForm";
 import styles from "./BudgetsPage.module.scss";
 
 const DEFAULT_VALUES: BudgetFormValues = {
@@ -466,34 +460,24 @@ export default function BudgetsPage() {
             />
           </Card>
 
-          <section className={styles.budgetGrid}>
-            {budgets.length === 0 ? (
-              <Card className={styles.emptyState}>
-                <p>{t("budgets.empty")}</p>
-              </Card>
-            ) : (
-              budgets.map((budget) => (
-                <BudgetCard
-                  key={budget.id}
-                  budget={budget}
-                  isSelected={selectedId === budget.id}
-                  onSelect={(id) => {
-                    setIsCreating(false);
-                    setSelectedId(id);
-                    setSelectedBudget(budget);
-                    setError(null);
-                    form.reset({
-                      name: budget.name,
-                      type: budget.type,
-                      ownerMemberId: budget.ownerMemberId ?? "",
-                      categoryIds: budget.categories.map((c) => c.id),
-                      monthlyLimit: budget.monthlyLimit,
-                    });
-                  }}
-                />
-              ))
-            )}
-          </section>
+          <BudgetList
+            budgets={budgets}
+            selectedId={selectedId}
+            emptyMessage={t("budgets.empty")}
+            onCardSelect={(id, budget) => {
+              setIsCreating(false);
+              setSelectedId(id);
+              setSelectedBudget(budget);
+              setError(null);
+              form.reset({
+                name: budget.name,
+                type: budget.type,
+                ownerMemberId: budget.ownerMemberId ?? "",
+                categoryIds: budget.categories.map((c) => c.id),
+                monthlyLimit: budget.monthlyLimit,
+              });
+            }}
+          />
 
           <PaginationBar
             start={pagination.rangeStart}
@@ -525,289 +509,26 @@ export default function BudgetsPage() {
               }
             >
               <div className={styles.drawerStack}>
-                <form
-                  className={styles.form}
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  noValidate
-                >
-                  <Field
-                    error={form.formState.errors.name?.message}
-                    htmlFor="budget-name"
-                    label={t("common.name")}
-                  >
-                    <Input
-                      id="budget-name"
-                      hasError={Boolean(form.formState.errors.name)}
-                      {...form.register("name")}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.type?.message}
-                    htmlFor="budget-type"
-                    label={t("common.type")}
-                  >
-                    <Select
-                      id="budget-type"
-                      hasError={Boolean(form.formState.errors.type)}
-                      {...form.register("type")}
-                    >
-                      <option value="GLOBAL">{t("budgetTypes.GLOBAL")}</option>
-                      <option value="ALLOWANCE">
-                        {t("budgetTypes.ALLOWANCE")}
-                      </option>
-                    </Select>
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.monthlyLimit?.message}
-                    htmlFor="budget-monthly-limit"
-                    label={t("budgets.monthlyLimit")}
-                  >
-                    <Controller
-                      control={form.control}
-                      name="monthlyLimit"
-                      render={({ field }) => (
-                        <CurrencyInput
-                          hasError={Boolean(form.formState.errors.monthlyLimit)}
-                          id="budget-monthly-limit"
-                          onBlur={field.onBlur}
-                          onValueChange={field.onChange}
-                          ref={field.ref}
-                          value={field.value}
-                        />
-                      )}
-                    />
-                  </Field>
-
-                  {budgetType === "ALLOWANCE" ? (
-                    <Field
-                      error={form.formState.errors.ownerMemberId?.message}
-                      htmlFor="budget-owner-member"
-                      label={t("budgets.ownerMember")}
-                    >
-                      <Select
-                        id="budget-owner-member"
-                        hasError={Boolean(form.formState.errors.ownerMemberId)}
-                        {...form.register("ownerMemberId")}
-                      >
-                        <option value="">{t("common.selectMember")}</option>
-                        {availableAllowanceMembers.map((member) => (
-                          <option key={member.id} value={member.id}>
-                            {member.name}
-                          </option>
-                        ))}
-                      </Select>
-                    </Field>
-                  ) : (
-                    <Field
-                      error={form.formState.errors.categoryIds?.message}
-                      htmlFor="budget-linked-categories"
-                      label={t("budgets.linkedCategoriesTitle")}
-                    >
-                      <Controller
-                        control={form.control}
-                        name="categoryIds"
-                        render={({ field }) => (
-                          <CategoryMultiSelect
-                            hasError={Boolean(
-                              form.formState.errors.categoryIds,
-                            )}
-                            id="budget-linked-categories"
-                            onChange={field.onChange}
-                            options={categoryOptions}
-                            placeholder={t("common.selectCategories")}
-                            value={field.value}
-                          />
-                        )}
-                      />
-                      <p className={styles.helperText}>
-                        {t("budgets.globalHelper")}
-                      </p>
-                    </Field>
-                  )}
-
-                  <FormError>{error}</FormError>
-
-                  <div className={styles.formActions}>
-                    <Button loading={isSaving} type="submit">
-                      {isCreating
-                        ? t("budgets.create")
-                        : t("common.save")}
-                    </Button>
-                    {isCreating ? (
-                      <Button
-                        onClick={handleCancelCreate}
-                        type="button"
-                        variant="subtle"
-                      >
-                        {t("common.cancel")}
-                      </Button>
-                    ) : (
-                      <Button
-                        disabled={Boolean(
-                          selectedBudgetSummary?.archivedFromMonth,
-                        )}
-                        onClick={() => setIsArchiveConfirmOpen(true)}
-                        type="button"
-                        variant={
-                          selectedBudgetSummary?.archivedFromMonth
-                            ? "subtle"
-                            : "danger"
-                        }
-                      >
-                        {selectedBudgetSummary?.archivedFromMonth
-                          ? t("budgets.archived")
-                          : t("common.archive")}
-                      </Button>
-                    )}
-                  </div>
-                </form>
-
-                {!isCreating ? (
-                  <Card className={styles.detailPanel}>
-                    <div className={styles.detailHeader}>
-                      <h3 className={styles.detailTitle}>
-                        {t("budgets.currentImpact")}
-                      </h3>
-                      <p className={styles.detailSubtitle}>
-                        {t("budgets.currentImpactSubtitle", {
-                          month: formatReferenceMonth(referenceMonth),
-                        })}
-                      </p>
-                    </div>
-
-                    {isDetailLoading ? (
-                      <Spinner label={t("budgets.loadingDetails")} />
-                    ) : selectedBudget ? (
-                      <div className={styles.detailSection}>
-                        <section className={styles.summaryGrid}>
-                          <div className={styles.summaryCard}>
-                            <span className={styles.summaryLabel}>
-                              {t("budgets.limit")}
-                            </span>
-                            <strong className={styles.summaryValue}>
-                              {formatCurrency(selectedBudget.monthlyLimit)}
-                            </strong>
-                          </div>
-                          <div className={styles.summaryCard}>
-                            <span className={styles.summaryLabel}>
-                              {t("budgets.consumed")}
-                            </span>
-                            <strong className={styles.summaryValue}>
-                              {formatCurrency(selectedBudget.consumedAmount)}
-                            </strong>
-                          </div>
-                          <div className={styles.summaryCard}>
-                            <span className={styles.summaryLabel}>
-                              {t("budgets.remaining")}
-                            </span>
-                            <strong className={styles.summaryValue}>
-                              {formatCurrency(selectedBudget.remainingAmount)}
-                            </strong>
-                          </div>
-                        </section>
-
-                        <section className={styles.sectionBlock}>
-                          <h4 className={styles.sectionTitle}>
-                            {t("budgets.categoryBreakdown")}
-                          </h4>
-                          {categoryBreakdown.length > 0 ? (
-                            <div className={styles.detailList}>
-                              {categoryBreakdown.map((item) => (
-                                <div
-                                  key={item.categoryId}
-                                  className={styles.detailRow}
-                                >
-                                  <strong>{item.categoryName}</strong>
-                                  <strong>{formatCurrency(item.amount)}</strong>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className={styles.emptyStateInline}>
-                              {t("budgets.noCategoryConsumption")}
-                            </div>
-                          )}
-                        </section>
-
-                        <section className={styles.sectionBlock}>
-                          <h4 className={styles.sectionTitle}>
-                            {t("budgets.matchedTransactions")}
-                          </h4>
-                          {selectedBudget.transactions.length > 0 ? (
-                            <div className={styles.transactionList}>
-                              {selectedBudget.transactions.map(
-                                (transaction) => (
-                                  <div
-                                    key={transaction.id}
-                                    className={styles.transactionRow}
-                                  >
-                                    <div>
-                                      <strong>{transaction.description}</strong>
-                                      <p className={styles.itemMeta}>
-                                        {transaction.categoryName} ·{" "}
-                                        {transaction.accountName} ·{" "}
-                                        {formatDay(transaction.transactionDate)}
-                                      </p>
-                                    </div>
-                                    <strong>
-                                      {formatCurrency(transaction.amount)}
-                                    </strong>
-                                  </div>
-                                ),
-                              )}
-                            </div>
-                          ) : (
-                            <div className={styles.emptyStateInline}>
-                              {t("budgets.noMatchedTransactions")}
-                            </div>
-                          )}
-                        </section>
-
-                        <section className={styles.sectionBlock}>
-                          <h4 className={styles.sectionTitle}>
-                            {t("budgets.linkedCategoriesTitle")}
-                          </h4>
-                          {selectedBudget.categories.length > 0 ? (
-                            <div className={styles.categoryList}>
-                              {selectedBudget.categories.map((category) => (
-                                <span
-                                  key={category.id}
-                                  className={styles.badge}
-                                >
-                                  {category.name}
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className={styles.emptyStateInline}>
-                              {t("budgets.noSharedCategories")}
-                            </div>
-                          )}
-                        </section>
-                      </div>
-                    ) : (
-                      <p className={styles.detailSubtitle}>
-                        {t("budgets.selectToReview")}
-                      </p>
-                    )}
-                  </Card>
-                ) : null}
+                <BudgetForm
+                  availableAllowanceMembers={availableAllowanceMembers}
+                  categoryOptions={categoryOptions}
+                  error={error}
+                  form={form}
+                  isArchiveConfirmOpen={isArchiveConfirmOpen}
+                  isArchiving={isArchiving}
+                  isCreating={isCreating}
+                  isSaving={isSaving}
+                  onCancelCreate={handleCancelCreate}
+                  onArchiveCancel={() => setIsArchiveConfirmOpen(false)}
+                  onArchiveConfirm={() => {
+                    setIsArchiveConfirmOpen(false);
+                    void onArchive();
+                  }}
+                  onArchiveOpen={() => setIsArchiveConfirmOpen(true)}
+                  onSubmit={onSubmit}
+                  selectedBudgetSummary={selectedBudgetSummary}
+                />
               </div>
-
-              <ConfirmAction
-                confirmLabel={t("common.archive")}
-                loading={isArchiving}
-                message={t("confirmations.archiveBudget")}
-                onCancel={() => setIsArchiveConfirmOpen(false)}
-                onConfirm={() => {
-                  setIsArchiveConfirmOpen(false);
-                  void onArchive();
-                }}
-                open={isArchiveConfirmOpen}
-                title={t("budgets.archiveTitle")}
-              />
             </Drawer>
           ) : null}
         </section>

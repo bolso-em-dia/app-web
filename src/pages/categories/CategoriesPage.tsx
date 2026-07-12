@@ -32,7 +32,7 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
-import CategoryCard from "./CategoryCard";
+import CategoryList from "./CategoryList";
 import CategoryForm from "./CategoryForm";
 import styles from "./CategoriesPage.module.scss";
 
@@ -341,30 +341,25 @@ export default function CategoriesPage() {
               />
             </Card>
 
-            <section className={styles.categoryGrid}>
-              {categories.map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  isSelected={selectedId === category.id}
-                  onSelect={(id) => {
-                    setIsCreating(false);
-                    setSelectedId(id);
-                    setError(null);
-                    form.reset({
-                      name: category.name,
-                      icon: category.icon ?? "",
-                      color: category.color ?? "",
-                    });
-                    archiveForm.reset({
-                      replacementCategoryId: options.find(
-                        (o) => o.id !== category.id,
-                      )?.id ?? "",
-                    });
-                  }}
-                />
-              ))}
-            </section>
+            <CategoryList
+              categories={categories}
+              selectedId={selectedId}
+              onCardSelect={(id, category) => {
+                setIsCreating(false);
+                setSelectedId(id);
+                setError(null);
+                form.reset({
+                  name: category.name,
+                  icon: category.icon ?? "",
+                  color: category.color ?? "",
+                });
+                archiveForm.reset({
+                  replacementCategoryId: options.find(
+                    (o) => o.id !== category.id,
+                  )?.id ?? "",
+                });
+              }}
+            />
 
             <PaginationBar
               start={pagination.rangeStart}

@@ -30,7 +30,7 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
-import AccountCard from "./AccountCard";
+import AccountList from "./AccountList";
 import AccountForm from "./AccountForm";
 import styles from "./AccountsPage.module.scss";
 
@@ -362,34 +362,25 @@ export default function AccountsPage() {
             />
           </Card>
 
-          <section className={styles.accountGrid}>
-            {accounts.length === 0 ? (
-              <Card className={styles.emptyState}>
-                <p>{t("accounts.empty")}</p>
-              </Card>
-            ) : (
-              accounts.map((account) => (
-                <AccountCard
-                  account={account}
-                  isSelected={selectedId === account.id}
-                  onSelect={(id) => {
-                    setIsCreating(false);
-                    setSelectedId(id);
-                    setError(null);
-                    form.reset({
-                      name: account.name,
-                      type: account.type,
-                      currency: (account.currency as "BRL" | "USD") ?? "BRL",
-                      brand: account.brand ?? "",
-                      color: account.color ?? "",
-                      closingDay: account.closingDay ?? undefined,
-                      dueDay: account.dueDay ?? undefined,
-                    });
-                  }}
-                />
-              ))
-            )}
-          </section>
+          <AccountList
+            accounts={accounts}
+            selectedId={selectedId}
+            emptyMessage={t("accounts.empty")}
+            onCardSelect={(id, account) => {
+              setIsCreating(false);
+              setSelectedId(id);
+              setError(null);
+              form.reset({
+                name: account.name,
+                type: account.type,
+                currency: (account.currency as "BRL" | "USD") ?? "BRL",
+                brand: account.brand ?? "",
+                color: account.color ?? "",
+                closingDay: account.closingDay ?? undefined,
+                dueDay: account.dueDay ?? undefined,
+              });
+            }}
+          />
 
           <PaginationBar
             start={pagination.rangeStart}
