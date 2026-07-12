@@ -29,13 +29,8 @@ import FilterToolbar from "../../components/ui/FilterToolbar";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import MoneyAmount from "../../components/ui/MoneyAmount";
 import PaginationBar from "../../components/ui/PaginationBar";
-import { formatCurrency } from "../../lib/formatters/currency";
-import {
-  formatReferenceMonth,
-  getCurrentReferenceMonth,
-} from "../../lib/formatters/date";
+import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import {
   createFixedExpenseSchema,
   type FixedExpenseFormValues,
@@ -43,7 +38,7 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
-import { getStoredIcon } from "../../lib/icons";
+import FixedExpenseCard from "./FixedExpenseCard";
 import styles from "./FixedExpensesPage.module.scss";
 
 function createDefaultValues(defaultAccountId: string): FixedExpenseFormValues {
@@ -357,125 +352,27 @@ export default function FixedExpensesPage() {
           </Card>
 
           <section className={styles.templateGrid}>
-            {templates.map((template) => {
-              const categoryOption = categoryOptionsById.get(
-                template.categoryId,
-              );
-              const CategoryIcon = getStoredIcon(categoryOption?.icon);
-              const categoryColor = categoryOption?.color ?? undefined;
-
-              return (
-                <Card key={template.id} className={styles.templateCard}>
-                  <button
-                    className={styles.templateButton}
-                    onClick={() => {
-                      setIsCreating(false);
-                      setSelectedId(template.id);
-                      setError(null);
-                      form.reset({
-                        name: template.name,
-                        type: template.type,
-                        amount: template.amount,
-                        categoryId: template.categoryId,
-                        accountId: template.accountId,
-                        dueDay: template.dueDay,
-                      });
-                    }}
-                    style={
-                      categoryColor
-                        ? { borderInlineStartColor: categoryColor }
-                        : undefined
-                    }
-                    type="button"
-                  >
-                    <div className={styles.templateHeader}>
-                      <div className={styles.templateMain}>
-                        <div className={styles.templateTitleRow}>
-                          {CategoryIcon ? (
-                            <span
-                              aria-hidden="true"
-                              className={styles.categoryLead}
-                              style={
-                                categoryColor
-                                  ? { color: categoryColor }
-                                  : undefined
-                              }
-                            >
-                              <CategoryIcon className={styles.categoryIcon} />
-                            </span>
-                          ) : categoryColor ? (
-                            <span
-                              aria-hidden="true"
-                              className={styles.categoryLead}
-                              style={{ color: categoryColor }}
-                            >
-                              <span className={styles.categoryDot} />
-                            </span>
-                          ) : null}
-                          <div className={styles.templateLine}>
-                            <strong className={styles.templateName}>
-                              {template.name}
-                            </strong>
-                            <span className={styles.templateMetaSeparator}>
-                              ·
-                            </span>
-                            <p className={styles.templateMeta}>
-                              {template.categoryName} · {template.accountName} ·{" "}
-                              {template.type === "INCOME"
-                                ? t("fixedTransactions.receivesOnDay", {
-                                    day: String(template.dueDay).padStart(2, "0"),
-                                  })
-                                : t("fixedTransactions.dueOnDay", {
-                                    day: String(template.dueDay).padStart(2, "0"),
-                                  })}
-                              {template.currency === "USD" &&
-                              template.exchangeRate != null
-                                ? ` · ${formatCurrency(
-                                    template.type === "EXPENSE"
-                                      ? -Math.abs(template.amount)
-                                      : Math.abs(template.amount),
-                                    "USD",
-                                  )} (cot. ${template.exchangeRate.toFixed(2)})`
-                                : null}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <strong className={styles.templateAmount}>
-                        <MoneyAmount amount={template.convertedAmount ?? template.amount} type={template.type} />
-                      </strong>
-                    </div>
-
-                    <div className={styles.templateBadges}>
-                      <span
-                        className={
-                          template.type === "INCOME"
-                            ? `${styles.badge} ${styles.badgeSuccess}`
-                            : styles.badge
-                        }
-                      >
-                        {t(`transactionTypes.${template.type}`)}
-                      </span>
-                      <span
-                        className={
-                          template.archivedFromMonth
-                            ? `${styles.badge} ${styles.badgeMuted}`
-                            : `${styles.badge} ${styles.badgeSuccess}`
-                        }
-                      >
-                        {template.archivedFromMonth
-                          ? t("common.archivedFrom", {
-                              month: formatReferenceMonth(
-                                template.archivedFromMonth,
-                              ),
-                            })
-                          : t("common.active")}
-                      </span>
-                    </div>
-                  </button>
-                </Card>
-              );
-            })}
+            {templates.map((template) => (
+              <FixedExpenseCard
+                key={template.id}
+                categoryOption={categoryOptionsById.get(template.categoryId)}
+                isSelected={selectedId === template.id}
+                template={template}
+                onSelect={(id) => {
+                  setIsCreating(false);
+                  setSelectedId(id);
+                  setError(null);
+                  form.reset({
+                    name: template.name,
+                    type: template.type,
+                    amount: template.amount,
+                    categoryId: template.categoryId,
+                    accountId: template.accountId,
+                    dueDay: template.dueDay,
+                  });
+                }}
+              />
+            ))}
           </section>
 
           <PaginationBar

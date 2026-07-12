@@ -34,6 +34,7 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
+import FamilyMemberCard from "./FamilyMemberCard";
 import styles from "./FamilyPage.module.scss";
 
 type FamilyFormValues =
@@ -341,64 +342,23 @@ export default function FamilyPage() {
               </Card>
             ) : (
               members.map((member) => (
-                <Card key={member.id} className={styles.memberCard}>
-                  <button
-                    className={styles.memberButton}
-                    onClick={() => {
-                      setIsCreating(false);
-                      setSelectedId(member.id);
-                      setError(null);
-                      form.reset({
-                        name: member.name,
-                        email: member.email,
-                        password: "",
-                        role: member.role,
-                        allowanceEnabled: member.allowanceEnabled,
-                      });
-                    }}
-                    type="button"
-                  >
-                    <div className={styles.memberHeader}>
-                      <div>
-                        <strong>{member.name}</strong>
-                        <p className={styles.memberMeta}>
-                          {member.email} ·{" "}
-                          {t(
-                            member.role === "ADMIN"
-                              ? "roles.ADMIN"
-                              : "roles.USER",
-                          )}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className={styles.memberBadges}>
-                      <span
-                        className={
-                          member.active
-                            ? `${styles.badge} ${styles.badgeSuccess}`
-                            : `${styles.badge} ${styles.badgeMuted}`
-                        }
-                      >
-                        {member.active
-                          ? t("common.active")
-                          : t("common.archived")}
-                      </span>
-                      <span className={styles.badge}>
-                        {t(
-                          member.role === "ADMIN"
-                            ? "roles.ADMIN"
-                            : "roles.USER",
-                        )}
-                      </span>
-                      {member.allowanceEnabled ? (
-                        <span className={styles.badge}>
-                          {t("family.allowance")}
-                        </span>
-                      ) : null}
-                    </div>
-                  </button>
-                </Card>
+                <FamilyMemberCard
+                  key={member.id}
+                  member={member}
+                  isSelected={member.id === selectedId}
+                  onSelect={(id) => {
+                    setIsCreating(false);
+                    setSelectedId(id);
+                    setError(null);
+                    form.reset({
+                      name: member.name,
+                      email: member.email,
+                      password: "",
+                      role: member.role,
+                      allowanceEnabled: member.allowanceEnabled,
+                    });
+                  }}
+                />
               ))
             )}
           </section>

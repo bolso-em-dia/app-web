@@ -25,7 +25,6 @@ import FormError from "../../components/ui/FormError";
 import PaginationBar from "../../components/ui/PaginationBar";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import { formatReferenceMonth } from "../../lib/formatters/date";
 import { COLOR_OPTIONS, getColorLabel } from "../../lib/uiOptions";
 import {
   createAccountSchema,
@@ -34,6 +33,7 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
+import AccountCard from "./AccountCard";
 import styles from "./AccountsPage.module.scss";
 
 const DEFAULT_VALUES: AccountFormValues = {
@@ -371,76 +371,24 @@ export default function AccountsPage() {
               </Card>
             ) : (
               accounts.map((account) => (
-                <Card key={account.id} className={styles.accountCard}>
-                  <button
-                    className={styles.accountButton}
-                    onClick={() => {
-                      setIsCreating(false);
-                      setSelectedId(account.id);
-                      setError(null);
-                      form.reset({
-                        name: account.name,
-                        type: account.type,
-                        currency: (account.currency as "BRL" | "USD") ?? "BRL",
-                        brand: account.brand ?? "",
-                        color: account.color ?? "",
-                        closingDay: account.closingDay ?? undefined,
-                        dueDay: account.dueDay ?? undefined,
-                      });
-                    }}
-                    style={
-                      account.color
-                        ? { borderInlineStartColor: account.color }
-                        : undefined
-                    }
-                    type="button"
-                  >
-                    <div className={styles.accountHeader}>
-                      <div>
-                        <div className={styles.accountTitleRow}>
-                          {account.color ? (
-                            <span
-                              aria-hidden="true"
-                              className={styles.swatchDot}
-                              style={{ backgroundColor: account.color }}
-                            />
-                          ) : null}
-                          <strong>{account.name}</strong>
-                        </div>
-                        <p className={styles.accountMeta}>
-                          {t(`accountTypes.${account.type}` as const)}
-                          {account.brand ? ` · ${account.brand}` : ""}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className={styles.accountBadges}>
-                      <span className={styles.badge}>
-                        {t(`accountTypes.${account.type}` as const)}
-                      </span>
-                      {account.closingDay && account.dueDay ? (
-                        <span className={`${styles.badge} ${styles.badgeInfo}`}>
-                          Fecha {account.closingDay} · Vence {account.dueDay}
-                        </span>
-                      ) : null}
-                      <span
-                        className={
-                          account.archivedFromMonth
-                            ? `${styles.badge} ${styles.badgeMuted}`
-                            : `${styles.badge} ${styles.badgeSuccess}`
-                        }
-                      >
-                        {account.archivedFromMonth
-                          ? t("common.archivedFrom", {
-                              month: formatReferenceMonth(
-                                account.archivedFromMonth,
-                              ),
-                            })
-                          : t("common.active")}
-                      </span>
-                    </div>
-                  </button>
-                </Card>
+                <AccountCard
+                  account={account}
+                  isSelected={selectedId === account.id}
+                  onSelect={(id) => {
+                    setIsCreating(false);
+                    setSelectedId(id);
+                    setError(null);
+                    form.reset({
+                      name: account.name,
+                      type: account.type,
+                      currency: (account.currency as "BRL" | "USD") ?? "BRL",
+                      brand: account.brand ?? "",
+                      color: account.color ?? "",
+                      closingDay: account.closingDay ?? undefined,
+                      dueDay: account.dueDay ?? undefined,
+                    });
+                  }}
+                />
               ))
             )}
           </section>

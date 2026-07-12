@@ -49,6 +49,7 @@ import {
 import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
+import BudgetCard from "./BudgetCard";
 import styles from "./BudgetsPage.module.scss";
 
 const DEFAULT_VALUES: BudgetFormValues = {
@@ -472,68 +473,24 @@ export default function BudgetsPage() {
               </Card>
             ) : (
               budgets.map((budget) => (
-                <Card key={budget.id} className={styles.budgetCard}>
-                  <button
-                    className={styles.budgetButton}
-                    onClick={() => {
-                      setIsCreating(false);
-                      setSelectedId(budget.id);
-                      setSelectedBudget(null);
-                      setError(null);
-                      form.reset({
-                        name: budget.name,
-                        type: budget.type,
-                        ownerMemberId: budget.ownerMemberId ?? "",
-                        categoryIds: budget.categories.map((c) => c.id),
-                        monthlyLimit: budget.monthlyLimit,
-                      });
-                    }}
-                    type="button"
-                  >
-                    <div className={styles.budgetHeader}>
-                      <div>
-                        <strong>{budget.name}</strong>
-                        <p className={styles.budgetMeta}>
-                          {budget.type === "ALLOWANCE" && budget.ownerMemberName
-                            ? t("budgets.allowanceFor", {
-                                name: budget.ownerMemberName,
-                              })
-                            : t("budgets.linkedCategories", {
-                                count: budget.categories.length,
-                              })}
-                        </p>
-                      </div>
-                      <div className={styles.budgetAmounts}>
-                        <strong>{formatCurrency(budget.monthlyLimit)}</strong>
-                        <p className={styles.budgetMeta}>
-                          {t("budgets.consumed")}{" "}
-                          <MoneyAmount amount={budget.consumedAmount} type="EXPENSE" />
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className={styles.badgeRow}>
-                      <span className={styles.badge}>
-                        {t(`budgetTypes.${budget.type}` as const)}
-                      </span>
-                      <span
-                        className={
-                          budget.archivedFromMonth
-                            ? `${styles.badge} ${styles.badgeMuted}`
-                            : `${styles.badge} ${styles.badgeSuccess}`
-                        }
-                      >
-                        {budget.archivedFromMonth
-                          ? t("budgets.archivedFrom", {
-                              month: formatReferenceMonth(
-                                budget.archivedFromMonth,
-                              ),
-                            })
-                          : t("common.active")}
-                      </span>
-                    </div>
-                  </button>
-                </Card>
+                <BudgetCard
+                  key={budget.id}
+                  budget={budget}
+                  isSelected={selectedId === budget.id}
+                  onSelect={(id) => {
+                    setIsCreating(false);
+                    setSelectedId(id);
+                    setSelectedBudget(budget);
+                    setError(null);
+                    form.reset({
+                      name: budget.name,
+                      type: budget.type,
+                      ownerMemberId: budget.ownerMemberId ?? "",
+                      categoryIds: budget.categories.map((c) => c.id),
+                      monthlyLimit: budget.monthlyLimit,
+                    });
+                  }}
+                />
               ))
             )}
           </section>
