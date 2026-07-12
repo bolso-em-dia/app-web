@@ -288,6 +288,7 @@ export const ptBRMessages = {
   "budgets.linkedCategories": "{{count}} categorias vinculadas",
   "budgets.consumedOfLimit": "Usado {{consumed}}",
   "budgets.archivedFrom": "Arquivado a partir de {{month}}",
+  "common.archivedFrom": "Arquivado a partir de {{month}}",
   "budgets.newDescription":
     "Crie um orçamento global ou um orçamento de mesada.",
   "budgets.editDescription": "Revise e atualize o orçamento de {{month}}.",

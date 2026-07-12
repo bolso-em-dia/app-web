@@ -23,11 +23,14 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
     return <Spinner label={t("app.loadingSession")} fullScreen />;
   }
 
-  if (isAuthenticated && user?.mustChangePassword && location.pathname !== "/change-password") {
+  const mustChangePassword = isAuthenticated && user?.mustChangePassword;
+  const isOnChangePassword = location.pathname === "/change-password";
+
+  if (mustChangePassword && !isOnChangePassword) {
     return <Navigate to="/change-password" replace />;
   }
 
-  if (isAuthenticated && !user?.mustChangePassword && location.pathname === "/change-password") {
+  if (isAuthenticated && !mustChangePassword && isOnChangePassword) {
     return <Navigate to="/dashboard" replace />;
   }
 
