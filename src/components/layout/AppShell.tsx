@@ -9,6 +9,7 @@ import {
   operationalNavigation,
 } from "../../app/navigation/navigation";
 import { getNavigationIcon } from "../../lib/icons";
+import { useBreakpoint } from "../../lib/useBreakpoint";
 import Button from "../ui/Button";
 import Drawer from "../ui/Drawer";
 import AppVersion from "../ui/AppVersion";
@@ -22,23 +23,6 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-function useCompactNavigation() {
-  const [isCompact, setIsCompact] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth <= 1024 : false,
-  );
-
-  useEffect(() => {
-    function handleResize() {
-      setIsCompact(window.innerWidth <= 1024);
-    }
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return isCompact;
-}
-
 export default function AppShell({
   title,
   subtitle,
@@ -47,7 +31,7 @@ export default function AppShell({
 }: AppShellProps) {
   const { logout, user } = useAuth();
   const { t } = useI18n();
-  const isCompactNavigation = useCompactNavigation();
+  const isCompactNavigation = useBreakpoint(1024);
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
 
   useEffect(() => {
