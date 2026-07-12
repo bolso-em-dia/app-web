@@ -211,35 +211,29 @@ export function createFamilyMember(
 import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
-import type { TestAuthProviderUser } from "../app/auth/TestAuthProvider";
 import type { ReactElement } from "react";
-import { createElement } from "react";
 
-const DEFAULT_USER: TestAuthProviderUser = {
+const DEFAULT_USER = {
   id: "1",
   name: "Admin",
   email: "admin@bolso-em-dia.local",
-  role: "ADMIN",
+  role: "ADMIN" as const,
   allowanceEnabled: false,
 };
 
 export function renderWithProviders(
   ui: ReactElement,
-  options: { route?: string; user?: Partial<TestAuthProviderUser> } = {},
+  options: { route?: string; user?: Partial<typeof DEFAULT_USER> } = {},
 ) {
   const { route = "/", user = {} } = options;
   return render(
-    createElement(
-      MemoryRouter,
-      {
-        future: { v7_startTransition: true, v7_relativeSplatPath: true },
-        initialEntries: [route],
-      },
-      createElement(
-        TestAuthProvider,
-        { user: { ...DEFAULT_USER, ...user } },
-        ui,
-      ),
-    ),
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      initialEntries={[route]}
+    >
+      <TestAuthProvider user={{ ...DEFAULT_USER, ...user }}>
+        {ui}
+      </TestAuthProvider>
+    </MemoryRouter>,
   );
 }
