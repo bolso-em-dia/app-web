@@ -5,13 +5,12 @@ import type { FamilyMember } from "../../app/api/family";
 
 type FamilyMemberCardProps = {
   member: FamilyMember;
-  isSelected: boolean;
+  isSelected?: boolean;
   onSelect: (id: string) => void;
 };
 
 export default function FamilyMemberCard({
   member,
-  isSelected,
   onSelect,
 }: FamilyMemberCardProps) {
   const { t } = useI18n();

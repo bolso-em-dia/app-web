@@ -6,13 +6,12 @@ import styles from "./CategoriesPage.module.scss";
 
 type CategoryCardProps = {
   category: Category;
-  isSelected: boolean;
+  isSelected?: boolean;
   onSelect: (id: string) => void;
 };
 
 export default function CategoryCard({
   category,
-  isSelected,
   onSelect,
 }: CategoryCardProps) {
   const { t } = useI18n();
@@ -36,9 +35,7 @@ export default function CategoryCard({
               <span
                 aria-hidden="true"
                 className={styles.categoryTitleIcon}
-                style={
-                  category.color ? { color: category.color } : undefined
-                }
+                style={category.color ? { color: category.color } : undefined}
               >
                 <Icon className={styles.categoryMetaIcon} />
               </span>
