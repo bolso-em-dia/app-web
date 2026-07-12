@@ -42,8 +42,12 @@ describe("CategoryMultiSelect", () => {
 
     const listbox = screen.getByRole("listbox");
 
-    fireEvent.click(within(listbox).getByRole("option", { name: /Groceries/i }));
-    fireEvent.click(within(listbox).getByRole("option", { name: /Transport/i }));
+    fireEvent.click(
+      within(listbox).getByRole("option", { name: /Groceries/i }),
+    );
+    fireEvent.click(
+      within(listbox).getByRole("option", { name: /Transport/i }),
+    );
 
     expect(screen.getAllByText("Groceries")).toHaveLength(2);
     expect(screen.getAllByText("Transport")).toHaveLength(2);

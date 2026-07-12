@@ -4,13 +4,13 @@ import type { TransactionType } from "./transactions";
 
 export type BudgetType = "GLOBAL" | "ALLOWANCE";
 
-export type BudgetCategory = {
+type BudgetCategory = {
   id: string;
   name: string;
   color: string | null;
 };
 
-export type BudgetTransaction = {
+type BudgetTransaction = {
   id: string;
   type: TransactionType;
   ownershipType: string;
@@ -50,7 +50,7 @@ export type Budget = {
   transactions: BudgetTransaction[];
 };
 
-export type BudgetCategoryBreakdown = {
+type BudgetCategoryBreakdown = {
   categoryId: string;
   categoryName: string;
   amount: number;
@@ -99,27 +99,10 @@ export function listBudgets(
     query.set("type", type);
   }
 
-  return apiRequest<PageResponse<Budget>>(
-    `/api/budgets?${query.toString()}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
-}
-
-export function getBudget(
-  id: string,
-  referenceMonth: string,
-  accessToken: string,
-) {
-  return apiRequest<Budget>(
-    `/api/budgets/${id}?referenceMonth=${referenceMonth}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+  return apiRequest<PageResponse<Budget>>(`/api/budgets?${query.toString()}`, {
+    method: "GET",
+    accessToken,
+  });
 }
 
 export function createBudget(payload: BudgetPayload, accessToken: string) {
@@ -152,22 +135,8 @@ export function archiveBudget(
     {
       method: "PATCH",
       accessToken,
-          },
-  );
-}
-
-export function listBudgetCategoryBreakdown(
-  id: string,
-  referenceMonth: string,
-  accessToken: string,
-) {
-  return apiRequest<BudgetCategoryBreakdown[]>(
-    `/api/budgets/${id}/category-breakdown?referenceMonth=${referenceMonth}`,
-    {
-      method: "GET",
-      accessToken,
     },
   );
 }
 
-export type BudgetCategoryOption = CategoryOption;
+type BudgetCategoryOption = CategoryOption;

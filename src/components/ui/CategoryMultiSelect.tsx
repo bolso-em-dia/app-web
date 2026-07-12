@@ -22,7 +22,11 @@ function CategoryContent({ category }: { category: CategoryOption }) {
         className={styles.lead}
         style={category.color ? { color: category.color } : undefined}
       >
-        {Icon ? <Icon className={styles.icon} /> : <span className={styles.dot} />}
+        {Icon ? (
+          <Icon className={styles.icon} />
+        ) : (
+          <span className={styles.dot} />
+        )}
       </span>
       <span className={styles.text}>{category.name}</span>
     </span>

@@ -29,15 +29,13 @@ export function parseCurrencyInput(value: string) {
   return Number(digits) / 100;
 }
 
-export function formatCurrencyInput(value: number | null | undefined, currency?: Currency) {
+export function formatCurrencyInput(
+  value: number | null | undefined,
+  currency?: Currency,
+) {
   if (typeof value !== "number" || Number.isNaN(value)) {
     return formatCurrency(0, currency);
   }
 
   return formatCurrency(value, currency);
-}
-
-export function formatUsdWithExchangeRate(amount: number, type: "INCOME" | "EXPENSE", exchangeRate: number) {
-  const signed = type === "EXPENSE" ? -Math.abs(amount) : Math.abs(amount);
-  return `${formatCurrency(signed, "USD")} (cot. ${exchangeRate.toFixed(2)})`;
 }

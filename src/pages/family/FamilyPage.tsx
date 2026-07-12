@@ -46,7 +46,6 @@ const DEFAULT_VALUES: CreateFamilyMemberFormValues = {
   allowanceEnabled: false,
 };
 
-
 export default function FamilyPage() {
   const { accessToken } = useAuth();
   const { t } = useI18n();

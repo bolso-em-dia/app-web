@@ -62,7 +62,7 @@ export type NavigationIconId =
   | "categories"
   | "accounts";
 
-export const storedIconMap: Record<StoredIconId, LucideIcon> = {
+const storedIconMap: Record<StoredIconId, LucideIcon> = {
   "shopping-cart": ShoppingCart,
   car: Car,
   home: House,
@@ -86,7 +86,7 @@ export const storedIconMap: Record<StoredIconId, LucideIcon> = {
   wrench: Wrench,
 };
 
-export const navigationIconMap: Record<NavigationIconId, LucideIcon> = {
+const navigationIconMap: Record<NavigationIconId, LucideIcon> = {
   dashboard: LayoutDashboard,
   budgets: Wallet,
   "fixed-expenses": ReceiptText,

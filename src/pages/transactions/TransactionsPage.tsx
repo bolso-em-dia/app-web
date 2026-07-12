@@ -38,7 +38,10 @@ import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
 import PaginationBar from "../../components/ui/PaginationBar";
-import { formatReferenceMonth, getCurrentReferenceMonth } from "../../lib/formatters/date";
+import {
+  formatReferenceMonth,
+  getCurrentReferenceMonth,
+} from "../../lib/formatters/date";
 import {
   createTransactionSchema,
   type TransactionFormValues,
@@ -46,7 +49,6 @@ import {
 import TransactionList from "./TransactionList";
 import TransactionForm from "./TransactionForm";
 import styles from "./TransactionsPage.module.scss";
-
 
 type Translate = ReturnType<typeof useI18n>["t"];
 
@@ -174,14 +176,13 @@ export default function TransactionsPage() {
     ),
   });
 
-  const transactionType = form.watch("type");
-  const ownershipType = form.watch("ownershipType");
   const descriptionValue = form.watch("description");
   const transactionDate = form.watch("transactionDate");
-  const isInstallment = form.watch("isInstallment");
   const formAccountId = form.watch("accountId");
   const selectedAccountCurrency = useMemo(
-    () => accounts.find((a) => a.id === formAccountId)?.currency as "BRL" | "USD" | undefined,
+    () =>
+      accounts.find((a) => a.id === formAccountId)?.currency as
+        "BRL" | "USD" | undefined,
     [accounts, formAccountId],
   );
   const currentReferenceMonth = useMemo(
@@ -355,7 +356,10 @@ export default function TransactionsPage() {
 
     try {
       if (isCreating) {
-        await createTransaction(mapFormValuesToCreatePayload(values), accessToken);
+        await createTransaction(
+          mapFormValuesToCreatePayload(values),
+          accessToken,
+        );
 
         await loadPageData();
 
@@ -558,9 +562,6 @@ export default function TransactionsPage() {
   }
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
-  const supportsGroupedDelete = Boolean(
-    selectedTransaction?.installmentGroupId,
-  );
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
   const pagination = usePagination(page, pageSize, totalItems, totalPages);
 

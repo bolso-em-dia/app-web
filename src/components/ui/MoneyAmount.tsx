@@ -18,8 +18,16 @@ export default memo(function MoneyAmount({
   className,
 }: MoneyAmountProps) {
   const isZero = amount === 0;
-  const signedAmount = isZero ? 0 : (type === "EXPENSE" ? -Math.abs(amount) : amount);
-  const colorClass = isZero ? "" : (type === "EXPENSE" ? styles.expense : styles.income);
+  const signedAmount = isZero
+    ? 0
+    : type === "EXPENSE"
+      ? -Math.abs(amount)
+      : amount;
+  const colorClass = isZero
+    ? ""
+    : type === "EXPENSE"
+      ? styles.expense
+      : styles.income;
 
   return (
     <Tag className={`${colorClass} ${className ?? ""}`.trim()}>

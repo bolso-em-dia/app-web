@@ -59,16 +59,6 @@ export function listFixedExpenseTemplates(
   );
 }
 
-export function listFixedExpenseTemplateById(id: string, accessToken: string) {
-  return apiRequest<FixedExpenseTemplate>(
-    `/api/fixed-transactions/${id}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
-}
-
 export function createFixedExpenseTemplate(
   payload: FixedExpenseTemplatePayload,
   accessToken: string,
@@ -85,14 +75,11 @@ export function updateFixedExpenseTemplate(
   payload: FixedExpenseTemplatePayload,
   accessToken: string,
 ) {
-  return apiRequest<FixedExpenseTemplate>(
-    `/api/fixed-transactions/${id}`,
-    {
-      method: "PUT",
-      accessToken,
-      body: JSON.stringify(payload),
-    },
-  );
+  return apiRequest<FixedExpenseTemplate>(`/api/fixed-transactions/${id}`, {
+    method: "PUT",
+    accessToken,
+    body: JSON.stringify(payload),
+  });
 }
 
 export function deleteFixedExpenseTemplate(id: string, accessToken: string) {

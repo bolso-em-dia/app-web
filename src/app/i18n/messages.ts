@@ -119,12 +119,14 @@ export const ptBRMessages = {
   "login.error": "Não foi possível entrar. Verifique o e-mail e a senha.",
   "login.submit": "Entrar",
   "errorBoundary.title": "Algo deu errado",
-  "errorBoundary.message": "Um erro inesperado ocorreu. Você pode tentar recarregar esta página ou voltar ao início.",
+  "errorBoundary.message":
+    "Um erro inesperado ocorreu. Você pode tentar recarregar esta página ou voltar ao início.",
   "errorBoundary.details": "Detalhes técnicos",
   "errorBoundary.retry": "Tentar novamente",
   "errorBoundary.goToDashboard": "Ir para o Dashboard",
   "exchangeRate.updated": "Cotação atualizada",
-  "exchangeRate.staleTooltip": "Cotação desatualizada. Última atualização pode estar incorreta.",
+  "exchangeRate.staleTooltip":
+    "Cotação desatualizada. Última atualização pode estar incorreta.",
   "exchangeRate.fetchError": "Erro ao buscar cotação. Último valor disponível.",
   "exchangeRate.refresh": "Atualizar cotação",
   "home.title": "Dashboard",
@@ -143,18 +145,21 @@ export const ptBRMessages = {
   "home.considerBudgetsInBalance": "Considerar orçamentos no saldo",
   "settings.title": "Configurações",
   "settings.account.label": "Conta padrão",
-  "settings.account.description": "Conta inicial pré-selecionada em formulários com conta.",
+  "settings.account.description":
+    "Conta inicial pré-selecionada em formulários com conta.",
   "settings.account.empty": "Nenhuma conta padrão",
   "settings.locale.label": "Idioma",
   "settings.locale.description": "Idioma usado ao carregar a aplicação.",
   "settings.locale.pt-BR": "Português (Brasil)",
   "settings.locale.en-US": "Inglês (Estados Unidos)",
   "settings.balance.label": "Modo inicial do saldo livre",
-  "settings.balance.description": "Define se a Home inicia considerando os orçamentos no saldo livre.",
+  "settings.balance.description":
+    "Define se a Home inicia considerando os orçamentos no saldo livre.",
   "settings.balance.withBudgets": "Considera orçamentos",
   "settings.balance.withoutBudgets": "Ignora orçamentos",
   "settings.foreignCurrency.label": "Moedas estrangeiras",
-  "settings.foreignCurrency.description": "Habilita suporte a Dólar (USD) com cotação em tempo real.",
+  "settings.foreignCurrency.description":
+    "Habilita suporte a Dólar (USD) com cotação em tempo real.",
   "settings.foreignCurrency.enabled": "Habilitado",
   "settings.foreignCurrency.disabled": "Desabilitado",
   "settings.loading": "Carregando configurações",
@@ -165,16 +170,19 @@ export const ptBRMessages = {
   "settings.saveSuccess": "Configurações salvas.",
   "settings.save": "Salvar",
   "settings.password.title": "Senha",
-  "settings.password.subtitle": "Altere sua senha informando a atual e confirmando a nova.",
+  "settings.password.subtitle":
+    "Altere sua senha informando a atual e confirmando a nova.",
   "settings.password.current": "Senha atual",
   "settings.password.new": "Nova senha",
   "settings.password.confirm": "Confirmar nova senha",
   "settings.password.save": "Salvar",
   "settings.password.success": "Senha atualizada.",
   "settings.password.saveError": "Não foi possível atualizar a senha.",
-  "settings.password.confirmationMismatch": "A confirmação da senha não confere.",
+  "settings.password.confirmationMismatch":
+    "A confirmação da senha não confere.",
   "settings.password.firstAccessTitle": "Defina uma nova senha",
-  "settings.password.firstAccessSubtitle": "O acesso inicial do administrador exige a troca da senha antes de continuar.",
+  "settings.password.firstAccessSubtitle":
+    "O acesso inicial do administrador exige a troca da senha antes de continuar.",
   "settings.password.firstAccessSave": "Salvar nova senha",
   "home.consumedOfLimit": "Usado {{consumed}} de {{limit}}",
   "home.recentTransactions": "Lançamentos recentes",
@@ -257,10 +265,12 @@ export const ptBRMessages = {
   "fixedTransactions.loading": "Carregando transações fixas",
   "fixedTransactions.error": "Não foi possível carregar as transações fixas.",
   "fixedTransactions.saveError": "Não foi possível salvar a transação fixa.",
-  "fixedTransactions.archiveError": "Não foi possível arquivar a transação fixa.",
+  "fixedTransactions.archiveError":
+    "Não foi possível arquivar a transação fixa.",
   "fixedTransactions.new": "Nova transação fixa",
   "fixedTransactions.searchPlaceholder": "Buscar transações fixas",
-  "fixedTransactions.empty": "Nenhuma transação fixa encontrada para os filtros atuais.",
+  "fixedTransactions.empty":
+    "Nenhuma transação fixa encontrada para os filtros atuais.",
   "fixedTransactions.newDescription": "Crie uma transação fixa recorrente.",
   "fixedTransactions.editDescription":
     "Atualize nome, tipo, valor, categoria, conta e dia recorrente.",
@@ -360,12 +370,18 @@ export const ptBRMessages = {
     "Esta transação não faz parte de um grupo de parcelamento.",
   "transactions.deleteAction": "Excluir transação",
   "transactions.closeDeleteConfirm": "Fechar confirmação de exclusão",
-  "confirmations.archiveBudget": "Tem certeza que deseja arquivar este orçamento? Ele deixará de aparecer a partir do mês atual.",
-  "confirmations.archiveCategory": "Tem certeza que deseja arquivar esta categoria? A categoria substituta será usada a partir do mês atual.",
-  "confirmations.archiveAccount": "Tem certeza que deseja arquivar esta conta? Transações passadas preservam o vínculo e a conta não aparecerá em novos lançamentos.",
-  "confirmations.archiveFixedExpense": "Tem certeza que deseja arquivar esta transação fixa? As transações já materializadas serão preservadas, mas o modelo deixará de gerar novas.",
-  "confirmations.deleteFixedExpense": "Tem certeza que deseja excluir esta transação fixa? As transações materializadas do mês corrente em diante serão removidas. Transações de meses passados serão preservadas.",
-  "confirmations.archiveMember": "Tem certeza que deseja arquivar este membro? Ele não poderá mais fazer login.",
+  "confirmations.archiveBudget":
+    "Tem certeza que deseja arquivar este orçamento? Ele deixará de aparecer a partir do mês atual.",
+  "confirmations.archiveCategory":
+    "Tem certeza que deseja arquivar esta categoria? A categoria substituta será usada a partir do mês atual.",
+  "confirmations.archiveAccount":
+    "Tem certeza que deseja arquivar esta conta? Transações passadas preservam o vínculo e a conta não aparecerá em novos lançamentos.",
+  "confirmations.archiveFixedExpense":
+    "Tem certeza que deseja arquivar esta transação fixa? As transações já materializadas serão preservadas, mas o modelo deixará de gerar novas.",
+  "confirmations.deleteFixedExpense":
+    "Tem certeza que deseja excluir esta transação fixa? As transações materializadas do mês corrente em diante serão removidas. Transações de meses passados serão preservadas.",
+  "confirmations.archiveMember":
+    "Tem certeza que deseja arquivar este membro? Ele não poderá mais fazer login.",
   "confirmations.restoreMember": "Tem certeza que deseja reativar este membro?",
 } as const;
 

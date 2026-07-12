@@ -70,13 +70,6 @@ export async function listFamilyMembers(accessToken: string) {
   return Array.isArray(response) ? response : response.items;
 }
 
-export function getFamilyMemberById(id: string, accessToken: string) {
-  return apiRequest<FamilyMember>(`/api/family-members/${id}`, {
-    method: "GET",
-    accessToken,
-  });
-}
-
 export function createFamilyMember(
   payload: CreateFamilyMemberRequest,
   accessToken: string,

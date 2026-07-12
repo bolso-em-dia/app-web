@@ -33,12 +33,7 @@ class ErrorBoundaryInner extends Component<Props, State> {
 
   render() {
     if (this.state.error) {
-      return (
-        <FallbackUI
-          error={this.state.error}
-          onRetry={this.handleReset}
-        />
-      );
+      return <FallbackUI error={this.state.error} onRetry={this.handleReset} />;
     }
 
     return this.props.children;
@@ -51,12 +46,8 @@ function FallbackUI({ error, onRetry }: { error: Error; onRetry: () => void }) {
   return (
     <main className={styles.fallback}>
       <Card className={styles.fallbackCard}>
-        <h1 className={styles.fallbackTitle}>
-          {t("errorBoundary.title")}
-        </h1>
-        <p className={styles.fallbackMessage}>
-          {t("errorBoundary.message")}
-        </p>
+        <h1 className={styles.fallbackTitle}>{t("errorBoundary.title")}</h1>
+        <p className={styles.fallbackMessage}>{t("errorBoundary.message")}</p>
         <details className={styles.fallbackDetails}>
           <summary>{t("errorBoundary.details")}</summary>
           <pre>{error.message}</pre>
@@ -80,5 +71,7 @@ function FallbackUI({ error, onRetry }: { error: Error; onRetry: () => void }) {
 
 export default function ErrorBoundary({ children }: Props) {
   const location = useLocation();
-  return <ErrorBoundaryInner key={location.pathname}>{children}</ErrorBoundaryInner>;
+  return (
+    <ErrorBoundaryInner key={location.pathname}>{children}</ErrorBoundaryInner>
+  );
 }

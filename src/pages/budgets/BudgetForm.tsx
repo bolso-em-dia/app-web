@@ -156,11 +156,7 @@ export default function BudgetForm({
             {isCreating ? t("budgets.create") : t("common.save")}
           </Button>
           {isCreating ? (
-            <Button
-              onClick={onCancelCreate}
-              type="button"
-              variant="subtle"
-            >
+            <Button onClick={onCancelCreate} type="button" variant="subtle">
               {t("common.cancel")}
             </Button>
           ) : (
@@ -195,7 +191,9 @@ export default function BudgetForm({
             <div className={styles.detailSection}>
               <section className={styles.summaryGrid}>
                 <div className={styles.summaryCard}>
-                  <span className={styles.summaryLabel}>{t("budgets.limit")}</span>
+                  <span className={styles.summaryLabel}>
+                    {t("budgets.limit")}
+                  </span>
                   <strong className={styles.summaryValue}>
                     {selectedBudgetSummary?.monthlyLimit ?? 0}
                   </strong>

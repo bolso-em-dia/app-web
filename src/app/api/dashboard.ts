@@ -1,6 +1,6 @@
 import { apiRequest } from "./client";
 
-export type DashboardSummary = {
+type DashboardSummary = {
   totalIncome: number;
   totalExpense: number;
   balance: number;
@@ -8,7 +8,7 @@ export type DashboardSummary = {
   reservedBudgetAmount: number;
 };
 
-export type DashboardTransaction = {
+type DashboardTransaction = {
   id: string;
   type: string;
   ownershipType: string;
@@ -35,7 +35,7 @@ export type DashboardTransaction = {
   updatedAt: string | null;
 };
 
-export type DashboardBudget = {
+type DashboardBudget = {
   id: string;
   name: string;
   type: string;
@@ -55,7 +55,7 @@ export type DashboardBudget = {
   transactions: DashboardTransaction[];
 };
 
-export type DashboardCategoryBreakdown = {
+type DashboardCategoryBreakdown = {
   categoryId: string;
   categoryName: string;
   amount: number;

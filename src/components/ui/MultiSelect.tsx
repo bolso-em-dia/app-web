@@ -33,7 +33,8 @@ export default function MultiSelect<T>({
   const listboxId = useId();
   const selectedValues = useMemo(() => new Set(value), [value]);
   const selectedOptions = useMemo(
-    () => options.filter((option) => selectedValues.has(getOptionValue(option))),
+    () =>
+      options.filter((option) => selectedValues.has(getOptionValue(option))),
     [getOptionValue, options, selectedValues],
   );
 

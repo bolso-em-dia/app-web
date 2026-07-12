@@ -70,7 +70,9 @@ export default function ColorSwatchSelect({
           aria-hidden="true"
           className={styles.preview}
           style={
-            selectedOption ? { backgroundColor: selectedOption.value } : undefined
+            selectedOption
+              ? { backgroundColor: selectedOption.value }
+              : undefined
           }
         />
         <span className={styles.triggerLabel}>
@@ -85,7 +87,10 @@ export default function ColorSwatchSelect({
         <div className={styles.dropdown} id={listboxId} role="listbox">
           <button
             aria-selected={value === ""}
-            className={clsx(styles.option, value === "" ? styles.optionSelected : "")}
+            className={clsx(
+              styles.option,
+              value === "" ? styles.optionSelected : "",
+            )}
             onClick={() => {
               onChange("");
               setIsOpen(false);

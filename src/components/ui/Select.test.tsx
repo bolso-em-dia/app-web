@@ -32,9 +32,12 @@ describe("Select (native mode)", () => {
         </select>
       </label>,
     );
-    const select = screen.getByRole("combobox", { name: "Choose" });
-    expect(screen.getByRole("option", { name: "Option A" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Option B" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "Option A" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "Option B" }),
+    ).toBeInTheDocument();
   });
 
   it("fires onChange", () => {
@@ -53,10 +56,16 @@ describe("Select (native mode)", () => {
 describe("Select (component mode)", () => {
   it("renders with initial value", () => {
     renderSelect(
-      <Select id="mode-select" value="a" options={[
-        { value: "a", label: "Alpha" },
-        { value: "b", label: "Beta" },
-      ]} placeholder="Select" onValueChange={() => {}} />,
+      <Select
+        id="mode-select"
+        value="a"
+        options={[
+          { value: "a", label: "Alpha" },
+          { value: "b", label: "Beta" },
+        ]}
+        placeholder="Select"
+        onValueChange={() => {}}
+      />,
     );
     expect(screen.getByText("Alpha")).toBeInTheDocument();
   });

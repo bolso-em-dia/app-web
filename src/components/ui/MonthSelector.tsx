@@ -22,7 +22,11 @@ type MonthSelectorProps = {
   id?: string;
 };
 
-export default function MonthSelector({ value, onChange, id }: MonthSelectorProps) {
+export default function MonthSelector({
+  value,
+  onChange,
+  id,
+}: MonthSelectorProps) {
   const { t } = useI18n();
 
   return (
@@ -37,7 +41,11 @@ export default function MonthSelector({ value, onChange, id }: MonthSelectorProp
         <ChevronLeft aria-hidden="true" size={16} />
       </Button>
       <Input
-        className={isCurrentReferenceMonth(value) ? undefined : styles.monthInputHighlighted}
+        className={
+          isCurrentReferenceMonth(value)
+            ? undefined
+            : styles.monthInputHighlighted
+        }
         id={id}
         onChange={(event) => onChange(fromMonthInputValue(event.target.value))}
         type="month"

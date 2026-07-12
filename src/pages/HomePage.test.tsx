@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
@@ -87,7 +93,10 @@ describe("HomePage", () => {
 
   it("uses the realized balance as the initial mode when the preference is disabled", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -118,7 +127,12 @@ describe("HomePage", () => {
     let callCount = 0;
     mockFetchUrl("/api/dashboard", () => {
       if (++callCount === 1) {
-        return { ok: false, status: 500, json: async () => ({}), text: async () => "load failed" };
+        return {
+          ok: false,
+          status: 500,
+          json: async () => ({}),
+          text: async () => "load failed",
+        };
       }
       return mockJsonResponse({
         referenceMonth: "2026-06-01",
@@ -136,7 +150,10 @@ describe("HomePage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -164,12 +181,17 @@ describe("HomePage", () => {
 
     expect(await screen.findByText("Orçamentos")).toBeInTheDocument();
     expect(vi.mocked(fetch).mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(screen.queryByText("Não foi possível carregar o dashboard agora.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Não foi possível carregar o dashboard agora."),
+    ).not.toBeInTheDocument();
   });
 
   it("renders the dashboard data and toggles the balance mode", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -210,7 +232,10 @@ describe("HomePage", () => {
 
   it("shows budget consumption as used over total without linked category text", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -267,22 +292,28 @@ describe("HomePage", () => {
       updatedAt: "2026-06-10T10:00:00Z",
     }));
 
-    mockFetchUrl("/api/dashboard", mockJsonResponse({
-      referenceMonth: "2026-06-01",
-      summary: {
-        totalIncome: 5000,
-        totalExpense: 600,
-        balance: 4400,
-        availableBalance: 3550,
-        reservedBudgetAmount: 850,
-      },
-      budgets: [],
-      recentTransactions,
-      categoryBreakdown: [],
-    }));
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 600,
+          balance: 4400,
+          availableBalance: 3550,
+          reservedBudgetAmount: 850,
+        },
+        budgets: [],
+        recentTransactions,
+        categoryBreakdown: [],
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -315,29 +346,37 @@ describe("HomePage", () => {
       .closest("section, div");
     expect(transactionsCard).not.toBeNull();
 
-    const paginationButtons = within(transactionsCard! as HTMLElement).queryAllByRole("button");
+    const paginationButtons = within(
+      transactionsCard! as HTMLElement,
+    ).queryAllByRole("button");
     expect(paginationButtons.length).toBeGreaterThanOrEqual(2);
   });
 
   it("shows expenses in red and income in green", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/dashboard", mockJsonResponse({
-      referenceMonth: "2026-06-01",
-      summary: {
-        totalIncome: 5000,
-        totalExpense: 195,
-        balance: 4805,
-        availableBalance: 3955,
-        reservedBudgetAmount: 850,
-      },
-      budgets: [],
-      recentTransactions: [],
-      categoryBreakdown: [],
-    }));
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 195,
+          balance: 4805,
+          availableBalance: 3955,
+          reservedBudgetAmount: 850,
+        },
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -367,68 +406,74 @@ describe("HomePage", () => {
   it("budget progress bar shows green below 80%, warning at 80-100%, red above 100%", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/dashboard", mockJsonResponse({
-      referenceMonth: "2026-06-01",
-      summary: {
-        totalIncome: 5000,
-        totalExpense: 2400,
-        balance: 2600,
-        availableBalance: 2600,
-        reservedBudgetAmount: 0,
-      },
-      budgets: [
-        {
-          id: "budget-a",
-          name: "Budget A",
-          type: "GLOBAL",
-          ownerMemberId: null,
-          ownerMemberName: null,
-          monthlyLimit: 1000,
-          consumedAmount: 300,
-          remainingAmount: 700,
-          createdInMonth: "2026-06-01",
-          archivedFromMonth: null,
-          active: true,
-          categories: [],
-          transactions: [],
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 2400,
+          balance: 2600,
+          availableBalance: 2600,
+          reservedBudgetAmount: 0,
         },
-        {
-          id: "budget-b",
-          name: "Budget B",
-          type: "GLOBAL",
-          ownerMemberId: null,
-          ownerMemberName: null,
-          monthlyLimit: 1000,
-          consumedAmount: 900,
-          remainingAmount: 100,
-          createdInMonth: "2026-06-01",
-          archivedFromMonth: null,
-          active: true,
-          categories: [],
-          transactions: [],
-        },
-        {
-          id: "budget-c",
-          name: "Budget C",
-          type: "GLOBAL",
-          ownerMemberId: null,
-          ownerMemberName: null,
-          monthlyLimit: 1000,
-          consumedAmount: 1200,
-          remainingAmount: 0,
-          createdInMonth: "2026-06-01",
-          archivedFromMonth: null,
-          active: true,
-          categories: [],
-          transactions: [],
-        },
-      ],
-      recentTransactions: [],
-      categoryBreakdown: [],
-    }));
+        budgets: [
+          {
+            id: "budget-a",
+            name: "Budget A",
+            type: "GLOBAL",
+            ownerMemberId: null,
+            ownerMemberName: null,
+            monthlyLimit: 1000,
+            consumedAmount: 300,
+            remainingAmount: 700,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            categories: [],
+            transactions: [],
+          },
+          {
+            id: "budget-b",
+            name: "Budget B",
+            type: "GLOBAL",
+            ownerMemberId: null,
+            ownerMemberName: null,
+            monthlyLimit: 1000,
+            consumedAmount: 900,
+            remainingAmount: 100,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            categories: [],
+            transactions: [],
+          },
+          {
+            id: "budget-c",
+            name: "Budget C",
+            type: "GLOBAL",
+            ownerMemberId: null,
+            ownerMemberName: null,
+            monthlyLimit: 1000,
+            consumedAmount: 1200,
+            remainingAmount: 0,
+            createdInMonth: "2026-06-01",
+            archivedFromMonth: null,
+            active: true,
+            categories: [],
+            transactions: [],
+          },
+        ],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -476,28 +521,34 @@ describe("HomePage", () => {
   it("shows the percentage share in the category breakdown", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/dashboard", mockJsonResponse({
-      referenceMonth: "2026-06-01",
-      summary: {
-        totalIncome: 5000,
-        totalExpense: 200,
-        balance: 4800,
-        availableBalance: 3950,
-        reservedBudgetAmount: 850,
-      },
-      budgets: [],
-      recentTransactions: [],
-      categoryBreakdown: [
-        {
-          categoryId: "cat-1",
-          categoryName: "Groceries",
-          amount: 200,
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 200,
+          balance: 4800,
+          availableBalance: 3950,
+          reservedBudgetAmount: 850,
         },
-      ],
-    }));
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [
+          {
+            categoryId: "cat-1",
+            categoryName: "Groceries",
+            amount: 200,
+          },
+        ],
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -531,7 +582,10 @@ describe("HomePage", () => {
     mockFetchUrl("/api/dashboard", () => promise);
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -567,31 +621,69 @@ describe("HomePage", () => {
     } as Response);
 
     await waitFor(() => {
-      expect(screen.queryByText("Carregando dashboard")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("Carregando dashboard"),
+      ).not.toBeInTheDocument();
     });
   });
 
   it("shows projected badge on recent transactions for future months", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/dashboard", mockJsonResponse({
-      referenceMonth: "2026-07-01",
-      summary: { totalIncome: 1000, totalExpense: 200, balance: 800, availableBalance: 800, reservedBudgetAmount: 0 },
-      budgets: [],
-      recentTransactions: [{
-        id: "proj-1", type: "EXPENSE", ownershipType: "SHARED", sourceType: "FIXED_EXPENSE",
-        description: "Projected Rent", amount: 200, transactionDate: "2026-07-05",
-        referenceMonth: "2026-07-01", accountId: "a-1", accountName: "Main",
-        categoryId: "c-1", categoryName: "Housing", memberId: null, memberName: null,
-        installmentGroupId: null, installmentNumber: null, installmentTotal: null,
-        projected: true, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
-      }],
-      categoryBreakdown: [],
-    }));
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-07-01",
+        summary: {
+          totalIncome: 1000,
+          totalExpense: 200,
+          balance: 800,
+          availableBalance: 800,
+          reservedBudgetAmount: 0,
+        },
+        budgets: [],
+        recentTransactions: [
+          {
+            id: "proj-1",
+            type: "EXPENSE",
+            ownershipType: "SHARED",
+            sourceType: "FIXED_EXPENSE",
+            description: "Projected Rent",
+            amount: 200,
+            transactionDate: "2026-07-05",
+            referenceMonth: "2026-07-01",
+            accountId: "a-1",
+            accountName: "Main",
+            categoryId: "c-1",
+            categoryName: "Housing",
+            memberId: null,
+            memberName: null,
+            installmentGroupId: null,
+            installmentNumber: null,
+            installmentTotal: null,
+            projected: true,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        categoryBreakdown: [],
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
           <HomePage />
         </TestAuthProvider>
       </MemoryRouter>,
@@ -604,17 +696,37 @@ describe("HomePage", () => {
   it("shows expense with reserved budget amount when budgets are considered", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/dashboard", mockJsonResponse({
-      referenceMonth: "2026-06-01",
-      summary: { totalIncome: 5000, totalExpense: 195, balance: 4805, availableBalance: 3955, reservedBudgetAmount: 850 },
-      budgets: [],
-      recentTransactions: [],
-      categoryBreakdown: [],
-    }));
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 195,
+          balance: 4805,
+          availableBalance: 3955,
+          reservedBudgetAmount: 850,
+        },
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
           <HomePage />
         </TestAuthProvider>
       </MemoryRouter>,
@@ -622,7 +734,9 @@ describe("HomePage", () => {
 
     expect(await screen.findByText("Saldo realizado")).toBeInTheDocument();
 
-    const switchEl = screen.getByRole("switch", { name: "Considerar orçamentos no saldo" });
+    const switchEl = screen.getByRole("switch", {
+      name: "Considerar orçamentos no saldo",
+    });
     fireEvent.click(switchEl);
 
     await waitFor(() => {
@@ -635,17 +749,37 @@ describe("HomePage", () => {
   it("shows raw expense when budgets are not considered", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/dashboard", mockJsonResponse({
-      referenceMonth: "2026-06-01",
-      summary: { totalIncome: 5000, totalExpense: 195, balance: 4805, availableBalance: 3955, reservedBudgetAmount: 850 },
-      budgets: [],
-      recentTransactions: [],
-      categoryBreakdown: [],
-    }));
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 195,
+          balance: 4805,
+          availableBalance: 3955,
+          reservedBudgetAmount: 850,
+        },
+        budgets: [],
+        recentTransactions: [],
+        categoryBreakdown: [],
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
           <HomePage />
         </TestAuthProvider>
       </MemoryRouter>,
@@ -658,25 +792,63 @@ describe("HomePage", () => {
   it("shows USD secondary line for foreign currency transactions in recent list", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/dashboard", mockJsonResponse({
-      referenceMonth: "2026-06-01",
-      summary: { totalIncome: 5000, totalExpense: 510, balance: 4490, availableBalance: 4490, reservedBudgetAmount: 0 },
-      budgets: [],
-      recentTransactions: [{
-        id: "tx-usd", type: "EXPENSE", ownershipType: "SHARED", sourceType: "MANUAL",
-        description: "Amazon purchase", amount: 100, convertedAmount: 510, exchangeRate: 5.10, currency: "USD",
-        transactionDate: "2026-06-10", referenceMonth: "2026-06-01",
-        accountId: "a-1", accountName: "US Account", categoryId: "c-1", categoryName: "Shopping",
-        memberId: null, memberName: null, installmentGroupId: null,
-        installmentNumber: null, installmentTotal: null,
-        projected: false, createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
-      }],
-      categoryBreakdown: [],
-    }));
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-06-01",
+        summary: {
+          totalIncome: 5000,
+          totalExpense: 510,
+          balance: 4490,
+          availableBalance: 4490,
+          reservedBudgetAmount: 0,
+        },
+        budgets: [],
+        recentTransactions: [
+          {
+            id: "tx-usd",
+            type: "EXPENSE",
+            ownershipType: "SHARED",
+            sourceType: "MANUAL",
+            description: "Amazon purchase",
+            amount: 100,
+            convertedAmount: 510,
+            exchangeRate: 5.1,
+            currency: "USD",
+            transactionDate: "2026-06-10",
+            referenceMonth: "2026-06-01",
+            accountId: "a-1",
+            accountName: "US Account",
+            categoryId: "c-1",
+            categoryName: "Shopping",
+            memberId: null,
+            memberName: null,
+            installmentGroupId: null,
+            installmentNumber: null,
+            installmentTotal: null,
+            projected: false,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        categoryBreakdown: [],
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
-        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/dashboard"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
           <HomePage />
         </TestAuthProvider>
       </MemoryRouter>,

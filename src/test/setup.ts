@@ -73,10 +73,7 @@ export function enqueueFetchResponse(
 /**
  * Cria uma response JSON mock.
  */
-export function mockJsonResponse<T>(
-  data: T,
-  status = 200,
-): MockResponseConfig {
+export function mockJsonResponse<T>(data: T, status = 200): MockResponseConfig {
   return {
     ok: status >= 200 && status < 300,
     status,
@@ -100,7 +97,10 @@ export function mockErrorResponse(
   };
 }
 
-function resolveResponse(config: MockResponseConfig | (() => MockResponseConfig) | (() => Promise<Response>)): Response | Promise<Response> {
+function resolveResponse(
+  config:
+    MockResponseConfig | (() => MockResponseConfig) | (() => Promise<Response>),
+): Response | Promise<Response> {
   // If config is a function that might return a Promise<Response> (for pending state testing)
   if (typeof config === "function") {
     const result = config();
@@ -161,7 +161,12 @@ const defaultImpl = (...args: unknown[]) => {
       // Caso contrário, usa a response configurada
       // Se a response é uma função, passa os argumentos para ela
       if (typeof entry.response === "function") {
-        const result = (entry.response as (input: string, init?: RequestInit) => MockResponseConfig | Promise<Response>)(url, options);
+        const result = (
+          entry.response as (
+            input: string,
+            init?: RequestInit,
+          ) => MockResponseConfig | Promise<Response>
+        )(url, options);
         // Se o resultado já é uma Promise, retorna diretamente
         if (result instanceof Promise) {
           return result;

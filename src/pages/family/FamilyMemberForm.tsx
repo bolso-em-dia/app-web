@@ -90,9 +90,7 @@ export default function FamilyMemberForm({
             error={form.formState.errors.password?.message}
             htmlFor="family-password"
             label={
-              isCreating
-                ? t("family.password")
-                : t("family.passwordOptional")
+              isCreating ? t("family.password") : t("family.passwordOptional")
             }
           >
             <Input
@@ -127,29 +125,17 @@ export default function FamilyMemberForm({
 
           <div className={styles.formActions}>
             <Button loading={isSaving} type="submit">
-              {isCreating
-                ? t("family.create")
-                : t("common.save")}
+              {isCreating ? t("family.create") : t("common.save")}
             </Button>
             {isCreating ? (
-              <Button
-                onClick={onCancelCreate}
-                type="button"
-                variant="subtle"
-              >
+              <Button onClick={onCancelCreate} type="button" variant="subtle">
                 {t("common.cancel")}
               </Button>
             ) : (
               <Button
-                onClick={
-                  selectedMember?.active
-                    ? onArchiveOpen
-                    : onRestoreOpen
-                }
+                onClick={selectedMember?.active ? onArchiveOpen : onRestoreOpen}
                 type="button"
-                variant={
-                  selectedMember?.active ? "danger" : "secondary"
-                }
+                variant={selectedMember?.active ? "danger" : "secondary"}
               >
                 {selectedMember?.active
                   ? t("common.archive")

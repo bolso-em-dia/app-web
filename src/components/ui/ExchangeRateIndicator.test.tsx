@@ -2,18 +2,33 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import {
+  resetFetchMocks,
+  mockJsonResponse,
+  mockErrorResponse,
+  mockFetchUrl,
+} from "../../test/setup";
 import ExchangeRateIndicator from "./ExchangeRateIndicator";
 
 const userWithForeignCurrency = {
-  id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN" as const,
+  id: "1",
+  name: "Admin",
+  email: "admin@bolso-em-dia.local",
+  role: "ADMIN" as const,
   allowanceEnabled: false,
-  preferences: { defaultAccountId: null, locale: "pt-BR" as const, showBalanceWithBudgets: false, showForeignCurrency: true },
+  preferences: {
+    defaultAccountId: null,
+    locale: "pt-BR" as const,
+    showBalanceWithBudgets: false,
+    showForeignCurrency: true,
+  },
 };
 
 function renderIndicator() {
   return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <TestAuthProvider user={userWithForeignCurrency}>
         <ExchangeRateIndicator />
       </TestAuthProvider>
@@ -41,11 +56,14 @@ describe("ExchangeRateIndicator", () => {
   });
 
   it("shows rate when API returns data", async () => {
-    mockFetchUrl("/api/exchange-rate", mockJsonResponse({
-      rate: 5.10,
-      fetchedAt: "2026-07-10T18:00:00Z",
-      stale: false,
-    }));
+    mockFetchUrl(
+      "/api/exchange-rate",
+      mockJsonResponse({
+        rate: 5.1,
+        fetchedAt: "2026-07-10T18:00:00Z",
+        stale: false,
+      }),
+    );
 
     renderIndicator();
 
@@ -53,26 +71,36 @@ describe("ExchangeRateIndicator", () => {
   });
 
   it("shows stale warning when isStale is true", async () => {
-    mockFetchUrl("/api/exchange-rate", mockJsonResponse({
-      rate: 5.10,
-      fetchedAt: "2026-07-09T18:00:00Z",
-      stale: true,
-    }));
+    mockFetchUrl(
+      "/api/exchange-rate",
+      mockJsonResponse({
+        rate: 5.1,
+        fetchedAt: "2026-07-09T18:00:00Z",
+        stale: true,
+      }),
+    );
 
     renderIndicator();
 
     await screen.findByText(/US\$ 1 = R\$ 5,10/);
     const button = screen.getByRole("button", { name: "Atualizar cotação" });
     fireEvent.mouseOver(button);
-    expect(await screen.findByText("Cotação desatualizada. Última atualização pode estar incorreta.")).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "Cotação desatualizada. Última atualização pode estar incorreta.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("formats rate with 4 decimal places", async () => {
-    mockFetchUrl("/api/exchange-rate", mockJsonResponse({
-      rate: 5.1064,
-      fetchedAt: "2026-07-10T18:27:00Z",
-      stale: false,
-    }));
+    mockFetchUrl(
+      "/api/exchange-rate",
+      mockJsonResponse({
+        rate: 5.1064,
+        fetchedAt: "2026-07-10T18:27:00Z",
+        stale: false,
+      }),
+    );
 
     renderIndicator();
 
@@ -94,13 +122,13 @@ describe("ExchangeRateIndicator", () => {
     mockFetchUrl("/api/exchange-rate", () => {
       if (++callCount === 1) {
         return mockJsonResponse({
-          rate: 5.10,
+          rate: 5.1,
           fetchedAt: "2026-07-10T18:00:00Z",
           stale: false,
         });
       }
       return mockJsonResponse({
-        rate: 5.20,
+        rate: 5.2,
         fetchedAt: "2026-07-10T18:30:00Z",
         stale: false,
       });
@@ -119,7 +147,7 @@ describe("ExchangeRateIndicator", () => {
     mockFetchUrl("/api/exchange-rate", () => {
       if (++callCount === 1) {
         return mockJsonResponse({
-          rate: 5.10,
+          rate: 5.1,
           fetchedAt: "2026-07-10T18:00:00Z",
           stale: false,
         });
@@ -139,11 +167,14 @@ describe("ExchangeRateIndicator", () => {
   });
 
   it("refresh button is accessible with correct label", async () => {
-    mockFetchUrl("/api/exchange-rate", mockJsonResponse({
-      rate: 5.10,
-      fetchedAt: "2026-07-10T18:00:00Z",
-      stale: false,
-    }));
+    mockFetchUrl(
+      "/api/exchange-rate",
+      mockJsonResponse({
+        rate: 5.1,
+        fetchedAt: "2026-07-10T18:00:00Z",
+        stale: false,
+      }),
+    );
 
     renderIndicator();
 

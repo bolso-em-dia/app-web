@@ -60,7 +60,3 @@ export const ICON_OPTIONS: IconOption[] = [
 export function getColorLabel(value: string | null | undefined) {
   return COLOR_OPTIONS.find((option) => option.value === value)?.label ?? null;
 }
-
-export function getIconLabel(value: string | null | undefined) {
-  return ICON_OPTIONS.find((option) => option.value === value)?.label ?? null;
-}

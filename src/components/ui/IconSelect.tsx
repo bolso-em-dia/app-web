@@ -73,7 +73,10 @@ export default function IconSelect({
         <div className={styles.dropdown} id={listboxId} role="listbox">
           <button
             aria-selected={value === ""}
-            className={clsx(styles.option, value === "" ? styles.optionSelected : "")}
+            className={clsx(
+              styles.option,
+              value === "" ? styles.optionSelected : "",
+            )}
             onClick={() => {
               onChange("");
               setIsOpen(false);

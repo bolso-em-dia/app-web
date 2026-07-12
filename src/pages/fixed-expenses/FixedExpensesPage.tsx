@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   listCategoryOptions,
   type CategoryOption,
@@ -20,13 +20,9 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import ConfirmAction from "../../components/ui/ConfirmAction";
-import CategorySelect from "../../components/ui/CategorySelect";
 import Drawer from "../../components/ui/Drawer";
-import CurrencyInput from "../../components/ui/CurrencyInput";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
-import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import PaginationBar from "../../components/ui/PaginationBar";
@@ -52,7 +48,6 @@ function createDefaultValues(defaultAccountId: string): FixedExpenseFormValues {
     dueDay: 1,
   };
 }
-
 
 function mapFormValuesToPayload(
   values: FixedExpenseFormValues,
@@ -105,12 +100,15 @@ export default function FixedExpensesPage() {
 
   const form = useForm<FixedExpenseFormValues>({
     resolver: zodResolver(fixedExpenseSchema),
-    defaultValues: createDefaultValues(user?.preferences.defaultAccountId ?? ""),
+    defaultValues: createDefaultValues(
+      user?.preferences.defaultAccountId ?? "",
+    ),
   });
-  const selectedType = form.watch("type");
   const formAccountId = form.watch("accountId");
   const selectedAccountCurrency = useMemo(
-    () => accountOptions.find((a) => a.id === formAccountId)?.currency as "BRL" | "USD" | undefined,
+    () =>
+      accountOptions.find((a) => a.id === formAccountId)?.currency as
+        "BRL" | "USD" | undefined,
     [accountOptions, formAccountId],
   );
 
@@ -172,7 +170,10 @@ export default function FixedExpensesPage() {
 
     try {
       if (isCreating) {
-        await createFixedExpenseTemplate(mapFormValuesToPayload(values), accessToken);
+        await createFixedExpenseTemplate(
+          mapFormValuesToPayload(values),
+          accessToken,
+        );
         handleCloseDrawer();
         await loadTemplates({
           page,
@@ -421,7 +422,6 @@ export default function FixedExpensesPage() {
                 onDeleteOpen={() => setIsDeleteConfirmOpen(true)}
                 onSubmit={onSubmit}
                 selectedAccountCurrency={selectedAccountCurrency}
-                selectedTemplate={selectedTemplate}
               />
             </Drawer>
           ) : null}

@@ -8,7 +8,12 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import {
+  resetFetchMocks,
+  mockJsonResponse,
+  mockErrorResponse,
+  mockFetchUrl,
+} from "../../test/setup";
 import FamilyPage from "./FamilyPage";
 
 const defaultMemberResponse = {
@@ -47,7 +52,10 @@ describe("FamilyPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/family"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -84,7 +92,10 @@ describe("FamilyPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/family"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -111,45 +122,55 @@ describe("FamilyPage", () => {
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
 
-    fireEvent.click(within(alertDialog).getByRole("button", { name: "Cancelar" }));
+    fireEvent.click(
+      within(alertDialog).getByRole("button", { name: "Cancelar" }),
+    );
 
     await waitFor(() => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     });
 
-    const archiveCalls = vi.mocked(fetch).mock.calls.filter(
-      ([input, init]) =>
-        String(input).includes("/api/family-members/") &&
-        String(input).includes("/archive") &&
-        init?.method === "PATCH",
-    );
+    const archiveCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(
+        ([input, init]) =>
+          String(input).includes("/api/family-members/") &&
+          String(input).includes("/archive") &&
+          init?.method === "PATCH",
+      );
     expect(archiveCalls.length).toBe(0);
   });
 
   it('opens "Reativar membro" confirmation for an inactive member', async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/family-members?", mockJsonResponse({
-      items: [
-        {
-          id: "member-2",
-          name: "Jane",
-          email: "jane@bolso-em-dia.local",
-          role: "USER",
-          active: false,
-          allowanceEnabled: false,
-          createdAt: "2026-06-01T10:00:00Z",
-          updatedAt: "2026-07-01T10:00:00Z",
-        },
-      ],
-      page: 0,
-      size: 12,
-      totalItems: 1,
-      totalPages: 1,
-    }));
+    mockFetchUrl(
+      "/api/family-members?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "member-2",
+            name: "Jane",
+            email: "jane@bolso-em-dia.local",
+            role: "USER",
+            active: false,
+            allowanceEnabled: false,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-07-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/family"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -185,27 +206,33 @@ describe("FamilyPage", () => {
   it("cancels restore confirmation without calling the API", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/family-members?", mockJsonResponse({
-      items: [
-        {
-          id: "member-2",
-          name: "Jane",
-          email: "jane@bolso-em-dia.local",
-          role: "USER",
-          active: false,
-          allowanceEnabled: false,
-          createdAt: "2026-06-01T10:00:00Z",
-          updatedAt: "2026-07-01T10:00:00Z",
-        },
-      ],
-      page: 0,
-      size: 12,
-      totalItems: 1,
-      totalPages: 1,
-    }));
+    mockFetchUrl(
+      "/api/family-members?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "member-2",
+            name: "Jane",
+            email: "jane@bolso-em-dia.local",
+            role: "USER",
+            active: false,
+            allowanceEnabled: false,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-07-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/family"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -232,42 +259,49 @@ describe("FamilyPage", () => {
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
 
-    fireEvent.click(within(alertDialog).getByRole("button", { name: "Cancelar" }));
+    fireEvent.click(
+      within(alertDialog).getByRole("button", { name: "Cancelar" }),
+    );
 
     await waitFor(() => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
     });
 
-    const restoreCalls = vi.mocked(fetch).mock.calls.filter(
-      ([input, init]) =>
-        String(input).includes("/api/family-members/") &&
-        String(input).includes("/restore") &&
-        init?.method === "PATCH",
-    );
+    const restoreCalls = vi
+      .mocked(fetch)
+      .mock.calls.filter(
+        ([input, init]) =>
+          String(input).includes("/api/family-members/") &&
+          String(input).includes("/restore") &&
+          init?.method === "PATCH",
+      );
     expect(restoreCalls.length).toBe(0);
   });
 
   it("confirms archive and calls PATCH /api/family-members/{id}/archive", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/family-members?", mockJsonResponse({
-      items: [
-        {
-          id: "member-3",
-          name: "Alice",
-          email: "alice@bolso-em-dia.local",
-          role: "USER",
-          active: true,
-          allowanceEnabled: false,
-          createdAt: "2026-06-01T10:00:00Z",
-          updatedAt: "2026-06-01T10:00:00Z",
-        },
-      ],
-      page: 0,
-      size: 12,
-      totalItems: 1,
-      totalPages: 1,
-    }));
+    mockFetchUrl(
+      "/api/family-members?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "member-3",
+            name: "Alice",
+            email: "alice@bolso-em-dia.local",
+            role: "USER",
+            active: true,
+            allowanceEnabled: false,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
 
     mockFetchUrl("/api/family-members/member-3/archive", (input, init) => {
       if (init?.method === "PATCH") {
@@ -286,7 +320,10 @@ describe("FamilyPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/family"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -326,24 +363,27 @@ describe("FamilyPage", () => {
   it("shows error feedback when archive fails", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/family-members?", mockJsonResponse({
-      items: [
-        {
-          id: "member-4",
-          name: "Bob",
-          email: "bob@bolso-em-dia.local",
-          role: "USER",
-          active: true,
-          allowanceEnabled: false,
-          createdAt: "2026-06-01T10:00:00Z",
-          updatedAt: "2026-06-01T10:00:00Z",
-        },
-      ],
-      page: 0,
-      size: 12,
-      totalItems: 1,
-      totalPages: 1,
-    }));
+    mockFetchUrl(
+      "/api/family-members?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "member-4",
+            name: "Bob",
+            email: "bob@bolso-em-dia.local",
+            role: "USER",
+            active: true,
+            allowanceEnabled: false,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
 
     mockFetchUrl("/api/family-members/member-4/archive", (input, init) => {
       if (init?.method === "PATCH") {
@@ -353,7 +393,10 @@ describe("FamilyPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/family"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -393,7 +436,10 @@ describe("FamilyPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/family"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",

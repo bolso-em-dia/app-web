@@ -1,8 +1,19 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import {
+  resetFetchMocks,
+  mockJsonResponse,
+  mockErrorResponse,
+  mockFetchUrl,
+} from "../../test/setup";
 import CategoriesPage from "./CategoriesPage";
 
 const defaultCategoryResponse = {
@@ -35,7 +46,10 @@ const defaultCategoriesOptions = [
 ];
 
 function setupDefaultMocks() {
-  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesOptions));
+  mockFetchUrl(
+    "/api/categories/options",
+    mockJsonResponse(defaultCategoriesOptions),
+  );
   mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
 }
 
@@ -52,7 +66,10 @@ describe("CategoriesPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/categories"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -88,7 +105,10 @@ describe("CategoriesPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/categories"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -111,7 +131,10 @@ describe("CategoriesPage", () => {
     fireEvent.change(searchInput, { target: { value: "Gro" } });
 
     await waitFor(() => {
-      const requests = vi.mocked(fetch).mock.calls.map(([input]) => String(input)).filter((url) => url.includes("/api/categories?"));
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/categories?"));
       expect(requests.length).toBeGreaterThanOrEqual(2);
     });
 
@@ -119,7 +142,7 @@ describe("CategoriesPage", () => {
     expect(screen.queryByText("Compras")).not.toBeInTheDocument();
     expect(screen.queryByText("#2254d1")).not.toBeInTheDocument();
     const categoryButton = screen.getByRole("button", { name: /Groceries/ });
-    const categoryIcon = categoryButton.querySelector('span[style]');
+    const categoryIcon = categoryButton.querySelector("span[style]");
 
     expect(categoryIcon).not.toBeNull();
     expect(categoryIcon).toHaveStyle({ color: "rgb(34, 84, 209)" });
@@ -149,7 +172,10 @@ describe("CategoriesPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/categories"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -196,7 +222,9 @@ describe("CategoriesPage", () => {
     const categoryRequests = vi
       .mocked(fetch)
       .mock.calls.map(([input]) => String(input))
-      .filter((url) => url.includes("/api/categories?") && !url.includes("options"));
+      .filter(
+        (url) => url.includes("/api/categories?") && !url.includes("options"),
+      );
 
     expect(categoryRequests.some((url) => url.includes("search=Gro"))).toBe(
       true,
@@ -209,24 +237,30 @@ describe("CategoriesPage", () => {
   it("opens archive confirmation dialog and cancels without calling the API", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/categories/options", mockJsonResponse([
-      {
-        id: "cat-1",
-        name: "Groceries",
-        icon: "shopping-cart",
-        color: "#2254d1",
-      },
-      {
-        id: "cat-2",
-        name: "Utilities",
-        icon: "home",
-        color: "#e91e63",
-      },
-    ]));
+    mockFetchUrl(
+      "/api/categories/options",
+      mockJsonResponse([
+        {
+          id: "cat-1",
+          name: "Groceries",
+          icon: "shopping-cart",
+          color: "#2254d1",
+        },
+        {
+          id: "cat-2",
+          name: "Utilities",
+          icon: "home",
+          color: "#e91e63",
+        },
+      ]),
+    );
     mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/categories"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -251,13 +285,9 @@ describe("CategoriesPage", () => {
     fireEvent.click(categorySelectTrigger);
 
     const listbox = screen.getByRole("listbox");
-    fireEvent.click(
-      within(listbox).getByRole("option", { name: /Utilities/ }),
-    );
+    fireEvent.click(within(listbox).getByRole("option", { name: /Utilities/ }));
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Arquivar" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
 
@@ -286,20 +316,23 @@ describe("CategoriesPage", () => {
     // Configure GET mocks first (more specific URLs)
     mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
 
-    mockFetchUrl("/api/categories/options", mockJsonResponse([
-      {
-        id: "cat-1",
-        name: "Groceries",
-        icon: "shopping-cart",
-        color: "#2254d1",
-      },
-      {
-        id: "cat-2",
-        name: "Utilities",
-        icon: "home",
-        color: "#e91e63",
-      },
-    ]));
+    mockFetchUrl(
+      "/api/categories/options",
+      mockJsonResponse([
+        {
+          id: "cat-1",
+          name: "Groceries",
+          icon: "shopping-cart",
+          color: "#2254d1",
+        },
+        {
+          id: "cat-2",
+          name: "Utilities",
+          icon: "home",
+          color: "#e91e63",
+        },
+      ]),
+    );
 
     // Configure PATCH mock after GET mocks (less specific pattern)
     mockFetchUrl("/api/categories/cat-1/archive", (input, init) => {
@@ -320,7 +353,10 @@ describe("CategoriesPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/categories"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -345,13 +381,9 @@ describe("CategoriesPage", () => {
     fireEvent.click(categorySelectTrigger);
 
     const listbox = screen.getByRole("listbox");
-    fireEvent.click(
-      within(listbox).getByRole("option", { name: /Utilities/ }),
-    );
+    fireEvent.click(within(listbox).getByRole("option", { name: /Utilities/ }));
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Arquivar" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
 
@@ -362,15 +394,15 @@ describe("CategoriesPage", () => {
     );
 
     await waitFor(() => {
-      const patchCall = vi.mocked(fetch).mock.calls.find(
-        ([callInput, callInit]) =>
-          String(callInput).includes("/api/categories/cat-1/archive") &&
-          callInit?.method === "PATCH",
-      );
+      const patchCall = vi
+        .mocked(fetch)
+        .mock.calls.find(
+          ([callInput, callInit]) =>
+            String(callInput).includes("/api/categories/cat-1/archive") &&
+            callInit?.method === "PATCH",
+        );
       expect(patchCall).toBeDefined();
-      const body = JSON.parse(
-        (patchCall![1] as RequestInit).body as string,
-      );
+      const body = JSON.parse((patchCall![1] as RequestInit).body as string);
       expect(body.replacementCategoryId).toBe("cat-2");
     });
   });
@@ -378,20 +410,23 @@ describe("CategoriesPage", () => {
   it("shows error feedback when archive fails", async () => {
     resetFetchMocks();
 
-    mockFetchUrl("/api/categories/options", mockJsonResponse([
-      {
-        id: "cat-1",
-        name: "Groceries",
-        icon: "shopping-cart",
-        color: "#2254d1",
-      },
-      {
-        id: "cat-2",
-        name: "Utilities",
-        icon: "home",
-        color: "#e91e63",
-      },
-    ]));
+    mockFetchUrl(
+      "/api/categories/options",
+      mockJsonResponse([
+        {
+          id: "cat-1",
+          name: "Groceries",
+          icon: "shopping-cart",
+          color: "#2254d1",
+        },
+        {
+          id: "cat-2",
+          name: "Utilities",
+          icon: "home",
+          color: "#e91e63",
+        },
+      ]),
+    );
 
     mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
 
@@ -403,7 +438,10 @@ describe("CategoriesPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/categories"]}
+      >
         <TestAuthProvider
           user={{
             id: "1",
@@ -428,13 +466,9 @@ describe("CategoriesPage", () => {
     fireEvent.click(categorySelectTrigger);
 
     const listbox = screen.getByRole("listbox");
-    fireEvent.click(
-      within(listbox).getByRole("option", { name: /Utilities/ }),
-    );
+    fireEvent.click(within(listbox).getByRole("option", { name: /Utilities/ }));
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Arquivar" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
 

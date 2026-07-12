@@ -8,7 +8,10 @@ import FormError from "../../components/ui/FormError";
 import IconSelect from "../../components/ui/IconSelect";
 import Input from "../../components/ui/Input";
 import { COLOR_OPTIONS, ICON_OPTIONS } from "../../lib/uiOptions";
-import type { ArchiveCategoryFormValues, CategoryFormValues } from "../../lib/validation/categorySchema";
+import type {
+  ArchiveCategoryFormValues,
+  CategoryFormValues,
+} from "../../lib/validation/categorySchema";
 import type { Category, CategoryOption } from "../../app/api/categories";
 import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./CategoriesPage.module.scss";
@@ -116,11 +119,7 @@ export default function CategoryForm({
             {isCreating ? t("categories.create") : t("common.save")}
           </Button>
           {isCreating ? (
-            <Button
-              onClick={onCancelCreate}
-              type="button"
-              variant="subtle"
-            >
+            <Button onClick={onCancelCreate} type="button" variant="subtle">
               {t("common.cancel")}
             </Button>
           ) : null}
@@ -130,14 +129,9 @@ export default function CategoryForm({
       {!isCreating &&
       selectedCategory &&
       !selectedCategory.archivedFromMonth ? (
-        <form
-          className={styles.form}
-          noValidate
-        >
+        <form className={styles.form} noValidate>
           <Field
-            error={
-              archiveForm.formState.errors.replacementCategoryId?.message
-            }
+            error={archiveForm.formState.errors.replacementCategoryId?.message}
             htmlFor="replacement-category"
             label={t("categories.replacementCategory")}
           >
@@ -160,11 +154,7 @@ export default function CategoryForm({
           </Field>
 
           <div className={styles.formActions}>
-            <Button
-              type="button"
-              onClick={onArchiveOpen}
-              variant="danger"
-            >
+            <Button type="button" onClick={onArchiveOpen} variant="danger">
               {t("common.archive")}
             </Button>
           </div>

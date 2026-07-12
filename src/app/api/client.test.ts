@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { apiRequest, configureApiClientAuth } from "./client";
-import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import {
+  resetFetchMocks,
+  mockJsonResponse,
+  mockErrorResponse,
+  mockFetchUrl,
+} from "../../test/setup";
 
 describe("apiRequest", () => {
   beforeEach(() => {
@@ -46,13 +51,13 @@ describe("apiRequest", () => {
 
     const firstRequest = vi.mocked(fetch).mock.calls[0];
     const firstHeaders = new Headers(
-      ((firstRequest?.[1]?.headers as HeadersInit | undefined) ?? {}),
+      (firstRequest?.[1]?.headers as HeadersInit | undefined) ?? {},
     );
     expect(firstHeaders.get("Authorization")).toBe("Bearer expired-token");
 
     const retriedRequest = vi.mocked(fetch).mock.calls[1];
     const retriedHeaders = new Headers(
-      ((retriedRequest?.[1]?.headers as HeadersInit | undefined) ?? {}),
+      (retriedRequest?.[1]?.headers as HeadersInit | undefined) ?? {},
     );
     expect(retriedHeaders.get("Authorization")).toBe("Bearer renewed-token");
   });
@@ -73,7 +78,7 @@ describe("apiRequest", () => {
 
     const request = vi.mocked(fetch).mock.calls[0];
     const headers = new Headers(
-      ((request?.[1]?.headers as HeadersInit | undefined) ?? {}),
+      (request?.[1]?.headers as HeadersInit | undefined) ?? {},
     );
     expect(headers.get("Authorization")).toBe("Bearer fresh-token");
   });
@@ -155,7 +160,10 @@ describe("apiRequest", () => {
       onUnauthorized,
     });
 
-    mockFetchUrl("/api/fixed-transactions", mockErrorResponse(403, "Forbidden"));
+    mockFetchUrl(
+      "/api/fixed-transactions",
+      mockErrorResponse(403, "Forbidden"),
+    );
 
     await expect(
       apiRequest("/api/fixed-transactions", {

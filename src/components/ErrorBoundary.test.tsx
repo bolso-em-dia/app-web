@@ -43,9 +43,7 @@ describe("ErrorBoundary", () => {
   it("shows fallback UI when child component throws", () => {
     renderWithErrorBoundary(<ThrowingComponent />);
     expect(screen.getByText("Algo deu errado")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Um erro inesperado ocorreu/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Um erro inesperado ocorreu/)).toBeInTheDocument();
   });
 
   it("shows error details in expandable section", () => {
@@ -66,7 +64,9 @@ describe("ErrorBoundary", () => {
     expect(screen.getByText("Algo deu errado")).toBeInTheDocument();
 
     shouldThrow = false;
-    const retryButton = screen.getByRole("button", { name: "Tentar novamente" });
+    const retryButton = screen.getByRole("button", {
+      name: "Tentar novamente",
+    });
     fireEvent.click(retryButton);
 
     expect(screen.getByText("Recovered")).toBeInTheDocument();

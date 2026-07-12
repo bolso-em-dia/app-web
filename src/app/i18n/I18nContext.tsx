@@ -8,7 +8,7 @@ export type TranslateParams = Record<string, string | number>;
 export type Locale = "pt-BR" | "en-US";
 export type Translate = (key: MessageKey, params?: TranslateParams) => string;
 
-export type I18nContextValue = {
+type I18nContextValue = {
   locale: Locale;
   t: Translate;
 };

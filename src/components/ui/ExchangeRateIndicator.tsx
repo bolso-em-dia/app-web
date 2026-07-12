@@ -1,6 +1,9 @@
 import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { getLatestExchangeRate, refreshExchangeRate } from "../../app/api/exchangeRate";
+import {
+  getLatestExchangeRate,
+  refreshExchangeRate,
+} from "../../app/api/exchangeRate";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { formatCurrency } from "../../lib/formatters/currency";
@@ -58,9 +61,7 @@ export default function ExchangeRateIndicator() {
   return (
     <div className={styles.root}>
       <Tooltip content={tooltipContent}>
-        <span className={styles.value}>
-          US$ 1 = {formatCurrency(rate)}
-        </span>
+        <span className={styles.value}>US$ 1 = {formatCurrency(rate)}</span>
       </Tooltip>
       <Button
         aria-label={t("exchangeRate.refresh")}
