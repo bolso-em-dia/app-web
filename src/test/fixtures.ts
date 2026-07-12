@@ -203,3 +203,43 @@ export function createFamilyMember(
     ...overrides,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Test rendering helpers
+// ---------------------------------------------------------------------------
+
+import { render } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { TestAuthProvider } from "../app/auth/TestAuthProvider";
+import type { TestAuthProviderUser } from "../app/auth/TestAuthProvider";
+import type { ReactElement } from "react";
+import { createElement } from "react";
+
+const DEFAULT_USER: TestAuthProviderUser = {
+  id: "1",
+  name: "Admin",
+  email: "admin@bolso-em-dia.local",
+  role: "ADMIN",
+  allowanceEnabled: false,
+};
+
+export function renderWithProviders(
+  ui: ReactElement,
+  options: { route?: string; user?: Partial<TestAuthProviderUser> } = {},
+) {
+  const { route = "/", user = {} } = options;
+  return render(
+    createElement(
+      MemoryRouter,
+      {
+        future: { v7_startTransition: true, v7_relativeSplatPath: true },
+        initialEntries: [route],
+      },
+      createElement(
+        TestAuthProvider,
+        { user: { ...DEFAULT_USER, ...user } },
+        ui,
+      ),
+    ),
+  );
+}

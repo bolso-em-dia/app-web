@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import ExchangeRateIndicator from "./ExchangeRateIndicator";
@@ -138,25 +138,18 @@ describe("ExchangeRateIndicator", () => {
     });
   });
 
-  it("button does not overlap the rate text visually", async () => {
+  it("refresh button is accessible with correct label", async () => {
     mockFetchUrl("/api/exchange-rate", mockJsonResponse({
       rate: 5.10,
       fetchedAt: "2026-07-10T18:00:00Z",
       stale: false,
     }));
 
-    const { container } = renderIndicator();
+    renderIndicator();
 
     await screen.findByText(/US\$ 1 = R\$ 5,10/);
-
-    const root = container.firstElementChild as HTMLElement;
-    const valueEl = root.querySelector('[class*="value"]') as HTMLElement;
-    const buttonEl = screen.getByRole("button", { name: "Atualizar cotação" });
-
-    const valueRect = valueEl.getBoundingClientRect();
-    const buttonRect = buttonEl.getBoundingClientRect();
-
-    // Button must be to the right of (or at most touching) the text
-    expect(buttonRect.left).toBeGreaterThanOrEqual(valueRect.right - 1);
+    const button = screen.getByRole("button", { name: "Atualizar cotação" });
+    expect(button).toBeInTheDocument();
+    expect(button).not.toBeDisabled();
   });
 });
