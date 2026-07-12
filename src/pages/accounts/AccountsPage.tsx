@@ -16,16 +16,13 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
 import ConfirmAction from "../../components/ui/ConfirmAction";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
-import FormError from "../../components/ui/FormError";
 import PaginationBar from "../../components/ui/PaginationBar";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import { COLOR_OPTIONS, getColorLabel } from "../../lib/uiOptions";
 import {
   createAccountSchema,
   type AccountFormValues,
@@ -34,6 +31,7 @@ import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
 import AccountCard from "./AccountCard";
+import AccountForm from "./AccountForm";
 import styles from "./AccountsPage.module.scss";
 
 const DEFAULT_VALUES: AccountFormValues = {
@@ -409,7 +407,6 @@ export default function AccountsPage() {
           />
 
           {isCreating || selectedAccount ? (
-            <>
             <Drawer
               description={
                 isCreating
@@ -422,193 +419,26 @@ export default function AccountsPage() {
               }
             >
               <div className={styles.drawerStack}>
-                <form
-                  className={styles.form}
-                  noValidate
-                  onSubmit={form.handleSubmit(onSubmit)}
-                >
-                  <Field
-                    error={form.formState.errors.name?.message}
-                    htmlFor="account-name"
-                    label={t("common.name")}
-                  >
-                    <Input
-                      id="account-name"
-                      {...form.register("name")}
-                      hasError={Boolean(form.formState.errors.name)}
-                      placeholder={t("accounts.placeholder")}
-                    />
-                  </Field>
-
-                  <div className={styles.typeGrid}>
-                    <Field
-                      error={form.formState.errors.type?.message}
-                      htmlFor="account-type"
-                      label={t("common.type")}
-                    >
-                      <Select
-                        id="account-type"
-                        {...form.register("type")}
-                        hasError={Boolean(form.formState.errors.type)}
-                      >
-                        <option value="CHECKING">
-                          {t("accountTypes.CHECKING")}
-                        </option>
-                        <option value="SAVINGS">
-                          {t("accountTypes.SAVINGS")}
-                        </option>
-                        <option value="CREDIT_CARD">
-                          {t("accountTypes.CREDIT_CARD")}
-                        </option>
-                        <option value="INVESTMENT">
-                          {t("accountTypes.INVESTMENT")}
-                        </option>
-                      </Select>
-                    </Field>
-
-                    {user?.preferences.showForeignCurrency ? (
-                      <Field htmlFor="account-currency" label={t("accounts.currency")}>
-                        <Select id="account-currency" {...form.register("currency")}>
-                          <option value="BRL">Real (BRL)</option>
-                          <option value="USD">Dólar (USD)</option>
-                        </Select>
-                      </Field>
-                    ) : null}
-
-                    <Field
-                      error={form.formState.errors.color?.message}
-                      htmlFor="account-color"
-                      label={t("accounts.color")}
-                    >
-                      <ColorSwatchSelect
-                        clearLabel={t("common.clearSelection")}
-                        id="account-color"
-                        onChange={(value) =>
-                          form.setValue("color", value, {
-                            shouldDirty: true,
-                            shouldTouch: true,
-                            shouldValidate: true,
-                          })
-                        }
-                        options={COLOR_OPTIONS}
-                        value={colorValue}
-                      />
-                    </Field>
-                  </div>
-
-                  {isCreditCard ? (
-                    <div className={styles.cardFields}>
-                      <Field
-                        error={form.formState.errors.brand?.message}
-                        htmlFor="account-brand"
-                        label={t("accounts.brand")}
-                      >
-                        <Input
-                          id="account-brand"
-                          {...form.register("brand")}
-                          hasError={Boolean(form.formState.errors.brand)}
-                          placeholder={t("accounts.brand")}
-                        />
-                      </Field>
-
-                      <Field
-                        error={form.formState.errors.closingDay?.message}
-                        htmlFor="account-closing-day"
-                        label={t("accounts.closingDay")}
-                      >
-                        <Input
-                          id="account-closing-day"
-                          {...form.register("closingDay")}
-                          hasError={Boolean(form.formState.errors.closingDay)}
-                          inputMode="numeric"
-                          max={31}
-                          min={1}
-                          type="number"
-                        />
-                      </Field>
-
-                      <Field
-                        error={form.formState.errors.dueDay?.message}
-                        htmlFor="account-due-day"
-                        label={t("accounts.dueDay")}
-                      >
-                        <Input
-                          id="account-due-day"
-                          {...form.register("dueDay")}
-                          hasError={Boolean(form.formState.errors.dueDay)}
-                          inputMode="numeric"
-                          max={31}
-                          min={1}
-                          type="number"
-                        />
-                      </Field>
-                    </div>
-                  ) : null}
-
-                  {colorValue ? (
-                    <div className={styles.swatch}>
-                      <span
-                        className={styles.swatchDot}
-                        style={{ backgroundColor: colorValue }}
-                      />
-                      <span>
-                        {getColorLabel(colorValue) ||
-                          t("common.clearSelection")}
-                      </span>
-                    </div>
-                  ) : null}
-
-                  <FormError>{error}</FormError>
-
-                  <div className={styles.formActions}>
-                    <Button disabled={isSaving} type="submit">
-                      {isCreating
-                        ? t("accounts.create")
-                        : t("common.save")}
-                    </Button>
-                    {isCreating ? (
-                      <Button
-                        onClick={handleCancelCreate}
-                        type="button"
-                        variant="subtle"
-                      >
-                        {t("common.cancel")}
-                      </Button>
-                    ) : (
-                      <Button
-                        disabled={
-                          Boolean(selectedAccount?.archivedFromMonth)
-                        }
-                        onClick={() => setIsArchiveConfirmOpen(true)}
-                        type="button"
-                        variant={
-                          selectedAccount?.archivedFromMonth
-                            ? "subtle"
-                            : "danger"
-                        }
-                      >
-                        {selectedAccount?.archivedFromMonth
-                          ? t("accounts.archived")
-                          : t("common.archive")}
-                      </Button>
-                    )}
-                  </div>
-                </form>
+                <AccountForm
+                  error={error}
+                  form={form}
+                  isArchiveConfirmOpen={isArchiveConfirmOpen}
+                  isArchiving={isArchiving}
+                  isCreating={isCreating}
+                  isSaving={isSaving}
+                  onCancelCreate={handleCancelCreate}
+                  onArchiveCancel={() => setIsArchiveConfirmOpen(false)}
+                  onArchiveConfirm={() => {
+                    setIsArchiveConfirmOpen(false);
+                    void onArchive();
+                  }}
+                  onArchiveOpen={() => setIsArchiveConfirmOpen(true)}
+                  onSubmit={onSubmit}
+                  selectedAccount={selectedAccount}
+                  showForeignCurrency={user?.preferences.showForeignCurrency ?? false}
+                />
               </div>
             </Drawer>
-            <ConfirmAction
-              confirmLabel={t("common.archive")}
-              loading={isArchiving}
-              message={t("confirmations.archiveAccount")}
-              onCancel={() => setIsArchiveConfirmOpen(false)}
-              onConfirm={() => {
-                setIsArchiveConfirmOpen(false);
-                void onArchive();
-              }}
-              open={isArchiveConfirmOpen}
-              title={t("accounts.archiveTitle")}
-            />
-            </>
           ) : null}
         </section>
       )}
