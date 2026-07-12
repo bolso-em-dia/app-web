@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { formatCurrency } from "../../lib/formatters/currency";
 import styles from "./MoneyAmount.module.scss";
 
@@ -10,7 +11,7 @@ type MoneyAmountProps = {
   className?: string;
 };
 
-export default function MoneyAmount({
+export default memo(function MoneyAmount({
   amount,
   type,
   as: Tag = "span",
@@ -29,4 +30,4 @@ export default function MoneyAmount({
       {formatCurrency(signedAmount)}
     </Tag>
   );
-}
+});

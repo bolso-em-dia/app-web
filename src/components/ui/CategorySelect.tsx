@@ -43,17 +43,27 @@ export default function CategorySelect({
     [options, value],
   );
 
+  const selectOptions = useMemo(
+    () => options.map((option) => ({ value: option.id, label: option.name })),
+    [options],
+  );
+
+  const renderOption = useMemo(
+    () => (option: { value: string; label: string }) => {
+      const category = options.find((o) => o.id === option.value);
+      return category ? <CategoryContent category={category} /> : option.label;
+    },
+    [options],
+  );
+
   return (
     <Select
       hasError={hasError}
       id={id}
       onValueChange={onChange}
-      options={options.map((option) => ({ value: option.id, label: option.name }))}
+      options={selectOptions}
       placeholder={placeholder}
-      renderOption={(option) => {
-        const category = options.find((currentOption) => currentOption.id === option.value);
-        return category ? <CategoryContent category={category} /> : option.label;
-      }}
+      renderOption={renderOption}
       renderValue={() =>
         selectedOption ? (
           <CategoryContent category={selectedOption} />

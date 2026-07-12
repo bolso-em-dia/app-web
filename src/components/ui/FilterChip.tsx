@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { X } from "lucide-react";
 import Button from "./Button";
 import styles from "./FilterChip.module.scss";
@@ -7,7 +8,7 @@ type FilterChipProps = {
   onRemove: () => void;
 };
 
-export default function FilterChip({ label, onRemove }: FilterChipProps) {
+export default memo(function FilterChip({ label, onRemove }: FilterChipProps) {
   return (
     <Button
       className={styles.root}
@@ -19,4 +20,4 @@ export default function FilterChip({ label, onRemove }: FilterChipProps) {
       <X aria-hidden="true" className={styles.icon} />
     </Button>
   );
-}
+});

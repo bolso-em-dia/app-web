@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { ReactNode } from "react";
 import clsx from "./clsx";
 import styles from "./Card.module.scss";
@@ -7,6 +8,6 @@ type CardProps = {
   className?: string;
 };
 
-export default function Card({ children, className }: CardProps) {
+export default memo(function Card({ children, className }: CardProps) {
   return <section className={clsx(styles.root, className)}>{children}</section>;
-}
+});
