@@ -252,8 +252,11 @@ export default function HomePage() {
                     <div className={styles.itemContent}>
                       <div className={styles.categoryRow}>
                         <strong>{category.categoryName}</strong>
-                        <span className={styles.categoryPercent}>
-                          {percent}%
+                        <span className={styles.categoryMetrics}>
+                          <MoneyAmount amount={category.amount} type="EXPENSE" />
+                          <span className={styles.categoryPercent}>
+                            {percent}%
+                          </span>
                         </span>
                       </div>
                       <div
@@ -265,9 +268,6 @@ export default function HomePage() {
                           style={{ width: `${percent}%` }}
                         />
                       </div>
-                      <span className={styles.itemMeta}>
-                        <MoneyAmount amount={category.amount} type="EXPENSE" />
-                      </span>
                     </div>
                   </li>
                 );
