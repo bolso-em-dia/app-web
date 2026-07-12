@@ -32,6 +32,7 @@ import {
   createUpdateFamilyMemberSchema,
 } from "../../lib/validation/familyMemberSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import styles from "./FamilyPage.module.scss";
 
 type FamilyFormValues =
@@ -44,7 +45,7 @@ const DEFAULT_VALUES: CreateFamilyMemberFormValues = {
   role: "USER",
   allowanceEnabled: false,
 };
-const DEFAULT_PAGE_SIZE = 12;
+
 
 export default function FamilyPage() {
   const { accessToken } = useAuth();

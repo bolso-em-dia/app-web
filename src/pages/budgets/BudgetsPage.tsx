@@ -47,6 +47,7 @@ import {
   type BudgetFormValues,
 } from "../../lib/validation/budgetSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import styles from "./BudgetsPage.module.scss";
 
 const DEFAULT_VALUES: BudgetFormValues = {
@@ -56,7 +57,7 @@ const DEFAULT_VALUES: BudgetFormValues = {
   categoryIds: [],
   monthlyLimit: 0,
 };
-const DEFAULT_PAGE_SIZE = 12;
+
 
 function mapFormValuesToPayload(values: BudgetFormValues): BudgetPayload {
   return {
