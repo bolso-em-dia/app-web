@@ -1042,16 +1042,16 @@ export default function TransactionsPage() {
                         >
                           {(["EXPENSE", "INCOME"] as const).map(
                             (typeOption) => {
+                              const isActive = field.value === typeOption;
                               const toneClass =
                                 typeOption === "INCOME"
                                   ? styles.segmentButtonIncome
                                   : styles.segmentButtonExpense;
-                              const activeClass =
-                                field.value === typeOption
-                                  ? typeOption === "INCOME"
+                              const activeClass = isActive
+                                ? (typeOption === "INCOME"
                                     ? styles.segmentButtonIncomeActive
-                                    : styles.segmentButtonExpenseActive
-                                  : "";
+                                    : styles.segmentButtonExpenseActive)
+                                : "";
 
                               return (
                                 <button
