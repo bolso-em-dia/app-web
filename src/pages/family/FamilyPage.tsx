@@ -16,14 +16,11 @@ import AppShell from "../../components/layout/AppShell";
 import Spinner from "../../components/feedback/Spinner";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import Checkbox from "../../components/ui/Checkbox";
-import ConfirmAction from "../../components/ui/ConfirmAction";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
-import FormError from "../../components/ui/FormError";
-import PaginationBar from "../../components/ui/PaginationBar";
 import Input from "../../components/ui/Input";
+import PaginationBar from "../../components/ui/PaginationBar";
 import Select from "../../components/ui/Select";
 import {
   createFamilyMemberSchema as buildCreateFamilyMemberSchema,
@@ -32,9 +29,10 @@ import {
   createUpdateFamilyMemberSchema,
 } from "../../lib/validation/familyMemberSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
-import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
+import { DEFAULT_PAGE_SIZE, type StatusFilter } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
 import FamilyMemberCard from "./FamilyMemberCard";
+import FamilyMemberForm from "./FamilyMemberForm";
 import styles from "./FamilyPage.module.scss";
 
 type FamilyFormValues =
@@ -55,9 +53,7 @@ export default function FamilyPage() {
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "ACTIVE" | "ARCHIVED"
-  >("ACTIVE");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ACTIVE");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
@@ -318,9 +314,7 @@ export default function FamilyPage() {
                     <Select
                       id="family-status-filter"
                       onChange={(event) => {
-                        setStatusFilter(
-                          event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                        );
+                        setStatusFilter(event.target.value as StatusFilter);
                         setPage(0);
                       }}
                       value={statusFilter}
@@ -390,137 +384,32 @@ export default function FamilyPage() {
                 isCreating ? t("family.newTitle") : t("family.detailsTitle")
               }
             >
-              <div className={styles.drawerStack}>
-                <form
-                  className={styles.form}
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  noValidate
-                >
-                  <Field
-                    error={form.formState.errors.name?.message}
-                    htmlFor="family-name"
-                    label={t("common.name")}
-                  >
-                    <Input
-                      id="family-name"
-                      hasError={Boolean(form.formState.errors.name)}
-                      {...form.register("name")}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.email?.message}
-                    htmlFor="family-email"
-                    label={t("common.email")}
-                  >
-                    <Input
-                      id="family-email"
-                      hasError={Boolean(form.formState.errors.email)}
-                      type="email"
-                      {...form.register("email")}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.password?.message}
-                    htmlFor="family-password"
-                    label={
-                      isCreating
-                        ? t("family.password")
-                        : t("family.passwordOptional")
-                    }
-                  >
-                    <Input
-                      id="family-password"
-                      hasError={Boolean(form.formState.errors.password)}
-                      type="password"
-                      {...form.register("password")}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.role?.message}
-                    htmlFor="family-role"
-                    label={t("common.role")}
-                  >
-                    <Select
-                      id="family-role"
-                      hasError={Boolean(form.formState.errors.role)}
-                      {...form.register("role")}
-                    >
-                      <option value="USER">{t("roles.USER")}</option>
-                      <option value="ADMIN">{t("roles.ADMIN")}</option>
-                    </Select>
-                  </Field>
-
-                  <Checkbox
-                    label={t("family.allowanceEnabled")}
-                    {...form.register("allowanceEnabled")}
-                  />
-
-                  <FormError>{error}</FormError>
-
-                  <div className={styles.formActions}>
-                    <Button loading={isSaving} type="submit">
-                      {isCreating
-                        ? t("family.create")
-                        : t("common.save")}
-                    </Button>
-                    {isCreating ? (
-                      <Button
-                        onClick={handleCancelCreate}
-                        type="button"
-                        variant="subtle"
-                      >
-                        {t("common.cancel")}
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={
-                          selectedMember?.active
-                            ? () => setIsArchiveConfirmOpen(true)
-                            : () => setIsRestoreConfirmOpen(true)
-                        }
-                        type="button"
-                        variant={
-                          selectedMember?.active ? "danger" : "secondary"
-                        }
-                      >
-                        {selectedMember?.active
-                          ? t("common.archive")
-                          : t("family.restoreMember")}
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              </div>
+              <FamilyMemberForm
+                error={error}
+                form={form}
+                isArchiveConfirmOpen={isArchiveConfirmOpen}
+                isArchiving={isArchiving}
+                isCreating={isCreating}
+                isRestoreConfirmOpen={isRestoreConfirmOpen}
+                isSaving={isSaving}
+                onCancelCreate={handleCancelCreate}
+                onArchiveCancel={() => setIsArchiveConfirmOpen(false)}
+                onArchiveConfirm={() => {
+                  setIsArchiveConfirmOpen(false);
+                  void handleArchiveToggle();
+                }}
+                onArchiveOpen={() => setIsArchiveConfirmOpen(true)}
+                onRestoreCancel={() => setIsRestoreConfirmOpen(false)}
+                onRestoreConfirm={() => {
+                  setIsRestoreConfirmOpen(false);
+                  void handleArchiveToggle();
+                }}
+                onRestoreOpen={() => setIsRestoreConfirmOpen(true)}
+                onSubmit={onSubmit}
+                selectedMember={selectedMember}
+              />
             </Drawer>
           ) : null}
-
-          <ConfirmAction
-            confirmLabel={t("common.archive")}
-            loading={isArchiving}
-            message={t("confirmations.archiveMember")}
-            onCancel={() => setIsArchiveConfirmOpen(false)}
-            onConfirm={() => {
-              setIsArchiveConfirmOpen(false);
-              void handleArchiveToggle();
-            }}
-            open={isArchiveConfirmOpen}
-            title={t("family.archiveMember")}
-          />
-          <ConfirmAction
-            confirmLabel={t("family.restoreMember")}
-            loading={isArchiving}
-            message={t("confirmations.restoreMember")}
-            onCancel={() => setIsRestoreConfirmOpen(false)}
-            onConfirm={() => {
-              setIsRestoreConfirmOpen(false);
-              void handleArchiveToggle();
-            }}
-            open={isRestoreConfirmOpen}
-            title={t("family.restoreMember")}
-          />
         </section>
       )}
     </AppShell>

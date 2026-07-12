@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   archiveCategory,
   createCategory,
@@ -16,19 +16,13 @@ import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import CategorySelect from "../../components/ui/CategorySelect";
-import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
-import ConfirmAction from "../../components/ui/ConfirmAction";
 import Drawer from "../../components/ui/Drawer";
 import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
-import FormError from "../../components/ui/FormError";
-import PaginationBar from "../../components/ui/PaginationBar";
-import IconSelect from "../../components/ui/IconSelect";
 import Input from "../../components/ui/Input";
+import PaginationBar from "../../components/ui/PaginationBar";
 import Select from "../../components/ui/Select";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
-import { COLOR_OPTIONS, ICON_OPTIONS } from "../../lib/uiOptions";
 import {
   createArchiveCategorySchema,
   createCategorySchema,
@@ -39,6 +33,7 @@ import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
 import CategoryCard from "./CategoryCard";
+import CategoryForm from "./CategoryForm";
 import styles from "./CategoriesPage.module.scss";
 
 const DEFAULT_VALUES: CategoryFormValues = {
@@ -281,8 +276,6 @@ export default function CategoriesPage() {
   const archiveOptions = options.filter(
     (option) => option.id !== selectedCategory?.id,
   );
-  const iconValue = form.watch("icon");
-  const colorValue = form.watch("color");
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
   const pagination = usePagination(page, pageSize, totalItems, totalPages);
 
@@ -406,142 +399,24 @@ export default function CategoriesPage() {
                   : t("categories.detailsTitle")
               }
             >
-              <div className={styles.drawerStack}>
-                <form
-                  className={styles.form}
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  noValidate
-                >
-                  <Field
-                    error={form.formState.errors.name?.message}
-                    htmlFor="category-name"
-                    label={t("common.name")}
-                  >
-                    <Input
-                      hasError={Boolean(form.formState.errors.name)}
-                      id="category-name"
-                      {...form.register("name")}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.icon?.message}
-                    htmlFor="category-icon"
-                    label={t("categories.icon")}
-                  >
-                    <IconSelect
-                      clearLabel={t("common.clearSelection")}
-                      id="category-icon"
-                      onChange={(value) =>
-                        form.setValue("icon", value, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                          shouldValidate: true,
-                        })
-                      }
-                      options={ICON_OPTIONS}
-                      value={iconValue}
-                    />
-                  </Field>
-
-                  <Field
-                    error={form.formState.errors.color?.message}
-                    htmlFor="category-color"
-                    label={t("categories.color")}
-                  >
-                    <ColorSwatchSelect
-                      clearLabel={t("common.clearSelection")}
-                      id="category-color"
-                      onChange={(value) =>
-                        form.setValue("color", value, {
-                          shouldDirty: true,
-                          shouldTouch: true,
-                          shouldValidate: true,
-                        })
-                      }
-                      options={COLOR_OPTIONS}
-                      value={colorValue}
-                    />
-                  </Field>
-
-                  {error ? <FormError>{error}</FormError> : null}
-
-                  <div className={styles.formActions}>
-                    <Button loading={isSaving} type="submit">
-                      {isCreating
-                        ? t("categories.create")
-                        : t("common.save")}
-                    </Button>
-                    {isCreating ? (
-                      <Button
-                        onClick={handleCancelCreate}
-                        type="button"
-                        variant="subtle"
-                      >
-                        {t("common.cancel")}
-                      </Button>
-                    ) : null}
-                  </div>
-                </form>
-
-                {!isCreating &&
-                selectedCategory &&
-                !selectedCategory.archivedFromMonth ? (
-                  <form
-                    className={styles.form}
-                    onSubmit={archiveForm.handleSubmit(onArchive)}
-                    noValidate
-                  >
-                    <Field
-                      error={
-                        archiveForm.formState.errors.replacementCategoryId
-                          ?.message
-                      }
-                      htmlFor="replacement-category"
-                      label={t("categories.replacementCategory")}
-                    >
-                      <Controller
-                        control={archiveForm.control}
-                        name="replacementCategoryId"
-                        render={({ field }) => (
-                          <CategorySelect
-                            hasError={Boolean(
-                              archiveForm.formState.errors
-                                .replacementCategoryId,
-                            )}
-                            id="replacement-category"
-                            onChange={field.onChange}
-                            options={archiveOptions}
-                            placeholder={t("categories.selectReplacement")}
-                            value={field.value}
-                          />
-                        )}
-                      />
-                    </Field>
-
-                    <div className={styles.formActions}>
-                      <Button
-                        type="button"
-                        onClick={() => setIsArchiveConfirmOpen(true)}
-                        variant="danger"
-                      >
-{t("common.archive")}
-                      </Button>
-                    </div>
-                  </form>
-                ) : null}
-              </div>
-            <ConfirmAction
-                confirmLabel={t("common.archive")}
-                loading={isArchiving}
-                message={t("confirmations.archiveCategory")}
-                onCancel={() => setIsArchiveConfirmOpen(false)}
-                onConfirm={() => {
+              <CategoryForm
+                archiveForm={archiveForm}
+                archiveOptions={archiveOptions}
+                error={error}
+                form={form}
+                isArchiveConfirmOpen={isArchiveConfirmOpen}
+                isArchiving={isArchiving}
+                isCreating={isCreating}
+                isSaving={isSaving}
+                selectedCategory={selectedCategory}
+                onCancelCreate={handleCancelCreate}
+                onArchiveCancel={() => setIsArchiveConfirmOpen(false)}
+                onArchiveOpen={() => setIsArchiveConfirmOpen(true)}
+                onArchiveSubmit={() => {
                   setIsArchiveConfirmOpen(false);
                   void archiveForm.handleSubmit(onArchive)();
                 }}
-                open={isArchiveConfirmOpen}
-                title={t("categories.archiveTitle")}
+                onSubmit={onSubmit}
               />
             </Drawer>
           ) : null}
