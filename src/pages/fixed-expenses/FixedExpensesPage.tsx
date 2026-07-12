@@ -464,9 +464,11 @@ export default function FixedExpensesPage() {
                         }
                       >
                         {template.archivedFromMonth
-                          ? `Arquivado a partir de ${formatReferenceMonth(
-                              template.archivedFromMonth,
-                            )}`
+                          ? t("common.archivedFrom", {
+                              month: formatReferenceMonth(
+                                template.archivedFromMonth,
+                              ),
+                            })
                           : t("common.active")}
                       </span>
                     </div>

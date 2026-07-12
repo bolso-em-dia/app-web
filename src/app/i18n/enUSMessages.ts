@@ -255,6 +255,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "budgets.consumedOfLimit": "Used {{consumed}}",
   "budgets.archiveTitle": "Archive budget",
   "budgets.archivedFrom": "Archived from {{month}}",
+  "common.archivedFrom": "Archived from {{month}}",
   "budgets.archived": "Budget archived",
   "budgets.allowanceFor": "Allowance for {{member}}",
   "budgets.archiveMonth": "Archive month",

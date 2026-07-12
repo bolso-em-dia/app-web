@@ -431,7 +431,11 @@ export default function AccountsPage() {
                         }
                       >
                         {account.archivedFromMonth
-                          ? `Arquivado a partir de ${formatReferenceMonth(account.archivedFromMonth)}`
+                          ? t("common.archivedFrom", {
+                              month: formatReferenceMonth(
+                                account.archivedFromMonth,
+                              ),
+                            })
                           : t("common.active")}
                       </span>
                     </div>
