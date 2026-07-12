@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
-import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../test/setup";
+import { resetFetchMocks, mockJsonResponse, mockFetchUrl } from "../test/setup";
 import HomePage from "./HomePage";
 
 const defaultDashboardResponse = {
@@ -64,6 +64,7 @@ const defaultDashboardResponse = {
 };
 
 function setupDefaultMocks() {
+  mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
   mockFetchUrl("/api/dashboard", mockJsonResponse(defaultDashboardResponse));
 }
 
