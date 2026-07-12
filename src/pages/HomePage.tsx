@@ -186,28 +186,6 @@ export default function HomePage() {
       {dashboard && !isLoading && !error ? (
         <section className={styles.grid}>
           <Card className={styles.panel}>
-            <h2 className={styles.panelTitle}>{t("home.session")}</h2>
-            <dl className={styles.definitionList}>
-              <div>
-                <dt>{t("common.name")}</dt>
-                <dd>{user?.name}</dd>
-              </div>
-              <div>
-                <dt>{t("common.email")}</dt>
-                <dd>{user?.email}</dd>
-              </div>
-              <div>
-                <dt>{t("common.role")}</dt>
-                <dd>
-                  {user?.role
-                    ? t(user.role === "ADMIN" ? "roles.ADMIN" : "roles.USER")
-                    : null}
-                </dd>
-              </div>
-            </dl>
-          </Card>
-
-          <Card className={styles.panel}>
             <h2 className={styles.panelTitle}>{t("home.budgets")}</h2>
             <ul className={styles.itemList}>
               {dashboard.budgets.map((budget) => {
@@ -230,43 +208,95 @@ export default function HomePage() {
                 }
 
                 return (
-                  <li key={budget.id} className={styles.itemRow}>
+                  <li
+                    key={budget.id}
+                    className={`${styles.itemRow} ${styles.budgetRow}`}
+                  >
+                    <div className={styles.budgetHeader}>
+                      <strong>{budget.name}</strong>
+                    </div>
+                    <div className={styles.itemAmountBlock}>
+                      <strong>
+                        {formatCurrency(budget.consumedAmount)} /{" "}
+                        {formatCurrency(budget.monthlyLimit)}
+                      </strong>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      className={`${styles.progressTrack} ${styles.budgetProgress}`}
+                    >
+                      <span
+                        className={fillClass}
+                        style={{ width: `${consumptionPercent}%` }}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+
+          <Card className={styles.panel}>
+            <h2 className={styles.panelTitle}>
+              {t("home.categoryBreakdown")}
+            </h2>
+            <ul className={styles.itemList}>
+              {catSlice.map((category) => {
+                const percent =
+                  totalExpense > 0
+                    ? ((category.amount / totalExpense) * 100).toFixed(1)
+                    : "0.0";
+
+                return (
+                  <li key={category.categoryId} className={styles.itemRow}>
                     <div className={styles.itemContent}>
-                      <div>
-                        <strong>{budget.name}</strong>
-                        <p className={styles.itemMeta}>
-                          {budget.type === "ALLOWANCE" && budget.ownerMemberName
-                            ? t("home.allowanceFor", {
-                                name: budget.ownerMemberName,
-                              })
-                            : t("home.linkedCategories", {
-                                count: budget.categories.length,
-                              })}
-                        </p>
+                      <div className={styles.categoryRow}>
+                        <strong>{category.categoryName}</strong>
+                        <span className={styles.categoryPercent}>
+                          {percent}%
+                        </span>
                       </div>
                       <div
                         aria-hidden="true"
                         className={styles.progressTrack}
                       >
                         <span
-                          className={fillClass}
-                          style={{ width: `${consumptionPercent}%` }}
+                          className={styles.progressFill}
+                          style={{ width: `${percent}%` }}
                         />
                       </div>
-                    </div>
-                    <div className={styles.itemAmountBlock}>
-                      <strong>{formatCurrency(budget.monthlyLimit)}</strong>
                       <span className={styles.itemMeta}>
-                        {t("home.consumedOfLimit", {
-                          consumed: formatCurrency(budget.consumedAmount),
-                          limit: formatCurrency(budget.monthlyLimit),
-                        })}
+                        <MoneyAmount amount={category.amount} type="EXPENSE" />
                       </span>
                     </div>
                   </li>
                 );
               })}
             </ul>
+            {catPages > 1 ? (
+              <div className={styles.paginationRow}>
+                <Button
+                  type="button"
+                  disabled={catPage === 0}
+                  onClick={() => setCatPage((p) => p - 1)}
+                >
+                  <ChevronLeft />
+                </Button>
+                <span>
+                  {t("common.pageOf", {
+                    page: catPage + 1,
+                    total: catPages,
+                  })}
+                </span>
+                <Button
+                  type="button"
+                  disabled={catPage >= catPages - 1}
+                  onClick={() => setCatPage((p) => p + 1)}
+                >
+                  <ChevronRight />
+                </Button>
+              </div>
+            ) : null}
           </Card>
 
           <Card className={styles.panel}>
@@ -326,67 +356,6 @@ export default function HomePage() {
                   type="button"
                   disabled={recentTxPage >= recentTxPages - 1}
                   onClick={() => setRecentTxPage((p) => p + 1)}
-                >
-                  <ChevronRight />
-                </Button>
-              </div>
-            ) : null}
-          </Card>
-
-          <Card className={styles.panel}>
-            <h2 className={styles.panelTitle}>{t("home.categoryBreakdown")}</h2>
-            <ul className={styles.itemList}>
-              {catSlice.map((category) => {
-                const percent =
-                  totalExpense > 0
-                    ? ((category.amount / totalExpense) * 100).toFixed(1)
-                    : "0.0";
-
-                return (
-                  <li key={category.categoryId} className={styles.itemRow}>
-                    <div className={styles.itemContent}>
-                      <div className={styles.categoryRow}>
-                        <strong>{category.categoryName}</strong>
-                        <span className={styles.categoryPercent}>
-                          {percent}%
-                        </span>
-                      </div>
-                      <div
-                        aria-hidden="true"
-                        className={styles.progressTrack}
-                      >
-                        <span
-                          className={styles.progressFill}
-                          style={{ width: `${percent}%` }}
-                        />
-                      </div>
-                      <span className={styles.itemMeta}>
-                        <MoneyAmount amount={category.amount} type="EXPENSE" />
-                      </span>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            {catPages > 1 ? (
-              <div className={styles.paginationRow}>
-                <Button
-                  type="button"
-                  disabled={catPage === 0}
-                  onClick={() => setCatPage((p) => p - 1)}
-                >
-                  <ChevronLeft />
-                </Button>
-                <span>
-                  {t("common.pageOf", {
-                    page: catPage + 1,
-                    total: catPages,
-                  })}
-                </span>
-                <Button
-                  type="button"
-                  disabled={catPage >= catPages - 1}
-                  onClick={() => setCatPage((p) => p + 1)}
                 >
                   <ChevronRight />
                 </Button>
