@@ -110,6 +110,20 @@
   flex: 1 1 auto;
 }
 
+.budgetRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.budgetHeader {
+  min-width: 0;
+}
+
+.budgetProgress {
+  grid-column: 1 / -1;
+}
+
 .itemAmountBlock {
   display: grid;
   justify-items: end;
@@ -201,6 +215,10 @@
   .itemAmountBlock {
     justify-items: start;
     min-width: 0;
+  }
+
+  .budgetRow {
+    grid-template-columns: 1fr;
   }
 
   .balanceModeMeta {

@@ -162,7 +162,7 @@ describe("HomePage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
 
-    expect(await screen.findByText("Sessão")).toBeInTheDocument();
+    expect(await screen.findByText("Orçamentos")).toBeInTheDocument();
     expect(vi.mocked(fetch).mock.calls.length).toBeGreaterThanOrEqual(2);
     expect(screen.queryByText("Não foi possível carregar o dashboard agora.")).not.toBeInTheDocument();
   });
@@ -208,7 +208,7 @@ describe("HomePage", () => {
     expect(screen.getByText("R$ 4.805,00")).toBeInTheDocument();
   });
 
-  it("shows budget monthly limit as the main value with consumed as secondary", async () => {
+  it("shows budget consumption as used over total without linked category text", async () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
@@ -235,11 +235,11 @@ describe("HomePage", () => {
     expect(budgetRow).not.toBeNull();
 
     expect(
-      within(budgetRow!).getByText("R$ 1.000,00"),
+      within(budgetRow!).getByText("R$ 150,00 / R$ 1.000,00"),
     ).toBeInTheDocument();
     expect(
-      within(budgetRow!).getByText("Usado R$ 150,00 de R$ 1.000,00"),
-    ).toBeInTheDocument();
+      within(budgetRow!).queryByText(/categorias vinculadas/i),
+    ).not.toBeInTheDocument();
   });
 
   it("paginates twelve recent transactions showing ten on page one with navigation controls", async () => {
