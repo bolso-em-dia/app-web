@@ -161,7 +161,6 @@ export default function TransactionsPage() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<TransactionFilters>({
     referenceMonth: initialReferenceMonth,
@@ -240,7 +239,6 @@ export default function TransactionsPage() {
       setPage(transactionsResponse.page);
       setPageSize(transactionsResponse.size);
       setTotalItems(transactionsResponse.totalItems);
-      setTotalPages(transactionsResponse.totalPages);
       setAccounts(accountsResponse);
       setCategoryOptions(categoriesResponse);
       setMembers(membersResponse);
@@ -588,6 +586,7 @@ export default function TransactionsPage() {
   const supportsGroupedDelete = Boolean(
     selectedTransaction?.installmentGroupId,
   );
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
     totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);

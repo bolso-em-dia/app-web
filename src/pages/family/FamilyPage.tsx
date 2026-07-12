@@ -58,7 +58,6 @@ export default function FamilyPage() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -105,7 +104,6 @@ export default function FamilyPage() {
         setPage(response.page);
         setPageSize(response.size);
         setTotalItems(response.totalItems);
-        setTotalPages(response.totalPages);
         setSelectedId((current) =>
           current && response.items.some((member) => member.id === current)
             ? current
@@ -129,23 +127,6 @@ export default function FamilyPage() {
       status: statusFilter,
     });
   }, [loadMembers, page, pageSize, search, statusFilter]);
-
-  useEffect(() => {
-    if (isCreating) {
-      form.reset(DEFAULT_VALUES);
-      return;
-    }
-
-    if (selectedMember) {
-      form.reset({
-        name: selectedMember.name,
-        email: selectedMember.email,
-        password: "",
-        role: selectedMember.role,
-        allowanceEnabled: selectedMember.allowanceEnabled,
-      });
-    }
-  }, [form, isCreating, selectedMember]);
 
   async function onSubmit(values: FamilyFormValues) {
     if (!accessToken) {
@@ -231,18 +212,21 @@ export default function FamilyPage() {
     setIsCreating(true);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
   }
 
   function handleCancelCreate() {
     setIsCreating(false);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
   }
 
   function handleCloseDrawer() {
     setIsCreating(false);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
   }
 
   const activeFilters = useMemo(
@@ -284,6 +268,7 @@ export default function FamilyPage() {
   }
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
     totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
@@ -365,6 +350,13 @@ export default function FamilyPage() {
                       setIsCreating(false);
                       setSelectedId(member.id);
                       setError(null);
+                      form.reset({
+                        name: member.name,
+                        email: member.email,
+                        password: "",
+                        role: member.role,
+                        allowanceEnabled: member.allowanceEnabled,
+                      });
                     }}
                     type="button"
                   >

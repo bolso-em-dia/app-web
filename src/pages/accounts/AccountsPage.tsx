@@ -70,7 +70,6 @@ export default function AccountsPage() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,7 +110,6 @@ export default function AccountsPage() {
         setPage(response.page);
         setPageSize(response.size);
         setTotalItems(response.totalItems);
-        setTotalPages(response.totalPages);
         setSelectedId((current) =>
           current && response.items.some((account) => account.id === current)
             ? current
@@ -136,25 +134,6 @@ export default function AccountsPage() {
       type: typeFilter || undefined,
     });
   }, [loadAccounts, page, pageSize, search, statusFilter, typeFilter]);
-
-  useEffect(() => {
-    if (isCreating) {
-      form.reset(DEFAULT_VALUES);
-      return;
-    }
-
-    if (selectedAccount) {
-      form.reset({
-        name: selectedAccount.name,
-        type: selectedAccount.type,
-        currency: (selectedAccount.currency as "BRL" | "USD") ?? "BRL",
-        brand: selectedAccount.brand ?? "",
-        color: selectedAccount.color ?? "",
-        closingDay: selectedAccount.closingDay ?? undefined,
-        dueDay: selectedAccount.dueDay ?? undefined,
-      });
-    }
-  }, [form, isCreating, selectedAccount]);
 
   async function onSubmit(values: AccountFormValues) {
     if (!accessToken) {
@@ -226,18 +205,21 @@ export default function AccountsPage() {
     setIsCreating(true);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
   }
 
   function handleCancelCreate() {
     setIsCreating(false);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
   }
 
   function handleCloseDrawer() {
     setIsCreating(false);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
   }
 
   const activeFilters = useMemo(
@@ -292,6 +274,7 @@ export default function AccountsPage() {
   }
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
     totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
@@ -397,6 +380,15 @@ export default function AccountsPage() {
                       setIsCreating(false);
                       setSelectedId(account.id);
                       setError(null);
+                      form.reset({
+                        name: account.name,
+                        type: account.type,
+                        currency: (account.currency as "BRL" | "USD") ?? "BRL",
+                        brand: account.brand ?? "",
+                        color: account.color ?? "",
+                        closingDay: account.closingDay ?? undefined,
+                        dueDay: account.dueDay ?? undefined,
+                      });
                     }}
                     style={
                       account.color
@@ -525,7 +517,7 @@ export default function AccountsPage() {
                     </Field>
 
                     {user?.preferences.showForeignCurrency ? (
-                      <Field htmlFor="account-currency" label="Moeda">
+                      <Field htmlFor="account-currency" label={t("accounts.currency")}>
                         <Select id="account-currency" {...form.register("currency")}>
                           <option value="BRL">Real (BRL)</option>
                           <option value="USD">Dólar (USD)</option>
@@ -565,7 +557,7 @@ export default function AccountsPage() {
                           id="account-brand"
                           {...form.register("brand")}
                           hasError={Boolean(form.formState.errors.brand)}
-                          placeholder="Visa"
+                          placeholder={t("accounts.brand")}
                         />
                       </Field>
 

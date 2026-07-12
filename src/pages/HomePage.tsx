@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getDashboard, type DashboardResponse } from "../app/api/dashboard";
 import { materializeTransactions } from "../app/api/transactions";
 import { useI18n } from "../app/i18n/I18nContext";
@@ -11,6 +10,7 @@ import { useAuth } from "../app/auth/useAuth";
 import Spinner from "../components/feedback/Spinner";
 import Button from "../components/ui/Button";
 import Switch from "../components/ui/Switch";
+import SimplePagination from "../components/ui/SimplePagination";
 import { formatCurrency } from "../lib/formatters/currency";
 import {
   formatDay,
@@ -273,30 +273,11 @@ export default function HomePage() {
                 );
               })}
             </ul>
-            {catPages > 1 ? (
-              <div className={styles.paginationRow}>
-                <Button
-                  type="button"
-                  disabled={catPage === 0}
-                  onClick={() => setCatPage((p) => p - 1)}
-                >
-                  <ChevronLeft />
-                </Button>
-                <span>
-                  {t("common.pageOf", {
-                    page: catPage + 1,
-                    total: catPages,
-                  })}
-                </span>
-                <Button
-                  type="button"
-                  disabled={catPage >= catPages - 1}
-                  onClick={() => setCatPage((p) => p + 1)}
-                >
-                  <ChevronRight />
-                </Button>
-              </div>
-            ) : null}
+            <SimplePagination
+              page={catPage}
+              totalPages={catPages}
+              onPageChange={setCatPage}
+            />
           </Card>
 
           <Card className={styles.panel}>
@@ -337,30 +318,11 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
-            {recentTxPages > 1 ? (
-              <div className={styles.paginationRow}>
-                <Button
-                  type="button"
-                  disabled={recentTxPage === 0}
-                  onClick={() => setRecentTxPage((p) => p - 1)}
-                >
-                  <ChevronLeft />
-                </Button>
-                <span>
-                  {t("common.pageOf", {
-                    page: recentTxPage + 1,
-                    total: recentTxPages,
-                  })}
-                </span>
-                <Button
-                  type="button"
-                  disabled={recentTxPage >= recentTxPages - 1}
-                  onClick={() => setRecentTxPage((p) => p + 1)}
-                >
-                  <ChevronRight />
-                </Button>
-              </div>
-            ) : null}
+            <SimplePagination
+              page={recentTxPage}
+              totalPages={recentTxPages}
+              onPageChange={setRecentTxPage}
+            />
           </Card>
         </section>
       ) : null}

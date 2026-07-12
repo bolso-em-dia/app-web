@@ -252,6 +252,7 @@ export const ptBRMessages = {
   "accounts.archiveMonth": "Mês de arquivamento",
   "accounts.archived": "Conta arquivada",
   "accounts.placeholder": "Conta principal",
+  "accounts.currency": "Moeda",
   "fixedTransactions.title": "Transações fixas",
   "fixedTransactions.loading": "Carregando transações fixas",
   "fixedTransactions.error": "Não foi possível carregar as transações fixas.",

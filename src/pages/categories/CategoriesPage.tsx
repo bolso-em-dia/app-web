@@ -59,7 +59,6 @@ export default function CategoriesPage() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,7 +110,6 @@ export default function CategoriesPage() {
         setPage(categoriesResponse.page);
         setPageSize(categoriesResponse.size);
         setTotalItems(categoriesResponse.totalItems);
-        setTotalPages(categoriesResponse.totalPages);
         setOptions(optionsResponse);
         setSelectedId((current) =>
           current &&
@@ -137,39 +135,6 @@ export default function CategoriesPage() {
       status: statusFilter,
     });
   }, [loadCategories, page, pageSize, search, statusFilter]);
-
-  useEffect(() => {
-    if (isCreating) {
-      form.reset(DEFAULT_VALUES);
-      return;
-    }
-
-    if (selectedCategory) {
-      form.reset({
-        name: selectedCategory.name,
-        icon: selectedCategory.icon ?? "",
-        color: selectedCategory.color ?? "",
-      });
-    }
-  }, [form, isCreating, selectedCategory]);
-
-  useEffect(() => {
-    if (!selectedCategory) {
-      archiveForm.reset({
-        replacementCategoryId: "",
-      });
-      return;
-    }
-
-    const replacementOption = options.find(
-      (option) => option.id !== selectedCategory.id,
-    );
-
-    archiveForm.reset({
-      replacementCategoryId:
-        selectedCategory.replacementCategoryId ?? replacementOption?.id ?? "",
-    });
-  }, [archiveForm, options, selectedCategory]);
 
   async function onSubmit(values: CategoryFormValues) {
     if (!accessToken) {
@@ -253,18 +218,24 @@ export default function CategoriesPage() {
     setIsCreating(true);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
+    archiveForm.reset({ replacementCategoryId: "" });
   }
 
   function handleCancelCreate() {
     setIsCreating(false);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
+    archiveForm.reset({ replacementCategoryId: "" });
   }
 
   function handleCloseDrawer() {
     setIsCreating(false);
     setSelectedId(null);
     setError(null);
+    form.reset(DEFAULT_VALUES);
+    archiveForm.reset({ replacementCategoryId: "" });
   }
 
   const activeFilters = useMemo(
@@ -311,6 +282,7 @@ export default function CategoriesPage() {
   );
   const iconValue = form.watch("icon");
   const colorValue = form.watch("color");
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
     totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);
@@ -391,6 +363,16 @@ export default function CategoriesPage() {
                         setIsCreating(false);
                         setSelectedId(category.id);
                         setError(null);
+                        form.reset({
+                          name: category.name,
+                          icon: category.icon ?? "",
+                          color: category.color ?? "",
+                        });
+                        archiveForm.reset({
+                          replacementCategoryId: options.find(
+                            (o) => o.id !== category.id,
+                          )?.id ?? "",
+                        });
                       }}
                       style={
                         category.color

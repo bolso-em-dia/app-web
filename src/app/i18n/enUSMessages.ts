@@ -303,6 +303,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "accounts.archiveMonth": "Archive month",
   "accounts.archived": "Account archived",
   "accounts.placeholder": "Account name",
+  "accounts.currency": "Currency",
 
   // Family
   "family.title": "Family",

@@ -84,7 +84,6 @@ export default function FixedExpensesPage() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -138,7 +137,6 @@ export default function FixedExpensesPage() {
         setPage(templatesResponse.page);
         setPageSize(templatesResponse.size);
         setTotalItems(templatesResponse.totalItems);
-        setTotalPages(templatesResponse.totalPages);
         setCategoryOptions(categoriesResponse);
         setAccountOptions(accountsResponse);
         setSelectedId((current) =>
@@ -304,6 +302,7 @@ export default function FixedExpensesPage() {
   }
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
   const rangeStart = totalItems === 0 ? 0 : page * pageSize + 1;
   const rangeEnd =
     totalItems === 0 ? 0 : Math.min((page + 1) * pageSize, totalItems);

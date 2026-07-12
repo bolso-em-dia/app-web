@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import Drawer from "./Drawer";
 import Button from "./Button";
 import FilterChip from "./FilterChip";
 import styles from "./FilterToolbar.module.scss";
 import { useI18n } from "../../app/i18n/I18nContext";
+import { useBreakpoint } from "../../lib/useBreakpoint";
 
 type ActiveFilter = {
   key: string;
@@ -22,23 +22,6 @@ type FilterToolbarProps = {
   onClearFilters: () => void;
 };
 
-function useCompactFilterLayout() {
-  const [isCompact, setIsCompact] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth <= 960 : false,
-  );
-
-  useEffect(() => {
-    function handleResize() {
-      setIsCompact(window.innerWidth <= 960);
-    }
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return isCompact;
-}
-
 export default function FilterToolbar({
   primaryContent,
   secondaryContent,
@@ -49,7 +32,7 @@ export default function FilterToolbar({
   onClearFilters,
 }: FilterToolbarProps) {
   const { t } = useI18n();
-  const isCompact = useCompactFilterLayout();
+  const isCompact = useBreakpoint(960);
   const activeCount = activeFilters.length;
   const filtersLabel =
     activeCount > 0
