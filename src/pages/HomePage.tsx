@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getDashboard, type DashboardResponse } from "../app/api/dashboard";
+import { materializeTransactions } from "../app/api/transactions";
 import { useI18n } from "../app/i18n/I18nContext";
 import Card from "../components/ui/Card";
 import MoneyAmount from "../components/ui/MoneyAmount";
@@ -58,6 +59,9 @@ export default function HomePage() {
     setError(null);
 
     try {
+      // Materialize fixed expenses for this month before fetching dashboard
+      await materializeTransactions(referenceMonth, accessToken);
+
       const response = await getDashboard(
         referenceMonth,
         accessToken,

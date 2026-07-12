@@ -99,6 +99,7 @@ const defaultMembersResponse = {
 };
 
 function setupDefaultMocks() {
+  mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
   mockFetchUrl("/api/transactions?", mockJsonResponse(defaultTransactionsResponse));
   mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
   mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));

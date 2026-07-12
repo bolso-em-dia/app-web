@@ -13,6 +13,7 @@ import {
   deleteTransaction,
   listTransactionDescriptionSuggestions,
   listTransactions,
+  materializeTransactions,
   updateTransaction,
   type DeleteScope,
   type OwnershipType,
@@ -220,6 +221,9 @@ export default function TransactionsPage() {
     setError(null);
 
     try {
+      // Materialize fixed expenses for this month before listing
+      await materializeTransactions(filters.referenceMonth, accessToken);
+
       const [
         transactionsResponse,
         accountsResponse,

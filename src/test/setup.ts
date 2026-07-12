@@ -45,6 +45,8 @@ export function mockFetchUrls(config: Record<string, MockResponseConfig>) {
  */
 export function resetFetchMocks() {
   mockResponses.clear();
+  // Manter mock de materialize sempre presente
+  mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
 }
 
 /**
@@ -144,7 +146,7 @@ const defaultImpl = (...args: unknown[]) => {
   const options = args[1] as RequestInit | undefined;
 
   // Buscar match em mockResponses
-  for (const [key, entry] of mockResponses) {
+  for (const entry of mockResponses.values()) {
     const matches =
       entry.pattern instanceof RegExp
         ? entry.pattern.test(url)
@@ -200,5 +202,6 @@ Object.defineProperty(globalThis, "fetch", {
 // Re-aplica implementação default após testes que chamam mockReset
 afterEach(() => {
   vi.mocked(globalThis.fetch).mockImplementation(defaultImpl);
+  // Garantir que o mock de materialize sempre existe
+  mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
 });
-

@@ -107,6 +107,19 @@ export function listTransactions(
   );
 }
 
+export function materializeTransactions(
+  referenceMonth: string,
+  accessToken: string,
+) {
+  return apiRequest<void>(
+    `/api/transactions/materialize?referenceMonth=${referenceMonth}`,
+    {
+      method: "POST",
+      accessToken,
+    },
+  );
+}
+
 export function listTransactionDescriptionSuggestions(
   query: string,
   accessToken: string,
