@@ -42,43 +42,40 @@ export default function CategoryList({
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadCategories = useCallback(
-    async () => {
-      if (!accessToken) {
-        return;
-      }
+  const loadCategories = useCallback(async () => {
+    if (!accessToken) {
+      return;
+    }
 
-      setIsLoading(true);
-      setError(null);
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const [categoriesResponse, optionsResponse] = await Promise.all([
-          listCategories(
-            {
-              page,
-              size: pageSize,
-              search: filters.search,
-              status: filters.status,
-            },
-            accessToken,
-          ),
-          listCategoryOptions(getCurrentReferenceMonth(), accessToken),
-        ]);
+    try {
+      const [categoriesResponse, optionsResponse] = await Promise.all([
+        listCategories(
+          {
+            page,
+            size: pageSize,
+            search: filters.search,
+            status: filters.status,
+          },
+          accessToken,
+        ),
+        listCategoryOptions(getCurrentReferenceMonth(), accessToken),
+      ]);
 
-        setCategories(categoriesResponse.items);
-        setPage(categoriesResponse.page);
-        setPageSize(categoriesResponse.size);
-        setTotalItems(categoriesResponse.totalItems);
-        onOptionsLoaded(optionsResponse);
-      } catch {
-        setError(t("categories.error"));
-      } finally {
-        setIsLoading(false);
-        setHasLoadedOnce(true);
-      }
-    },
-    [accessToken, t, onOptionsLoaded, filters, page, pageSize],
-  );
+      setCategories(categoriesResponse.items);
+      setPage(categoriesResponse.page);
+      setPageSize(categoriesResponse.size);
+      setTotalItems(categoriesResponse.totalItems);
+      onOptionsLoaded(optionsResponse);
+    } catch {
+      setError(t("categories.error"));
+    } finally {
+      setIsLoading(false);
+      setHasLoadedOnce(true);
+    }
+  }, [accessToken, t, onOptionsLoaded, filters, page, pageSize]);
 
   useEffect(() => {
     setPage(0);

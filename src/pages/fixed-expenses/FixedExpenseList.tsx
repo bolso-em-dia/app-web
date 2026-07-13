@@ -57,7 +57,12 @@ export default function FixedExpenseList({
       const [templatesResponse, categoriesResponse, accountsResponse] =
         await Promise.all([
           listFixedExpenseTemplates(
-            { page, size: pageSize, search: filters.search, status: filters.status },
+            {
+              page,
+              size: pageSize,
+              search: filters.search,
+              status: filters.status,
+            },
             accessToken,
           ),
           listCategoryOptions(referenceMonth, accessToken),

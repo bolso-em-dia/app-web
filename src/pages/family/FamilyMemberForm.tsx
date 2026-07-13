@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { AuthUser } from "../../app/api/auth";
 import {
   archiveFamilyMember,
   createFamilyMember,
@@ -28,8 +27,7 @@ import {
 import styles from "./FamilyPage.module.scss";
 
 type FamilyMemberFormValues =
-  | CreateFamilyMemberFormValues
-  | UpdateFamilyMemberFormValues;
+  CreateFamilyMemberFormValues | UpdateFamilyMemberFormValues;
 
 const CREATE_DEFAULT_VALUES: CreateFamilyMemberFormValues = {
   name: "",
@@ -41,12 +39,13 @@ const CREATE_DEFAULT_VALUES: CreateFamilyMemberFormValues = {
 
 type FamilyMemberFormProps = {
   member: FamilyMember | null;
-  user: AuthUser;
   onSuccess: () => void;
   onCancel: () => void;
 };
 
-function buildInitialValues(member: FamilyMember | null): FamilyMemberFormValues {
+function buildInitialValues(
+  member: FamilyMember | null,
+): FamilyMemberFormValues {
   if (!member) {
     return CREATE_DEFAULT_VALUES;
   }
@@ -62,7 +61,6 @@ function buildInitialValues(member: FamilyMember | null): FamilyMemberFormValues
 
 export default function FamilyMemberForm({
   member,
-  user,
   onSuccess,
   onCancel,
 }: FamilyMemberFormProps) {

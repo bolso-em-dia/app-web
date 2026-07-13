@@ -16,7 +16,11 @@ import AccountCard from "./AccountCard";
 import styles from "./AccountsPage.module.scss";
 
 interface AccountListProps {
-  filters: { search: string; status: "ALL" | "ACTIVE" | "ARCHIVED"; type: "" | AccountType };
+  filters: {
+    search: string;
+    status: "ALL" | "ACTIVE" | "ARCHIVED";
+    type: "" | AccountType;
+  };
   selectedId: string | null;
   onSelect: (id: string, account: Account) => void;
   refreshKey: number;

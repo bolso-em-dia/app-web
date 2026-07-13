@@ -32,7 +32,8 @@ export default function FixedExpensesPage() {
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [showDrawer, setShowDrawer] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<FixedExpenseTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<FixedExpenseTemplate | null>(null);
 
   function handleSelect(id: string, template: FixedExpenseTemplate) {
     setSelectedId(id);
@@ -132,7 +133,10 @@ export default function FixedExpensesPage() {
                   <Select
                     id="fixed-expense-status-filter"
                     onChange={(event) => {
-                      setFilters((f) => ({ ...f, status: event.target.value as StatusFilter }));
+                      setFilters((f) => ({
+                        ...f,
+                        status: event.target.value as StatusFilter,
+                      }));
                     }}
                     value={filters.status}
                   >

@@ -122,7 +122,10 @@ export default function FamilyPage() {
                   <Select
                     id="family-status-filter"
                     onChange={(event) => {
-                      setFilters((c) => ({ ...c, status: event.target.value as StatusFilter }));
+                      setFilters((c) => ({
+                        ...c,
+                        status: event.target.value as StatusFilter,
+                      }));
                     }}
                     value={filters.status}
                   >
