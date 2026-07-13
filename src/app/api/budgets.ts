@@ -1,5 +1,4 @@
 import { apiRequest, type PageResponse } from "./client";
-import type { CategoryOption } from "./categories";
 import type { TransactionType } from "./transactions";
 
 export type BudgetType = "GLOBAL" | "ALLOWANCE";
@@ -48,12 +47,6 @@ export type Budget = {
   active: boolean;
   categories: BudgetCategory[];
   transactions: BudgetTransaction[];
-};
-
-type BudgetCategoryBreakdown = {
-  categoryId: string;
-  categoryName: string;
-  amount: number;
 };
 
 export type BudgetPayload = {
@@ -138,5 +131,3 @@ export function archiveBudget(
     },
   );
 }
-
-type BudgetCategoryOption = CategoryOption;
