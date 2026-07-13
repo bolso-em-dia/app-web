@@ -1,72 +1,48 @@
+import type { Ref } from "react";
 import { useI18n } from "../../app/i18n/I18nContext";
 import Button from "./Button";
 import Card from "./Card";
-import Select from "./Select";
 import styles from "./PaginationBar.module.scss";
 
 type PaginationBarProps = {
-  start: number;
-  end: number;
+  loaded: number;
   total: number;
-  pageSize: number;
-  pageSizeOptions?: number[];
-  hasPrevious: boolean;
-  hasNext: boolean;
-  onPrevious: () => void;
-  onNext: () => void;
-  onPageSizeChange: (size: number) => void;
-  showPageIndicator?: boolean;
-  page?: number;
-  totalPages?: number;
+  isLoadingMore: boolean;
+  hasNextPage: boolean;
+  error?: string | null;
+  onRetry?: () => void;
+  sentinelRef?: Ref<HTMLDivElement>;
 };
 
-export default function PaginationBar({
-  start,
-  end,
-  total,
-  pageSize,
-  pageSizeOptions = [12, 24, 48],
-  hasPrevious,
-  hasNext,
-  onPrevious,
-  onNext,
-  onPageSizeChange,
-  showPageIndicator = false,
-  page,
-  totalPages,
-}: PaginationBarProps) {
+export default function PaginationBar({ loaded, total, isLoadingMore, hasNextPage, error, onRetry, sentinelRef }: PaginationBarProps) {
   const { t } = useI18n();
+
+  let statusLabel = t("common.allItemsLoaded");
+
+  if (error) {
+    statusLabel = error;
+  } else if (isLoadingMore) {
+    statusLabel = t("common.loadingMore");
+  } else if (hasNextPage) {
+    statusLabel = t("common.scrollToLoadMore");
+  }
 
   return (
     <Card className={styles.footerPanel}>
       <div className={styles.footer}>
-        <p className={styles.rangeLabel}>{t("common.range", { start, end, total })}</p>
+        <p className={styles.rangeLabel}>{t("common.loadedItems", { loaded, total })}</p>
 
-        <div className={styles.paginationControls}>
-          <label className={styles.rowsControl}>
-            <span>{t("common.rows")}</span>
-            <Select onChange={(e) => onPageSizeChange(Number(e.target.value))} value={String(pageSize)}>
-              {pageSizeOptions.map((size) => (
-                <option key={size} value={String(size)}>
-                  {size}
-                </option>
-              ))}
-            </Select>
-          </label>
-
-          <div className={styles.paginationButtons}>
-            <Button disabled={!hasPrevious} onClick={onPrevious} type="button" variant="subtle">
-              {t("common.previous")}
+        <div className={styles.statusArea}>
+          <span className={styles.statusLabel}>{statusLabel}</span>
+          {error && onRetry ? (
+            <Button onClick={onRetry} type="button" variant="subtle">
+              {t("common.retry")}
             </Button>
-            {showPageIndicator && page != null && totalPages != null ? (
-              <span className={styles.pageIndicator}>{t("common.pageOf", { page, total: totalPages })}</span>
-            ) : null}
-            <Button disabled={!hasNext} onClick={onNext} type="button" variant="subtle">
-              {t("common.next")}
-            </Button>
-          </div>
+          ) : null}
         </div>
       </div>
+
+      <div aria-hidden="true" className={styles.sentinel} ref={sentinelRef} />
     </Card>
   );
 }

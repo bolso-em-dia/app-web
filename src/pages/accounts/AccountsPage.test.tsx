@@ -47,7 +47,7 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
+    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
     const drawer = screen.getByRole("dialog");
@@ -130,7 +130,7 @@ describe("AccountsPage", () => {
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Main checking/ }));
 
     const archiveButton = await screen.findByRole("button", {
       name: "Arquivar",
@@ -241,7 +241,7 @@ describe("AccountsPage", () => {
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Main checking/ }));
 
     const archiveButton = await screen.findByRole("button", {
       name: "Arquivar",
@@ -320,7 +320,7 @@ describe("AccountsPage", () => {
       target: { value: "CHECKING" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Main checking/ }));
     fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
 
     await waitFor(() => {

@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { listCategories, listCategoryOptions, type Category, type CategoryOption } from "../../app/api/categories";
 import { useAuth } from "../../app/auth/useAuth";
+import { useI18n } from "../../app/i18n/I18nContext";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
-import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { DEFAULT_PAGE_SIZE, type StatusFilter } from "../../lib/constants";
-import { usePagination } from "../../lib/usePagination";
-import { useI18n } from "../../app/i18n/I18nContext";
+import { getCurrentReferenceMonth } from "../../lib/formatters/date";
+import { useInfinitePageList } from "../../lib/useInfinitePageList";
 import CategoryCard from "./CategoryCard";
 import styles from "./CategoriesPage.module.scss";
 
@@ -22,77 +22,56 @@ interface CategoryListProps {
 export default function CategoryList({ filters, selectedId, onSelect, refreshKey, onOptionsLoaded }: CategoryListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
+  const [optionsError, setOptionsError] = useState<string | null>(null);
+  const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadCategories = useCallback(async () => {
+  const loadOptions = useCallback(async () => {
     if (!accessToken) {
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
+    setOptionsError(null);
 
     try {
-      const [categoriesResponse, optionsResponse] = await Promise.all([
-        listCategories(
-          {
-            page,
-            size: pageSize,
-            search: filters.search,
-            status: filters.status,
-          },
-          accessToken,
-        ),
-        listCategoryOptions(getCurrentReferenceMonth(), accessToken),
-      ]);
-
-      setCategories(categoriesResponse.items);
-      setPage(categoriesResponse.page);
-      setPageSize(categoriesResponse.size);
-      setTotalItems(categoriesResponse.totalItems);
+      const optionsResponse = await listCategoryOptions(getCurrentReferenceMonth(), accessToken);
       onOptionsLoaded(optionsResponse);
     } catch {
-      setError(t("categories.error"));
-    } finally {
-      setIsLoading(false);
-      setHasLoadedOnce(true);
+      setOptionsError(t("categories.error"));
     }
-  }, [accessToken, t, onOptionsLoaded, filters, page, pageSize]);
+  }, [accessToken, onOptionsLoaded, t]);
 
   useEffect(() => {
-    setPage(0);
-    void loadCategories();
-  }, [filters.search, filters.status, refreshKey]);
+    void loadOptions();
+  }, [loadOptions, refreshKey]);
 
-  useEffect(() => {
-    void loadCategories();
-  }, [page, pageSize]);
+  const {
+    items: categories,
+    totalItems,
+    isInitialLoading,
+    hasNextPage,
+    isLoadingMore,
+    error,
+    retry,
+    sentinelRef,
+  } = useInfinitePageList<Category>({
+    enabled: Boolean(accessToken),
+    queryKey,
+    initialPageSize: DEFAULT_PAGE_SIZE,
+    loadPage: (page, size) =>
+      listCategories(
+        {
+          page,
+          size,
+          search: filters.search,
+          status: filters.status,
+        },
+        accessToken!,
+      ),
+  });
 
-  function handlePreviousPage() {
-    setPage((p) => Math.max(0, p - 1));
-  }
+  const listError = optionsError ?? (error ? t("categories.error") : null);
 
-  function handleNextPage() {
-    setPage((p) => p + 1);
-  }
-
-  function handlePageSizeChange(s: number) {
-    setPageSize(s);
-    setPage(0);
-  }
-
-  const showInitialLoading = isLoading && !hasLoadedOnce;
-  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
-  const pagination = usePagination(page, pageSize, totalItems, totalPages);
-
-  if (showInitialLoading) {
+  if (isInitialLoading) {
     return (
       <Card className={styles.loadingCard}>
         <Spinner label={t("categories.loading")} />
@@ -102,7 +81,7 @@ export default function CategoryList({ filters, selectedId, onSelect, refreshKey
 
   return (
     <>
-      {categories.length === 0 ? (
+      {categories.length === 0 && !listError ? (
         <section className={styles.categoryGrid}>
           <Card className={styles.emptyState}>
             <p>{t("categories.empty")}</p>
@@ -121,21 +100,16 @@ export default function CategoryList({ filters, selectedId, onSelect, refreshKey
         </section>
       )}
 
-      {error ? <p>{error}</p> : null}
+      {listError ? <p>{listError}</p> : null}
 
       <PaginationBar
-        start={pagination.rangeStart}
-        end={pagination.rangeEnd}
+        loaded={categories.length}
         total={totalItems}
-        pageSize={pageSize}
-        hasPrevious={pagination.hasPreviousPage}
-        hasNext={pagination.hasNextPage}
-        onPrevious={handlePreviousPage}
-        onNext={handleNextPage}
-        onPageSizeChange={handlePageSizeChange}
-        showPageIndicator
-        page={totalPages === 0 ? 0 : page + 1}
-        totalPages={totalPages}
+        isLoadingMore={isLoadingMore}
+        hasNextPage={hasNextPage}
+        error={listError}
+        onRetry={retry}
+        sentinelRef={sentinelRef}
       />
     </>
   );

@@ -68,7 +68,7 @@ describe("CategoriesPage", () => {
     );
 
     expect(await screen.findByText("Groceries")).toBeInTheDocument();
-    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
+    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova categoria" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();

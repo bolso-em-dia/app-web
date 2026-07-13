@@ -3,11 +3,7 @@
   display: grid;
   place-items: center;
   padding: var(--space-8);
-  background: linear-gradient(
-    180deg,
-    var(--color-surface) 0%,
-    var(--color-surface-muted) 100%
-  );
+  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-muted) 100%);
 }
 
 .card {
