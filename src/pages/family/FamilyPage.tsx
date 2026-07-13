@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import type { FamilyMember } from "../../app/api/family";
-import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
@@ -15,11 +14,12 @@ import FamilyMemberList from "./FamilyMemberList";
 import FamilyMemberForm from "./FamilyMemberForm";
 import styles from "./FamilyPage.module.scss";
 
+type FamilyFilters = { search: string; status: StatusFilter };
+const DEFAULT_FILTERS: FamilyFilters = { search: "", status: "ACTIVE" };
+
 export default function FamilyPage() {
-  const { user } = useAuth();
   const { t } = useI18n();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ACTIVE");
+  const [filters, setFilters] = useState<FamilyFilters>(DEFAULT_FILTERS);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
@@ -45,47 +45,43 @@ export default function FamilyPage() {
     setRefreshKey((k) => k + 1);
   }
 
-  const handleSelect = useCallback(
-    (id: string, member: FamilyMember) => {
-      setSelectedMember(member);
-      setIsDrawerOpen(true);
-    },
-    [],
-  );
+  const handleSelect = useCallback((id: string, member: FamilyMember) => {
+    setSelectedMember(member);
+    setIsDrawerOpen(true);
+  }, []);
 
   const activeFilters = useMemo(
     () => [
-      ...(search
+      ...(filters.search
         ? [
             {
               key: "search",
-              label: `${t("common.search")}: ${search}`,
+              label: `${t("common.search")}: ${filters.search}`,
               onRemove: () => {
-                setSearch("");
+                setFilters((c) => ({ ...c, search: "" }));
               },
             },
           ]
         : []),
-      ...(statusFilter !== "ACTIVE"
+      ...(filters.status !== "ACTIVE"
         ? [
             {
               key: "status",
               label: `${t("common.status")}: ${t(
-                statusFilter === "ALL" ? "common.all" : "common.archived",
+                filters.status === "ALL" ? "common.all" : "common.archived",
               )}`,
               onRemove: () => {
-                setStatusFilter("ACTIVE");
+                setFilters((c) => ({ ...c, status: "ACTIVE" }));
               },
             },
           ]
         : []),
     ],
-    [search, statusFilter, t],
+    [filters.search, filters.status, t],
   );
 
   function clearFilters() {
-    setSearch("");
-    setStatusFilter("ACTIVE");
+    setFilters(DEFAULT_FILTERS);
   }
 
   return (
@@ -110,10 +106,10 @@ export default function FamilyPage() {
                 <Input
                   id="family-search"
                   onChange={(event) => {
-                    setSearch(event.target.value);
+                    setFilters((c) => ({ ...c, search: event.target.value }));
                   }}
                   placeholder={t("family.searchPlaceholder")}
-                  value={search}
+                  value={filters.search}
                 />
               </Field>
             }
@@ -126,9 +122,9 @@ export default function FamilyPage() {
                   <Select
                     id="family-status-filter"
                     onChange={(event) => {
-                      setStatusFilter(event.target.value as StatusFilter);
+                      setFilters((c) => ({ ...c, status: event.target.value as StatusFilter }));
                     }}
-                    value={statusFilter}
+                    value={filters.status}
                   >
                     <option value="ALL">{t("common.all")}</option>
                     <option value="ACTIVE">{t("common.active")}</option>
@@ -141,8 +137,7 @@ export default function FamilyPage() {
         </Card>
 
         <FamilyMemberList
-          search={search}
-          statusFilter={statusFilter}
+          filters={filters}
           selectedId={selectedMember?.id ?? null}
           onSelect={handleSelect}
           refreshKey={refreshKey}
@@ -156,13 +151,10 @@ export default function FamilyPage() {
                 : t("family.editDescription")
             }
             onClose={handleCloseDrawer}
-            title={
-              isCreating ? t("family.newTitle") : t("family.detailsTitle")
-            }
+            title={isCreating ? t("family.newTitle") : t("family.detailsTitle")}
           >
             <FamilyMemberForm
               member={selectedMember}
-              user={user!}
               onSuccess={handleSuccess}
               onCancel={handleCloseDrawer}
             />

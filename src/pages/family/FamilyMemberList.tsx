@@ -12,16 +12,14 @@ import FamilyMemberCard from "./FamilyMemberCard";
 import styles from "./FamilyPage.module.scss";
 
 interface FamilyMemberListProps {
-  search: string;
-  statusFilter: StatusFilter;
+  filters: { search: string; status: StatusFilter };
   selectedId: string | null;
   onSelect: (id: string, member: FamilyMember) => void;
   refreshKey: number;
 }
 
 export default function FamilyMemberList({
-  search,
-  statusFilter,
+  filters,
   selectedId,
   onSelect,
   refreshKey,
@@ -36,7 +34,12 @@ export default function FamilyMemberList({
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   const loadMembers = useCallback(
-    async (pageNum: number, size: number, query: string, status: StatusFilter) => {
+    async (
+      pageNum: number,
+      size: number,
+      query: string,
+      status: StatusFilter,
+    ) => {
       if (!accessToken) {
         return;
       }
@@ -64,12 +67,12 @@ export default function FamilyMemberList({
   );
 
   useEffect(() => {
-    void loadMembers(page, pageSize, search, statusFilter);
-  }, [loadMembers, page, pageSize, search, statusFilter, refreshKey]);
+    void loadMembers(page, pageSize, filters.search, filters.status);
+  }, [loadMembers, page, pageSize, filters.search, filters.status, refreshKey]);
 
   useEffect(() => {
     setPage(0);
-  }, [search, statusFilter]);
+  }, [filters.search, filters.status]);
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
