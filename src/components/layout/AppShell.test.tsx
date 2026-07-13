@@ -43,8 +43,9 @@ describe("AppShell", () => {
     expect(within(navigation).getByRole("link", { name: "Transações" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Família" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "Categorias" })).toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: "Contas" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Contas/Cartões" })).toBeInTheDocument();
     expect(container.querySelectorAll("nav svg").length).toBe(7);
+    expect(container.querySelector('[class*="navSectionSpacer"]')).toBeNull();
     expect(screen.queryByText("admin@bolso-em-dia.local")).not.toBeInTheDocument();
   });
 
@@ -88,5 +89,10 @@ describe("AppShell", () => {
     expect(within(dialog).getByText("Admin User")).toBeInTheDocument();
     expect(within(dialog).getByText("Administrador")).toBeInTheDocument();
     expect(within(dialog).queryByText("admin@bolso-em-dia.local")).not.toBeInTheDocument();
+    expect(document.body.style.overflow).toBe("hidden");
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Fechar painel" }));
+
+    expect(document.body.style.overflow).toBe("");
   });
 });

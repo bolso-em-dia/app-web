@@ -173,11 +173,7 @@ export default function AccountsPage() {
         <AccountList filters={filters} selectedId={selectedId} onSelect={handleSelect} refreshKey={refreshKey} />
 
         {showDrawer ? (
-          <Drawer
-            description={selectedId === null ? t("accounts.newDescription") : t("accounts.editDescription")}
-            onClose={handleCloseDrawer}
-            title={selectedId === null ? t("accounts.newTitle") : t("accounts.detailsTitle")}
-          >
+          <Drawer onClose={handleCloseDrawer} title={selectedId === null ? t("accounts.newTitle") : t("accounts.detailsTitle")}>
             <div className={styles.drawerStack}>
               <AccountForm
                 account={selectedAccount}

@@ -149,11 +149,7 @@ export default function FixedExpensesPage() {
         />
 
         {isDrawerOpen ? (
-          <Drawer
-            description={isCreating ? t("fixedTransactions.newDescription") : t("fixedTransactions.editDescription")}
-            onClose={handleCloseDrawer}
-            title={isCreating ? t("fixedTransactions.newTitle") : t("fixedTransactions.detailsTitle")}
-          >
+          <Drawer onClose={handleCloseDrawer} title={isCreating ? t("fixedTransactions.newTitle") : t("fixedTransactions.detailsTitle")}>
             <FixedExpenseForm
               template={selectedTemplate}
               user={user!}

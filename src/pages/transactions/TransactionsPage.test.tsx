@@ -143,7 +143,7 @@ describe("TransactionsPage", () => {
     expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
     expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.change(within(drawer).getByLabelText("Descrição"), {
@@ -168,6 +168,32 @@ describe("TransactionsPage", () => {
     await waitFor(() => {
       expect(screen.getByText("O membro é obrigatório para transações individuais.")).toBeInTheDocument();
     });
+  });
+
+  it("renders the category as a badge below the title and keeps account/date in the meta line", async () => {
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: true,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
+
+    expect(within(transactionButton).getAllByText("Groceries")).toHaveLength(2);
+    expect(within(transactionButton).getByText(/Main checking/)).toBeInTheDocument();
+    expect(within(transactionButton).queryByText(/Groceries · Main checking/)).not.toBeInTheDocument();
   });
 
   it("shows description suggestions and preserves non-varying fields on save and create new", async () => {
@@ -265,7 +291,7 @@ describe("TransactionsPage", () => {
 
     expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.click(within(drawer).getByRole("radio", { name: "Receita" }));
@@ -379,7 +405,7 @@ describe("TransactionsPage", () => {
 
     expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.click(within(drawer).getByRole("radio", { name: "Receita" }));
@@ -475,7 +501,7 @@ describe("TransactionsPage", () => {
 
     expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.change(within(drawer).getByLabelText("Descrição"), {
@@ -546,11 +572,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    const transactionLabel = await screen.findByText("Groceries");
-    const transactionButton = transactionLabel.closest("button");
-    if (!transactionButton) {
-      throw new Error("Transaction button not found.");
-    }
+    const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
 
     fireEvent.click(transactionButton);
 
@@ -601,11 +623,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    const transactionLabel = await screen.findByText("Groceries");
-    const transactionButton = transactionLabel.closest("button");
-    if (!transactionButton) {
-      throw new Error("Transaction button not found.");
-    }
+    const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
 
     fireEvent.click(transactionButton);
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
@@ -681,11 +699,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    const transactionLabel = await screen.findByText("Groceries");
-    const transactionButton = transactionLabel.closest("button");
-    if (!transactionButton) {
-      throw new Error("Transaction button not found.");
-    }
+    const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
 
     fireEvent.click(transactionButton);
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
@@ -1040,7 +1054,7 @@ describe("TransactionsPage", () => {
       expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${previousReferenceMonth}`))).toBe(true);
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
 
     const drawer = screen.getByRole("dialog");
     const dateInput = within(drawer).getByLabelText("Data da transação");
@@ -1178,11 +1192,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    const transactionLabel = await screen.findByText("Groceries");
-    const transactionButton = transactionLabel.closest("button");
-    if (!transactionButton) {
-      throw new Error("Transaction button not found.");
-    }
+    const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
 
     fireEvent.click(transactionButton);
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
@@ -1300,7 +1310,7 @@ describe("TransactionsPage", () => {
     );
 
     expect(await screen.findByText("Amazon")).toBeInTheDocument();
-    expect(screen.getByText(/cot\. 5\.10/)).toBeInTheDocument();
+    expect(screen.getByText(/cot\. R\$ 5,10/)).toBeInTheDocument();
   });
 
   it("loads USD originalAmount when editing a foreign currency transaction", async () => {

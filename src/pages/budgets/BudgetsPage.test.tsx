@@ -108,7 +108,7 @@ describe("BudgetsPage", () => {
     expect(await screen.findByText("Household")).toBeInTheDocument();
     expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Novo orçamento" }));
+    fireEvent.click(screen.getByRole("button", { name: "Novo" }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.change(within(drawer).getByLabelText("Nome"), {
@@ -219,9 +219,9 @@ describe("BudgetsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByRole("button", { name: "Novo orçamento" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Novo" })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Novo orçamento" }));
+    fireEvent.click(screen.getByRole("button", { name: "Novo" }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.change(within(drawer).getByLabelText("Nome"), {

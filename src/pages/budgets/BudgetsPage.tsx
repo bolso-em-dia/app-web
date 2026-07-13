@@ -8,7 +8,7 @@ import FilterToolbar from "../../components/ui/FilterToolbar";
 import FilterMonthInput from "../../components/ui/filterFields/FilterMonthInput";
 import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInput";
 import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
-import { formatReferenceMonth, getCurrentReferenceMonth } from "../../lib/formatters/date";
+import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { Budget, BudgetType } from "../../app/api/budgets";
 import type { CategoryOption } from "../../app/api/categories";
@@ -203,17 +203,7 @@ export default function BudgetsPage() {
         />
 
         {isDrawerOpen ? (
-          <Drawer
-            description={
-              isCreating
-                ? t("budgets.newDescription")
-                : t("budgets.editDescription", {
-                    month: formatReferenceMonth(filters.referenceMonth),
-                  })
-            }
-            onClose={handleCloseDrawer}
-            title={isCreating ? t("budgets.newTitle") : t("budgets.detailsTitle")}
-          >
+          <Drawer onClose={handleCloseDrawer} title={isCreating ? t("budgets.newTitle") : t("budgets.detailsTitle")}>
             <div className={styles.drawerStack}>
               <BudgetForm
                 budget={selectedBudget}

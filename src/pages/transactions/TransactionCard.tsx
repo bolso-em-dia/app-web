@@ -25,25 +25,15 @@ export default function TransactionCard({ transaction, categoryOption, onSelect 
       <div className={styles.transactionTop}>
         <div className={styles.transactionMain}>
           <div className={styles.transactionTitleRow}>
-            {CategoryIcon ? (
-              <span aria-hidden="true" className={styles.categoryLead} style={categoryColor ? { color: categoryColor } : undefined}>
-                <CategoryIcon className={styles.categoryIcon} />
-              </span>
-            ) : categoryColor ? (
-              <span aria-hidden="true" className={styles.categoryLead} style={{ color: categoryColor }}>
-                <span className={styles.categoryDot} />
-              </span>
-            ) : null}
             <div className={styles.transactionLine}>
               <strong className={styles.transactionDescription}>{transaction.description}</strong>
-              <span className={styles.transactionMetaSeparator}>·</span>
               <span className={styles.transactionMeta}>
-                {transaction.categoryName} · {transaction.accountName} · {formatDay(transaction.transactionDate)}
+                {transaction.accountName} · {formatDay(transaction.transactionDate)}
                 {transaction.currency === "USD" && transaction.exchangeRate != null
                   ? ` · ${formatCurrency(
                       transaction.type === "EXPENSE" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
                       "USD",
-                    )} (cot. ${transaction.exchangeRate.toFixed(2)})`
+                    )} (cot. ${formatCurrency(transaction.exchangeRate)})`
                   : null}
               </span>
             </div>
@@ -55,6 +45,18 @@ export default function TransactionCard({ transaction, categoryOption, onSelect 
       </div>
 
       <div className={styles.badgeRow}>
+        <span className={styles.categoryBadge}>
+          {CategoryIcon ? (
+            <span aria-hidden="true" className={styles.categoryLead} style={categoryColor ? { color: categoryColor } : undefined}>
+              <CategoryIcon className={styles.categoryIcon} />
+            </span>
+          ) : categoryColor ? (
+            <span aria-hidden="true" className={styles.categoryLead} style={{ color: categoryColor }}>
+              <span className={styles.categoryDot} />
+            </span>
+          ) : null}
+          <span className={styles.categoryBadgeText}>{transaction.categoryName}</span>
+        </span>
         <span className={`${styles.badge} ${transaction.type === "INCOME" ? styles.badgeIncome : styles.badgeExpense}`}>
           {t(`transactionTypes.${transaction.type}` as const)}
         </span>

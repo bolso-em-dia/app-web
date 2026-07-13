@@ -56,7 +56,7 @@ export default function FixedExpenseCard({ template, categoryOption, onSelect }:
                     ? ` · ${formatCurrency(
                         template.type === "EXPENSE" ? -Math.abs(template.amount) : Math.abs(template.amount),
                         "USD",
-                      )} (cot. ${template.exchangeRate.toFixed(2)})`
+                      )} (cot. ${formatCurrency(template.exchangeRate)})`
                     : null}
                 </p>
               </div>

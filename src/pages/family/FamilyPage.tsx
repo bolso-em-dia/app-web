@@ -129,11 +129,7 @@ export default function FamilyPage() {
         <FamilyMemberList filters={filters} selectedId={selectedMember?.id ?? null} onSelect={handleSelect} refreshKey={refreshKey} />
 
         {isDrawerOpen ? (
-          <Drawer
-            description={isCreating ? t("family.newDescription") : t("family.editDescription")}
-            onClose={handleCloseDrawer}
-            title={isCreating ? t("family.newTitle") : t("family.detailsTitle")}
-          >
+          <Drawer onClose={handleCloseDrawer} title={isCreating ? t("family.newTitle") : t("family.detailsTitle")}>
             <FamilyMemberForm member={selectedMember} onSuccess={handleSuccess} onCancel={handleCloseDrawer} />
           </Drawer>
         ) : null}

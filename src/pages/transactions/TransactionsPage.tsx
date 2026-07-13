@@ -7,7 +7,7 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
 import { useI18n } from "../../app/i18n/I18nContext";
-import { formatReferenceMonth, getCurrentReferenceMonth } from "../../lib/formatters/date";
+import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { useAccountOptions } from "../../lib/options/useAccountOptions";
 import { useCategoryOptions } from "../../lib/options/useCategoryOptions";
 import { useFamilyMemberOptions } from "../../lib/options/useFamilyMemberOptions";
@@ -86,17 +86,7 @@ export default function TransactionsPage() {
         />
 
         {drawerOpen ? (
-          <Drawer
-            description={
-              isCreating
-                ? t("transactions.newDescription")
-                : t("transactions.editDescription", {
-                    month: formatReferenceMonth(filters.referenceMonth),
-                  })
-            }
-            onClose={handleCancelForm}
-            title={isCreating ? t("transactions.newTitle") : t("transactions.detailsTitle")}
-          >
+          <Drawer onClose={handleCancelForm} title={isCreating ? t("transactions.newTitle") : t("transactions.detailsTitle")}>
             <div className={styles.drawerStack}>
               {isReferenceDataLoading ? (
                 <Spinner label={t("transactions.loading")} />

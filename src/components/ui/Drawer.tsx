@@ -56,6 +56,16 @@ export default function Drawer({ title, description, onClose, children }: Drawer
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   return (
     <>
       <button aria-label={t("common.closeDrawer")} className={styles.backdrop} onClick={onClose} type="button" />

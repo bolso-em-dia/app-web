@@ -144,11 +144,7 @@ export default function CategoriesPage() {
         />
 
         {isDrawerOpen ? (
-          <Drawer
-            description={isCreating ? t("categories.newDescription") : t("categories.editDescription")}
-            onClose={handleCloseDrawer}
-            title={isCreating ? t("categories.newTitle") : t("categories.detailsTitle")}
-          >
+          <Drawer onClose={handleCloseDrawer} title={isCreating ? t("categories.newTitle") : t("categories.detailsTitle")}>
             <CategoryForm
               category={selectedCategory}
               categoryOptions={categoryOptions}

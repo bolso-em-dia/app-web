@@ -86,7 +86,7 @@ describe("FixedExpensesPage", () => {
     expect(screen.getByText("Housing · Main checking · Vence dia 05")).toBeInTheDocument();
     expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova transação fixa" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Nome"), {
       target: { value: "Water bill" },
