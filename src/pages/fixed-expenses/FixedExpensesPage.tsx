@@ -12,53 +12,44 @@ import FilterToolbar from "../../components/ui/FilterToolbar";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
-import type { FixedExpenseFormValues } from "../../lib/validation/fixedExpenseSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { StatusFilter } from "../../lib/constants";
-import type { TransactionType } from "../../app/api/transactions";
 import FixedExpenseList from "./FixedExpenseList";
 import FixedExpenseForm from "./FixedExpenseForm";
 import styles from "./FixedExpensesPage.module.scss";
+
+type FixedExpenseFilters = { search: string; status: StatusFilter };
+const DEFAULT_FILTERS: FixedExpenseFilters = { search: "", status: "ACTIVE" };
 
 export default function FixedExpensesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const referenceMonth = getCurrentReferenceMonth();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ACTIVE");
-  const [typeFilter] = useState<TransactionType | "ALL">("ALL");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [initialValues, setInitialValues] =
-    useState<FixedExpenseFormValues | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [filters, setFilters] = useState<FixedExpenseFilters>(DEFAULT_FILTERS);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<FixedExpenseTemplate | null>(null);
 
   function handleSelect(id: string, template: FixedExpenseTemplate) {
-    setIsCreating(false);
     setSelectedId(id);
-    setInitialValues({
-      name: template.name,
-      type: template.type,
-      amount: template.amount,
-      categoryId: template.categoryId,
-      accountId: template.accountId,
-      dueDay: template.dueDay,
-    });
+    setSelectedTemplate(template);
+    setShowDrawer(true);
   }
 
   function handleStartCreate() {
-    setIsCreating(true);
     setSelectedId(null);
-    setInitialValues(null);
+    setSelectedTemplate(null);
+    setShowDrawer(true);
   }
 
   function handleCloseDrawer() {
-    setIsCreating(false);
     setSelectedId(null);
-    setInitialValues(null);
+    setSelectedTemplate(null);
+    setShowDrawer(false);
   }
 
   function handleSuccess() {
@@ -68,40 +59,40 @@ export default function FixedExpensesPage() {
 
   const activeFilters = useMemo(
     () => [
-      ...(search
+      ...(filters.search
         ? [
             {
               key: "search",
-              label: `${t("common.search")}: ${search}`,
+              label: `${t("common.search")}: ${filters.search}`,
               onRemove: () => {
-                setSearch("");
+                setFilters((f) => ({ ...f, search: "" }));
               },
             },
           ]
         : []),
-      ...(statusFilter !== "ACTIVE"
+      ...(filters.status !== "ACTIVE"
         ? [
             {
               key: "status",
               label: `${t("common.status")}: ${t(
-                statusFilter === "ALL" ? "common.all" : "common.archived",
+                filters.status === "ALL" ? "common.all" : "common.archived",
               )}`,
               onRemove: () => {
-                setStatusFilter("ACTIVE");
+                setFilters((f) => ({ ...f, status: "ACTIVE" }));
               },
             },
           ]
         : []),
     ],
-    [search, statusFilter, t],
+    [filters, t],
   );
 
   function clearFilters() {
-    setSearch("");
-    setStatusFilter("ACTIVE");
+    setFilters(DEFAULT_FILTERS);
   }
 
-  const drawerOpen = isCreating || selectedId !== null;
+  const isCreating = selectedId === null;
+  const isDrawerOpen = showDrawer;
 
   return (
     <AppShell
@@ -125,10 +116,10 @@ export default function FixedExpensesPage() {
                 <Input
                   id="fixed-expense-search"
                   onChange={(event) => {
-                    setSearch(event.target.value);
+                    setFilters((f) => ({ ...f, search: event.target.value }));
                   }}
                   placeholder={t("fixedTransactions.searchPlaceholder")}
-                  value={search}
+                  value={filters.search}
                 />
               </Field>
             }
@@ -141,9 +132,9 @@ export default function FixedExpensesPage() {
                   <Select
                     id="fixed-expense-status-filter"
                     onChange={(event) => {
-                      setStatusFilter(event.target.value as StatusFilter);
+                      setFilters((f) => ({ ...f, status: event.target.value as StatusFilter }));
                     }}
-                    value={statusFilter}
+                    value={filters.status}
                   >
                     <option value="ALL">{t("common.all")}</option>
                     <option value="ACTIVE">{t("common.active")}</option>
@@ -156,9 +147,7 @@ export default function FixedExpensesPage() {
         </Card>
 
         <FixedExpenseList
-          search={search}
-          statusFilter={statusFilter}
-          typeFilter={typeFilter}
+          filters={filters}
           referenceMonth={referenceMonth}
           selectedId={selectedId}
           onSelect={handleSelect}
@@ -167,7 +156,7 @@ export default function FixedExpensesPage() {
           onCategoryOptionsLoaded={setCategoryOptions}
         />
 
-        {drawerOpen ? (
+        {isDrawerOpen ? (
           <Drawer
             description={
               isCreating
@@ -182,8 +171,7 @@ export default function FixedExpensesPage() {
             }
           >
             <FixedExpenseForm
-              initialValues={initialValues}
-              editingId={selectedId}
+              template={selectedTemplate}
               user={user!}
               accountOptions={accountOptions}
               categoryOptions={categoryOptions}

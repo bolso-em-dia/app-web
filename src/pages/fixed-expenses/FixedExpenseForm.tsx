@@ -10,6 +10,7 @@ import {
   deleteFixedExpenseTemplate,
   updateFixedExpenseTemplate,
   type FixedExpenseTemplatePayload,
+  type FixedExpenseTemplate,
 } from "../../app/api/fixedExpenses";
 import { useAuth } from "../../app/auth/useAuth";
 import {
@@ -27,8 +28,7 @@ import Select from "../../components/ui/Select";
 import styles from "./FixedExpensesPage.module.scss";
 
 type FixedExpenseFormProps = {
-  initialValues: FixedExpenseFormValues | null;
-  editingId: string | null;
+  template: FixedExpenseTemplate | null;
   user: AuthUser;
   accountOptions: AccountOption[];
   categoryOptions: CategoryOption[];
@@ -61,8 +61,7 @@ function mapFormValuesToPayload(
 }
 
 export default function FixedExpenseForm({
-  initialValues,
-  editingId,
+  template,
   user,
   accountOptions,
   categoryOptions,
@@ -76,22 +75,34 @@ export default function FixedExpenseForm({
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isCreating = editingId === null;
+  const isCreating = template === null;
+  const editingId = template?.id ?? null;
+
+  const initialValues = useMemo(() => {
+    const defaults = createDefaultValues(user.preferences.defaultAccountId ?? "");
+    if (!template) {
+      return defaults;
+    }
+    return {
+      name: template.name,
+      type: template.type,
+      amount: template.amount,
+      categoryId: template.categoryId,
+      accountId: template.accountId,
+      dueDay: template.dueDay,
+    };
+  }, [template, user.preferences.defaultAccountId]);
 
   const fixedExpenseSchema = useMemo(() => createFixedExpenseSchema(t), [t]);
 
   const form = useForm<FixedExpenseFormValues>({
     resolver: zodResolver(fixedExpenseSchema),
-    defaultValues: createDefaultValues(user.preferences.defaultAccountId ?? ""),
+    defaultValues: initialValues,
   });
 
   useEffect(() => {
-    if (initialValues) {
-      form.reset(initialValues);
-    } else {
-      form.reset(createDefaultValues(user.preferences.defaultAccountId ?? ""));
-    }
-  }, [initialValues, user.preferences.defaultAccountId, form]);
+    form.reset(initialValues);
+  }, [initialValues, form]);
 
   const formAccountId = form.watch("accountId");
   const selectedAccountCurrency = useMemo(

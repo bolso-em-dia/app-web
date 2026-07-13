@@ -8,7 +8,6 @@ import {
 import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import type { StatusFilter } from "../../lib/constants";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
-import type { TransactionType } from "../../app/api/transactions";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { usePagination } from "../../lib/usePagination";
@@ -19,9 +18,7 @@ import FixedExpenseCard from "./FixedExpenseCard";
 import styles from "./FixedExpensesPage.module.scss";
 
 type FixedExpenseListProps = {
-  search: string;
-  statusFilter: StatusFilter;
-  typeFilter: TransactionType | "ALL";
+  filters: { search: string; status: StatusFilter };
   referenceMonth: string;
   selectedId: string | null;
   onSelect: (id: string, template: FixedExpenseTemplate) => void;
@@ -31,9 +28,7 @@ type FixedExpenseListProps = {
 };
 
 export default function FixedExpenseList({
-  search,
-  statusFilter,
-  typeFilter,
+  filters,
   referenceMonth,
   selectedId,
   onSelect,
@@ -41,7 +36,6 @@ export default function FixedExpenseList({
   onAccountOptionsLoaded,
   onCategoryOptionsLoaded,
 }: FixedExpenseListProps) {
-  void typeFilter;
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [templates, setTemplates] = useState<FixedExpenseTemplate[]>([]);
@@ -63,7 +57,7 @@ export default function FixedExpenseList({
       const [templatesResponse, categoriesResponse, accountsResponse] =
         await Promise.all([
           listFixedExpenseTemplates(
-            { page, size: pageSize, search, status: statusFilter },
+            { page, size: pageSize, search: filters.search, status: filters.status },
             accessToken,
           ),
           listCategoryOptions(referenceMonth, accessToken),
@@ -85,8 +79,8 @@ export default function FixedExpenseList({
     accessToken,
     page,
     pageSize,
-    search,
-    statusFilter,
+    filters.search,
+    filters.status,
     referenceMonth,
     onAccountOptionsLoaded,
     onCategoryOptionsLoaded,
@@ -94,7 +88,7 @@ export default function FixedExpenseList({
 
   useEffect(() => {
     setPage(0);
-  }, [search, statusFilter, pageSize]);
+  }, [filters.search, filters.status, pageSize]);
 
   useEffect(() => {
     void loadData();
