@@ -145,6 +145,10 @@
   gap: var(--space-3);
 }
 
+.emptyState {
+  color: var(--color-text-muted);
+}
+
 @media (width <= 40rem) {
   .toolbar {
     flex-direction: column;
