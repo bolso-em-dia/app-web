@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { t } from "../../test/i18n";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import CategoriesPage from "./CategoriesPage";
 
@@ -68,19 +69,19 @@ describe("CategoriesPage", () => {
     );
 
     expect(await screen.findByText("Groceries")).toBeInTheDocument();
-    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
+    expect(screen.getByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("categories.new") }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Nome"), {
+    fireEvent.change(screen.getByLabelText(t("common.name")), {
       target: { value: "" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Criar categoria" }));
+    fireEvent.click(screen.getByRole("button", { name: t("categories.create") }));
 
     await waitFor(() => {
-      expect(screen.getByText("Nome é obrigatório.")).toBeInTheDocument();
+      expect(screen.getByText(t("validation.requiredName"))).toBeInTheDocument();
     });
   });
 
@@ -105,7 +106,7 @@ describe("CategoriesPage", () => {
 
     expect(await screen.findByText("Groceries")).toBeInTheDocument();
 
-    const searchInput = screen.getByRole("textbox", { name: "Buscar" });
+    const searchInput = screen.getByRole("textbox", { name: t("common.search") });
     searchInput.focus();
 
     fireEvent.change(searchInput, { target: { value: "Gro" } });
@@ -169,30 +170,30 @@ describe("CategoriesPage", () => {
 
     await screen.findByText("Groceries");
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Buscar" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: t("common.search") }), {
       target: { value: "Gro" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
-    fireEvent.change(screen.getByLabelText("Status"), {
+    fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (1)` }));
+    fireEvent.change(screen.getByLabelText(t("common.status")), {
       target: { value: "ACTIVE" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
-    fireEvent.change(screen.getByLabelText("Nome"), {
+    fireEvent.click(screen.getByRole("button", { name: t("categories.new") }));
+    fireEvent.change(screen.getByLabelText(t("common.name")), {
       target: { value: "Travel" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Criar categoria" }));
+    fireEvent.click(screen.getByRole("button", { name: t("categories.create") }));
 
     await waitFor(() => {
-      expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveValue("Gro");
+      expect(screen.getByRole("textbox", { name: t("common.search") })).toHaveValue("Gro");
     });
 
-    if (!screen.queryByLabelText("Status")) {
-      fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
+    if (!screen.queryByLabelText(t("common.status"))) {
+      fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (1)` }));
     }
 
-    expect(screen.getByLabelText("Status")).toHaveValue("ACTIVE");
+    expect(screen.getByLabelText(t("common.status"))).toHaveValue("ACTIVE");
 
     const categoryRequests = vi
       .mocked(fetch)
@@ -253,13 +254,13 @@ describe("CategoriesPage", () => {
     const listbox = screen.getByRole("listbox");
     fireEvent.click(within(listbox).getByRole("option", { name: /Utilities/ }));
 
-    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.archive") }));
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
 
     fireEvent.click(
       within(screen.getByRole("alertdialog")).getByRole("button", {
-        name: "Cancelar",
+        name: t("common.cancel"),
       }),
     );
 
@@ -343,13 +344,13 @@ describe("CategoriesPage", () => {
     const listbox = screen.getByRole("listbox");
     fireEvent.click(within(listbox).getByRole("option", { name: /Utilities/ }));
 
-    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.archive") }));
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
 
     fireEvent.click(
       within(screen.getByRole("alertdialog")).getByRole("button", {
-        name: "Arquivar",
+        name: t("common.archive"),
       }),
     );
 
@@ -423,18 +424,18 @@ describe("CategoriesPage", () => {
     const listbox = screen.getByRole("listbox");
     fireEvent.click(within(listbox).getByRole("option", { name: /Utilities/ }));
 
-    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.archive") }));
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
 
     fireEvent.click(
       within(screen.getByRole("alertdialog")).getByRole("button", {
-        name: "Arquivar",
+        name: t("common.archive"),
       }),
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Não foi possível arquivar a categoria.")).toBeInTheDocument();
+      expect(screen.getByText(t("categories.archiveError"))).toBeInTheDocument();
     });
   });
 });

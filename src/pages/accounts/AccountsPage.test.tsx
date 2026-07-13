@@ -4,6 +4,7 @@ import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import { createAccount, createUser } from "../../test/fixtures";
+import { t } from "../../test/i18n";
 import AccountsPage from "./AccountsPage";
 
 const defaultAccountsResponse = {
@@ -47,22 +48,22 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
+    expect(screen.getByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("accounts.new") }));
     const drawer = screen.getByRole("dialog");
     expect(drawer).toBeInTheDocument();
 
-    fireEvent.change(within(drawer).getByLabelText("Tipo"), {
+    fireEvent.change(within(drawer).getByLabelText(t("common.type")), {
       target: { value: "CREDIT_CARD" },
     });
 
-    fireEvent.click(within(drawer).getByRole("button", { name: "Criar conta" }));
+    fireEvent.click(within(drawer).getByRole("button", { name: t("accounts.create") }));
 
     await waitFor(() => {
-      expect(screen.getByText("A bandeira é obrigatória para cartões de crédito.")).toBeInTheDocument();
-      expect(screen.getByText("O dia de fechamento é obrigatório para cartões de crédito.")).toBeInTheDocument();
-      expect(screen.getByText("O dia de vencimento é obrigatório para cartões de crédito.")).toBeInTheDocument();
+      expect(screen.getByText(t("validation.requiredCreditCardBrand"))).toBeInTheDocument();
+      expect(screen.getByText(t("validation.requiredCreditCardClosingDay"))).toBeInTheDocument();
+      expect(screen.getByText(t("validation.requiredCreditCardDueDay"))).toBeInTheDocument();
     });
   });
 
@@ -87,7 +88,7 @@ describe("AccountsPage", () => {
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
 
-    const searchInput = screen.getByRole("textbox", { name: "Buscar" });
+    const searchInput = screen.getByRole("textbox", { name: t("common.search") });
     searchInput.focus();
 
     fireEvent.change(searchInput, { target: { value: "Main" } });
@@ -133,7 +134,7 @@ describe("AccountsPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: /Main checking/ }));
 
     const archiveButton = await screen.findByRole("button", {
-      name: "Arquivar",
+      name: t("common.archive"),
     });
     fireEvent.click(archiveButton);
 
@@ -141,7 +142,7 @@ describe("AccountsPage", () => {
     expect(alertDialog).toBeInTheDocument();
 
     const cancelButton = within(alertDialog).getByRole("button", {
-      name: "Cancelar",
+      name: t("common.cancel"),
     });
     fireEvent.click(cancelButton);
 
@@ -244,13 +245,13 @@ describe("AccountsPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: /Main checking/ }));
 
     const archiveButton = await screen.findByRole("button", {
-      name: "Arquivar",
+      name: t("common.archive"),
     });
     fireEvent.click(archiveButton);
 
     const alertDialog = screen.getByRole("alertdialog");
     const confirmButton = within(alertDialog).getByRole("button", {
-      name: "Arquivar",
+      name: t("common.archive"),
     });
     fireEvent.click(confirmButton);
 
@@ -264,7 +265,7 @@ describe("AccountsPage", () => {
     expect(patchCalls).toHaveLength(1);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Conta arquivada" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: t("accounts.archived") })).toBeDisabled();
     });
   });
 
@@ -312,26 +313,26 @@ describe("AccountsPage", () => {
 
     await screen.findByText("Main checking");
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Buscar" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: t("common.search") }), {
       target: { value: "Main" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
-    fireEvent.change(screen.getByLabelText("Tipo", { selector: "#account-type-filter" }), {
+    fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (1)` }));
+    fireEvent.change(screen.getByLabelText(t("common.type"), { selector: "#account-type-filter" }), {
       target: { value: "CHECKING" },
     });
 
     fireEvent.click(await screen.findByRole("button", { name: /Main checking/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.save") }));
 
     await waitFor(() => {
-      expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveValue("Main");
+      expect(screen.getByRole("textbox", { name: t("common.search") })).toHaveValue("Main");
     });
 
-    if (!screen.queryByLabelText("Tipo", { selector: "#account-type-filter" })) {
-      fireEvent.click(screen.getByRole("button", { name: "Filtros (2)" }));
+    if (!screen.queryByLabelText(t("common.type"), { selector: "#account-type-filter" })) {
+      fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (2)` }));
     }
 
-    expect(screen.getByLabelText("Tipo", { selector: "#account-type-filter" })).toHaveValue("CHECKING");
+    expect(screen.getByLabelText(t("common.type"), { selector: "#account-type-filter" })).toHaveValue("CHECKING");
 
     const accountRequests = vi
       .mocked(fetch)
@@ -375,18 +376,18 @@ describe("AccountsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
 
     const archiveButton = await screen.findByRole("button", {
-      name: "Arquivar",
+      name: t("common.archive"),
     });
     fireEvent.click(archiveButton);
 
     const alertDialog = screen.getByRole("alertdialog");
     const confirmButton = within(alertDialog).getByRole("button", {
-      name: "Arquivar",
+      name: t("common.archive"),
     });
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Não foi possível arquivar a conta.")).toBeInTheDocument();
+      expect(screen.getByText(t("accounts.archiveError"))).toBeInTheDocument();
     });
   });
 
@@ -416,10 +417,10 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("accounts.new") }));
     const drawer = screen.getByRole("dialog");
 
-    expect(within(drawer).getByLabelText("Moeda")).toBeInTheDocument();
+    expect(within(drawer).getByLabelText(t("accounts.currency"))).toBeInTheDocument();
   });
 
   it("currency select defaults to BRL", async () => {
@@ -448,10 +449,10 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("accounts.new") }));
     const drawer = screen.getByRole("dialog");
 
-    expect(within(drawer).getByDisplayValue("Real (BRL)")).toBeInTheDocument();
+    expect(within(drawer).getByDisplayValue(t("currencies.BRL"))).toBeInTheDocument();
   });
 
   it("currency select can switch to USD", async () => {
@@ -480,13 +481,13 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("accounts.new") }));
     const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(within(drawer).getByLabelText("Moeda"), {
+    fireEvent.change(within(drawer).getByLabelText(t("accounts.currency")), {
       target: { value: "USD" },
     });
-    expect(within(drawer).getByDisplayValue("Dólar (USD)")).toBeInTheDocument();
+    expect(within(drawer).getByDisplayValue(t("currencies.USD"))).toBeInTheDocument();
   });
 
   it("hides currency select when foreign currency is disabled", async () => {
@@ -511,9 +512,9 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("accounts.new") }));
     const drawer = screen.getByRole("dialog");
 
-    expect(within(drawer).queryByLabelText("Moeda")).not.toBeInTheDocument();
+    expect(within(drawer).queryByLabelText(t("accounts.currency"))).not.toBeInTheDocument();
   });
 });

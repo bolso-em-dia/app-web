@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
+import { t } from "../test/i18n";
 import ChangePasswordPage from "./ChangePasswordPage";
 
 function renderChangePasswordPage() {
@@ -24,11 +25,11 @@ function renderChangePasswordPage() {
 describe("ChangePasswordPage", () => {
   it("renders the password change form with first-access labels", () => {
     renderChangePasswordPage();
-    expect(screen.getByText("Defina uma nova senha")).toBeInTheDocument();
-    expect(screen.getByText(/O acesso inicial do administrador exige a troca da senha/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Salvar nova senha" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Senha atual")).toBeInTheDocument();
-    expect(screen.getByLabelText("Nova senha")).toBeInTheDocument();
-    expect(screen.getByLabelText("Confirmar nova senha")).toBeInTheDocument();
+    expect(screen.getByText(t("settings.password.firstAccessTitle"))).toBeInTheDocument();
+    expect(screen.getByText(t("settings.password.firstAccessSubtitle"))).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t("settings.password.firstAccessSave") })).toBeInTheDocument();
+    expect(screen.getByLabelText(t("settings.password.current"))).toBeInTheDocument();
+    expect(screen.getByLabelText(t("settings.password.new"))).toBeInTheDocument();
+    expect(screen.getByLabelText(t("settings.password.confirm"))).toBeInTheDocument();
   });
 });

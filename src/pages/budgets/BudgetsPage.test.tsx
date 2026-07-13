@@ -4,6 +4,7 @@ import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import { t } from "../../test/i18n";
 import BudgetsPage from "./BudgetsPage";
 
 const defaultBudgetsResponse = {
@@ -106,25 +107,25 @@ describe("BudgetsPage", () => {
     );
 
     expect(await screen.findByText("Household")).toBeInTheDocument();
-    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
+    expect(screen.getByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Novo" }));
+    fireEvent.click(screen.getByRole("button", { name: t("budgets.new") }));
     const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(within(drawer).getByLabelText("Nome"), {
+    fireEvent.change(within(drawer).getByLabelText(t("common.name")), {
       target: { value: "Allowance budget" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Limite mensal"), {
+    fireEvent.change(within(drawer).getByLabelText(t("budgets.monthlyLimit")), {
       target: { value: "450" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Tipo"), {
+    fireEvent.change(within(drawer).getByLabelText(t("common.type")), {
       target: { value: "ALLOWANCE" },
     });
 
-    fireEvent.click(within(drawer).getByRole("button", { name: "Criar orçamento" }));
+    fireEvent.click(within(drawer).getByRole("button", { name: t("budgets.create") }));
 
     await waitFor(() => {
-      expect(screen.getByText("O membro dono é obrigatório para budgets de mesada.")).toBeInTheDocument();
+      expect(screen.getByText(t("validation.requiredAllowanceOwner"))).toBeInTheDocument();
     });
   });
 
@@ -219,25 +220,25 @@ describe("BudgetsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByRole("button", { name: "Novo" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: t("budgets.new") })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Novo" }));
+    fireEvent.click(screen.getByRole("button", { name: t("budgets.new") }));
     const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(within(drawer).getByLabelText("Nome"), {
+    fireEvent.change(within(drawer).getByLabelText(t("common.name")), {
       target: { value: "Allowance budget" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Limite mensal"), {
+    fireEvent.change(within(drawer).getByLabelText(t("budgets.monthlyLimit")), {
       target: { value: "450" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Tipo"), {
+    fireEvent.change(within(drawer).getByLabelText(t("common.type")), {
       target: { value: "ALLOWANCE" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Membro dono"), {
+    fireEvent.change(within(drawer).getByLabelText(t("budgets.ownerMember")), {
       target: { value: "member-1" },
     });
 
-    fireEvent.click(within(drawer).getByRole("button", { name: "Criar orçamento" }));
+    fireEvent.click(within(drawer).getByRole("button", { name: t("budgets.create") }));
 
     await waitFor(() => {
       expect(vi.mocked(fetch).mock.calls.some(([input, init]) => String(input).endsWith("/api/budgets") && init?.method === "POST")).toBe(
@@ -300,15 +301,15 @@ describe("BudgetsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByRole("button", { name: /Filtros/ })).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Buscar"), {
+    expect(await screen.findByRole("button", { name: new RegExp(t("common.filters")) })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(t("common.search")), {
       target: { value: "  travel  " },
     });
-    fireEvent.click(screen.getByRole("button", { name: /Filtros/ }));
-    fireEvent.change(screen.getByLabelText("Status"), {
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(t("common.filters")) }));
+    fireEvent.change(screen.getByLabelText(t("common.status")), {
       target: { value: "ARCHIVED" },
     });
-    fireEvent.change(screen.getByLabelText("Tipo"), {
+    fireEvent.change(screen.getByLabelText(t("common.type")), {
       target: { value: "ALLOWANCE" },
     });
 
@@ -371,7 +372,7 @@ describe("BudgetsPage", () => {
       }),
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.previousMonth") }));
 
     await waitFor(() => {
       expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${previousReferenceMonth}`))).toBe(true);
@@ -413,7 +414,7 @@ describe("BudgetsPage", () => {
       }),
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.nextMonth") }));
 
     await waitFor(() => {
       expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${currentReferenceMonth}`))).toBe(true);
@@ -440,12 +441,12 @@ describe("BudgetsPage", () => {
     const householdButton = await screen.findByText("Household");
     fireEvent.click(householdButton.closest("button")!);
 
-    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.archive") }));
 
     const confirmDialog = screen.getByRole("alertdialog");
     expect(confirmDialog).toBeInTheDocument();
 
-    fireEvent.click(within(confirmDialog).getByRole("button", { name: "Cancelar" }));
+    fireEvent.click(within(confirmDialog).getByRole("button", { name: t("common.cancel") }));
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   });
 
@@ -545,10 +546,10 @@ describe("BudgetsPage", () => {
     const householdButton = await screen.findByText("Household");
     fireEvent.click(householdButton.closest("button")!);
 
-    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.archive") }));
 
     const dialog = screen.getByRole("alertdialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Arquivar" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: t("common.archive") }));
 
     await waitFor(() => {
       expect(archiveCalled).toBe(true);
@@ -636,13 +637,13 @@ describe("BudgetsPage", () => {
     const householdButton = await screen.findByText("Household");
     fireEvent.click(householdButton.closest("button")!);
 
-    fireEvent.click(screen.getByRole("button", { name: "Arquivar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.archive") }));
 
     const dialog = screen.getByRole("alertdialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Arquivar" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: t("common.archive") }));
 
     await waitFor(() => {
-      expect(screen.getByText("Não foi possível arquivar o orçamento.")).toBeInTheDocument();
+      expect(screen.getByText(t("budgets.archiveError"))).toBeInTheDocument();
     });
   });
 
@@ -672,7 +673,7 @@ describe("BudgetsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Carregando orçamentos")).toBeInTheDocument();
+    expect(screen.getByText(t("budgets.loading"))).toBeInTheDocument();
 
     resolveFetch!({
       ok: true,
@@ -688,7 +689,7 @@ describe("BudgetsPage", () => {
     } as Response);
 
     await waitFor(() => {
-      expect(screen.queryByText("Carregando orçamentos")).not.toBeInTheDocument();
+      expect(screen.queryByText(t("budgets.loading"))).not.toBeInTheDocument();
     });
   });
 });

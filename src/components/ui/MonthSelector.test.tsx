@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
+import { t } from "../../test/i18n";
 import MonthSelector from "./MonthSelector";
 
 describe("MonthSelector", () => {
@@ -16,7 +17,7 @@ describe("MonthSelector", () => {
 
     render(<MonthSelector onChange={handleChange} value="2026-07-01" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.previousMonth") }));
     expect(handleChange).toHaveBeenCalledWith("2026-06-01");
   });
 
@@ -25,7 +26,7 @@ describe("MonthSelector", () => {
 
     render(<MonthSelector onChange={handleChange} value="2026-07-01" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.nextMonth") }));
     expect(handleChange).toHaveBeenCalledWith("2026-08-01");
   });
 

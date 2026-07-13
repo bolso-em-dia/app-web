@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
+import { t } from "../../test/i18n";
 import type { FilterFields } from "../../lib/filterFields";
 import FilterToolbar from "./FilterToolbar";
 
@@ -56,14 +57,14 @@ describe("FilterToolbar", () => {
     setViewportWidth(1280);
     render(<Harness />);
 
-    expect(screen.getByText("Buscar: Mercado")).toBeInTheDocument();
+    expect(screen.getByText(`${t("common.search")}: Mercado`)).toBeInTheDocument();
     expect(screen.queryByLabelText("Status secundário")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
+    fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (1)` }));
 
     expect(screen.getByLabelText("Status secundário")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.clearFilters") }));
 
     expect(screen.queryByText("Buscar: Mercado")).not.toBeInTheDocument();
   });
@@ -72,7 +73,7 @@ describe("FilterToolbar", () => {
     setViewportWidth(900);
     render(<Harness />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
+    fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (1)` }));
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByLabelText("Status secundário")).toBeInTheDocument();
@@ -82,7 +83,7 @@ describe("FilterToolbar", () => {
     setViewportWidth(480);
     render(<Harness />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
+    fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (1)` }));
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByLabelText("Status secundário")).toBeInTheDocument();

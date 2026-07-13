@@ -2,15 +2,16 @@ import { act, fireEvent, screen } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { vi } from "vitest";
 import { renderWithProviders } from "../test/fixtures";
+import { t } from "../test/i18n";
 import LoginPage from "./LoginPage";
 
 describe("LoginPage", () => {
   it("renders the login form", () => {
     renderWithProviders(<LoginPage />, { user: null });
 
-    expect(screen.getByRole("heading", { name: "Entrar" })).toBeInTheDocument();
-    expect(screen.getByLabelText("E-mail")).toHaveValue("");
-    expect(screen.getByLabelText("Senha")).toHaveValue("");
+    expect(screen.getByRole("heading", { name: t("login.title") })).toBeInTheDocument();
+    expect(screen.getByLabelText(t("common.email"))).toHaveValue("");
+    expect(screen.getByLabelText(t("family.password"))).toHaveValue("");
   });
 
   it("submits successfully and redirects to the home route", async () => {
@@ -28,13 +29,13 @@ describe("LoginPage", () => {
       },
     );
 
-    fireEvent.change(screen.getByLabelText("E-mail"), {
+    fireEvent.change(screen.getByLabelText(t("common.email")), {
       target: { value: "admin@my-money.local" },
     });
-    fireEvent.change(screen.getByLabelText("Senha"), {
+    fireEvent.change(screen.getByLabelText(t("family.password")), {
       target: { value: "admin123456" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("login.submit") }));
 
     expect(await screen.findByText("Home")).toBeInTheDocument();
     expect(login).toHaveBeenCalledWith("admin@my-money.local", "admin123456");
@@ -54,15 +55,15 @@ describe("LoginPage", () => {
       authOverrides: { login },
     });
 
-    fireEvent.change(screen.getByLabelText("E-mail"), {
+    fireEvent.change(screen.getByLabelText(t("common.email")), {
       target: { value: "admin@my-money.local" },
     });
-    fireEvent.change(screen.getByLabelText("Senha"), {
+    fireEvent.change(screen.getByLabelText(t("family.password")), {
       target: { value: "admin123456" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("login.submit") }));
 
-    expect(await screen.findByRole("button", { name: "Carregando..." })).toBeDisabled();
+    expect(await screen.findByRole("button", { name: t("common.loading") })).toBeDisabled();
 
     await act(async () => {
       resolveLogin?.();
@@ -79,14 +80,14 @@ describe("LoginPage", () => {
       authOverrides: { login },
     });
 
-    fireEvent.change(screen.getByLabelText("E-mail"), {
+    fireEvent.change(screen.getByLabelText(t("common.email")), {
       target: { value: "admin@my-money.local" },
     });
-    fireEvent.change(screen.getByLabelText("Senha"), {
+    fireEvent.change(screen.getByLabelText(t("family.password")), {
       target: { value: "wrong-password" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+    fireEvent.click(screen.getByRole("button", { name: t("login.submit") }));
 
-    expect(await screen.findByText("Não foi possível entrar. Verifique o e-mail e a senha.")).toBeInTheDocument();
+    expect(await screen.findByText(t("login.error"))).toBeInTheDocument();
   });
 });

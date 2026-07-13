@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
+import { t } from "../test/i18n";
 import { resetFetchMocks, mockJsonResponse, mockFetchUrl } from "../test/setup";
 import HomePage from "./HomePage";
 
@@ -161,13 +162,13 @@ describe("HomePage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("Não foi possível carregar o dashboard agora.")).toBeInTheDocument();
+    expect(await screen.findByText(t("home.error"))).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.retry") }));
 
-    expect(await screen.findByText("Orçamentos")).toBeInTheDocument();
+    expect(await screen.findByText(t("home.budgets"))).toBeInTheDocument();
     expect(vi.mocked(fetch).mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(screen.queryByText("Não foi possível carregar o dashboard agora.")).not.toBeInTheDocument();
+    expect(screen.queryByText(t("home.error"))).not.toBeInTheDocument();
   });
 
   it("renders the dashboard data and toggles the balance mode", async () => {
