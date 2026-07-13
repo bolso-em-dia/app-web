@@ -1,9 +1,22 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { CategoryOption } from "../../app/api/categories";
 import type { FamilyMember } from "../../app/api/family";
-import type { Budget } from "../../app/api/budgets";
-import type { BudgetFormValues } from "../../lib/validation/budgetSchema";
+import type { AuthUser } from "../../app/api/auth";
+import {
+  archiveBudget,
+  createBudget,
+  updateBudget,
+  type Budget,
+  type BudgetPayload,
+} from "../../app/api/budgets";
+import {
+  createBudgetSchema,
+  type BudgetFormValues,
+} from "../../lib/validation/budgetSchema";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import ConfirmAction from "../../components/ui/ConfirmAction";
@@ -15,47 +28,129 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import styles from "./BudgetsPage.module.scss";
 
+const DEFAULT_VALUES: BudgetFormValues = {
+  name: "",
+  type: "GLOBAL",
+  ownerMemberId: "",
+  categoryIds: [],
+  monthlyLimit: 0,
+};
+
+function mapFormValuesToPayload(values: BudgetFormValues): BudgetPayload {
+  return {
+    name: values.name,
+    type: values.type,
+    ownerMemberId:
+      values.type === "ALLOWANCE" && values.ownerMemberId
+        ? values.ownerMemberId
+        : undefined,
+    categoryIds: values.type === "GLOBAL" ? values.categoryIds : undefined,
+    monthlyLimit: values.monthlyLimit,
+  };
+}
+
 interface BudgetFormProps {
-  isCreating: boolean;
-  selectedBudgetSummary: Budget | null;
-  form: UseFormReturn<BudgetFormValues>;
-  categoryOptions: CategoryOption[];
-  availableAllowanceMembers: FamilyMember[];
-  isSaving: boolean;
-  isArchiving: boolean;
-  isArchiveConfirmOpen: boolean;
-  error: string | null;
-  onSubmit: (values: BudgetFormValues) => Promise<void>;
-  onCancelCreate: () => void;
-  onArchiveOpen: () => void;
-  onArchiveCancel: () => void;
-  onArchiveConfirm: () => void;
+  initialValues: BudgetFormValues | null;
+  budget: Budget | null;
+  user: AuthUser;
+  categories: CategoryOption[];
+  members: FamilyMember[];
+  referenceMonth: string;
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
 export default function BudgetForm({
-  isCreating,
-  selectedBudgetSummary,
-  form,
-  categoryOptions,
-  availableAllowanceMembers,
-  isSaving,
-  isArchiving,
-  isArchiveConfirmOpen,
-  error,
-  onSubmit,
-  onCancelCreate,
-  onArchiveOpen,
-  onArchiveCancel,
-  onArchiveConfirm,
+  initialValues,
+  budget,
+  categories,
+  members,
+  referenceMonth,
+  onSuccess,
+  onCancel,
 }: BudgetFormProps) {
+  const { accessToken } = useAuth();
   const { t } = useI18n();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const budgetSchema = useMemo(() => createBudgetSchema(t), [t]);
+  const form = useForm<BudgetFormValues>({
+    resolver: zodResolver(budgetSchema),
+    defaultValues: DEFAULT_VALUES,
+  });
+
+  useEffect(() => {
+    if (initialValues) {
+      form.reset(initialValues);
+    } else {
+      form.reset(DEFAULT_VALUES);
+    }
+  }, [initialValues, form]);
+
+  const availableAllowanceMembers = useMemo(
+    () => members.filter((member) => member.active && member.allowanceEnabled),
+    [members],
+  );
+
+  const isCreating = !budget;
   const budgetType = form.watch("type");
+
+  const handleSubmit = useCallback(
+    async (values: BudgetFormValues) => {
+      if (!accessToken) {
+        return;
+      }
+
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        if (budget) {
+          await updateBudget(
+            budget.id,
+            mapFormValuesToPayload(values),
+            accessToken,
+          );
+        } else {
+          await createBudget(mapFormValuesToPayload(values), accessToken);
+        }
+        onSuccess();
+      } catch {
+        setError(t("budgets.saveError"));
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [accessToken, budget, onSuccess, t],
+  );
+
+  const handleArchive = useCallback(async () => {
+    if (!accessToken || !budget || budget.archivedFromMonth) {
+      return;
+    }
+
+    setIsArchiving(true);
+    setError(null);
+
+    try {
+      await archiveBudget(budget.id, referenceMonth, accessToken);
+      setIsArchiveConfirmOpen(false);
+      onSuccess();
+    } catch {
+      setError(t("budgets.archiveError"));
+    } finally {
+      setIsArchiving(false);
+    }
+  }, [accessToken, budget, referenceMonth, onSuccess, t]);
 
   return (
     <>
       <form
         className={styles.form}
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit)}
         noValidate
       >
         <Field
@@ -139,7 +234,7 @@ export default function BudgetForm({
                   hasError={Boolean(form.formState.errors.categoryIds)}
                   id="budget-linked-categories"
                   onChange={field.onChange}
-                  options={categoryOptions}
+                  options={categories}
                   placeholder={t("common.selectCategories")}
                   value={field.value}
                 />
@@ -156,19 +251,17 @@ export default function BudgetForm({
             {isCreating ? t("budgets.create") : t("common.save")}
           </Button>
           {isCreating ? (
-            <Button onClick={onCancelCreate} type="button" variant="subtle">
+            <Button onClick={onCancel} type="button" variant="subtle">
               {t("common.cancel")}
             </Button>
           ) : (
             <Button
-              disabled={Boolean(selectedBudgetSummary?.archivedFromMonth)}
-              onClick={onArchiveOpen}
+              disabled={Boolean(budget?.archivedFromMonth)}
+              onClick={() => setIsArchiveConfirmOpen(true)}
               type="button"
-              variant={
-                selectedBudgetSummary?.archivedFromMonth ? "subtle" : "danger"
-              }
+              variant={budget?.archivedFromMonth ? "subtle" : "danger"}
             >
-              {selectedBudgetSummary?.archivedFromMonth
+              {budget?.archivedFromMonth
                 ? t("budgets.archived")
                 : t("common.archive")}
             </Button>
@@ -195,7 +288,7 @@ export default function BudgetForm({
                     {t("budgets.limit")}
                   </span>
                   <strong className={styles.summaryValue}>
-                    {selectedBudgetSummary?.monthlyLimit ?? 0}
+                    {budget?.monthlyLimit ?? 0}
                   </strong>
                 </div>
                 <div className={styles.summaryCard}>
@@ -203,7 +296,7 @@ export default function BudgetForm({
                     {t("budgets.consumed")}
                   </span>
                   <strong className={styles.summaryValue}>
-                    {selectedBudgetSummary?.consumedAmount ?? 0}
+                    {budget?.consumedAmount ?? 0}
                   </strong>
                 </div>
                 <div className={styles.summaryCard}>
@@ -211,7 +304,7 @@ export default function BudgetForm({
                     {t("budgets.remaining")}
                   </span>
                   <strong className={styles.summaryValue}>
-                    {selectedBudgetSummary?.remainingAmount ?? 0}
+                    {budget?.remainingAmount ?? 0}
                   </strong>
                 </div>
               </section>
@@ -222,8 +315,8 @@ export default function BudgetForm({
             confirmLabel={t("common.archive")}
             loading={isArchiving}
             message={t("confirmations.archiveBudget")}
-            onCancel={onArchiveCancel}
-            onConfirm={onArchiveConfirm}
+            onCancel={() => setIsArchiveConfirmOpen(false)}
+            onConfirm={handleArchive}
             open={isArchiveConfirmOpen}
             title={t("budgets.archiveTitle")}
           />
