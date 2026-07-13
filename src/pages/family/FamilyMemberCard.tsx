@@ -9,45 +9,27 @@ type FamilyMemberCardProps = {
   onSelect: (id: string) => void;
 };
 
-export default function FamilyMemberCard({
-  member,
-  onSelect,
-}: FamilyMemberCardProps) {
+export default function FamilyMemberCard({ member, onSelect }: FamilyMemberCardProps) {
   const { t } = useI18n();
 
   return (
     <Card key={member.id} className={styles.memberCard}>
-      <button
-        className={styles.memberButton}
-        onClick={() => onSelect(member.id)}
-        type="button"
-      >
+      <button className={styles.memberButton} onClick={() => onSelect(member.id)} type="button">
         <div className={styles.memberHeader}>
           <div>
             <strong>{member.name}</strong>
             <p className={styles.memberMeta}>
-              {member.email} ·{" "}
-              {t(member.role === "ADMIN" ? "roles.ADMIN" : "roles.USER")}
+              {member.email} · {t(member.role === "ADMIN" ? "roles.ADMIN" : "roles.USER")}
             </p>
           </div>
         </div>
 
         <div className={styles.memberBadges}>
-          <span
-            className={
-              member.active
-                ? `${styles.badge} ${styles.badgeSuccess}`
-                : `${styles.badge} ${styles.badgeMuted}`
-            }
-          >
+          <span className={member.active ? `${styles.badge} ${styles.badgeSuccess}` : `${styles.badge} ${styles.badgeMuted}`}>
             {member.active ? t("common.active") : t("common.archived")}
           </span>
-          <span className={styles.badge}>
-            {t(member.role === "ADMIN" ? "roles.ADMIN" : "roles.USER")}
-          </span>
-          {member.allowanceEnabled ? (
-            <span className={styles.badge}>{t("family.allowance")}</span>
-          ) : null}
+          <span className={styles.badge}>{t(member.role === "ADMIN" ? "roles.ADMIN" : "roles.USER")}</span>
+          {member.allowanceEnabled ? <span className={styles.badge}>{t("family.allowance")}</span> : null}
         </div>
       </button>
     </Card>

@@ -18,39 +18,18 @@ function CategoryContent({ category }: { category: CategoryOption }) {
 
   return (
     <span className={styles.value}>
-      <span
-        aria-hidden="true"
-        className={styles.lead}
-        style={category.color ? { color: category.color } : undefined}
-      >
-        {Icon ? (
-          <Icon className={styles.icon} />
-        ) : (
-          <span className={styles.dot} />
-        )}
+      <span aria-hidden="true" className={styles.lead} style={category.color ? { color: category.color } : undefined}>
+        {Icon ? <Icon className={styles.icon} /> : <span className={styles.dot} />}
       </span>
       <span className={styles.text}>{category.name}</span>
     </span>
   );
 }
 
-export default function CategorySelect({
-  id,
-  value,
-  options,
-  placeholder,
-  onChange,
-  hasError = false,
-}: CategorySelectProps) {
-  const selectedOption = useMemo(
-    () => options.find((option) => option.id === value) ?? null,
-    [options, value],
-  );
+export default function CategorySelect({ id, value, options, placeholder, onChange, hasError = false }: CategorySelectProps) {
+  const selectedOption = useMemo(() => options.find((option) => option.id === value) ?? null, [options, value]);
 
-  const selectOptions = useMemo(
-    () => options.map((option) => ({ value: option.id, label: option.name })),
-    [options],
-  );
+  const selectOptions = useMemo(() => options.map((option) => ({ value: option.id, label: option.name })), [options]);
 
   const renderOption = useMemo(
     () => (option: { value: string; label: string }) => {
@@ -69,11 +48,7 @@ export default function CategorySelect({
       placeholder={placeholder}
       renderOption={renderOption}
       renderValue={() =>
-        selectedOption ? (
-          <CategoryContent category={selectedOption} />
-        ) : (
-          <span className={styles.placeholder}>{placeholder}</span>
-        )
+        selectedOption ? <CategoryContent category={selectedOption} /> : <span className={styles.placeholder}>{placeholder}</span>
       }
       value={value}
     />

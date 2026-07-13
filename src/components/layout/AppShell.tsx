@@ -4,10 +4,7 @@ import type { ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
-import {
-  managementNavigation,
-  operationalNavigation,
-} from "../../app/navigation/navigation";
+import { managementNavigation, operationalNavigation } from "../../app/navigation/navigation";
 import { getNavigationIcon } from "../../lib/icons";
 import { useBreakpoint } from "../../lib/useBreakpoint";
 import Button from "../ui/Button";
@@ -23,12 +20,7 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-export default function AppShell({
-  title,
-  subtitle,
-  actions,
-  children,
-}: AppShellProps) {
+export default function AppShell({ title, subtitle, actions, children }: AppShellProps) {
   const { logout, user } = useAuth();
   const { t } = useI18n();
   const isCompactNavigation = useBreakpoint(1024);
@@ -51,11 +43,7 @@ export default function AppShell({
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={({ isActive }) =>
-                  isActive
-                    ? `${styles.navItem} ${styles.navItemActive}`
-                    : styles.navItem
-                }
+                className={({ isActive }) => (isActive ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem)}
                 onClick={() => setIsNavigationOpen(false)}
               >
                 <span className={styles.navLead}>
@@ -68,9 +56,7 @@ export default function AppShell({
         </div>
 
         <div className={styles.navSection}>
-          <span className={styles.navSectionTitle}>
-            {t("navigation.management")}
-          </span>
+          <span className={styles.navSectionTitle}>{t("navigation.management")}</span>
           {managementNavigation.map((item) => {
             const Icon = getNavigationIcon(item.iconId);
 
@@ -78,11 +64,7 @@ export default function AppShell({
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={({ isActive }) =>
-                  isActive
-                    ? `${styles.navItem} ${styles.navItemActive}`
-                    : styles.navItem
-                }
+                className={({ isActive }) => (isActive ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem)}
                 onClick={() => setIsNavigationOpen(false)}
               >
                 <span className={styles.navLead}>
@@ -102,23 +84,11 @@ export default function AppShell({
       <div className={styles.profileCard}>
         <div className={styles.profileText}>
           <strong>{user?.name}</strong>
-          <span>
-            {user?.role
-              ? t(user.role === "ADMIN" ? "roles.ADMIN" : "roles.USER")
-              : null}
-          </span>
+          <span>{user?.role ? t(user.role === "ADMIN" ? "roles.ADMIN" : "roles.USER") : null}</span>
         </div>
         <div className={styles.profileActions}>
-          <Link
-            aria-label={t("settings.title")}
-            className={styles.accountAction}
-            title={t("settings.title")}
-            to="/settings"
-          >
-            <UserRound
-              aria-hidden="true"
-              className={styles.accountActionIcon}
-            />
+          <Link aria-label={t("settings.title")} className={styles.accountAction} title={t("settings.title")} to="/settings">
+            <UserRound aria-hidden="true" className={styles.accountActionIcon} />
           </Link>
           <Button onClick={() => void logout()} type="button" variant="subtle">
             <LogOut aria-hidden="true" className={styles.signOutIcon} />
@@ -169,10 +139,7 @@ export default function AppShell({
       </div>
 
       {isCompactNavigation && isNavigationOpen ? (
-        <Drawer
-          onClose={() => setIsNavigationOpen(false)}
-          title={t("app.brand")}
-        >
+        <Drawer onClose={() => setIsNavigationOpen(false)} title={t("app.brand")}>
           <div className={styles.mobileNavContent}>
             {renderNavigation()}
             <ExchangeRateIndicator />

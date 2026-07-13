@@ -25,12 +25,9 @@ const DEFAULT_FILTERS: CategoryFilters = {
 export default function CategoriesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { filters, patchFilters, clearFilter } =
-    useFiltersState(DEFAULT_FILTERS);
+  const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null,
-  );
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showDrawer, setShowDrawer] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -132,10 +129,7 @@ export default function CategoriesPage() {
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {
-              clearFilter(
-                name as keyof CategoryFilters,
-                defaultValue as CategoryFilters[keyof CategoryFilters],
-              );
+              clearFilter(name as keyof CategoryFilters, defaultValue as CategoryFilters[keyof CategoryFilters]);
             }}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
           />
@@ -151,17 +145,9 @@ export default function CategoriesPage() {
 
         {isDrawerOpen ? (
           <Drawer
-            description={
-              isCreating
-                ? t("categories.newDescription")
-                : t("categories.editDescription")
-            }
+            description={isCreating ? t("categories.newDescription") : t("categories.editDescription")}
             onClose={handleCloseDrawer}
-            title={
-              isCreating
-                ? t("categories.newTitle")
-                : t("categories.detailsTitle")
-            }
+            title={isCreating ? t("categories.newTitle") : t("categories.detailsTitle")}
           >
             <CategoryForm
               category={selectedCategory}

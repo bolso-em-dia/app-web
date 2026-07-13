@@ -96,55 +96,33 @@ function buildQuery(filters: TransactionListParams) {
   return searchParams.toString();
 }
 
-export function listTransactions(
-  filters: TransactionListParams,
-  accessToken: string,
-) {
-  return apiRequest<PageResponse<Transaction>>(
-    `/api/transactions?${buildQuery(filters)}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+export function listTransactions(filters: TransactionListParams, accessToken: string) {
+  return apiRequest<PageResponse<Transaction>>(`/api/transactions?${buildQuery(filters)}`, {
+    method: "GET",
+    accessToken,
+  });
 }
 
-export function materializeTransactions(
-  referenceMonth: string,
-  accessToken: string,
-) {
-  return apiRequest<void>(
-    `/api/transactions/materialize?referenceMonth=${referenceMonth}`,
-    {
-      method: "POST",
-      accessToken,
-    },
-  );
+export function materializeTransactions(referenceMonth: string, accessToken: string) {
+  return apiRequest<void>(`/api/transactions/materialize?referenceMonth=${referenceMonth}`, {
+    method: "POST",
+    accessToken,
+  });
 }
 
-export function listTransactionDescriptionSuggestions(
-  query: string,
-  accessToken: string,
-  limit = 8,
-) {
+export function listTransactionDescriptionSuggestions(query: string, accessToken: string, limit = 8) {
   const searchParams = new URLSearchParams({
     query,
     limit: String(limit),
   });
 
-  return apiRequest<string[]>(
-    `/api/transactions/descriptions?${searchParams.toString()}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+  return apiRequest<string[]>(`/api/transactions/descriptions?${searchParams.toString()}`, {
+    method: "GET",
+    accessToken,
+  });
 }
 
-export function createTransaction(
-  payload: TransactionPayload,
-  accessToken: string,
-) {
+export function createTransaction(payload: TransactionPayload, accessToken: string) {
   return apiRequest<Transaction[]>("/api/transactions", {
     method: "POST",
     accessToken,
@@ -152,11 +130,7 @@ export function createTransaction(
   });
 }
 
-export function updateTransaction(
-  id: string,
-  payload: Omit<TransactionPayload, "installmentCount">,
-  accessToken: string,
-) {
+export function updateTransaction(id: string, payload: Omit<TransactionPayload, "installmentCount">, accessToken: string) {
   return apiRequest<Transaction>(`/api/transactions/${id}`, {
     method: "PUT",
     accessToken,
@@ -164,11 +138,7 @@ export function updateTransaction(
   });
 }
 
-export function deleteTransaction(
-  id: string,
-  scope: DeleteScope,
-  accessToken: string,
-) {
+export function deleteTransaction(id: string, scope: DeleteScope, accessToken: string) {
   return apiRequest<void>(`/api/transactions/${id}?scope=${scope}`, {
     method: "DELETE",
     accessToken,

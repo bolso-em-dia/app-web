@@ -12,27 +12,12 @@ type FilterCategoryMultiInputProps = {
   onChange: (value: string[]) => void;
 };
 
-export default function FilterCategoryMultiInput({
-  id,
-  label,
-  value,
-  options,
-  placeholder,
-  onChange,
-}: FilterCategoryMultiInputProps) {
-  const rawOptions = options.flatMap((option) =>
-    option.raw ? [option.raw] : [],
-  );
+export default function FilterCategoryMultiInput({ id, label, value, options, placeholder, onChange }: FilterCategoryMultiInputProps) {
+  const rawOptions = options.flatMap((option) => (option.raw ? [option.raw] : []));
 
   return (
     <Field htmlFor={id} label={label}>
-      <CategoryMultiSelect
-        id={id}
-        onChange={onChange}
-        options={rawOptions}
-        placeholder={placeholder}
-        value={value}
-      />
+      <CategoryMultiSelect id={id} onChange={onChange} options={rawOptions} placeholder={placeholder} value={value} />
     </Field>
   );
 }

@@ -65,10 +65,7 @@ function resolveAccessToken(requestAccessToken?: string | null) {
   return authConfig.getAccessToken?.() ?? requestAccessToken ?? null;
 }
 
-export async function apiRequest<T>(
-  path: string,
-  options: RequestOptions = {},
-): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers ?? {});
   const resolvedAccessToken = resolveAccessToken(options.accessToken);
 

@@ -9,10 +9,7 @@ import Card from "../components/ui/Card";
 import Field from "../components/ui/Field";
 import FormError from "../components/ui/FormError";
 import Input from "../components/ui/Input";
-import {
-  createLoginSchema,
-  type LoginFormValues,
-} from "../lib/validation/loginSchema";
+import { createLoginSchema, type LoginFormValues } from "../lib/validation/loginSchema";
 import styles from "./LoginPage.module.scss";
 
 export default function LoginPage() {
@@ -53,30 +50,12 @@ export default function LoginPage() {
           <p className={styles.subtitle}>{t("login.subtitle")}</p>
         </div>
 
-        <form
-          className={styles.form}
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-        >
-          <Field
-            label={t("common.email")}
-            error={errors.email?.message}
-            htmlFor="email"
-          >
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              hasError={Boolean(errors.email)}
-              {...register("email")}
-            />
+        <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Field label={t("common.email")} error={errors.email?.message} htmlFor="email">
+            <Input id="email" type="email" autoComplete="email" hasError={Boolean(errors.email)} {...register("email")} />
           </Field>
 
-          <Field
-            label={t("family.password")}
-            error={errors.password?.message}
-            htmlFor="password"
-          >
+          <Field label={t("family.password")} error={errors.password?.message} htmlFor="password">
             <Input
               id="password"
               type="password"
@@ -88,12 +67,7 @@ export default function LoginPage() {
 
           <FormError>{error}</FormError>
 
-          <Button
-            className={styles.submit}
-            type="submit"
-            loading={isSubmitting}
-            fullWidth
-          >
+          <Button className={styles.submit} type="submit" loading={isSubmitting} fullWidth>
             {t("login.submit")}
           </Button>
         </form>

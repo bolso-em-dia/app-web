@@ -72,11 +72,8 @@ export type DashboardResponse = {
 };
 
 export function getDashboard(referenceMonth: string, accessToken: string) {
-  return apiRequest<DashboardResponse>(
-    `/api/dashboard?referenceMonth=${referenceMonth}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+  return apiRequest<DashboardResponse>(`/api/dashboard?referenceMonth=${referenceMonth}`, {
+    method: "GET",
+    accessToken,
+  });
 }

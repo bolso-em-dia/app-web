@@ -50,9 +50,7 @@ export function createUser(overrides: Partial<TestUser> = {}): TestUser {
   };
 }
 
-export function createAccount(
-  overrides: Partial<TestAccount> = {},
-): TestAccount {
+export function createAccount(overrides: Partial<TestAccount> = {}): TestAccount {
   return {
     id: "account-1",
     name: "Main checking",
@@ -90,10 +88,7 @@ function Providers({
   const resolvedUser = user === null ? null : createUser(user);
 
   return (
-    <MemoryRouter
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      initialEntries={[route]}
-    >
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={[route]}>
       <TestAuthProvider authOverrides={authOverrides} user={resolvedUser}>
         <I18nProvider>{children}</I18nProvider>
       </TestAuthProvider>
@@ -101,15 +96,7 @@ function Providers({
   );
 }
 
-export function renderWithProviders(
-  ui: ReactElement,
-  {
-    route = "/",
-    user,
-    authOverrides,
-    ...options
-  }: RenderWithProvidersOptions = {},
-) {
+export function renderWithProviders(ui: ReactElement, { route = "/", user, authOverrides, ...options }: RenderWithProvidersOptions = {}) {
   return render(ui, {
     wrapper: ({ children }) => (
       <Providers authOverrides={authOverrides} route={route} user={user}>

@@ -18,27 +18,20 @@ type TextFilterField = FilterFieldBase & {
   defaultValue: string;
 };
 
-type SelectFilterField<
-  TValue extends string = string,
-  TRaw = unknown,
-> = FilterFieldBase & {
+type SelectFilterField<TValue extends string = string, TRaw = unknown> = FilterFieldBase & {
   kind: "select";
   value: TValue | "";
   defaultValue: TValue | "";
   options: FilterOption<TValue, TRaw>[];
 };
 
-type MultiSelectFilterField<
-  TValue extends string = string,
-  TRaw = unknown,
-> = FilterFieldBase & {
+type MultiSelectFilterField<TValue extends string = string, TRaw = unknown> = FilterFieldBase & {
   kind: "multi-select";
   value: TValue[];
   defaultValue: TValue[];
   options: FilterOption<TValue, TRaw>[];
 };
 
-type FilterFieldDefinition =
-  TextFilterField | SelectFilterField | MultiSelectFilterField;
+type FilterFieldDefinition = TextFilterField | SelectFilterField | MultiSelectFilterField;
 
 export type FilterFields = Record<string, FilterFieldDefinition>;

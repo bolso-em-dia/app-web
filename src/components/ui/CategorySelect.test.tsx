@@ -21,15 +21,7 @@ const OPTIONS: CategoryOption[] = [
 function Harness() {
   const [value, setValue] = useState("");
 
-  return (
-    <CategorySelect
-      id="category-select"
-      onChange={setValue}
-      options={OPTIONS}
-      placeholder="Selecione uma categoria"
-      value={value}
-    />
-  );
+  return <CategorySelect id="category-select" onChange={setValue} options={OPTIONS} placeholder="Selecione uma categoria" value={value} />;
 }
 
 describe("CategorySelect", () => {

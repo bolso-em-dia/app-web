@@ -2,12 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import {
-  resetFetchMocks,
-  mockJsonResponse,
-  mockErrorResponse,
-  mockFetchUrl,
-} from "../../test/setup";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import ExchangeRateIndicator from "./ExchangeRateIndicator";
 
 const userWithForeignCurrency = {
@@ -34,9 +29,7 @@ const userWithoutForeignCurrency = {
 
 function renderIndicator(user = userWithForeignCurrency) {
   return render(
-    <MemoryRouter
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <TestAuthProvider user={user}>
         <ExchangeRateIndicator />
       </TestAuthProvider>
@@ -102,11 +95,7 @@ describe("ExchangeRateIndicator", () => {
     await screen.findByText(/US\$ 1 = R\$ 5,10/);
     const button = screen.getByRole("button", { name: "Atualizar cotação" });
     fireEvent.mouseOver(button);
-    expect(
-      await screen.findByText(
-        "Cotação desatualizada. Última atualização pode estar incorreta.",
-      ),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Cotação desatualizada. Última atualização pode estar incorreta.")).toBeInTheDocument();
   });
 
   it("formats rate with 4 decimal places", async () => {

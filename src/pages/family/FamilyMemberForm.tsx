@@ -26,8 +26,7 @@ import {
 } from "../../lib/validation/familyMemberSchema";
 import styles from "./FamilyPage.module.scss";
 
-type FamilyMemberFormValues =
-  CreateFamilyMemberFormValues | UpdateFamilyMemberFormValues;
+type FamilyMemberFormValues = CreateFamilyMemberFormValues | UpdateFamilyMemberFormValues;
 
 const CREATE_DEFAULT_VALUES: CreateFamilyMemberFormValues = {
   name: "",
@@ -43,9 +42,7 @@ type FamilyMemberFormProps = {
   onCancel: () => void;
 };
 
-function buildInitialValues(
-  member: FamilyMember | null,
-): FamilyMemberFormValues {
+function buildInitialValues(member: FamilyMember | null): FamilyMemberFormValues {
   if (!member) {
     return CREATE_DEFAULT_VALUES;
   }
@@ -59,11 +56,7 @@ function buildInitialValues(
   };
 }
 
-export default function FamilyMemberForm({
-  member,
-  onSuccess,
-  onCancel,
-}: FamilyMemberFormProps) {
+export default function FamilyMemberForm({ member, onSuccess, onCancel }: FamilyMemberFormProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [isSaving, setIsSaving] = useState(false);
@@ -75,19 +68,11 @@ export default function FamilyMemberForm({
   const isCreating = member === null;
   const initialValues = useMemo(() => buildInitialValues(member), [member]);
 
-  const createFamilyMemberSchema = useMemo(
-    () => buildCreateFamilyMemberSchema(t),
-    [t],
-  );
-  const updateFamilyMemberSchema = useMemo(
-    () => createUpdateFamilyMemberSchema(t),
-    [t],
-  );
+  const createFamilyMemberSchema = useMemo(() => buildCreateFamilyMemberSchema(t), [t]);
+  const updateFamilyMemberSchema = useMemo(() => createUpdateFamilyMemberSchema(t), [t]);
 
   const form = useForm<FamilyMemberFormValues>({
-    resolver: zodResolver(
-      isCreating ? createFamilyMemberSchema : updateFamilyMemberSchema,
-    ),
+    resolver: zodResolver(isCreating ? createFamilyMemberSchema : updateFamilyMemberSchema),
     defaultValues: initialValues,
   });
 
@@ -161,70 +146,31 @@ export default function FamilyMemberForm({
   return (
     <>
       <div className={styles.drawerStack}>
-        <form
-          className={styles.form}
-          onSubmit={form.handleSubmit(onSubmit)}
-          noValidate
-        >
-          <Field
-            error={form.formState.errors.name?.message}
-            htmlFor="family-name"
-            label={t("common.name")}
-          >
-            <Input
-              id="family-name"
-              hasError={Boolean(form.formState.errors.name)}
-              {...form.register("name")}
-            />
+        <form className={styles.form} onSubmit={form.handleSubmit(onSubmit)} noValidate>
+          <Field error={form.formState.errors.name?.message} htmlFor="family-name" label={t("common.name")}>
+            <Input id="family-name" hasError={Boolean(form.formState.errors.name)} {...form.register("name")} />
           </Field>
 
-          <Field
-            error={form.formState.errors.email?.message}
-            htmlFor="family-email"
-            label={t("common.email")}
-          >
-            <Input
-              id="family-email"
-              hasError={Boolean(form.formState.errors.email)}
-              type="email"
-              {...form.register("email")}
-            />
+          <Field error={form.formState.errors.email?.message} htmlFor="family-email" label={t("common.email")}>
+            <Input id="family-email" hasError={Boolean(form.formState.errors.email)} type="email" {...form.register("email")} />
           </Field>
 
           <Field
             error={form.formState.errors.password?.message}
             htmlFor="family-password"
-            label={
-              isCreating ? t("family.password") : t("family.passwordOptional")
-            }
+            label={isCreating ? t("family.password") : t("family.passwordOptional")}
           >
-            <Input
-              id="family-password"
-              hasError={Boolean(form.formState.errors.password)}
-              type="password"
-              {...form.register("password")}
-            />
+            <Input id="family-password" hasError={Boolean(form.formState.errors.password)} type="password" {...form.register("password")} />
           </Field>
 
-          <Field
-            error={form.formState.errors.role?.message}
-            htmlFor="family-role"
-            label={t("common.role")}
-          >
-            <Select
-              id="family-role"
-              hasError={Boolean(form.formState.errors.role)}
-              {...form.register("role")}
-            >
+          <Field error={form.formState.errors.role?.message} htmlFor="family-role" label={t("common.role")}>
+            <Select id="family-role" hasError={Boolean(form.formState.errors.role)} {...form.register("role")}>
               <option value="USER">{t("roles.USER")}</option>
               <option value="ADMIN">{t("roles.ADMIN")}</option>
             </Select>
           </Field>
 
-          <Checkbox
-            label={t("family.allowanceEnabled")}
-            {...form.register("allowanceEnabled")}
-          />
+          <Checkbox label={t("family.allowanceEnabled")} {...form.register("allowanceEnabled")} />
 
           <FormError>{error}</FormError>
 
@@ -238,17 +184,11 @@ export default function FamilyMemberForm({
               </Button>
             ) : (
               <Button
-                onClick={
-                  member?.active
-                    ? () => setIsArchiveConfirmOpen(true)
-                    : () => setIsRestoreConfirmOpen(true)
-                }
+                onClick={member?.active ? () => setIsArchiveConfirmOpen(true) : () => setIsRestoreConfirmOpen(true)}
                 type="button"
                 variant={member?.active ? "danger" : "secondary"}
               >
-                {member?.active
-                  ? t("common.archive")
-                  : t("family.restoreMember")}
+                {member?.active ? t("common.archive") : t("family.restoreMember")}
               </Button>
             )}
           </div>

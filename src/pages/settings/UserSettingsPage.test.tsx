@@ -2,12 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import {
-  resetFetchMocks,
-  mockJsonResponse,
-  mockErrorResponse,
-  mockFetchUrl,
-} from "../../test/setup";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import UserSettingsPage from "./UserSettingsPage";
 
 describe("UserSettingsPage", () => {
@@ -38,10 +33,7 @@ describe("UserSettingsPage", () => {
     // Configure GET for /api/me/preferences
     mockFetchUrl("/api/me/preferences", (input, init) => {
       if (init?.method === "PUT") {
-        savedPayload = JSON.parse(String(init.body ?? "{}")) as Record<
-          string,
-          unknown
-        >;
+        savedPayload = JSON.parse(String(init.body ?? "{}")) as Record<string, unknown>;
         return mockJsonResponse({
           defaultAccountId: "acc-1",
           locale: "en-US",
@@ -91,10 +83,7 @@ describe("UserSettingsPage", () => {
 
     mockFetchUrl("/api/me/preferences", (input, init) => {
       if (init?.method === "PUT") {
-        savedPayload = JSON.parse(String(init.body ?? "{}")) as Record<
-          string,
-          unknown
-        >;
+        savedPayload = JSON.parse(String(init.body ?? "{}")) as Record<string, unknown>;
         return mockJsonResponse({
           defaultAccountId: null,
           locale: "pt-BR",
@@ -110,10 +99,7 @@ describe("UserSettingsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/settings"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -128,18 +114,10 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByText("Preferências pessoais"),
-    ).toBeInTheDocument();
-    fireEvent.click(
-      within(
-        screen.getByText("Preferências pessoais").closest("form")!,
-      ).getByRole("button", { name: "Salvar" }),
-    );
+    expect(await screen.findByText("Preferências pessoais")).toBeInTheDocument();
+    fireEvent.click(within(screen.getByText("Preferências pessoais").closest("form")!).getByRole("button", { name: "Salvar" }));
 
-    expect(
-      await screen.findByText("Configurações salvas."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Configurações salvas.")).toBeInTheDocument();
     expect(savedPayload).toEqual({
       defaultAccountId: null,
       locale: "pt-BR",
@@ -183,10 +161,7 @@ describe("UserSettingsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/settings"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -201,26 +176,15 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByText("Preferências pessoais"),
-    ).toBeInTheDocument();
-    fireEvent.click(
-      within(
-        screen.getByText("Preferências pessoais").closest("form")!,
-      ).getByRole("button", { name: "Salvar" }),
-    );
+    expect(await screen.findByText("Preferências pessoais")).toBeInTheDocument();
+    fireEvent.click(within(screen.getByText("Preferências pessoais").closest("form")!).getByRole("button", { name: "Salvar" }));
 
-    expect(
-      await screen.findByText("Não foi possível salvar as configurações."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Não foi possível salvar as configurações.")).toBeInTheDocument();
   });
 
   it("renders the direct form and saves the preferences", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/settings"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -235,31 +199,21 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      screen.getByRole("heading", { name: "Configurações" }),
-    ).toBeInTheDocument();
-    expect(
-      await screen.findByText("Preferências pessoais"),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Configurações" })).toBeInTheDocument();
+    expect(await screen.findByText("Preferências pessoais")).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
 
-    const prefsForm = screen
-      .getByText("Preferências pessoais")
-      .closest("form")!;
+    const prefsForm = screen.getByText("Preferências pessoais").closest("form")!;
     fireEvent.change(screen.getByRole("combobox", { name: "Conta padrão" }), {
       target: { value: "acc-1" },
     });
     fireEvent.change(screen.getByRole("combobox", { name: "Idioma" }), {
       target: { value: "en-US" },
     });
-    fireEvent.click(
-      screen.getByRole("switch", { name: "Considera orçamentos" }),
-    );
+    fireEvent.click(screen.getByRole("switch", { name: "Considera orçamentos" }));
     fireEvent.click(within(prefsForm).getByRole("button", { name: "Salvar" }));
 
-    expect(
-      await screen.findByText("Configurações salvas."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Configurações salvas.")).toBeInTheDocument();
     expect(savedPayload).toEqual({
       defaultAccountId: "acc-1",
       locale: "en-US",
@@ -270,10 +224,7 @@ describe("UserSettingsPage", () => {
 
   it("saves the foreign currency preference when enabling it", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/settings"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -288,15 +239,11 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    const prefsForm = (
-      await screen.findByText("Preferências pessoais")
-    ).closest("form")!;
+    const prefsForm = (await screen.findByText("Preferências pessoais")).closest("form")!;
     fireEvent.click(screen.getByRole("switch", { name: "Desabilitado" }));
     fireEvent.click(within(prefsForm).getByRole("button", { name: "Salvar" }));
 
-    expect(
-      await screen.findByText("Configurações salvas."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Configurações salvas.")).toBeInTheDocument();
     expect(savedPayload).toEqual({
       defaultAccountId: null,
       locale: "pt-BR",
@@ -322,10 +269,7 @@ describe("UserSettingsPage", () => {
 
     mockFetchUrl("/api/me/preferences", (input, init) => {
       if (init?.method === "PUT") {
-        savedPayload = JSON.parse(String(init.body ?? "{}")) as Record<
-          string,
-          unknown
-        >;
+        savedPayload = JSON.parse(String(init.body ?? "{}")) as Record<string, unknown>;
         return mockJsonResponse({
           defaultAccountId: null,
           locale: "pt-BR",
@@ -343,10 +287,7 @@ describe("UserSettingsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/settings"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -367,15 +308,11 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    const prefsForm = (
-      await screen.findByText("Preferências pessoais")
-    ).closest("form")!;
+    const prefsForm = (await screen.findByText("Preferências pessoais")).closest("form")!;
     fireEvent.click(screen.getByRole("switch", { name: "Habilitado" }));
     fireEvent.click(within(prefsForm).getByRole("button", { name: "Salvar" }));
 
-    expect(
-      await screen.findByText("Configurações salvas."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Configurações salvas.")).toBeInTheDocument();
     expect(savedPayload).toEqual({
       defaultAccountId: null,
       locale: "pt-BR",
@@ -386,10 +323,7 @@ describe("UserSettingsPage", () => {
 
   it("changes the current user password from settings", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/settings"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -404,9 +338,7 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByText("Preferências pessoais"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Preferências pessoais")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Senha atual"), {
       target: { value: "admin12345678" },
@@ -417,11 +349,7 @@ describe("UserSettingsPage", () => {
     fireEvent.change(screen.getByLabelText("Confirmar nova senha"), {
       target: { value: "novaSenha123" },
     });
-    fireEvent.click(
-      within(
-        screen.getByRole("heading", { name: "Senha" }).closest("form")!,
-      ).getByRole("button", { name: "Salvar" }),
-    );
+    fireEvent.click(within(screen.getByRole("heading", { name: "Senha" }).closest("form")!).getByRole("button", { name: "Salvar" }));
 
     expect(await screen.findByText("Senha atualizada.")).toBeInTheDocument();
   });

@@ -17,30 +17,15 @@ function CategoryContent({ category }: { category: CategoryOption }) {
 
   return (
     <span className={styles.value}>
-      <span
-        aria-hidden="true"
-        className={styles.lead}
-        style={category.color ? { color: category.color } : undefined}
-      >
-        {Icon ? (
-          <Icon className={styles.icon} />
-        ) : (
-          <span className={styles.dot} />
-        )}
+      <span aria-hidden="true" className={styles.lead} style={category.color ? { color: category.color } : undefined}>
+        {Icon ? <Icon className={styles.icon} /> : <span className={styles.dot} />}
       </span>
       <span className={styles.text}>{category.name}</span>
     </span>
   );
 }
 
-export default function CategoryMultiSelect({
-  id,
-  value,
-  options,
-  placeholder,
-  onChange,
-  hasError = false,
-}: CategoryMultiSelectProps) {
+export default function CategoryMultiSelect({ id, value, options, placeholder, onChange, hasError = false }: CategoryMultiSelectProps) {
   return (
     <div className={styles.stack}>
       <MultiSelect
@@ -55,9 +40,7 @@ export default function CategoryMultiSelect({
           currentSelectedOptions.length > 0 ? (
             <span className={styles.triggerChipList}>
               {currentSelectedOptions.map((option) => {
-                const category = options.find(
-                  (currentOption) => currentOption.id === option.id,
-                );
+                const category = options.find((currentOption) => currentOption.id === option.id);
 
                 return category ? (
                   <span className={styles.triggerChip} key={category.id}>

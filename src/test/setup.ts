@@ -19,10 +19,7 @@ const mockResponses: Map<string, MockResponseEntry> = new Map();
  * Configura um mock para uma URL específica.
  * Suporta string (match parcial) ou RegExp.
  */
-export function mockFetchUrl(
-  pattern: string | RegExp,
-  response: MockResponseConfig | (() => MockResponseConfig),
-) {
+export function mockFetchUrl(pattern: string | RegExp, response: MockResponseConfig | (() => MockResponseConfig)) {
   const key = typeof pattern === "string" ? pattern : pattern.source;
   mockResponses.set(key, {
     pattern,
@@ -53,10 +50,7 @@ export function resetFetchMocks() {
  * Adiciona uma response à fila de chamadas para uma URL.
  * Útil para testar múltiplas chamadas com responses diferentes.
  */
-export function enqueueFetchResponse(
-  pattern: string,
-  response: MockResponseConfig,
-) {
+export function enqueueFetchResponse(pattern: string, response: MockResponseConfig) {
   const key = pattern;
   let entry = mockResponses.get(key);
   if (!entry) {
@@ -85,10 +79,7 @@ export function mockJsonResponse<T>(data: T, status = 200): MockResponseConfig {
 /**
  * Cria uma response de erro mock.
  */
-export function mockErrorResponse(
-  status: number,
-  message?: string,
-): MockResponseConfig {
+export function mockErrorResponse(status: number, message?: string): MockResponseConfig {
   return {
     ok: false,
     status,
@@ -98,8 +89,7 @@ export function mockErrorResponse(
 }
 
 function resolveResponse(
-  config:
-    MockResponseConfig | (() => MockResponseConfig) | (() => Promise<Response>),
+  config: MockResponseConfig | (() => MockResponseConfig) | (() => Promise<Response>),
 ): Response | Promise<Response> {
   // If config is a function that might return a Promise<Response> (for pending state testing)
   if (typeof config === "function") {
@@ -147,10 +137,7 @@ const defaultImpl = (...args: unknown[]) => {
 
   // Buscar match em mockResponses
   for (const entry of mockResponses.values()) {
-    const matches =
-      entry.pattern instanceof RegExp
-        ? entry.pattern.test(url)
-        : url.includes(entry.pattern);
+    const matches = entry.pattern instanceof RegExp ? entry.pattern.test(url) : url.includes(entry.pattern);
 
     if (matches) {
       // Se há fila de responses, consome a primeira
@@ -161,12 +148,7 @@ const defaultImpl = (...args: unknown[]) => {
       // Caso contrário, usa a response configurada
       // Se a response é uma função, passa os argumentos para ela
       if (typeof entry.response === "function") {
-        const result = (
-          entry.response as (
-            input: string,
-            init?: RequestInit,
-          ) => MockResponseConfig | Promise<Response>
-        )(url, options);
+        const result = (entry.response as (input: string, init?: RequestInit) => MockResponseConfig | Promise<Response>)(url, options);
         // Se o resultado já é uma Promise, retorna diretamente
         if (result instanceof Promise) {
           return result;
@@ -194,9 +176,7 @@ const defaultImpl = (...args: unknown[]) => {
     } as Response);
   }
 
-  return Promise.reject(
-    new Error(`fetch mock não configurado para este teste. URL: ${url}`),
-  );
+  return Promise.reject(new Error(`fetch mock não configurado para este teste. URL: ${url}`));
 };
 
 Object.defineProperty(globalThis, "fetch", {

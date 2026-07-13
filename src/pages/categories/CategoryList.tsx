@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  listCategories,
-  listCategoryOptions,
-  type Category,
-  type CategoryOption,
-} from "../../app/api/categories";
+import { listCategories, listCategoryOptions, type Category, type CategoryOption } from "../../app/api/categories";
 import { useAuth } from "../../app/auth/useAuth";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
@@ -24,13 +19,7 @@ interface CategoryListProps {
   onOptionsLoaded: (options: CategoryOption[]) => void;
 }
 
-export default function CategoryList({
-  filters,
-  selectedId,
-  onSelect,
-  refreshKey,
-  onOptionsLoaded,
-}: CategoryListProps) {
+export default function CategoryList({ filters, selectedId, onSelect, refreshKey, onOptionsLoaded }: CategoryListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
 

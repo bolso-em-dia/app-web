@@ -21,20 +21,11 @@ type ColorSwatchSelectProps = {
   onChange: (value: string) => void;
 };
 
-export default function ColorSwatchSelect({
-  id,
-  value,
-  options,
-  clearLabel,
-  onChange,
-}: ColorSwatchSelectProps) {
+export default function ColorSwatchSelect({ id, value, options, clearLabel, onChange }: ColorSwatchSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const listboxId = useId();
-  const selectedOption = useMemo(
-    () => options.find((option) => option.value === value) ?? null,
-    [options, value],
-  );
+  const selectedOption = useMemo(() => options.find((option) => option.value === value) ?? null, [options, value]);
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -69,15 +60,9 @@ export default function ColorSwatchSelect({
         <span
           aria-hidden="true"
           className={styles.preview}
-          style={
-            selectedOption
-              ? { backgroundColor: selectedOption.value }
-              : undefined
-          }
+          style={selectedOption ? { backgroundColor: selectedOption.value } : undefined}
         />
-        <span className={styles.triggerLabel}>
-          {selectedOption?.label ?? clearLabel}
-        </span>
+        <span className={styles.triggerLabel}>{selectedOption?.label ?? clearLabel}</span>
         <span aria-hidden="true" className={styles.chevron}>
           ▾
         </span>
@@ -87,10 +72,7 @@ export default function ColorSwatchSelect({
         <div className={styles.dropdown} id={listboxId} role="listbox">
           <button
             aria-selected={value === ""}
-            className={clsx(
-              styles.option,
-              value === "" ? styles.optionSelected : "",
-            )}
+            className={clsx(styles.option, value === "" ? styles.optionSelected : "")}
             onClick={() => {
               onChange("");
               setIsOpen(false);
@@ -108,10 +90,7 @@ export default function ColorSwatchSelect({
             return (
               <button
                 aria-selected={value === option.value}
-                className={clsx(
-                  styles.option,
-                  value === option.value ? styles.optionSelected : "",
-                )}
+                className={clsx(styles.option, value === option.value ? styles.optionSelected : "")}
                 key={option.value}
                 onClick={() => {
                   onChange(option.value);
@@ -121,11 +100,7 @@ export default function ColorSwatchSelect({
                 style={{ backgroundColor: option.value, color: textColor }}
                 type="button"
               >
-                <span
-                  aria-hidden="true"
-                  className={styles.optionSwatch}
-                  style={{ backgroundColor: option.value }}
-                />
+                <span aria-hidden="true" className={styles.optionSwatch} style={{ backgroundColor: option.value }} />
                 <span className={styles.optionLabel}>{option.label}</span>
               </button>
             );

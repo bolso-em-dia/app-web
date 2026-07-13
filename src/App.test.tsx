@@ -6,10 +6,7 @@ import { TestAuthProvider } from "./app/auth/TestAuthProvider";
 describe("App", () => {
   it("redirects flagged users to the mandatory password change page", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -25,8 +22,6 @@ describe("App", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByRole("heading", { name: "Defina uma nova senha" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Defina uma nova senha" })).toBeInTheDocument();
   });
 });

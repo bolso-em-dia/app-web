@@ -9,11 +9,7 @@ type SimplePaginationProps = {
   onPageChange: (page: number) => void;
 };
 
-export default function SimplePagination({
-  page,
-  totalPages,
-  onPageChange,
-}: SimplePaginationProps) {
+export default function SimplePagination({ page, totalPages, onPageChange }: SimplePaginationProps) {
   const { t } = useI18n();
 
   if (totalPages <= 1) {
@@ -22,11 +18,7 @@ export default function SimplePagination({
 
   return (
     <div className={styles.root}>
-      <Button
-        type="button"
-        disabled={page === 0}
-        onClick={() => onPageChange(page - 1)}
-      >
+      <Button type="button" disabled={page === 0} onClick={() => onPageChange(page - 1)}>
         <ChevronLeft />
       </Button>
       <span>
@@ -35,11 +27,7 @@ export default function SimplePagination({
           total: totalPages,
         })}
       </span>
-      <Button
-        type="button"
-        disabled={page >= totalPages - 1}
-        onClick={() => onPageChange(page + 1)}
-      >
+      <Button type="button" disabled={page >= totalPages - 1} onClick={() => onPageChange(page + 1)}>
         <ChevronRight />
       </Button>
     </div>

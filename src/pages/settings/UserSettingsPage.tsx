@@ -2,10 +2,7 @@ import { DollarSign, Landmark, Languages, WalletCards } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
-import {
-  updateCurrentUserPreferences,
-  type UserPreferences,
-} from "../../app/api/userPreferences";
+import { updateCurrentUserPreferences, type UserPreferences } from "../../app/api/userPreferences";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import Spinner from "../../components/feedback/Spinner";
@@ -27,9 +24,7 @@ type UserSettingsFormValues = {
   showForeignCurrency: boolean;
 };
 
-function mapPreferencesToFormValues(
-  preferences: UserPreferences | undefined,
-): UserSettingsFormValues {
+function mapPreferencesToFormValues(preferences: UserPreferences | undefined): UserSettingsFormValues {
   return {
     defaultAccountId: preferences?.defaultAccountId ?? "",
     locale: preferences?.locale ?? "pt-BR",
@@ -44,11 +39,7 @@ type SettingFieldHeaderProps = {
   tooltip: string;
 };
 
-function SettingFieldHeader({
-  icon: Icon,
-  label,
-  tooltip,
-}: SettingFieldHeaderProps) {
+function SettingFieldHeader({ icon: Icon, label, tooltip }: SettingFieldHeaderProps) {
   return (
     <div className={styles.fieldHeader}>
       <div className={styles.fieldTitleWrap}>
@@ -61,11 +52,7 @@ function SettingFieldHeader({
 }
 
 export default function UserSettingsPage() {
-  const {
-    accessToken,
-    user,
-    updateUserPreferences: applyUserPreferences,
-  } = useAuth();
+  const { accessToken, user, updateUserPreferences: applyUserPreferences } = useAuth();
   const { t } = useI18n();
   const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,10 +78,7 @@ export default function UserSettingsPage() {
     setError(null);
 
     try {
-      const accounts = await listAccountOptions(
-        getCurrentReferenceMonth(),
-        accessToken,
-      );
+      const accounts = await listAccountOptions(getCurrentReferenceMonth(), accessToken);
       setAccountOptions(accounts);
     } catch {
       setError(t("settings.error"));
@@ -146,29 +130,15 @@ export default function UserSettingsPage() {
       {!isLoading ? (
         <div className={styles.stack}>
           <Card className={styles.formCard}>
-            <form
-              className={styles.form}
-              noValidate
-              onSubmit={form.handleSubmit((values) => void onSubmit(values))}
-            >
+            <form className={styles.form} noValidate onSubmit={form.handleSubmit((values) => void onSubmit(values))}>
               <div className={styles.formIntro}>
                 <h2 className={styles.formTitle}>{t("settings.formTitle")}</h2>
-                <p className={styles.formSubtitle}>
-                  {t("settings.formSubtitle")}
-                </p>
+                <p className={styles.formSubtitle}>{t("settings.formSubtitle")}</p>
               </div>
 
               <div className={styles.fieldGroup}>
-                <SettingFieldHeader
-                  icon={Landmark}
-                  label={t("settings.account.label")}
-                  tooltip={t("settings.account.description")}
-                />
-                <Select
-                  aria-label={t("settings.account.label")}
-                  id="defaultAccountId"
-                  {...form.register("defaultAccountId")}
-                >
+                <SettingFieldHeader icon={Landmark} label={t("settings.account.label")} tooltip={t("settings.account.description")} />
+                <Select aria-label={t("settings.account.label")} id="defaultAccountId" {...form.register("defaultAccountId")}>
                   <option value="">{t("settings.account.empty")}</option>
                   {accountOptions.map((account) => (
                     <option key={account.id} value={account.id}>
@@ -179,37 +149,20 @@ export default function UserSettingsPage() {
               </div>
 
               <div className={styles.fieldGroup}>
-                <SettingFieldHeader
-                  icon={Languages}
-                  label={t("settings.locale.label")}
-                  tooltip={t("settings.locale.description")}
-                />
-                <Select
-                  aria-label={t("settings.locale.label")}
-                  id="locale"
-                  {...form.register("locale")}
-                >
+                <SettingFieldHeader icon={Languages} label={t("settings.locale.label")} tooltip={t("settings.locale.description")} />
+                <Select aria-label={t("settings.locale.label")} id="locale" {...form.register("locale")}>
                   <option value="pt-BR">{t("settings.locale.pt-BR")}</option>
                   <option value="en-US">{t("settings.locale.en-US")}</option>
                 </Select>
               </div>
 
               <div className={styles.fieldGroup}>
-                <SettingFieldHeader
-                  icon={WalletCards}
-                  label={t("settings.balance.label")}
-                  tooltip={t("settings.balance.description")}
-                />
+                <SettingFieldHeader icon={WalletCards} label={t("settings.balance.label")} tooltip={t("settings.balance.description")} />
                 <Switch
                   id="showBalanceWithBudgets"
                   checked={form.watch("showBalanceWithBudgets")}
                   label={t("settings.balance.withBudgets")}
-                  onChange={(event) =>
-                    form.setValue(
-                      "showBalanceWithBudgets",
-                      event.currentTarget.checked,
-                    )
-                  }
+                  onChange={(event) => form.setValue("showBalanceWithBudgets", event.currentTarget.checked)}
                 />
               </div>
 
@@ -222,23 +175,12 @@ export default function UserSettingsPage() {
                 <Switch
                   id="showForeignCurrency"
                   checked={form.watch("showForeignCurrency")}
-                  label={
-                    form.watch("showForeignCurrency")
-                      ? t("settings.foreignCurrency.enabled")
-                      : t("settings.foreignCurrency.disabled")
-                  }
-                  onChange={(event) =>
-                    form.setValue(
-                      "showForeignCurrency",
-                      event.currentTarget.checked,
-                    )
-                  }
+                  label={form.watch("showForeignCurrency") ? t("settings.foreignCurrency.enabled") : t("settings.foreignCurrency.disabled")}
+                  onChange={(event) => form.setValue("showForeignCurrency", event.currentTarget.checked)}
                 />
               </div>
 
-              {successMessage ? (
-                <p className={styles.successMessage}>{successMessage}</p>
-              ) : null}
+              {successMessage ? <p className={styles.successMessage}>{successMessage}</p> : null}
               <FormError>{error}</FormError>
 
               <div className={styles.formActions}>

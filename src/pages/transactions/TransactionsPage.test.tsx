@@ -1,23 +1,9 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import {
-  getCurrentReferenceMonth,
-  shiftReferenceMonth,
-} from "../../lib/formatters/date";
-import {
-  resetFetchMocks,
-  mockJsonResponse,
-  mockErrorResponse,
-  mockFetchUrl,
-} from "../../test/setup";
+import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import { clearCachedOptionsResources } from "../../lib/options/useCachedOptionsResource";
 import TransactionsPage from "./TransactionsPage";
 
@@ -109,23 +95,15 @@ const defaultMembersResponse = {
 
 function setupDefaultMocks() {
   mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
-  mockFetchUrl(
-    "/api/transactions?",
-    mockJsonResponse(defaultTransactionsResponse),
-  );
+  mockFetchUrl("/api/transactions?", mockJsonResponse(defaultTransactionsResponse));
   mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
-  mockFetchUrl(
-    "/api/categories/options",
-    mockJsonResponse(defaultCategoriesResponse),
-  );
+  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
   mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
   mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 }
 
 function selectCategory(container: HTMLElement, categoryName: string) {
-  fireEvent.click(
-    within(container).getByLabelText("Categoria", { selector: "button" }),
-  );
+  fireEvent.click(within(container).getByLabelText("Categoria", { selector: "button" }));
   fireEvent.click(
     within(container).getByRole("option", {
       name: new RegExp(categoryName, "i"),
@@ -147,10 +125,7 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -165,9 +140,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByRole("button", { name: /Groceries/i }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
     expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
@@ -188,18 +161,12 @@ describe("TransactionsPage", () => {
       },
     );
     selectCategory(drawer, "Groceries");
-    fireEvent.click(
-      within(drawer).getByRole("switch", { name: "Titularidade Individual" }),
-    );
+    fireEvent.click(within(drawer).getByRole("switch", { name: "Titularidade Individual" }));
 
-    fireEvent.click(
-      within(drawer).getByRole("button", { name: "Salvar e criar novo" }),
-    );
+    fireEvent.click(within(drawer).getByRole("button", { name: "Salvar e criar novo" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("O membro é obrigatório para transações individuais."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("O membro é obrigatório para transações individuais.")).toBeInTheDocument();
     });
   });
 
@@ -207,10 +174,7 @@ describe("TransactionsPage", () => {
     resetFetchMocks();
 
     setupDefaultMocks();
-    mockFetchUrl(
-      "/api/transactions/descriptions",
-      mockJsonResponse(["Groceries", "Groceries monthly"]),
-    );
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse(["Groceries", "Groceries monthly"]));
 
     // Mock POST response
     let postCallCount = 0;
@@ -284,10 +248,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -302,9 +263,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByRole("button", { name: /Groceries/i }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
     const drawer = screen.getByRole("dialog");
@@ -315,11 +274,7 @@ describe("TransactionsPage", () => {
     });
 
     await waitFor(() => {
-      expect(
-        within(
-          screen.getByTestId("transaction-description-suggestions"),
-        ).getByText("Groceries monthly"),
-      ).toBeInTheDocument();
+      expect(within(screen.getByTestId("transaction-description-suggestions")).getByText("Groceries monthly")).toBeInTheDocument();
     });
 
     fireEvent.change(within(drawer).getByLabelText("Valor"), {
@@ -338,20 +293,14 @@ describe("TransactionsPage", () => {
     );
     selectCategory(drawer, "Groceries");
 
-    fireEvent.click(
-      within(drawer).getByRole("button", { name: "Salvar e criar novo" }),
-    );
+    fireEvent.click(within(drawer).getByRole("button", { name: "Salvar e criar novo" }));
 
     await waitFor(() => {
       expect(within(drawer).getByLabelText("Descrição")).toHaveValue("");
     });
 
-    expect(
-      within(drawer).getByRole("radio", { name: "Receita" }),
-    ).toHaveAttribute("aria-checked", "true");
-    expect(within(drawer).getByLabelText("Data da transação")).toHaveValue(
-      "2026-07-03",
-    );
+    expect(within(drawer).getByRole("radio", { name: "Receita" })).toHaveAttribute("aria-checked", "true");
+    expect(within(drawer).getByLabelText("Data da transação")).toHaveValue("2026-07-03");
     expect(
       within(drawer).getByLabelText("Conta", {
         selector: "#transaction-account",
@@ -395,13 +344,7 @@ describe("TransactionsPage", () => {
     // Mock reload after create
     mockFetchUrl("/api/transactions?", (input) => {
       const url = String(input);
-      if (
-        vi
-          .mocked(fetch)
-          .mock.calls.filter(
-            ([u]) => String(u).includes("/api/transactions") && u !== url,
-          ).length > 5
-      ) {
+      if (vi.mocked(fetch).mock.calls.filter(([u]) => String(u).includes("/api/transactions") && u !== url).length > 5) {
         return mockJsonResponse({
           items: [
             {
@@ -419,10 +362,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -437,9 +377,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByRole("button", { name: /Groceries/i }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
     const drawer = screen.getByRole("dialog");
@@ -465,27 +403,14 @@ describe("TransactionsPage", () => {
 
     await waitFor(() => {
       expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(
-            ([input, init]) =>
-              String(input).endsWith("/api/transactions") &&
-              init?.method === "POST",
-          ),
+        vi.mocked(fetch).mock.calls.some(([input, init]) => String(input).endsWith("/api/transactions") && init?.method === "POST"),
       ).toBe(true);
     });
 
     const createCall = vi
       .mocked(fetch)
-      .mock.calls.find(
-        ([input, init]) =>
-          String(input).endsWith("/api/transactions") &&
-          init?.method === "POST",
-      );
-    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<
-      string,
-      unknown
-    >;
+      .mock.calls.find(([input, init]) => String(input).endsWith("/api/transactions") && init?.method === "POST");
+    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<string, unknown>;
 
     expect(payload).toMatchObject({
       type: "INCOME",
@@ -533,10 +458,7 @@ describe("TransactionsPage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -551,9 +473,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByRole("button", { name: /Groceries/i }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
     const drawer = screen.getByRole("dialog");
@@ -573,9 +493,7 @@ describe("TransactionsPage", () => {
       },
     );
     selectCategory(drawer, "Groceries");
-    fireEvent.click(
-      within(drawer).getByRole("switch", { name: "Titularidade Individual" }),
-    );
+    fireEvent.click(within(drawer).getByRole("switch", { name: "Titularidade Individual" }));
     fireEvent.change(within(drawer).getByLabelText("Membro"), {
       target: { value: "member-1" },
     });
@@ -588,27 +506,14 @@ describe("TransactionsPage", () => {
 
     await waitFor(() => {
       expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(
-            ([input, init]) =>
-              String(input).endsWith("/api/transactions") &&
-              init?.method === "POST",
-          ),
+        vi.mocked(fetch).mock.calls.some(([input, init]) => String(input).endsWith("/api/transactions") && init?.method === "POST"),
       ).toBe(true);
     });
 
     const createCall = vi
       .mocked(fetch)
-      .mock.calls.find(
-        ([input, init]) =>
-          String(input).endsWith("/api/transactions") &&
-          init?.method === "POST",
-      );
-    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<
-      string,
-      unknown
-    >;
+      .mock.calls.find(([input, init]) => String(input).endsWith("/api/transactions") && init?.method === "POST");
+    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<string, unknown>;
 
     expect(payload).toMatchObject({
       type: "EXPENSE",
@@ -626,10 +531,7 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -652,34 +554,22 @@ describe("TransactionsPage", () => {
 
     fireEvent.click(transactionButton);
 
-    expect(
-      screen.queryByRole("alertdialog", { name: "Excluir transação" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("alertdialog", { name: "Excluir transação" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
     const modal = screen.getByRole("alertdialog", {
       name: "Excluir transação",
     });
-    expect(
-      within(modal).getByText("Confirme a exclusão da transação selecionada."),
-    ).toBeInTheDocument();
+    expect(within(modal).getByText("Confirme a exclusão da transação selecionada.")).toBeInTheDocument();
 
     fireEvent.click(within(modal).getByRole("button", { name: "Cancelar" }));
 
     await waitFor(() => {
-      expect(
-        screen.queryByRole("alertdialog", { name: "Excluir transação" }),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole("alertdialog", { name: "Excluir transação" })).not.toBeInTheDocument();
     });
     expect(
-      vi
-        .mocked(fetch)
-        .mock.calls.some(
-          ([input, init]) =>
-            String(input).includes("/api/transactions/tx-1?") &&
-            init?.method === "DELETE",
-        ),
+      vi.mocked(fetch).mock.calls.some(([input, init]) => String(input).includes("/api/transactions/tx-1?") && init?.method === "DELETE"),
     ).toBe(false);
   });
 
@@ -696,10 +586,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -732,11 +619,7 @@ describe("TransactionsPage", () => {
       expect(
         vi
           .mocked(fetch)
-          .mock.calls.some(
-            ([input, init]) =>
-              String(input).endsWith("/api/transactions/tx-1?scope=SINGLE") &&
-              init?.method === "DELETE",
-          ),
+          .mock.calls.some(([input, init]) => String(input).endsWith("/api/transactions/tx-1?scope=SINGLE") && init?.method === "DELETE"),
       ).toBe(true);
     });
   });
@@ -777,22 +660,13 @@ describe("TransactionsPage", () => {
       }),
     );
     mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
-    mockFetchUrl(
-      "/api/categories/options",
-      mockJsonResponse(defaultCategoriesResponse),
-    );
-    mockFetchUrl(
-      "/api/family-members",
-      mockJsonResponse(defaultMembersResponse),
-    );
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
     mockFetchUrl("/api/transactions/tx-1?", mockJsonResponse(undefined));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -817,9 +691,7 @@ describe("TransactionsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
 
     let modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
-    expect(
-      within(modal).getByLabelText("Escopo da exclusão"),
-    ).toBeInTheDocument();
+    expect(within(modal).getByLabelText("Escopo da exclusão")).toBeInTheDocument();
     fireEvent.change(within(modal).getByLabelText("Escopo da exclusão"), {
       target: { value: "FUTURE" },
     });
@@ -829,11 +701,7 @@ describe("TransactionsPage", () => {
       expect(
         vi
           .mocked(fetch)
-          .mock.calls.some(
-            ([input, init]) =>
-              String(input).endsWith("/api/transactions/tx-1?scope=FUTURE") &&
-              init?.method === "DELETE",
-          ),
+          .mock.calls.some(([input, init]) => String(input).endsWith("/api/transactions/tx-1?scope=FUTURE") && init?.method === "DELETE"),
       ).toBe(true);
     });
 
@@ -850,11 +718,7 @@ describe("TransactionsPage", () => {
       expect(
         vi
           .mocked(fetch)
-          .mock.calls.some(
-            ([input, init]) =>
-              String(input).endsWith("/api/transactions/tx-1?scope=ALL") &&
-              init?.method === "DELETE",
-          ),
+          .mock.calls.some(([input, init]) => String(input).endsWith("/api/transactions/tx-1?scope=ALL") && init?.method === "DELETE"),
       ).toBe(true);
     });
   });
@@ -862,10 +726,7 @@ describe("TransactionsPage", () => {
   it("shows projected fixed transactions without allowing edit from the transaction list", async () => {
     resetFetchMocks();
 
-    const futureReferenceMonth = shiftReferenceMonth(
-      getCurrentReferenceMonth(),
-      1,
-    );
+    const futureReferenceMonth = shiftReferenceMonth(getCurrentReferenceMonth(), 1);
 
     mockFetchUrl(
       "/api/transactions?",
@@ -902,10 +763,7 @@ describe("TransactionsPage", () => {
       }),
     );
     mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
-    mockFetchUrl(
-      "/api/categories/options",
-      mockJsonResponse(defaultCategoriesResponse),
-    );
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
     mockFetchUrl(
       "/api/family-members",
       mockJsonResponse({
@@ -919,10 +777,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -939,9 +794,7 @@ describe("TransactionsPage", () => {
 
     expect(await screen.findByText("Projected Rent")).toBeInTheDocument();
     expect(screen.getByText("Prevista")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /Projected Rent/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Projected Rent/i })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Projected Rent"));
 
@@ -952,16 +805,11 @@ describe("TransactionsPage", () => {
     resetFetchMocks();
 
     const currentReferenceMonth = getCurrentReferenceMonth();
-    const previousReferenceMonth = shiftReferenceMonth(
-      currentReferenceMonth,
-      -1,
-    );
+    const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
 
     mockFetchUrl("/api/transactions?", (input) => {
       const url = String(input);
-      const referenceMonth = url.includes("referenceMonth=")
-        ? new URL(url).searchParams.get("referenceMonth")
-        : null;
+      const referenceMonth = url.includes("referenceMonth=") ? new URL(url).searchParams.get("referenceMonth") : null;
 
       return mockJsonResponse({
         items:
@@ -1018,9 +866,7 @@ describe("TransactionsPage", () => {
 
     mockFetchUrl("/api/categories/options", (input) => {
       const url = String(input);
-      const referenceMonth = url.includes("referenceMonth=")
-        ? new URL(url).searchParams.get("referenceMonth")
-        : null;
+      const referenceMonth = url.includes("referenceMonth=") ? new URL(url).searchParams.get("referenceMonth") : null;
 
       return mockJsonResponse(
         referenceMonth === previousReferenceMonth
@@ -1042,17 +888,11 @@ describe("TransactionsPage", () => {
       );
     });
 
-    mockFetchUrl(
-      "/api/family-members",
-      mockJsonResponse(defaultMembersResponse),
-    );
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1072,33 +912,17 @@ describe("TransactionsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
     await waitFor(() => {
-      expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(([input]) =>
-            String(input).includes(`referenceMonth=${previousReferenceMonth}`),
-          ),
-      ).toBe(true);
+      expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${previousReferenceMonth}`))).toBe(true);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
 
     await waitFor(() => {
-      expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(([input]) =>
-            String(input).includes(`referenceMonth=${currentReferenceMonth}`),
-          ),
-      ).toBe(true);
+      expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${currentReferenceMonth}`))).toBe(true);
     });
 
     expect(
-      vi
-        .mocked(fetch)
-        .mock.calls.filter(([input]) =>
-          String(input).includes(`referenceMonth=${currentReferenceMonth}`),
-        ).length,
+      vi.mocked(fetch).mock.calls.filter(([input]) => String(input).includes(`referenceMonth=${currentReferenceMonth}`)).length,
     ).toBeGreaterThan(0);
   });
 
@@ -1106,16 +930,11 @@ describe("TransactionsPage", () => {
     resetFetchMocks();
 
     const currentReferenceMonth = getCurrentReferenceMonth();
-    const previousReferenceMonth = shiftReferenceMonth(
-      currentReferenceMonth,
-      -1,
-    );
+    const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
 
     mockFetchUrl("/api/transactions?", (input) => {
       const url = String(input);
-      const referenceMonth = url.includes("referenceMonth=")
-        ? new URL(url).searchParams.get("referenceMonth")
-        : null;
+      const referenceMonth = url.includes("referenceMonth=") ? new URL(url).searchParams.get("referenceMonth") : null;
 
       return mockJsonResponse({
         items:
@@ -1172,9 +991,7 @@ describe("TransactionsPage", () => {
 
     mockFetchUrl("/api/categories/options", (input) => {
       const url = String(input);
-      const referenceMonth = url.includes("referenceMonth=")
-        ? new URL(url).searchParams.get("referenceMonth")
-        : null;
+      const referenceMonth = url.includes("referenceMonth=") ? new URL(url).searchParams.get("referenceMonth") : null;
 
       return mockJsonResponse(
         referenceMonth === previousReferenceMonth
@@ -1196,17 +1013,11 @@ describe("TransactionsPage", () => {
       );
     });
 
-    mockFetchUrl(
-      "/api/family-members",
-      mockJsonResponse(defaultMembersResponse),
-    );
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1226,13 +1037,7 @@ describe("TransactionsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
     await waitFor(() => {
-      expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(([input]) =>
-            String(input).includes(`referenceMonth=${previousReferenceMonth}`),
-          ),
-      ).toBe(true);
+      expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${previousReferenceMonth}`))).toBe(true);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
@@ -1251,10 +1056,7 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1272,23 +1074,15 @@ describe("TransactionsPage", () => {
     expect(await screen.findByText("1-1 de 1")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Filtros" }));
-    fireEvent.click(
-      screen.getByLabelText("Categorias", { selector: "button" }),
-    );
+    fireEvent.click(screen.getByLabelText("Categorias", { selector: "button" }));
 
     const listbox = screen.getByRole("listbox");
-    fireEvent.click(
-      within(listbox).getByRole("option", { name: /Groceries/i }),
-    );
-    fireEvent.click(
-      within(listbox).getByRole("option", { name: /Transport/i }),
-    );
+    fireEvent.click(within(listbox).getByRole("option", { name: /Groceries/i }));
+    fireEvent.click(within(listbox).getByRole("option", { name: /Transport/i }));
     fireEvent.click(screen.getByRole("button", { name: /^Filtros/ }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Categorias: Groceries, Transport"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Categorias: Groceries, Transport")).toBeInTheDocument();
     });
 
     const transactionRequests = vi
@@ -1296,13 +1090,7 @@ describe("TransactionsPage", () => {
       .mock.calls.map(([input]) => String(input))
       .filter((url) => url.includes("/api/transactions?"));
 
-    expect(
-      transactionRequests.some(
-        (url) =>
-          url.includes("categoryIds=cat-1") &&
-          url.includes("categoryIds=cat-2"),
-      ),
-    ).toBe(true);
+    expect(transactionRequests.some((url) => url.includes("categoryIds=cat-1") && url.includes("categoryIds=cat-2"))).toBe(true);
   });
 
   it("filters transactions by search term and shows an active filter chip", async () => {
@@ -1333,10 +1121,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1378,10 +1163,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1411,9 +1193,7 @@ describe("TransactionsPage", () => {
     fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Não foi possível excluir a transação."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Não foi possível excluir a transação.")).toBeInTheDocument();
     });
   });
 
@@ -1504,10 +1284,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1613,10 +1390,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",

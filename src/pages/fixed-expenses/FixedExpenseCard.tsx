@@ -15,11 +15,7 @@ interface FixedExpenseCardProps {
   onSelect: (id: string) => void;
 }
 
-export default function FixedExpenseCard({
-  template,
-  categoryOption,
-  onSelect,
-}: FixedExpenseCardProps) {
+export default function FixedExpenseCard({ template, categoryOption, onSelect }: FixedExpenseCardProps) {
   const { t } = useI18n();
   const CategoryIcon = getStoredIcon(categoryOption?.icon);
   const categoryColor = categoryOption?.color ?? undefined;
@@ -29,28 +25,18 @@ export default function FixedExpenseCard({
       <button
         className={styles.templateButton}
         onClick={() => onSelect(template.id)}
-        style={
-          categoryColor ? { borderInlineStartColor: categoryColor } : undefined
-        }
+        style={categoryColor ? { borderInlineStartColor: categoryColor } : undefined}
         type="button"
       >
         <div className={styles.templateHeader}>
           <div className={styles.templateMain}>
             <div className={styles.templateTitleRow}>
               {CategoryIcon ? (
-                <span
-                  aria-hidden="true"
-                  className={styles.categoryLead}
-                  style={categoryColor ? { color: categoryColor } : undefined}
-                >
+                <span aria-hidden="true" className={styles.categoryLead} style={categoryColor ? { color: categoryColor } : undefined}>
                   <CategoryIcon className={styles.categoryIcon} />
                 </span>
               ) : categoryColor ? (
-                <span
-                  aria-hidden="true"
-                  className={styles.categoryLead}
-                  style={{ color: categoryColor }}
-                >
+                <span aria-hidden="true" className={styles.categoryLead} style={{ color: categoryColor }}>
                   <span className={styles.categoryDot} />
                 </span>
               ) : null}
@@ -68,9 +54,7 @@ export default function FixedExpenseCard({
                       })}
                   {template.currency === "USD" && template.exchangeRate != null
                     ? ` · ${formatCurrency(
-                        template.type === "EXPENSE"
-                          ? -Math.abs(template.amount)
-                          : Math.abs(template.amount),
+                        template.type === "EXPENSE" ? -Math.abs(template.amount) : Math.abs(template.amount),
                         "USD",
                       )} (cot. ${template.exchangeRate.toFixed(2)})`
                     : null}
@@ -79,30 +63,15 @@ export default function FixedExpenseCard({
             </div>
           </div>
           <strong className={styles.templateAmount}>
-            <MoneyAmount
-              amount={template.convertedAmount ?? template.amount}
-              type={template.type}
-            />
+            <MoneyAmount amount={template.convertedAmount ?? template.amount} type={template.type} />
           </strong>
         </div>
 
         <div className={styles.templateBadges}>
-          <span
-            className={
-              template.type === "INCOME"
-                ? `${styles.badge} ${styles.badgeSuccess}`
-                : styles.badge
-            }
-          >
+          <span className={template.type === "INCOME" ? `${styles.badge} ${styles.badgeSuccess}` : styles.badge}>
             {t(`transactionTypes.${template.type}`)}
           </span>
-          <span
-            className={
-              template.archivedFromMonth
-                ? `${styles.badge} ${styles.badgeMuted}`
-                : `${styles.badge} ${styles.badgeSuccess}`
-            }
-          >
+          <span className={template.archivedFromMonth ? `${styles.badge} ${styles.badgeMuted}` : `${styles.badge} ${styles.badgeSuccess}`}>
             {template.archivedFromMonth
               ? t("common.archivedFrom", {
                   month: formatReferenceMonth(template.archivedFromMonth),

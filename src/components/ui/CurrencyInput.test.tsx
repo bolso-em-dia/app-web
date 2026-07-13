@@ -7,11 +7,7 @@ function CurrencyInputHarness() {
 
   return (
     <>
-      <CurrencyInput
-        aria-label="Valor"
-        onValueChange={setValue}
-        value={value}
-      />
+      <CurrencyInput aria-label="Valor" onValueChange={setValue} value={value} />
       <output>{value.toFixed(2)}</output>
     </>
   );

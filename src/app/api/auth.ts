@@ -42,10 +42,7 @@ export type ChangePasswordPayload = {
   confirmPassword: string;
 };
 
-export function changePassword(
-  payload: ChangePasswordPayload,
-  accessToken: string,
-) {
+export function changePassword(payload: ChangePasswordPayload, accessToken: string) {
   return apiRequest<AuthUser>("/api/auth/change-password", {
     method: "POST",
     accessToken,

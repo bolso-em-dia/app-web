@@ -8,12 +8,7 @@ type FilterMonthInputProps = {
   onChange: (value: string) => void;
 };
 
-export default function FilterMonthInput({
-  id,
-  label,
-  value,
-  onChange,
-}: FilterMonthInputProps) {
+export default function FilterMonthInput({ id, label, value, onChange }: FilterMonthInputProps) {
   return (
     <Field htmlFor={id} label={label}>
       <MonthSelector id={id} onChange={onChange} value={value} />

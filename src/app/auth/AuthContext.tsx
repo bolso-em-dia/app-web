@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import {
-  login as loginRequest,
-  logout as logoutRequest,
-  refresh,
-  type AuthUser,
-} from "../api/auth";
+import { login as loginRequest, logout as logoutRequest, refresh, type AuthUser } from "../api/auth";
 import type { UserPreferences } from "../api/userPreferences";
 import { configureApiClientAuth } from "../api/client";
 import { AuthContext, type AuthContextValue } from "./authContext";
@@ -103,15 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateUserPreferences,
       updateUser,
     }),
-    [
-      accessToken,
-      handleLogin,
-      handleLogout,
-      isLoading,
-      updateUser,
-      updateUserPreferences,
-      user,
-    ],
+    [accessToken, handleLogin, handleLogout, isLoading, updateUser, updateUserPreferences, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

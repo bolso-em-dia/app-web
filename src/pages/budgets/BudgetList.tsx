@@ -1,16 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
-import {
-  listCategoryOptions,
-  type CategoryOption,
-} from "../../app/api/categories";
+import { listCategoryOptions, type CategoryOption } from "../../app/api/categories";
 import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
-import {
-  listBudgets,
-  type Budget,
-  type BudgetType,
-} from "../../app/api/budgets";
+import { listBudgets, type Budget, type BudgetType } from "../../app/api/budgets";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
@@ -29,19 +22,10 @@ interface BudgetListProps {
   selectedId: string | null;
   onSelect: (id: string, budget: Budget) => void;
   refreshKey: number;
-  onReferenceDataLoaded: (data: {
-    categories: CategoryOption[];
-    members: FamilyMember[];
-  }) => void;
+  onReferenceDataLoaded: (data: { categories: CategoryOption[]; members: FamilyMember[] }) => void;
 }
 
-export default function BudgetList({
-  filters,
-  selectedId,
-  onSelect,
-  refreshKey,
-  onReferenceDataLoaded,
-}: BudgetListProps) {
+export default function BudgetList({ filters, selectedId, onSelect, refreshKey, onReferenceDataLoaded }: BudgetListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -60,22 +44,21 @@ export default function BudgetList({
       setIsLoading(true);
 
       try {
-        const [budgetsResponse, categoryOptionsResponse, membersResponse] =
-          await Promise.all([
-            listBudgets(
-              {
-                referenceMonth: filters.referenceMonth,
-                page: currentPage,
-                size: currentPageSize,
-                search: filters.search || undefined,
-                status: filters.status,
-                type: filters.type === "ALL" ? undefined : filters.type,
-              },
-              accessToken,
-            ),
-            listCategoryOptions(filters.referenceMonth, accessToken),
-            listFamilyMembers(accessToken),
-          ]);
+        const [budgetsResponse, categoryOptionsResponse, membersResponse] = await Promise.all([
+          listBudgets(
+            {
+              referenceMonth: filters.referenceMonth,
+              page: currentPage,
+              size: currentPageSize,
+              search: filters.search || undefined,
+              status: filters.status,
+              type: filters.type === "ALL" ? undefined : filters.type,
+            },
+            accessToken,
+          ),
+          listCategoryOptions(filters.referenceMonth, accessToken),
+          listFamilyMembers(accessToken),
+        ]);
 
         setBudgets(budgetsResponse.items);
         setPage(budgetsResponse.page);
@@ -92,14 +75,7 @@ export default function BudgetList({
         setHasLoadedOnce(true);
       }
     },
-    [
-      accessToken,
-      filters.referenceMonth,
-      filters.search,
-      filters.status,
-      filters.type,
-      onReferenceDataLoaded,
-    ],
+    [accessToken, filters.referenceMonth, filters.search, filters.status, filters.type, onReferenceDataLoaded],
   );
 
   useEffect(() => {
@@ -136,12 +112,7 @@ export default function BudgetList({
     <>
       <section className={styles.budgetGrid}>
         {budgets.map((budget) => (
-          <BudgetCard
-            key={budget.id}
-            budget={budget}
-            isSelected={selectedId === budget.id}
-            onSelect={() => onSelect(budget.id, budget)}
-          />
+          <BudgetCard key={budget.id} budget={budget} isSelected={selectedId === budget.id} onSelect={() => onSelect(budget.id, budget)} />
         ))}
       </section>
 

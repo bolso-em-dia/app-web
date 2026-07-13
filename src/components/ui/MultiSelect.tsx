@@ -33,8 +33,7 @@ export default function MultiSelect<T>({
   const listboxId = useId();
   const selectedValues = useMemo(() => new Set(value), [value]);
   const selectedOptions = useMemo(
-    () =>
-      options.filter((option) => selectedValues.has(getOptionValue(option))),
+    () => options.filter((option) => selectedValues.has(getOptionValue(option))),
     [getOptionValue, options, selectedValues],
   );
 
@@ -67,11 +66,7 @@ export default function MultiSelect<T>({
         aria-controls={listboxId}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        className={clsx(
-          styles.trigger,
-          isOpen ? styles.triggerOpen : "",
-          hasError ? styles.error : "",
-        )}
+        className={clsx(styles.trigger, isOpen ? styles.triggerOpen : "", hasError ? styles.error : "")}
         id={id}
         onClick={() => setIsOpen((open) => !open)}
         onKeyDown={(event) => {
@@ -96,15 +91,8 @@ export default function MultiSelect<T>({
       </button>
 
       {isOpen ? (
-        <div
-          aria-multiselectable="true"
-          className={styles.dropdown}
-          id={listboxId}
-          role="listbox"
-        >
-          {options.length === 0 && emptyState ? (
-            <div className={styles.emptyState}>{emptyState}</div>
-          ) : null}
+        <div aria-multiselectable="true" className={styles.dropdown} id={listboxId} role="listbox">
+          {options.length === 0 && emptyState ? <div className={styles.emptyState}>{emptyState}</div> : null}
 
           {options.map((option) => {
             const optionValue = getOptionValue(option);
@@ -113,10 +101,7 @@ export default function MultiSelect<T>({
             return (
               <button
                 aria-selected={selected}
-                className={clsx(
-                  styles.option,
-                  selected ? styles.optionSelected : "",
-                )}
+                className={clsx(styles.option, selected ? styles.optionSelected : "")}
                 key={optionValue}
                 onClick={() => handleToggle(optionValue)}
                 role="option"

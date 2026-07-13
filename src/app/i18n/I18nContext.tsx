@@ -24,11 +24,7 @@ function resolveMessages(locale: Locale): Record<MessageKey, string> {
   return ptBRMessages;
 }
 
-function translateMessage(
-  locale: Locale,
-  key: MessageKey,
-  params?: TranslateParams,
-) {
+function translateMessage(locale: Locale, key: MessageKey, params?: TranslateParams) {
   const messages = resolveMessages(locale);
   let message: string = messages[key];
 

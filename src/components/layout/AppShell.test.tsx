@@ -15,10 +15,7 @@ describe("AppShell", () => {
 
   it("renders navigation items with library icons", () => {
     const { container } = render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -39,34 +36,16 @@ describe("AppShell", () => {
       name: "Navegação principal",
     });
 
-    expect(
-      screen.getByRole("link", { name: "Configurações" }),
-    ).toBeInTheDocument();
-    expect(
-      within(navigation).getByRole("link", { name: "Dashboard" }),
-    ).toBeInTheDocument();
-    expect(
-      within(navigation).getByRole("link", { name: "Orçamentos" }),
-    ).toBeInTheDocument();
-    expect(
-      within(navigation).getByRole("link", { name: "Transações fixas" }),
-    ).toBeInTheDocument();
-    expect(
-      within(navigation).getByRole("link", { name: "Transações" }),
-    ).toBeInTheDocument();
-    expect(
-      within(navigation).getByRole("link", { name: "Família" }),
-    ).toBeInTheDocument();
-    expect(
-      within(navigation).getByRole("link", { name: "Categorias" }),
-    ).toBeInTheDocument();
-    expect(
-      within(navigation).getByRole("link", { name: "Contas" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Configurações" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Orçamentos" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Transações fixas" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Transações" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Família" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Categorias" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Contas" })).toBeInTheDocument();
     expect(container.querySelectorAll("nav svg").length).toBe(7);
-    expect(
-      screen.queryByText("admin@bolso-em-dia.local"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("admin@bolso-em-dia.local")).not.toBeInTheDocument();
   });
 
   it("renders the navigation inside a drawer on compact screens", () => {
@@ -78,10 +57,7 @@ describe("AppShell", () => {
     window.dispatchEvent(new Event("resize"));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -98,29 +74,19 @@ describe("AppShell", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      screen.queryByRole("navigation", { name: "Navegação principal" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Navegação principal" })).not.toBeInTheDocument();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Navegação principal" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Navegação principal" }));
 
     const dialog = screen.getByRole("dialog");
     const navigation = within(dialog).getByRole("navigation", {
       name: "Navegação principal",
     });
 
-    expect(
-      within(dialog).getByRole("link", { name: "Configurações" }),
-    ).toBeInTheDocument();
-    expect(
-      within(navigation).getByRole("link", { name: "Dashboard" }),
-    ).toBeInTheDocument();
+    expect(within(dialog).getByRole("link", { name: "Configurações" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
     expect(within(dialog).getByText("Admin User")).toBeInTheDocument();
     expect(within(dialog).getByText("Administrador")).toBeInTheDocument();
-    expect(
-      within(dialog).queryByText("admin@bolso-em-dia.local"),
-    ).not.toBeInTheDocument();
+    expect(within(dialog).queryByText("admin@bolso-em-dia.local")).not.toBeInTheDocument();
   });
 });

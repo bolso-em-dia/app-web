@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getLatestExchangeRate, refreshExchangeRate } from "./exchangeRate";
-import {
-  resetFetchMocks,
-  mockJsonResponse,
-  mockErrorResponse,
-  mockFetchUrl,
-} from "../../test/setup";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 
 describe("exchangeRate API", () => {
   beforeEach(() => {

@@ -3,24 +3,14 @@ import type { Translate } from "../../app/i18n/I18nContext";
 import type { AccountType } from "../../app/api/accounts";
 import { validationMessage } from "./validationMessages";
 
-const ACCOUNT_TYPE_VALUES = [
-  "CHECKING",
-  "SAVINGS",
-  "CREDIT_CARD",
-  "INVESTMENT",
-] as const satisfies readonly AccountType[];
+const ACCOUNT_TYPE_VALUES = ["CHECKING", "SAVINGS", "CREDIT_CARD", "INVESTMENT"] as const satisfies readonly AccountType[];
 
 export function createAccountSchema(t: Translate) {
-  const message = (key: Parameters<typeof validationMessage>[1]) =>
-    validationMessage(t, key);
+  const message = (key: Parameters<typeof validationMessage>[1]) => validationMessage(t, key);
 
   return z
     .object({
-      name: z
-        .string()
-        .trim()
-        .min(1, message("validation.requiredName"))
-        .max(120, message("validation.nameMax120")),
+      name: z.string().trim().min(1, message("validation.requiredName")).max(120, message("validation.nameMax120")),
       type: z.enum(ACCOUNT_TYPE_VALUES, {
         errorMap: () => ({ message: message("validation.requiredType") }),
       }),
@@ -56,10 +46,7 @@ export function createAccountSchema(t: Translate) {
           });
         }
 
-        if (
-          values.closingDay === undefined ||
-          Number.isNaN(values.closingDay)
-        ) {
+        if (values.closingDay === undefined || Number.isNaN(values.closingDay)) {
           context.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["closingDay"],

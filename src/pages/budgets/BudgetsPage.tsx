@@ -8,10 +8,7 @@ import FilterToolbar from "../../components/ui/FilterToolbar";
 import FilterMonthInput from "../../components/ui/filterFields/FilterMonthInput";
 import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInput";
 import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
-import {
-  formatReferenceMonth,
-  getCurrentReferenceMonth,
-} from "../../lib/formatters/date";
+import { formatReferenceMonth, getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { Budget, BudgetType } from "../../app/api/budgets";
 import type { CategoryOption } from "../../app/api/categories";
@@ -41,8 +38,7 @@ const DEFAULT_FILTERS: BudgetFilters = {
 export default function BudgetsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { filters, patchFilters, clearFilter } =
-    useFiltersState(DEFAULT_FILTERS);
+  const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
   const [showDrawer, setShowDrawer] = useState(false);
@@ -170,14 +166,7 @@ export default function BudgetsPage() {
         ),
       },
     }),
-    [
-      filters.referenceMonth,
-      filters.search,
-      filters.status,
-      filters.type,
-      patchFilters,
-      t,
-    ],
+    [filters.referenceMonth, filters.search, filters.status, filters.type, patchFilters, t],
   );
 
   const isCreating = selectedId === null;
@@ -199,10 +188,7 @@ export default function BudgetsPage() {
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {
-              clearFilter(
-                name as keyof BudgetFilters,
-                defaultValue as BudgetFilters[keyof BudgetFilters],
-              );
+              clearFilter(name as keyof BudgetFilters, defaultValue as BudgetFilters[keyof BudgetFilters]);
             }}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
           />
@@ -226,9 +212,7 @@ export default function BudgetsPage() {
                   })
             }
             onClose={handleCloseDrawer}
-            title={
-              isCreating ? t("budgets.newTitle") : t("budgets.detailsTitle")
-            }
+            title={isCreating ? t("budgets.newTitle") : t("budgets.detailsTitle")}
           >
             <div className={styles.drawerStack}>
               <BudgetForm

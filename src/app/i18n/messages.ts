@@ -80,53 +80,39 @@ export const ptBRMessages = {
   "validation.requiredAccount": "A conta é obrigatória.",
   "validation.requiredOwnership": "A titularidade é obrigatória.",
   "validation.requiredDescription": "A descrição é obrigatória.",
-  "validation.descriptionMax160":
-    "A descrição deve ter no máximo 160 caracteres.",
+  "validation.descriptionMax160": "A descrição deve ter no máximo 160 caracteres.",
   "validation.amountPositive": "O valor deve ser maior que zero.",
   "validation.invalidNumber": "Informe um número válido.",
   "validation.requiredTransactionDate": "A data da transação é obrigatória.",
-  "validation.installmentCountInteger":
-    "A quantidade de parcelas deve ser um número inteiro.",
-  "validation.installmentCountRange":
-    "A quantidade de parcelas deve estar entre 2 e 120.",
-  "validation.requiredInstallmentCount":
-    "A quantidade de parcelas é obrigatória.",
-  "validation.requiredIndividualMember":
-    "O membro é obrigatório para transações individuais.",
-  "validation.requiredAllowanceOwner":
-    "O membro dono é obrigatório para budgets de mesada.",
-  "validation.requiredGlobalBudgetCategory":
-    "Selecione pelo menos uma categoria para budgets globais.",
+  "validation.installmentCountInteger": "A quantidade de parcelas deve ser um número inteiro.",
+  "validation.installmentCountRange": "A quantidade de parcelas deve estar entre 2 e 120.",
+  "validation.requiredInstallmentCount": "A quantidade de parcelas é obrigatória.",
+  "validation.requiredIndividualMember": "O membro é obrigatório para transações individuais.",
+  "validation.requiredAllowanceOwner": "O membro dono é obrigatório para budgets de mesada.",
+  "validation.requiredGlobalBudgetCategory": "Selecione pelo menos uma categoria para budgets globais.",
   "validation.monthlyLimitPositive": "O limite mensal deve ser maior que zero.",
   "validation.iconMax80": "O ícone deve ter no máximo 80 caracteres.",
   "validation.colorMax20": "A cor deve ter no máximo 20 caracteres.",
-  "validation.requiredReplacementCategory":
-    "A categoria substituta é obrigatória.",
+  "validation.requiredReplacementCategory": "A categoria substituta é obrigatória.",
   "validation.brandMax80": "A bandeira deve ter no máximo 80 caracteres.",
-  "validation.requiredCreditCardBrand":
-    "A bandeira é obrigatória para cartões de crédito.",
-  "validation.requiredCreditCardClosingDay":
-    "O dia de fechamento é obrigatório para cartões de crédito.",
-  "validation.requiredCreditCardDueDay":
-    "O dia de vencimento é obrigatório para cartões de crédito.",
+  "validation.requiredCreditCardBrand": "A bandeira é obrigatória para cartões de crédito.",
+  "validation.requiredCreditCardClosingDay": "O dia de fechamento é obrigatório para cartões de crédito.",
+  "validation.requiredCreditCardDueDay": "O dia de vencimento é obrigatório para cartões de crédito.",
   "validation.dueDayInteger": "O dia de vencimento deve ser um número inteiro.",
   "validation.dueDayRange": "O dia de vencimento deve estar entre 1 e 31.",
   "validation.dayInteger": "O dia deve ser um número inteiro.",
   "validation.dayRange": "O dia deve estar entre 1 e 31.",
   "login.title": "Entrar",
-  "login.subtitle":
-    "Use a conta administrativa inicial para acessar o sistema.",
+  "login.subtitle": "Use a conta administrativa inicial para acessar o sistema.",
   "login.error": "Não foi possível entrar. Verifique o e-mail e a senha.",
   "login.submit": "Entrar",
   "errorBoundary.title": "Algo deu errado",
-  "errorBoundary.message":
-    "Um erro inesperado ocorreu. Você pode tentar recarregar esta página ou voltar ao início.",
+  "errorBoundary.message": "Um erro inesperado ocorreu. Você pode tentar recarregar esta página ou voltar ao início.",
   "errorBoundary.details": "Detalhes técnicos",
   "errorBoundary.retry": "Tentar novamente",
   "errorBoundary.goToDashboard": "Ir para o Dashboard",
   "exchangeRate.updated": "Cotação atualizada",
-  "exchangeRate.staleTooltip":
-    "Cotação desatualizada. Última atualização pode estar incorreta.",
+  "exchangeRate.staleTooltip": "Cotação desatualizada. Última atualização pode estar incorreta.",
   "exchangeRate.fetchError": "Erro ao buscar cotação. Último valor disponível.",
   "exchangeRate.refresh": "Atualizar cotação",
   "home.title": "Dashboard",
@@ -145,21 +131,18 @@ export const ptBRMessages = {
   "home.considerBudgetsInBalance": "Considerar orçamentos no saldo",
   "settings.title": "Configurações",
   "settings.account.label": "Conta padrão",
-  "settings.account.description":
-    "Conta inicial pré-selecionada em formulários com conta.",
+  "settings.account.description": "Conta inicial pré-selecionada em formulários com conta.",
   "settings.account.empty": "Nenhuma conta padrão",
   "settings.locale.label": "Idioma",
   "settings.locale.description": "Idioma usado ao carregar a aplicação.",
   "settings.locale.pt-BR": "Português (Brasil)",
   "settings.locale.en-US": "Inglês (Estados Unidos)",
   "settings.balance.label": "Modo inicial do saldo livre",
-  "settings.balance.description":
-    "Define se a Home inicia considerando os orçamentos no saldo livre.",
+  "settings.balance.description": "Define se a Home inicia considerando os orçamentos no saldo livre.",
   "settings.balance.withBudgets": "Considera orçamentos",
   "settings.balance.withoutBudgets": "Ignora orçamentos",
   "settings.foreignCurrency.label": "Moedas estrangeiras",
-  "settings.foreignCurrency.description":
-    "Habilita suporte a Dólar (USD) com cotação em tempo real.",
+  "settings.foreignCurrency.description": "Habilita suporte a Dólar (USD) com cotação em tempo real.",
   "settings.foreignCurrency.enabled": "Habilitado",
   "settings.foreignCurrency.disabled": "Desabilitado",
   "settings.loading": "Carregando configurações",
@@ -170,19 +153,16 @@ export const ptBRMessages = {
   "settings.saveSuccess": "Configurações salvas.",
   "settings.save": "Salvar",
   "settings.password.title": "Senha",
-  "settings.password.subtitle":
-    "Altere sua senha informando a atual e confirmando a nova.",
+  "settings.password.subtitle": "Altere sua senha informando a atual e confirmando a nova.",
   "settings.password.current": "Senha atual",
   "settings.password.new": "Nova senha",
   "settings.password.confirm": "Confirmar nova senha",
   "settings.password.save": "Salvar",
   "settings.password.success": "Senha atualizada.",
   "settings.password.saveError": "Não foi possível atualizar a senha.",
-  "settings.password.confirmationMismatch":
-    "A confirmação da senha não confere.",
+  "settings.password.confirmationMismatch": "A confirmação da senha não confere.",
   "settings.password.firstAccessTitle": "Defina uma nova senha",
-  "settings.password.firstAccessSubtitle":
-    "O acesso inicial do administrador exige a troca da senha antes de continuar.",
+  "settings.password.firstAccessSubtitle": "O acesso inicial do administrador exige a troca da senha antes de continuar.",
   "settings.password.firstAccessSave": "Salvar nova senha",
   "home.consumedOfLimit": "Usado {{consumed}} de {{limit}}",
   "home.recentTransactions": "Lançamentos recentes",
@@ -202,8 +182,7 @@ export const ptBRMessages = {
   "categories.noColor": "Sem cor",
   "categories.iconPreviewNone": "Sem preview",
   "categories.newDescription": "Crie uma categoria com metadados de exibição.",
-  "categories.editDescription":
-    "Atualize os campos da categoria usados no aplicativo.",
+  "categories.editDescription": "Atualize os campos da categoria usados no aplicativo.",
   "categories.newTitle": "Nova categoria",
   "categories.detailsTitle": "Detalhes da categoria",
   "categories.create": "Criar categoria",
@@ -211,8 +190,7 @@ export const ptBRMessages = {
   "categories.color": "Cor",
   "categories.archiveMonth": "Mês de arquivamento",
   "categories.archiveTitle": "Arquivar categoria",
-  "categories.archiveSubtitle":
-    "Categorias arquivadas exigem uma substituta para uso futuro.",
+  "categories.archiveSubtitle": "Categorias arquivadas exigem uma substituta para uso futuro.",
   "categories.replacementCategory": "Categoria substituta",
   "categories.selectReplacement": "Selecione uma substituta",
   "family.title": "Família",
@@ -224,10 +202,8 @@ export const ptBRMessages = {
   "family.searchPlaceholder": "Buscar por nome ou e-mail",
   "family.empty": "Nenhum membro da família encontrado para os filtros atuais.",
   "family.allowance": "Mesada",
-  "family.newDescription":
-    "Crie um membro da família com papel e configurações de mesada.",
-  "family.editDescription":
-    "Atualize os detalhes do membro, permissões e status ativo.",
+  "family.newDescription": "Crie um membro da família com papel e configurações de mesada.",
+  "family.editDescription": "Atualize os detalhes do membro, permissões e status ativo.",
   "family.newTitle": "Novo membro",
   "family.detailsTitle": "Detalhes do membro",
   "family.password": "Senha",
@@ -245,10 +221,8 @@ export const ptBRMessages = {
   "accounts.new": "Nova conta",
   "accounts.searchPlaceholder": "Buscar contas",
   "accounts.empty": "Nenhuma conta encontrada para os filtros atuais.",
-  "accounts.newDescription":
-    "Adicione uma nova conta financeira ou cartão de crédito.",
-  "accounts.editDescription":
-    "Atualize os detalhes da conta e arquive quando necessário.",
+  "accounts.newDescription": "Adicione uma nova conta financeira ou cartão de crédito.",
+  "accounts.editDescription": "Atualize os detalhes da conta e arquive quando necessário.",
   "accounts.newTitle": "Nova conta",
   "accounts.detailsTitle": "Detalhes da conta",
   "accounts.create": "Criar conta",
@@ -309,15 +283,12 @@ export const ptBRMessages = {
   "fixedTransactions.loading": "Carregando transações fixas",
   "fixedTransactions.error": "Não foi possível carregar as transações fixas.",
   "fixedTransactions.saveError": "Não foi possível salvar a transação fixa.",
-  "fixedTransactions.archiveError":
-    "Não foi possível arquivar a transação fixa.",
+  "fixedTransactions.archiveError": "Não foi possível arquivar a transação fixa.",
   "fixedTransactions.new": "Nova transação fixa",
   "fixedTransactions.searchPlaceholder": "Buscar transações fixas",
-  "fixedTransactions.empty":
-    "Nenhuma transação fixa encontrada para os filtros atuais.",
+  "fixedTransactions.empty": "Nenhuma transação fixa encontrada para os filtros atuais.",
   "fixedTransactions.newDescription": "Crie uma transação fixa recorrente.",
-  "fixedTransactions.editDescription":
-    "Atualize nome, tipo, valor, categoria, conta e dia recorrente.",
+  "fixedTransactions.editDescription": "Atualize nome, tipo, valor, categoria, conta e dia recorrente.",
   "fixedTransactions.newTitle": "Nova transação fixa",
   "fixedTransactions.detailsTitle": "Detalhes da transação fixa",
   "fixedTransactions.create": "Criar transação fixa",
@@ -343,8 +314,7 @@ export const ptBRMessages = {
   "budgets.consumedOfLimit": "Usado {{consumed}}",
   "budgets.archivedFrom": "Arquivado a partir de {{month}}",
   "common.archivedFrom": "Arquivado a partir de {{month}}",
-  "budgets.newDescription":
-    "Crie um orçamento global ou um orçamento de mesada.",
+  "budgets.newDescription": "Crie um orçamento global ou um orçamento de mesada.",
   "budgets.editDescription": "Revise e atualize o orçamento de {{month}}.",
   "budgets.newTitle": "Novo orçamento",
   "budgets.detailsTitle": "Detalhes do orçamento",
@@ -352,28 +322,21 @@ export const ptBRMessages = {
   "budgets.monthlyLimit": "Limite mensal",
   "budgets.ownerMember": "Membro dono",
   "budgets.linkedCategoriesTitle": "Categorias vinculadas",
-  "budgets.globalHelper":
-    "Orçamentos globais consomem categorias de despesas compartilhadas.",
+  "budgets.globalHelper": "Orçamentos globais consomem categorias de despesas compartilhadas.",
   "budgets.currentImpact": "Impacto no mês atual",
-  "budgets.currentImpactSubtitle":
-    "Consumo e lançamentos correspondentes de {{month}}.",
+  "budgets.currentImpactSubtitle": "Consumo e lançamentos correspondentes de {{month}}.",
   "budgets.loadingDetails": "Carregando detalhes do orçamento",
   "budgets.limit": "Limite",
   "budgets.consumed": "Consumido",
   "budgets.remaining": "Restante",
   "budgets.categoryBreakdown": "Consumo por categoria",
-  "budgets.noCategoryConsumption":
-    "Não houve consumo por categoria neste orçamento no mês atual.",
+  "budgets.noCategoryConsumption": "Não houve consumo por categoria neste orçamento no mês atual.",
   "budgets.matchedTransactions": "Lançamentos correspondentes",
-  "budgets.noMatchedTransactions":
-    "Nenhum lançamento correspondeu a este orçamento no mês atual.",
-  "budgets.noSharedCategories":
-    "Este orçamento de mesada não usa categorias compartilhadas.",
-  "budgets.selectToReview":
-    "Selecione um orçamento para revisar os detalhes do mês atual.",
+  "budgets.noMatchedTransactions": "Nenhum lançamento correspondeu a este orçamento no mês atual.",
+  "budgets.noSharedCategories": "Este orçamento de mesada não usa categorias compartilhadas.",
+  "budgets.selectToReview": "Selecione um orçamento para revisar os detalhes do mês atual.",
   "budgets.archiveTitle": "Arquivar orçamento",
-  "budgets.archiveSubtitle":
-    "Pare de usar este orçamento a partir de um mês futuro.",
+  "budgets.archiveSubtitle": "Pare de usar este orçamento a partir de um mês futuro.",
   "budgets.archiveMonth": "Mês de arquivamento",
   "budgets.archived": "Orçamento arquivado",
 
@@ -381,14 +344,12 @@ export const ptBRMessages = {
   "transactions.searchPlaceholder": "Buscar por descrição",
   "transactions.loading": "Carregando transações",
   "transactions.error": "Não foi possível carregar as transações.",
-  "transactions.categoryRefreshError":
-    "Não foi possível atualizar as opções de categoria.",
+  "transactions.categoryRefreshError": "Não foi possível atualizar as opções de categoria.",
   "transactions.saveError": "Não foi possível salvar a transação.",
   "transactions.deleteError": "Não foi possível excluir a transação.",
   "transactions.new": "Nova transação",
   "transactions.empty": "Nenhuma transação encontrada para os filtros atuais.",
-  "transactions.newDescription":
-    "Crie uma transação mensal com parcelamento opcional.",
+  "transactions.newDescription": "Crie uma transação mensal com parcelamento opcional.",
   "transactions.editDescription": "Atualize a transação de {{month}}.",
   "transactions.projected": "Prevista",
   "transactions.newTitle": "Nova transação",
@@ -402,20 +363,16 @@ export const ptBRMessages = {
   "transactions.installmentToggle": "Parcelado",
   "transactions.installmentCount": "Quantidade de parcelas",
   "transactions.deleteTitle": "Excluir transação",
-  "transactions.deleteSubtitle":
-    "Confirme a exclusão da transação selecionada ou das parcelas restantes do grupo.",
-  "transactions.deleteSingleSubtitle":
-    "Confirme a exclusão da transação selecionada.",
+  "transactions.deleteSubtitle": "Confirme a exclusão da transação selecionada ou das parcelas restantes do grupo.",
+  "transactions.deleteSingleSubtitle": "Confirme a exclusão da transação selecionada.",
   "transactions.deleteScope": "Escopo da exclusão",
   "transactions.deleteScope.single": "Somente esta parcela",
   "transactions.deleteScope.future": "Esta e futuras parcelas",
   "transactions.deleteScope.all": "Grupo inteiro de parcelas",
-  "transactions.noInstallmentGroup":
-    "Esta transação não faz parte de um grupo de parcelamento.",
+  "transactions.noInstallmentGroup": "Esta transação não faz parte de um grupo de parcelamento.",
   "transactions.deleteAction": "Excluir transação",
   "transactions.closeDeleteConfirm": "Fechar confirmação de exclusão",
-  "confirmations.archiveBudget":
-    "Tem certeza que deseja arquivar este orçamento? Ele deixará de aparecer a partir do mês atual.",
+  "confirmations.archiveBudget": "Tem certeza que deseja arquivar este orçamento? Ele deixará de aparecer a partir do mês atual.",
   "confirmations.archiveCategory":
     "Tem certeza que deseja arquivar esta categoria? A categoria substituta será usada a partir do mês atual.",
   "confirmations.archiveAccount":
@@ -424,8 +381,7 @@ export const ptBRMessages = {
     "Tem certeza que deseja arquivar esta transação fixa? As transações já materializadas serão preservadas, mas o modelo deixará de gerar novas.",
   "confirmations.deleteFixedExpense":
     "Tem certeza que deseja excluir esta transação fixa? As transações materializadas do mês corrente em diante serão removidas. Transações de meses passados serão preservadas.",
-  "confirmations.archiveMember":
-    "Tem certeza que deseja arquivar este membro? Ele não poderá mais fazer login.",
+  "confirmations.archiveMember": "Tem certeza que deseja arquivar este membro? Ele não poderá mais fazer login.",
   "confirmations.restoreMember": "Tem certeza que deseja reativar este membro?",
 } as const;
 

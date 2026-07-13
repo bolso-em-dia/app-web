@@ -1,19 +1,8 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import {
-  resetFetchMocks,
-  mockJsonResponse,
-  mockErrorResponse,
-  mockFetchUrl,
-} from "../../test/setup";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import FamilyPage from "./FamilyPage";
 
 const defaultMemberResponse = {
@@ -52,10 +41,7 @@ describe("FamilyPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/family"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -82,9 +68,7 @@ describe("FamilyPage", () => {
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
     expect(
-      within(alertDialog).getByText(
-        "Tem certeza que deseja arquivar este membro? Ele não poderá mais fazer login.",
-      ),
+      within(alertDialog).getByText("Tem certeza que deseja arquivar este membro? Ele não poderá mais fazer login."),
     ).toBeInTheDocument();
   });
 
@@ -92,10 +76,7 @@ describe("FamilyPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/family"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -122,9 +103,7 @@ describe("FamilyPage", () => {
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
 
-    fireEvent.click(
-      within(alertDialog).getByRole("button", { name: "Cancelar" }),
-    );
+    fireEvent.click(within(alertDialog).getByRole("button", { name: "Cancelar" }));
 
     await waitFor(() => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
@@ -133,10 +112,7 @@ describe("FamilyPage", () => {
     const archiveCalls = vi
       .mocked(fetch)
       .mock.calls.filter(
-        ([input, init]) =>
-          String(input).includes("/api/family-members/") &&
-          String(input).includes("/archive") &&
-          init?.method === "PATCH",
+        ([input, init]) => String(input).includes("/api/family-members/") && String(input).includes("/archive") && init?.method === "PATCH",
       );
     expect(archiveCalls.length).toBe(0);
   });
@@ -167,10 +143,7 @@ describe("FamilyPage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/family"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -196,11 +169,7 @@ describe("FamilyPage", () => {
 
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
-    expect(
-      within(alertDialog).getByText(
-        "Tem certeza que deseja reativar este membro?",
-      ),
-    ).toBeInTheDocument();
+    expect(within(alertDialog).getByText("Tem certeza que deseja reativar este membro?")).toBeInTheDocument();
   });
 
   it("cancels restore confirmation without calling the API", async () => {
@@ -229,10 +198,7 @@ describe("FamilyPage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/family"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -259,9 +225,7 @@ describe("FamilyPage", () => {
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
 
-    fireEvent.click(
-      within(alertDialog).getByRole("button", { name: "Cancelar" }),
-    );
+    fireEvent.click(within(alertDialog).getByRole("button", { name: "Cancelar" }));
 
     await waitFor(() => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
@@ -270,10 +234,7 @@ describe("FamilyPage", () => {
     const restoreCalls = vi
       .mocked(fetch)
       .mock.calls.filter(
-        ([input, init]) =>
-          String(input).includes("/api/family-members/") &&
-          String(input).includes("/restore") &&
-          init?.method === "PATCH",
+        ([input, init]) => String(input).includes("/api/family-members/") && String(input).includes("/restore") && init?.method === "PATCH",
       );
     expect(restoreCalls.length).toBe(0);
   });
@@ -320,10 +281,7 @@ describe("FamilyPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/family"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -348,9 +306,7 @@ describe("FamilyPage", () => {
     fireEvent.click(archiveButton);
 
     const alertDialog = screen.getByRole("alertdialog");
-    fireEvent.click(
-      within(alertDialog).getByRole("button", { name: "Arquivar" }),
-    );
+    fireEvent.click(within(alertDialog).getByRole("button", { name: "Arquivar" }));
 
     await waitFor(() => {
       expect(vi.mocked(fetch)).toHaveBeenCalledWith(
@@ -393,10 +349,7 @@ describe("FamilyPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/family"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -421,14 +374,10 @@ describe("FamilyPage", () => {
     fireEvent.click(archiveButton);
 
     const alertDialog = screen.getByRole("alertdialog");
-    fireEvent.click(
-      within(alertDialog).getByRole("button", { name: "Arquivar" }),
-    );
+    fireEvent.click(within(alertDialog).getByRole("button", { name: "Arquivar" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Não foi possível atualizar o status do membro."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Não foi possível atualizar o status do membro.")).toBeInTheDocument();
     });
   });
 
@@ -436,10 +385,7 @@ describe("FamilyPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/family"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -470,16 +416,12 @@ describe("FamilyPage", () => {
       target: { value: "123" },
     });
 
-    fireEvent.click(
-      within(drawer).getByRole("button", { name: "Criar membro" }),
-    );
+    fireEvent.click(within(drawer).getByRole("button", { name: "Criar membro" }));
 
     await waitFor(() => {
       expect(screen.getByText("Nome é obrigatório.")).toBeInTheDocument();
       expect(screen.getByText("Informe um e-mail válido.")).toBeInTheDocument();
-      expect(
-        screen.getByText("A senha deve ter pelo menos 8 caracteres."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("A senha deve ter pelo menos 8 caracteres.")).toBeInTheDocument();
     });
   });
 });

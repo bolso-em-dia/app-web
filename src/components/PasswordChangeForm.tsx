@@ -28,18 +28,9 @@ type PasswordChangeFormValues = {
 function createPasswordChangeSchema(t: ReturnType<typeof useI18n>["t"]) {
   return z
     .object({
-      currentPassword: z
-        .string()
-        .min(8, t("validation.passwordMin8"))
-        .max(72, t("validation.passwordMax72")),
-      newPassword: z
-        .string()
-        .min(8, t("validation.passwordMin8"))
-        .max(72, t("validation.passwordMax72")),
-      confirmPassword: z
-        .string()
-        .min(8, t("validation.passwordMin8"))
-        .max(72, t("validation.passwordMax72")),
+      currentPassword: z.string().min(8, t("validation.passwordMin8")).max(72, t("validation.passwordMax72")),
+      newPassword: z.string().min(8, t("validation.passwordMin8")).max(72, t("validation.passwordMax72")),
+      confirmPassword: z.string().min(8, t("validation.passwordMin8")).max(72, t("validation.passwordMax72")),
     })
     .refine((values) => values.newPassword === values.confirmPassword, {
       message: t("settings.password.confirmationMismatch"),
@@ -47,13 +38,7 @@ function createPasswordChangeSchema(t: ReturnType<typeof useI18n>["t"]) {
     });
 }
 
-export default function PasswordChangeForm({
-  title,
-  subtitle,
-  submitLabel,
-  successMessage,
-  onSuccess,
-}: PasswordChangeFormProps) {
+export default function PasswordChangeForm({ title, subtitle, submitLabel, successMessage, onSuccess }: PasswordChangeFormProps) {
   const { accessToken, updateUser } = useAuth();
   const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
@@ -90,21 +75,13 @@ export default function PasswordChangeForm({
   }
 
   return (
-    <form
-      className={styles.form}
-      noValidate
-      onSubmit={form.handleSubmit((values) => void onSubmit(values))}
-    >
+    <form className={styles.form} noValidate onSubmit={form.handleSubmit((values) => void onSubmit(values))}>
       <div className={styles.intro}>
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.subtitle}>{subtitle}</p>
       </div>
 
-      <Field
-        error={form.formState.errors.currentPassword?.message}
-        htmlFor="current-password"
-        label={t("settings.password.current")}
-      >
+      <Field error={form.formState.errors.currentPassword?.message} htmlFor="current-password" label={t("settings.password.current")}>
         <Input
           autoComplete="current-password"
           hasError={Boolean(form.formState.errors.currentPassword)}
@@ -114,11 +91,7 @@ export default function PasswordChangeForm({
         />
       </Field>
 
-      <Field
-        error={form.formState.errors.newPassword?.message}
-        htmlFor="new-password"
-        label={t("settings.password.new")}
-      >
+      <Field error={form.formState.errors.newPassword?.message} htmlFor="new-password" label={t("settings.password.new")}>
         <Input
           autoComplete="new-password"
           hasError={Boolean(form.formState.errors.newPassword)}
@@ -128,11 +101,7 @@ export default function PasswordChangeForm({
         />
       </Field>
 
-      <Field
-        error={form.formState.errors.confirmPassword?.message}
-        htmlFor="confirm-password"
-        label={t("settings.password.confirm")}
-      >
+      <Field error={form.formState.errors.confirmPassword?.message} htmlFor="confirm-password" label={t("settings.password.confirm")}>
         <Input
           autoComplete="new-password"
           hasError={Boolean(form.formState.errors.confirmPassword)}

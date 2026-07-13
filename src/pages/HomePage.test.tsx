@@ -1,10 +1,4 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
@@ -93,10 +87,7 @@ describe("HomePage", () => {
 
   it("uses the realized balance as the initial mode when the preference is disabled", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -150,10 +141,7 @@ describe("HomePage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -173,25 +161,18 @@ describe("HomePage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByText("Não foi possível carregar o dashboard agora."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Não foi possível carregar o dashboard agora.")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
 
     expect(await screen.findByText("Orçamentos")).toBeInTheDocument();
     expect(vi.mocked(fetch).mock.calls.length).toBeGreaterThanOrEqual(2);
-    expect(
-      screen.queryByText("Não foi possível carregar o dashboard agora."),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Não foi possível carregar o dashboard agora.")).not.toBeInTheDocument();
   });
 
   it("renders the dashboard data and toggles the balance mode", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -211,9 +192,7 @@ describe("HomePage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      screen.getByRole("heading", { name: "Dashboard" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
     expect(screen.getByText("Família")).toBeInTheDocument();
     expect(await screen.findByText("Mercado")).toBeInTheDocument();
     expect(await screen.findByText("Market")).toBeInTheDocument();
@@ -232,10 +211,7 @@ describe("HomePage", () => {
 
   it("shows budget consumption as used over total without linked category text", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -259,12 +235,8 @@ describe("HomePage", () => {
     const budgetRow = budgetName.closest("li");
     expect(budgetRow).not.toBeNull();
 
-    expect(
-      within(budgetRow!).getByText("R$ 150,00 / R$ 1.000,00"),
-    ).toBeInTheDocument();
-    expect(
-      within(budgetRow!).queryByText(/categorias vinculadas/i),
-    ).not.toBeInTheDocument();
+    expect(within(budgetRow!).getByText("R$ 150,00 / R$ 1.000,00")).toBeInTheDocument();
+    expect(within(budgetRow!).queryByText(/categorias vinculadas/i)).not.toBeInTheDocument();
   });
 
   it("paginates twelve recent transactions showing ten on page one with navigation controls", async () => {
@@ -310,10 +282,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -341,14 +310,10 @@ describe("HomePage", () => {
     expect(screen.queryByText("Transaction 11")).not.toBeInTheDocument();
     expect(screen.queryByText("Transaction 12")).not.toBeInTheDocument();
 
-    const transactionsCard = screen
-      .getByText("Lançamentos recentes")
-      .closest("section, div");
+    const transactionsCard = screen.getByText("Lançamentos recentes").closest("section, div");
     expect(transactionsCard).not.toBeNull();
 
-    const paginationButtons = within(
-      transactionsCard! as HTMLElement,
-    ).queryAllByRole("button");
+    const paginationButtons = within(transactionsCard! as HTMLElement).queryAllByRole("button");
     expect(paginationButtons.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -373,10 +338,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -470,10 +432,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -545,10 +504,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -582,10 +538,7 @@ describe("HomePage", () => {
     mockFetchUrl("/api/dashboard", () => promise);
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -621,9 +574,7 @@ describe("HomePage", () => {
     } as Response);
 
     await waitFor(() => {
-      expect(
-        screen.queryByText("Carregando dashboard"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Carregando dashboard")).not.toBeInTheDocument();
     });
   });
 
@@ -671,10 +622,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -714,10 +662,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -767,10 +712,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -836,10 +778,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/dashboard"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",

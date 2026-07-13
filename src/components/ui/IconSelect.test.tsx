@@ -11,13 +11,7 @@ function IconSelectHarness() {
 
   return (
     <>
-      <IconSelect
-        clearLabel="Sem ícone"
-        id="category-icon"
-        onChange={setValue}
-        options={iconOptions.slice(0, 3)}
-        value={value}
-      />
+      <IconSelect clearLabel="Sem ícone" id="category-icon" onChange={setValue} options={iconOptions.slice(0, 3)} value={value} />
       <output>{value || "empty"}</output>
     </>
   );

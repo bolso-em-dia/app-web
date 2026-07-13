@@ -36,10 +36,7 @@ export type FixedExpenseTemplateListParams = {
   status?: "ALL" | "ACTIVE" | "ARCHIVED";
 };
 
-export function listFixedExpenseTemplates(
-  { page, size, search, status = "ACTIVE" }: FixedExpenseTemplateListParams,
-  accessToken: string,
-) {
+export function listFixedExpenseTemplates({ page, size, search, status = "ACTIVE" }: FixedExpenseTemplateListParams, accessToken: string) {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
@@ -50,19 +47,13 @@ export function listFixedExpenseTemplates(
     query.set("search", search.trim());
   }
 
-  return apiRequest<PageResponse<FixedExpenseTemplate>>(
-    `/api/fixed-transactions?${query.toString()}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+  return apiRequest<PageResponse<FixedExpenseTemplate>>(`/api/fixed-transactions?${query.toString()}`, {
+    method: "GET",
+    accessToken,
+  });
 }
 
-export function createFixedExpenseTemplate(
-  payload: FixedExpenseTemplatePayload,
-  accessToken: string,
-) {
+export function createFixedExpenseTemplate(payload: FixedExpenseTemplatePayload, accessToken: string) {
   return apiRequest<FixedExpenseTemplate>("/api/fixed-transactions", {
     method: "POST",
     accessToken,
@@ -70,11 +61,7 @@ export function createFixedExpenseTemplate(
   });
 }
 
-export function updateFixedExpenseTemplate(
-  id: string,
-  payload: FixedExpenseTemplatePayload,
-  accessToken: string,
-) {
+export function updateFixedExpenseTemplate(id: string, payload: FixedExpenseTemplatePayload, accessToken: string) {
   return apiRequest<FixedExpenseTemplate>(`/api/fixed-transactions/${id}`, {
     method: "PUT",
     accessToken,

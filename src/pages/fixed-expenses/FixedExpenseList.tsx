@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FixedExpenseTemplate } from "../../app/api/fixedExpenses";
 import { listFixedExpenseTemplates } from "../../app/api/fixedExpenses";
-import {
-  listCategoryOptions,
-  type CategoryOption,
-} from "../../app/api/categories";
+import { listCategoryOptions, type CategoryOption } from "../../app/api/categories";
 import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import type { StatusFilter } from "../../lib/constants";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
@@ -54,20 +51,19 @@ export default function FixedExpenseList({
     setIsLoading(true);
 
     try {
-      const [templatesResponse, categoriesResponse, accountsResponse] =
-        await Promise.all([
-          listFixedExpenseTemplates(
-            {
-              page,
-              size: pageSize,
-              search: filters.search,
-              status: filters.status,
-            },
-            accessToken,
-          ),
-          listCategoryOptions(referenceMonth, accessToken),
-          listAccountOptions(referenceMonth, accessToken),
-        ]);
+      const [templatesResponse, categoriesResponse, accountsResponse] = await Promise.all([
+        listFixedExpenseTemplates(
+          {
+            page,
+            size: pageSize,
+            search: filters.search,
+            status: filters.status,
+          },
+          accessToken,
+        ),
+        listCategoryOptions(referenceMonth, accessToken),
+        listAccountOptions(referenceMonth, accessToken),
+      ]);
 
       setTemplates(templatesResponse.items);
       setPage(templatesResponse.page);
@@ -80,16 +76,7 @@ export default function FixedExpenseList({
       setIsLoading(false);
       setHasLoadedOnce(true);
     }
-  }, [
-    accessToken,
-    page,
-    pageSize,
-    filters.search,
-    filters.status,
-    referenceMonth,
-    onAccountOptionsLoaded,
-    onCategoryOptionsLoaded,
-  ]);
+  }, [accessToken, page, pageSize, filters.search, filters.status, referenceMonth, onAccountOptionsLoaded, onCategoryOptionsLoaded]);
 
   useEffect(() => {
     setPage(0);
@@ -99,10 +86,7 @@ export default function FixedExpenseList({
     void loadData();
   }, [loadData, refreshKey]);
 
-  const categoryOptionsById = useMemo(
-    () => new Map(categoryOptions.map((c) => [c.id, c])),
-    [categoryOptions],
-  );
+  const categoryOptionsById = useMemo(() => new Map(categoryOptions.map((c) => [c.id, c])), [categoryOptions]);
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
