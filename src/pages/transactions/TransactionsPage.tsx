@@ -24,7 +24,6 @@ import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
 } from "../../lib/formatters/date";
-import type { TransactionFormValues } from "../../lib/validation/transactionSchema";
 import TransactionList from "./TransactionList";
 import TransactionForm from "./TransactionForm";
 import styles from "./TransactionsPage.module.scss";
@@ -64,11 +63,8 @@ export default function TransactionsPage() {
   const [selectedTransactionId, setSelectedTransactionId] = useState<
     string | null
   >(null);
-  const [selectedInstallmentGroupId, setSelectedInstallmentGroupId] = useState<
-    string | null
-  >(null);
-  const [formInitialValues, setFormInitialValues] =
-    useState<TransactionFormValues | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<TransactionFilters>({
@@ -80,28 +76,18 @@ export default function TransactionsPage() {
     [members],
   );
 
-  const handleSelect = useCallback((id: string, transaction: Transaction) => {
-    setSelectedTransactionId(id);
-    setSelectedInstallmentGroupId(transaction.installmentGroupId ?? null);
-    setFormInitialValues({
-      type: transaction.type,
-      ownershipType: transaction.ownershipType,
-      description: transaction.description,
-      amount: transaction.amount,
-      transactionDate: transaction.transactionDate,
-      accountId: transaction.accountId,
-      categoryId: transaction.categoryId,
-      memberId: transaction.memberId ?? "",
-      isInstallment: Boolean(transaction.installmentTotal),
-      installmentCount: transaction.installmentTotal ?? 2,
-    });
-    setDrawerOpen(true);
-  }, []);
+  const handleSelect = useCallback(
+    (id: string, transaction: Transaction) => {
+      setSelectedTransactionId(id);
+      setSelectedTransaction(transaction);
+      setDrawerOpen(true);
+    },
+    [],
+  );
 
   const handleStartCreate = useCallback(() => {
     setSelectedTransactionId(null);
-    setSelectedInstallmentGroupId(null);
-    setFormInitialValues(null);
+    setSelectedTransaction(null);
     setDrawerOpen(true);
   }, []);
 
@@ -110,14 +96,14 @@ export default function TransactionsPage() {
       return;
     }
     setSelectedTransactionId(null);
-    setFormInitialValues(null);
+    setSelectedTransaction(null);
     setDrawerOpen(false);
     setRefreshKey((k) => k + 1);
   }, []);
 
   const handleCancelForm = useCallback(() => {
     setSelectedTransactionId(null);
-    setFormInitialValues(null);
+    setSelectedTransaction(null);
     setDrawerOpen(false);
   }, []);
 
@@ -405,13 +391,7 @@ export default function TransactionsPage() {
         </Card>
 
         <TransactionList
-          search={filters.search ?? ""}
-          typeFilter={filters.type ?? "ALL"}
-          ownershipFilter={filters.ownershipType ?? "ALL"}
-          accountId={filters.accountId}
-          categoryIds={filters.categoryIds}
-          memberId={filters.memberId}
-          referenceMonth={filters.referenceMonth}
+          filters={filters}
           selectedId={selectedTransactionId}
           onSelect={handleSelect}
           refreshKey={refreshKey}
@@ -437,10 +417,8 @@ export default function TransactionsPage() {
             <div className={styles.drawerStack}>
               <TransactionForm
                 key={selectedTransactionId ?? "create"}
-                transactionId={selectedTransactionId}
-                installmentGroupId={selectedInstallmentGroupId}
-                initialValues={formInitialValues}
-                user={user}
+                transaction={selectedTransaction}
+                user={user!}
                 accounts={accounts}
                 categories={categoryOptions}
                 members={members}

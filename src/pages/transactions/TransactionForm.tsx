@@ -11,6 +11,7 @@ import {
   listTransactionDescriptionSuggestions,
   updateTransaction,
   type DeleteScope,
+  type Transaction,
   type TransactionPayload,
 } from "../../app/api/transactions";
 import type { AuthUser } from "../../app/api/auth";
@@ -31,10 +32,8 @@ import Switch from "../../components/ui/Switch";
 import styles from "./TransactionsPage.module.scss";
 
 interface TransactionFormProps {
-  transactionId: string | null;
-  installmentGroupId: string | null;
-  initialValues: TransactionFormValues | null;
-  user: AuthUser | null;
+  transaction: Transaction | null;
+  user: AuthUser;
   accounts: Account[];
   categories: CategoryOption[];
   members: FamilyMember[];
@@ -45,7 +44,7 @@ interface TransactionFormProps {
 
 function createDefaultValues(
   referenceMonth: string,
-  defaultAccountId: string,
+  user: AuthUser,
 ): TransactionFormValues {
   return {
     type: "EXPENSE",
@@ -53,7 +52,7 @@ function createDefaultValues(
     description: "",
     amount: 0,
     transactionDate: referenceMonth,
-    accountId: defaultAccountId,
+    accountId: user.preferences?.defaultAccountId ?? "",
     categoryId: "",
     memberId: "",
     isInstallment: false,
@@ -98,9 +97,7 @@ function mapFormValuesToUpdatePayload(
 }
 
 export default function TransactionForm({
-  transactionId,
-  installmentGroupId,
-  initialValues,
+  transaction,
   user,
   accounts,
   categories,
@@ -120,28 +117,39 @@ export default function TransactionForm({
     string[]
   >([]);
 
-  const isCreating = transactionId === null;
+  const isCreating = transaction === null;
+  const transactionId = transaction?.id ?? null;
+  const installmentGroupId = transaction?.installmentGroupId ?? null;
+
+  const initialValues = useMemo(
+    (): TransactionFormValues =>
+      !transaction
+        ? createDefaultValues(referenceMonth, user)
+        : {
+            type: transaction.type,
+            ownershipType: transaction.ownershipType,
+            description: transaction.description,
+            amount: transaction.amount,
+            transactionDate: transaction.transactionDate,
+            accountId: transaction.accountId,
+            categoryId: transaction.categoryId,
+            memberId: transaction.memberId ?? "",
+            isInstallment: Boolean(transaction.installmentTotal),
+            installmentCount: transaction.installmentTotal ?? 2,
+          },
+    [transaction, referenceMonth, user],
+  );
 
   const transactionSchema = useMemo(() => createTransactionSchema(t), [t]);
 
-  const defaultValues = useMemo(
-    () =>
-      initialValues ??
-      createDefaultValues(
-        referenceMonth,
-        user?.preferences?.defaultAccountId ?? "",
-      ),
-    [initialValues, referenceMonth, user],
-  );
-
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
-    defaultValues,
+    defaultValues: initialValues,
   });
 
   useEffect(() => {
-    form.reset(defaultValues);
-  }, [defaultValues, form]);
+    form.reset(initialValues);
+  }, [initialValues, form]);
 
   const descriptionValue = form.watch("description");
   const transactionType = form.watch("type");

@@ -9,9 +9,8 @@ import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
 import {
   listTransactions,
   materializeTransactions,
-  type OwnershipType,
   type Transaction,
-  type TransactionType,
+  type TransactionFilters,
 } from "../../app/api/transactions";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
@@ -23,13 +22,7 @@ import TransactionCard from "./TransactionCard";
 import styles from "./TransactionsPage.module.scss";
 
 interface TransactionListProps {
-  search: string;
-  typeFilter: TransactionType | "ALL";
-  ownershipFilter: OwnershipType | "ALL";
-  accountId: string | undefined;
-  categoryIds: string[] | undefined;
-  memberId: string | undefined;
-  referenceMonth: string;
+  filters: TransactionFilters;
   selectedId: string | null;
   onSelect: (id: string, transaction: Transaction) => void;
   refreshKey: number;
@@ -41,13 +34,7 @@ interface TransactionListProps {
 }
 
 export default function TransactionList({
-  search,
-  typeFilter,
-  ownershipFilter,
-  accountId,
-  categoryIds,
-  memberId,
-  referenceMonth,
+  filters,
   selectedId,
   onSelect,
   refreshKey,
@@ -66,26 +53,19 @@ export default function TransactionList({
   const onReferenceDataLoadedRef = useRef(onReferenceDataLoaded);
   onReferenceDataLoadedRef.current = onReferenceDataLoaded;
 
-  const filterKey = useMemo(
-    () =>
-      JSON.stringify({
-        referenceMonth,
-        search,
-        typeFilter,
-        ownershipFilter,
-        accountId,
-        categoryIds,
-        memberId,
-      }),
-    [
+    const {
       referenceMonth,
       search,
-      typeFilter,
-      ownershipFilter,
+      type: typeFilter,
+      ownershipType: ownershipFilter,
       accountId,
       categoryIds,
       memberId,
-    ],
+    } = filters;
+
+  const filterKey = useMemo(
+    () => JSON.stringify(filters),
+    [filters],
   );
 
   useEffect(() => {
@@ -157,9 +137,9 @@ export default function TransactionList({
     }
   }, [
     accessToken,
-    referenceMonth,
     page,
     pageSize,
+    referenceMonth,
     search,
     typeFilter,
     ownershipFilter,
