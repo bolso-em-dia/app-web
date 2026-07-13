@@ -16,18 +16,14 @@ import AccountCard from "./AccountCard";
 import styles from "./AccountsPage.module.scss";
 
 interface AccountListProps {
-  search: string;
-  statusFilter: "ALL" | "ACTIVE" | "ARCHIVED";
-  typeFilter: "" | AccountType;
+  filters: { search: string; status: "ALL" | "ACTIVE" | "ARCHIVED"; type: "" | AccountType };
   selectedId: string | null;
   onSelect: (id: string, account: Account) => void;
   refreshKey: number;
 }
 
 export default function AccountList({
-  search,
-  statusFilter,
-  typeFilter,
+  filters,
   selectedId,
   onSelect,
   refreshKey,
@@ -69,25 +65,33 @@ export default function AccountList({
   const prevFiltersRef = useRef("");
   useEffect(() => {
     const filterKey = JSON.stringify({
-      search,
-      statusFilter,
-      typeFilter,
+      search: filters.search,
+      status: filters.status,
+      type: filters.type,
     });
     if (prevFiltersRef.current !== filterKey) {
       prevFiltersRef.current = filterKey;
       setPage(0);
     }
-  }, [search, statusFilter, typeFilter]);
+  }, [filters.search, filters.status, filters.type]);
 
   useEffect(() => {
     void loadAccounts({
       page,
       size: pageSize,
-      search,
-      status: statusFilter,
-      type: typeFilter || undefined,
+      search: filters.search,
+      status: filters.status,
+      type: filters.type || undefined,
     });
-  }, [loadAccounts, page, pageSize, search, statusFilter, typeFilter, refreshKey]);
+  }, [
+    loadAccounts,
+    page,
+    pageSize,
+    filters.search,
+    filters.status,
+    filters.type,
+    refreshKey,
+  ]);
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
