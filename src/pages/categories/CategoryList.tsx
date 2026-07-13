@@ -17,8 +17,7 @@ import CategoryCard from "./CategoryCard";
 import styles from "./CategoriesPage.module.scss";
 
 interface CategoryListProps {
-  search: string;
-  statusFilter: StatusFilter;
+  filters: { search: string; status: StatusFilter };
   selectedId: string | null;
   onSelect: (id: string, category: Category) => void;
   refreshKey: number;
@@ -26,8 +25,7 @@ interface CategoryListProps {
 }
 
 export default function CategoryList({
-  search,
-  statusFilter,
+  filters,
   selectedId,
   onSelect,
   refreshKey,
@@ -45,7 +43,7 @@ export default function CategoryList({
   const [error, setError] = useState<string | null>(null);
 
   const loadCategories = useCallback(
-    async (p: number, s: number) => {
+    async () => {
       if (!accessToken) {
         return;
       }
@@ -56,7 +54,12 @@ export default function CategoryList({
       try {
         const [categoriesResponse, optionsResponse] = await Promise.all([
           listCategories(
-            { page: p, size: s, search, status: statusFilter },
+            {
+              page,
+              size: pageSize,
+              search: filters.search,
+              status: filters.status,
+            },
             accessToken,
           ),
           listCategoryOptions(getCurrentReferenceMonth(), accessToken),
@@ -74,31 +77,30 @@ export default function CategoryList({
         setHasLoadedOnce(true);
       }
     },
-    [accessToken, t, onOptionsLoaded, search, statusFilter],
+    [accessToken, t, onOptionsLoaded, filters, page, pageSize],
   );
 
   useEffect(() => {
     setPage(0);
-    void loadCategories(0, pageSize);
-  }, [loadCategories, search, statusFilter, pageSize, refreshKey]);
+    void loadCategories();
+  }, [filters.search, filters.status, refreshKey]);
 
-  const handlePreviousPage = () => {
-    const p = page - 1;
-    setPage(p);
-    void loadCategories(p, pageSize);
-  };
+  useEffect(() => {
+    void loadCategories();
+  }, [page, pageSize]);
 
-  const handleNextPage = () => {
-    const p = page + 1;
-    setPage(p);
-    void loadCategories(p, pageSize);
-  };
+  function handlePreviousPage() {
+    setPage((p) => Math.max(0, p - 1));
+  }
 
-  const handlePageSizeChange = (s: number) => {
+  function handleNextPage() {
+    setPage((p) => p + 1);
+  }
+
+  function handlePageSizeChange(s: number) {
     setPageSize(s);
     setPage(0);
-    void loadCategories(0, s);
-  };
+  }
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
