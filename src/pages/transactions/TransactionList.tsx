@@ -53,20 +53,17 @@ export default function TransactionList({
   const onReferenceDataLoadedRef = useRef(onReferenceDataLoaded);
   onReferenceDataLoadedRef.current = onReferenceDataLoaded;
 
-    const {
-      referenceMonth,
-      search,
-      type: typeFilter,
-      ownershipType: ownershipFilter,
-      accountId,
-      categoryIds,
-      memberId,
-    } = filters;
+  const {
+    referenceMonth,
+    search,
+    type: typeFilter,
+    ownershipType: ownershipFilter,
+    accountId,
+    categoryIds,
+    memberId,
+  } = filters;
 
-  const filterKey = useMemo(
-    () => JSON.stringify(filters),
-    [filters],
-  );
+  const filterKey = useMemo(() => JSON.stringify(filters), [filters]);
 
   useEffect(() => {
     setPage(0);
@@ -89,9 +86,8 @@ export default function TransactionList({
         size: pageSize,
       };
       if (search) params.search = search;
-      if (typeFilter && typeFilter !== "ALL") params.type = typeFilter;
-      if (ownershipFilter && ownershipFilter !== "ALL")
-        params.ownershipType = ownershipFilter;
+      if (typeFilter) params.type = typeFilter;
+      if (ownershipFilter) params.ownershipType = ownershipFilter;
       if (accountId) params.accountId = accountId;
       if (categoryIds && categoryIds.length > 0)
         params.categoryIds = categoryIds;

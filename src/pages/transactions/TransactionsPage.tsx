@@ -76,14 +76,11 @@ export default function TransactionsPage() {
     [members],
   );
 
-  const handleSelect = useCallback(
-    (id: string, transaction: Transaction) => {
-      setSelectedTransactionId(id);
-      setSelectedTransaction(transaction);
-      setDrawerOpen(true);
-    },
-    [],
-  );
+  const handleSelect = useCallback((id: string, transaction: Transaction) => {
+    setSelectedTransactionId(id);
+    setSelectedTransaction(transaction);
+    setDrawerOpen(true);
+  }, []);
 
   const handleStartCreate = useCallback(() => {
     setSelectedTransactionId(null);

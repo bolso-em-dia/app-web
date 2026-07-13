@@ -21,7 +21,11 @@ type AccountFilters = {
   type: "" | AccountType;
 };
 
-const DEFAULT_FILTERS: AccountFilters = { search: "", status: "ACTIVE", type: "" };
+const DEFAULT_FILTERS: AccountFilters = {
+  search: "",
+  status: "ACTIVE",
+  type: "",
+};
 
 export default function AccountsPage() {
   const { user } = useAuth();
@@ -147,9 +151,7 @@ export default function AccountsPage() {
                       setFilters((c) => ({
                         ...c,
                         status: event.target.value as
-                          | "ALL"
-                          | "ACTIVE"
-                          | "ARCHIVED",
+                          "ALL" | "ACTIVE" | "ARCHIVED",
                       }));
                     }}
                     value={filters.status}

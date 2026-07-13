@@ -79,7 +79,9 @@ export default function FixedExpenseForm({
   const editingId = template?.id ?? null;
 
   const initialValues = useMemo(() => {
-    const defaults = createDefaultValues(user.preferences.defaultAccountId ?? "");
+    const defaults = createDefaultValues(
+      user.preferences.defaultAccountId ?? "",
+    );
     if (!template) {
       return defaults;
     }

@@ -117,7 +117,10 @@ export default function BudgetsPage() {
   );
 
   function clearFilters() {
-    setFilters((c) => ({ ...DEFAULT_FILTERS, referenceMonth: c.referenceMonth }));
+    setFilters((c) => ({
+      ...DEFAULT_FILTERS,
+      referenceMonth: c.referenceMonth,
+    }));
   }
 
   const isCreating = selectedId === null;
@@ -179,9 +182,7 @@ export default function BudgetsPage() {
                       setFilters((c) => ({
                         ...c,
                         status: event.target.value as
-                          | "ALL"
-                          | "ACTIVE"
-                          | "ARCHIVED",
+                          "ALL" | "ACTIVE" | "ARCHIVED",
                       }));
                     }}
                     value={filters.status}
