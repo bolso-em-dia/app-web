@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
+import type { FilterFields } from "../../lib/filterFields";
 import FilterToolbar from "./FilterToolbar";
 
 function setViewportWidth(width: number) {
@@ -15,25 +16,37 @@ function Harness() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [search, setSearch] = useState("Mercado");
 
-  const activeFilters = search
-    ? [
-        {
-          key: "search",
-          label: `Buscar: ${search}`,
-          onRemove: () => setSearch(""),
-        },
-      ]
-    : [];
+  const fields: FilterFields = {
+    search: {
+      kind: "text",
+      label: "Buscar",
+      value: search,
+      defaultValue: "",
+      placement: "visible",
+      element: <input aria-label="Busca principal" />,
+    },
+    status: {
+      kind: "select",
+      label: "Status",
+      value: "",
+      defaultValue: "",
+      placement: "expanded",
+      options: [],
+      element: <input aria-label="Status secundário" />,
+    },
+  };
 
   return (
     <FilterToolbar
-      activeFilters={activeFilters}
+      fields={fields}
       isPanelOpen={isPanelOpen}
-      onClearFilters={() => setSearch("")}
       onClosePanel={() => setIsPanelOpen(false)}
+      onResetField={(name, defaultValue) => {
+        if (name === "search") {
+          setSearch(String(defaultValue));
+        }
+      }}
       onTogglePanel={() => setIsPanelOpen((current) => !current)}
-      primaryContent={<input aria-label="Busca principal" />}
-      secondaryContent={<input aria-label="Status secundário" />}
     />
   );
 }

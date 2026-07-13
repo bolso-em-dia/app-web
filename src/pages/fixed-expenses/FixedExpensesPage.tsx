@@ -7,18 +7,13 @@ import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
-import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
-import Input from "../../components/ui/Input";
-import Select from "../../components/ui/Select";
+import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInput";
+import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
-import {
-  buildSearchActiveFilter,
-  buildStatusActiveFilter,
-  compileActiveFilters,
-} from "../../lib/activeFilters";
+import type { FilterFields } from "../../lib/filterFields";
 import { useFiltersState } from "../../lib/useFiltersState";
 import FixedExpenseList from "./FixedExpenseList";
 import FixedExpenseForm from "./FixedExpenseForm";
@@ -34,7 +29,7 @@ export default function FixedExpensesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const referenceMonth = getCurrentReferenceMonth();
-  const { filters, patchFilters, clearFilter, resetFilters } =
+  const { filters, patchFilters, clearFilter } =
     useFiltersState(DEFAULT_FILTERS);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -68,17 +63,56 @@ export default function FixedExpensesPage() {
     setRefreshKey((k) => k + 1);
   }
 
-  const activeFilters = useMemo(
-    () =>
-      compileActiveFilters([
-        buildSearchActiveFilter(filters.search, t("common.search"), () => {
-          clearFilter("search", "");
-        }),
-        buildStatusActiveFilter(filters.status, t, () => {
-          clearFilter("status", ACTIVE_STATUS_FILTER);
-        }),
-      ]),
-    [filters, t, clearFilter],
+  const fields = useMemo<FilterFields>(
+    () => ({
+      search: {
+        kind: "text",
+        label: t("common.search"),
+        value: filters.search,
+        defaultValue: "",
+        placement: "visible",
+        element: (
+          <FilterTextInput
+            id="fixed-expense-search"
+            label={t("common.search")}
+            onChange={(search) => {
+              patchFilters({ search });
+            }}
+            placeholder={t("fixedTransactions.searchPlaceholder")}
+            value={filters.search}
+          />
+        ),
+      },
+      status: {
+        kind: "select",
+        label: t("common.status"),
+        value: filters.status,
+        defaultValue: ACTIVE_STATUS_FILTER,
+        placement: "expanded",
+        options: [
+          { value: "ALL", label: t("common.all") },
+          { value: "ACTIVE", label: t("common.active") },
+          { value: "ARCHIVED", label: t("common.archived") },
+        ],
+        element: (
+          <FilterSelectInput<StatusFilter>
+            id="fixed-expense-status-filter"
+            label={t("common.status")}
+            onChange={(status) => {
+              patchFilters({ status: status as StatusFilter });
+            }}
+            options={[
+              { value: "ALL", label: t("common.all") },
+              { value: "ACTIVE", label: t("common.active") },
+              { value: "ARCHIVED", label: t("common.archived") },
+            ]}
+            placeholder={t("common.all")}
+            value={filters.status}
+          />
+        ),
+      },
+    }),
+    [filters.search, filters.status, patchFilters, t],
   );
 
   const isCreating = selectedId === null;
@@ -96,45 +130,16 @@ export default function FixedExpensesPage() {
       <section className={styles.stack}>
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
-            activeFilters={activeFilters}
+            fields={fields}
             isPanelOpen={isFiltersOpen}
-            onClearFilters={() => resetFilters()}
             onClosePanel={() => setIsFiltersOpen(false)}
+            onResetField={(name, defaultValue) => {
+              clearFilter(
+                name as keyof FixedExpenseFilters,
+                defaultValue as FixedExpenseFilters[keyof FixedExpenseFilters],
+              );
+            }}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
-            primaryContent={
-              <Field htmlFor="fixed-expense-search" label={t("common.search")}>
-                <Input
-                  id="fixed-expense-search"
-                  onChange={(event) => {
-                    patchFilters({ search: event.target.value });
-                  }}
-                  placeholder={t("fixedTransactions.searchPlaceholder")}
-                  value={filters.search}
-                />
-              </Field>
-            }
-            secondaryContent={
-              <>
-                <Field
-                  htmlFor="fixed-expense-status-filter"
-                  label={t("common.status")}
-                >
-                  <Select
-                    id="fixed-expense-status-filter"
-                    onChange={(event) => {
-                      patchFilters({
-                        status: event.target.value as StatusFilter,
-                      });
-                    }}
-                    value={filters.status}
-                  >
-                    <option value="ALL">{t("common.all")}</option>
-                    <option value="ACTIVE">{t("common.active")}</option>
-                    <option value="ARCHIVED">{t("common.archived")}</option>
-                  </Select>
-                </Field>
-              </>
-            }
           />
         </Card>
 
