@@ -1,22 +1,8 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import {
-  listCategoryOptions,
-  type CategoryOption,
-} from "../../app/api/categories";
-import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
-import {
-  createFixedExpenseTemplate,
-  deleteFixedExpenseTemplate,
-  listFixedExpenseTemplates,
-  updateFixedExpenseTemplate,
-  type FixedExpenseTemplate,
-  type FixedExpenseTemplateListParams,
-  type FixedExpenseTemplatePayload,
-} from "../../app/api/fixedExpenses";
+import { useMemo, useState } from "react";
+import type { AccountOption } from "../../app/api/accounts";
+import type { CategoryOption } from "../../app/api/categories";
+import type { FixedExpenseTemplate } from "../../app/api/fixedExpenses";
 import { useAuth } from "../../app/auth/useAuth";
-import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -25,226 +11,59 @@ import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import PaginationBar from "../../components/ui/PaginationBar";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
-import {
-  createFixedExpenseSchema,
-  type FixedExpenseFormValues,
-} from "../../lib/validation/fixedExpenseSchema";
+import type { FixedExpenseFormValues } from "../../lib/validation/fixedExpenseSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
-import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
-import { usePagination } from "../../lib/usePagination";
+import type { StatusFilter } from "../../lib/constants";
+import type { TransactionType } from "../../app/api/transactions";
 import FixedExpenseList from "./FixedExpenseList";
 import FixedExpenseForm from "./FixedExpenseForm";
 import styles from "./FixedExpensesPage.module.scss";
 
-function createDefaultValues(defaultAccountId: string): FixedExpenseFormValues {
-  return {
-    name: "",
-    type: "EXPENSE",
-    amount: 0,
-    categoryId: "",
-    accountId: defaultAccountId,
-    dueDay: 1,
-  };
-}
-
-function mapFormValuesToPayload(
-  values: FixedExpenseFormValues,
-): FixedExpenseTemplatePayload {
-  return {
-    name: values.name,
-    type: values.type,
-    amount: values.amount,
-    categoryId: values.categoryId,
-    accountId: values.accountId,
-    dueDay: values.dueDay,
-  };
-}
-
 export default function FixedExpensesPage() {
-  const { accessToken, user } = useAuth();
+  const { user } = useAuth();
   const { t } = useI18n();
   const referenceMonth = getCurrentReferenceMonth();
-  const [templates, setTemplates] = useState<FixedExpenseTemplate[]>([]);
-  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
-  const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "ACTIVE" | "ARCHIVED"
-  >("ACTIVE");
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [totalItems, setTotalItems] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ACTIVE");
+  const [typeFilter] = useState<TransactionType | "ALL">("ALL");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [initialValues, setInitialValues] =
+    useState<FixedExpenseFormValues | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
 
-  const selectedTemplate = useMemo(
-    () => templates.find((template) => template.id === selectedId) ?? null,
-    [templates, selectedId],
-  );
-
-  const categoryOptionsById = useMemo(
-    () => new Map(categoryOptions.map((category) => [category.id, category])),
-    [categoryOptions],
-  );
-
-  const fixedExpenseSchema = useMemo(() => createFixedExpenseSchema(t), [t]);
-
-  const form = useForm<FixedExpenseFormValues>({
-    resolver: zodResolver(fixedExpenseSchema),
-    defaultValues: createDefaultValues(
-      user?.preferences.defaultAccountId ?? "",
-    ),
-  });
-  const formAccountId = form.watch("accountId");
-  const selectedAccountCurrency = useMemo(
-    () =>
-      accountOptions.find((a) => a.id === formAccountId)?.currency as
-        "BRL" | "USD" | undefined,
-    [accountOptions, formAccountId],
-  );
-
-  const loadTemplates = useCallback(
-    async (params: FixedExpenseTemplateListParams) => {
-      if (!accessToken) {
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const [templatesResponse, categoriesResponse, accountsResponse] =
-          await Promise.all([
-            listFixedExpenseTemplates(params, accessToken),
-            listCategoryOptions(referenceMonth, accessToken),
-            listAccountOptions(referenceMonth, accessToken),
-          ]);
-
-        setTemplates(templatesResponse.items);
-        setPage(templatesResponse.page);
-        setPageSize(templatesResponse.size);
-        setTotalItems(templatesResponse.totalItems);
-        setCategoryOptions(categoriesResponse);
-        setAccountOptions(accountsResponse);
-        setSelectedId((current) =>
-          current &&
-          templatesResponse.items.some((template) => template.id === current)
-            ? current
-            : null,
-        );
-      } catch {
-        setError(t("fixedTransactions.error"));
-      } finally {
-        setIsLoading(false);
-        setHasLoadedOnce(true);
-      }
-    },
-    [accessToken, referenceMonth, t],
-  );
-
-  useEffect(() => {
-    void loadTemplates({
-      page,
-      size: pageSize,
-      search,
-      status: statusFilter,
+  function handleSelect(id: string, template: FixedExpenseTemplate) {
+    setIsCreating(false);
+    setSelectedId(id);
+    setInitialValues({
+      name: template.name,
+      type: template.type,
+      amount: template.amount,
+      categoryId: template.categoryId,
+      accountId: template.accountId,
+      dueDay: template.dueDay,
     });
-  }, [loadTemplates, page, pageSize, search, statusFilter]);
-
-  async function onSubmit(values: FixedExpenseFormValues) {
-    if (!accessToken) {
-      return;
-    }
-
-    setIsSaving(true);
-    setError(null);
-
-    try {
-      if (isCreating) {
-        await createFixedExpenseTemplate(
-          mapFormValuesToPayload(values),
-          accessToken,
-        );
-        handleCloseDrawer();
-        await loadTemplates({
-          page,
-          size: pageSize,
-          search,
-          status: statusFilter,
-        });
-      } else if (selectedTemplate) {
-        await updateFixedExpenseTemplate(
-          selectedTemplate.id,
-          mapFormValuesToPayload(values),
-          accessToken,
-        );
-        handleCloseDrawer();
-        await loadTemplates({
-          page,
-          size: pageSize,
-          search,
-          status: statusFilter,
-        });
-      }
-    } catch {
-      setError(t("fixedTransactions.saveError"));
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  async function onDelete() {
-    if (!accessToken || !selectedTemplate) {
-      return;
-    }
-
-    setIsDeleting(true);
-    setError(null);
-
-    try {
-      await deleteFixedExpenseTemplate(selectedTemplate.id, accessToken);
-      setSelectedId(null);
-      await loadTemplates({
-        page,
-        size: pageSize,
-        search,
-        status: statusFilter,
-      });
-    } catch {
-      setError(t("fixedTransactions.deleteError"));
-    } finally {
-      setIsDeleting(false);
-    }
   }
 
   function handleStartCreate() {
     setIsCreating(true);
     setSelectedId(null);
-    setError(null);
-    form.reset(createDefaultValues(user?.preferences.defaultAccountId ?? ""));
-  }
-
-  function handleCancelCreate() {
-    setIsCreating(false);
-    setSelectedId(null);
-    setError(null);
-    form.reset(createDefaultValues(user?.preferences.defaultAccountId ?? ""));
+    setInitialValues(null);
   }
 
   function handleCloseDrawer() {
     setIsCreating(false);
     setSelectedId(null);
-    setError(null);
-    form.reset(createDefaultValues(user?.preferences.defaultAccountId ?? ""));
+    setInitialValues(null);
+  }
+
+  function handleSuccess() {
+    handleCloseDrawer();
+    setRefreshKey((k) => k + 1);
   }
 
   const activeFilters = useMemo(
@@ -256,7 +75,6 @@ export default function FixedExpensesPage() {
               label: `${t("common.search")}: ${search}`,
               onRemove: () => {
                 setSearch("");
-                setPage(0);
               },
             },
           ]
@@ -270,7 +88,6 @@ export default function FixedExpensesPage() {
               )}`,
               onRemove: () => {
                 setStatusFilter("ACTIVE");
-                setPage(0);
               },
             },
           ]
@@ -282,12 +99,9 @@ export default function FixedExpensesPage() {
   function clearFilters() {
     setSearch("");
     setStatusFilter("ACTIVE");
-    setPage(0);
   }
 
-  const showInitialLoading = isLoading && !hasLoadedOnce;
-  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
-  const pagination = usePagination(page, pageSize, totalItems, totalPages);
+  const drawerOpen = isCreating || selectedId !== null;
 
   return (
     <AppShell
@@ -298,135 +112,87 @@ export default function FixedExpensesPage() {
         </Button>
       }
     >
-      {showInitialLoading ? (
-        <Card className={styles.loadingCard}>
-          <Spinner label={t("fixedTransactions.loading")} />
-        </Card>
-      ) : (
-        <section className={styles.stack}>
-          <Card className={styles.toolbarPanel}>
-            <FilterToolbar
-              activeFilters={activeFilters}
-              isPanelOpen={isFiltersOpen}
-              onClearFilters={clearFilters}
-              onClosePanel={() => setIsFiltersOpen(false)}
-              onTogglePanel={() => setIsFiltersOpen((current) => !current)}
-              primaryContent={
+      <section className={styles.stack}>
+        <Card className={styles.toolbarPanel}>
+          <FilterToolbar
+            activeFilters={activeFilters}
+            isPanelOpen={isFiltersOpen}
+            onClearFilters={clearFilters}
+            onClosePanel={() => setIsFiltersOpen(false)}
+            onTogglePanel={() => setIsFiltersOpen((current) => !current)}
+            primaryContent={
+              <Field htmlFor="fixed-expense-search" label={t("common.search")}>
+                <Input
+                  id="fixed-expense-search"
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                  }}
+                  placeholder={t("fixedTransactions.searchPlaceholder")}
+                  value={search}
+                />
+              </Field>
+            }
+            secondaryContent={
+              <>
                 <Field
-                  htmlFor="fixed-expense-search"
-                  label={t("common.search")}
+                  htmlFor="fixed-expense-status-filter"
+                  label={t("common.status")}
                 >
-                  <Input
-                    id="fixed-expense-search"
+                  <Select
+                    id="fixed-expense-status-filter"
                     onChange={(event) => {
-                      setSearch(event.target.value);
-                      setPage(0);
+                      setStatusFilter(event.target.value as StatusFilter);
                     }}
-                    placeholder={t("fixedTransactions.searchPlaceholder")}
-                    value={search}
-                  />
-                </Field>
-              }
-              secondaryContent={
-                <>
-                  <Field
-                    htmlFor="fixed-expense-status-filter"
-                    label={t("common.status")}
+                    value={statusFilter}
                   >
-                    <Select
-                      id="fixed-expense-status-filter"
-                      onChange={(event) => {
-                        setStatusFilter(
-                          event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                        );
-                        setPage(0);
-                      }}
-                      value={statusFilter}
-                    >
-                      <option value="ALL">{t("common.all")}</option>
-                      <option value="ACTIVE">{t("common.active")}</option>
-                      <option value="ARCHIVED">{t("common.archived")}</option>
-                    </Select>
-                  </Field>
-                </>
-              }
+                    <option value="ALL">{t("common.all")}</option>
+                    <option value="ACTIVE">{t("common.active")}</option>
+                    <option value="ARCHIVED">{t("common.archived")}</option>
+                  </Select>
+                </Field>
+              </>
+            }
+          />
+        </Card>
+
+        <FixedExpenseList
+          search={search}
+          statusFilter={statusFilter}
+          typeFilter={typeFilter}
+          referenceMonth={referenceMonth}
+          selectedId={selectedId}
+          onSelect={handleSelect}
+          refreshKey={refreshKey}
+          onAccountOptionsLoaded={setAccountOptions}
+          onCategoryOptionsLoaded={setCategoryOptions}
+        />
+
+        {drawerOpen ? (
+          <Drawer
+            description={
+              isCreating
+                ? t("fixedTransactions.newDescription")
+                : t("fixedTransactions.editDescription")
+            }
+            onClose={handleCloseDrawer}
+            title={
+              isCreating
+                ? t("fixedTransactions.newTitle")
+                : t("fixedTransactions.detailsTitle")
+            }
+          >
+            <FixedExpenseForm
+              initialValues={initialValues}
+              editingId={selectedId}
+              user={user!}
+              accountOptions={accountOptions}
+              categoryOptions={categoryOptions}
+              onSuccess={handleSuccess}
+              onCancel={handleCloseDrawer}
             />
-          </Card>
-
-          <FixedExpenseList
-            templates={templates}
-            selectedId={selectedId}
-            categoryOptionsById={categoryOptionsById}
-            onCardSelect={(id, template) => {
-              setIsCreating(false);
-              setSelectedId(id);
-              setError(null);
-              form.reset({
-                name: template.name,
-                type: template.type,
-                amount: template.amount,
-                categoryId: template.categoryId,
-                accountId: template.accountId,
-                dueDay: template.dueDay,
-              });
-            }}
-          />
-
-          <PaginationBar
-            start={pagination.rangeStart}
-            end={pagination.rangeEnd}
-            total={totalItems}
-            pageSize={pageSize}
-            hasPrevious={pagination.hasPreviousPage}
-            hasNext={pagination.hasNextPage}
-            onPrevious={() => setPage((p) => p - 1)}
-            onNext={() => setPage((p) => p + 1)}
-            onPageSizeChange={(s) => {
-              setPageSize(s);
-              setPage(0);
-            }}
-            showPageIndicator
-            page={totalPages === 0 ? 0 : page + 1}
-            totalPages={totalPages}
-          />
-
-          {isCreating || selectedTemplate ? (
-            <Drawer
-              description={
-                isCreating
-                  ? t("fixedTransactions.newDescription")
-                  : t("fixedTransactions.editDescription")
-              }
-              onClose={handleCloseDrawer}
-              title={
-                isCreating
-                  ? t("fixedTransactions.newTitle")
-                  : t("fixedTransactions.detailsTitle")
-              }
-            >
-              <FixedExpenseForm
-                accountOptions={accountOptions}
-                categoryOptions={categoryOptions}
-                error={error}
-                form={form}
-                isCreating={isCreating}
-                isDeleteConfirmOpen={isDeleteConfirmOpen}
-                isDeleting={isDeleting}
-                isSaving={isSaving}
-                onCancelCreate={handleCancelCreate}
-                onDeleteCancel={() => setIsDeleteConfirmOpen(false)}
-                onDeleteConfirm={() => {
-                  setIsDeleteConfirmOpen(false);
-                  void onDelete();
-                }}
-                onDeleteOpen={() => setIsDeleteConfirmOpen(true)}
-                onSubmit={onSubmit}
-                selectedAccountCurrency={selectedAccountCurrency}
-              />
-            </Drawer>
-          ) : null}
-        </section>
-      )}
+          </Drawer>
+        ) : null}
+      </section>
     </AppShell>
   );
 }

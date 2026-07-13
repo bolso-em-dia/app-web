@@ -1,8 +1,21 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { CategoryOption } from "../../app/api/categories";
 import type { AccountOption } from "../../app/api/accounts";
-import type { FixedExpenseFormValues } from "../../lib/validation/fixedExpenseSchema";
+import type { AuthUser } from "../../app/api/auth";
+import {
+  createFixedExpenseTemplate,
+  deleteFixedExpenseTemplate,
+  updateFixedExpenseTemplate,
+  type FixedExpenseTemplatePayload,
+} from "../../app/api/fixedExpenses";
+import { useAuth } from "../../app/auth/useAuth";
+import {
+  createFixedExpenseSchema,
+  type FixedExpenseFormValues,
+} from "../../lib/validation/fixedExpenseSchema";
 import Button from "../../components/ui/Button";
 import CategorySelect from "../../components/ui/CategorySelect";
 import ConfirmAction from "../../components/ui/ConfirmAction";
@@ -14,46 +27,138 @@ import Select from "../../components/ui/Select";
 import styles from "./FixedExpensesPage.module.scss";
 
 type FixedExpenseFormProps = {
-  isCreating: boolean;
-  form: UseFormReturn<FixedExpenseFormValues>;
-  categoryOptions: CategoryOption[];
+  initialValues: FixedExpenseFormValues | null;
+  editingId: string | null;
+  user: AuthUser;
   accountOptions: AccountOption[];
-  selectedAccountCurrency: "BRL" | "USD" | undefined;
-  isSaving: boolean;
-  isDeleting: boolean;
-  isDeleteConfirmOpen: boolean;
-  error: string | null;
-  onSubmit: (values: FixedExpenseFormValues) => Promise<void>;
-  onCancelCreate: () => void;
-  onDeleteOpen: () => void;
-  onDeleteCancel: () => void;
-  onDeleteConfirm: () => void;
+  categoryOptions: CategoryOption[];
+  onSuccess: () => void;
+  onCancel: () => void;
 };
 
+function createDefaultValues(defaultAccountId: string): FixedExpenseFormValues {
+  return {
+    name: "",
+    type: "EXPENSE",
+    amount: 0,
+    categoryId: "",
+    accountId: defaultAccountId,
+    dueDay: 1,
+  };
+}
+
+function mapFormValuesToPayload(
+  values: FixedExpenseFormValues,
+): FixedExpenseTemplatePayload {
+  return {
+    name: values.name,
+    type: values.type,
+    amount: values.amount,
+    categoryId: values.categoryId,
+    accountId: values.accountId,
+    dueDay: values.dueDay,
+  };
+}
+
 export default function FixedExpenseForm({
-  isCreating,
-  form,
-  categoryOptions,
+  initialValues,
+  editingId,
+  user,
   accountOptions,
-  selectedAccountCurrency,
-  isSaving,
-  isDeleting,
-  isDeleteConfirmOpen,
-  error,
-  onSubmit,
-  onCancelCreate,
-  onDeleteOpen,
-  onDeleteCancel,
-  onDeleteConfirm,
+  categoryOptions,
+  onSuccess,
+  onCancel,
 }: FixedExpenseFormProps) {
+  const { accessToken } = useAuth();
   const { t } = useI18n();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isCreating = editingId === null;
+
+  const fixedExpenseSchema = useMemo(() => createFixedExpenseSchema(t), [t]);
+
+  const form = useForm<FixedExpenseFormValues>({
+    resolver: zodResolver(fixedExpenseSchema),
+    defaultValues: createDefaultValues(user.preferences.defaultAccountId ?? ""),
+  });
+
+  useEffect(() => {
+    if (initialValues) {
+      form.reset(initialValues);
+    } else {
+      form.reset(createDefaultValues(user.preferences.defaultAccountId ?? ""));
+    }
+  }, [initialValues, user.preferences.defaultAccountId, form]);
+
+  const formAccountId = form.watch("accountId");
+  const selectedAccountCurrency = useMemo(
+    () =>
+      accountOptions.find((a) => a.id === formAccountId)?.currency as
+        "BRL" | "USD" | undefined,
+    [accountOptions, formAccountId],
+  );
+
+  const handleSubmit = useCallback(
+    async (values: FixedExpenseFormValues) => {
+      if (!accessToken) {
+        return;
+      }
+
+      setIsSaving(true);
+      setError(null);
+
+      try {
+        if (editingId) {
+          await updateFixedExpenseTemplate(
+            editingId,
+            mapFormValuesToPayload(values),
+            accessToken,
+          );
+          onSuccess();
+        } else {
+          await createFixedExpenseTemplate(
+            mapFormValuesToPayload(values),
+            accessToken,
+          );
+          onSuccess();
+        }
+      } catch {
+        setError(t("fixedTransactions.saveError"));
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [accessToken, editingId, onSuccess, t],
+  );
+
+  const handleDelete = useCallback(async () => {
+    if (!accessToken || !editingId) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      await deleteFixedExpenseTemplate(editingId, accessToken);
+      onSuccess();
+    } catch {
+      setError(t("fixedTransactions.deleteError"));
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [accessToken, editingId, onSuccess, t]);
+
   const selectedType = form.watch("type");
 
   return (
     <>
       <form
         className={styles.form}
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit)}
         noValidate
       >
         <Field
@@ -174,12 +279,16 @@ export default function FixedExpenseForm({
               : t("common.saveChanges")}
           </Button>
           {isCreating ? (
-            <Button onClick={onCancelCreate} type="button" variant="subtle">
+            <Button onClick={onCancel} type="button" variant="subtle">
               {t("common.cancel")}
             </Button>
           ) : null}
           {!isCreating ? (
-            <Button onClick={onDeleteOpen} type="button" variant="danger">
+            <Button
+              onClick={() => setIsDeleteConfirmOpen(true)}
+              type="button"
+              variant="danger"
+            >
               {t("common.delete")}
             </Button>
           ) : null}
@@ -190,8 +299,11 @@ export default function FixedExpenseForm({
         confirmLabel={t("common.delete")}
         loading={isDeleting}
         message={t("confirmations.deleteFixedExpense")}
-        onCancel={onDeleteCancel}
-        onConfirm={onDeleteConfirm}
+        onCancel={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={() => {
+          setIsDeleteConfirmOpen(false);
+          void handleDelete();
+        }}
         open={isDeleteConfirmOpen}
         title={t("fixedTransactions.deleteAction")}
       />
