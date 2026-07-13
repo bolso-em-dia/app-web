@@ -1,19 +1,8 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import {
-  resetFetchMocks,
-  mockJsonResponse,
-  mockErrorResponse,
-  mockFetchUrl,
-} from "../../test/setup";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import FixedExpensesPage from "./FixedExpensesPage";
 
 const defaultTemplatesResponse = {
@@ -61,18 +50,9 @@ const defaultAccountsResponse = [
 ];
 
 function setupDefaultMocks() {
-  mockFetchUrl(
-    "/api/fixed-transactions?",
-    mockJsonResponse(defaultTemplatesResponse),
-  );
-  mockFetchUrl(
-    "/api/categories/options",
-    mockJsonResponse(defaultCategoriesResponse),
-  );
-  mockFetchUrl(
-    "/api/accounts/options",
-    mockJsonResponse(defaultAccountsResponse),
-  );
+  mockFetchUrl("/api/fixed-transactions?", mockJsonResponse(defaultTemplatesResponse));
+  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+  mockFetchUrl("/api/accounts/options", mockJsonResponse(defaultAccountsResponse));
 }
 
 describe("FixedExpensesPage", () => {
@@ -87,10 +67,7 @@ describe("FixedExpensesPage", () => {
 
   it("loads templates and validates required form fields", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/fixed-transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -106,14 +83,10 @@ describe("FixedExpensesPage", () => {
     );
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
-    expect(
-      screen.getByText("Housing · Main checking · Vence dia 05"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Housing · Main checking · Vence dia 05")).toBeInTheDocument();
     expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Nova transação fixa" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Nova transação fixa" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Nome"), {
       target: { value: "Water bill" },
@@ -129,14 +102,10 @@ describe("FixedExpensesPage", () => {
       target: { value: "12" },
     });
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Criar transação fixa" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Criar transação fixa" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("A categoria é obrigatória."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("A categoria é obrigatória.")).toBeInTheDocument();
       expect(screen.getByText("A conta é obrigatória.")).toBeInTheDocument();
     });
   });
@@ -192,10 +161,7 @@ describe("FixedExpensesPage", () => {
     mockFetchUrl("/api/accounts", mockJsonResponse([]));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/fixed-transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -232,10 +198,7 @@ describe("FixedExpensesPage", () => {
     mockFetchUrl("/api/accounts", mockJsonResponse([]));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/fixed-transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -255,10 +218,7 @@ describe("FixedExpensesPage", () => {
 
   it("opens delete confirmation alertdialog when the delete button is clicked", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/fixed-transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -293,10 +253,7 @@ describe("FixedExpensesPage", () => {
 
   it("cancels delete confirmation without calling the API", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/fixed-transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -323,9 +280,7 @@ describe("FixedExpensesPage", () => {
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
 
-    fireEvent.click(
-      within(alertDialog).getByRole("button", { name: "Cancelar" }),
-    );
+    fireEvent.click(within(alertDialog).getByRole("button", { name: "Cancelar" }));
 
     await waitFor(() => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
@@ -333,11 +288,7 @@ describe("FixedExpensesPage", () => {
 
     const deleteCalls = vi
       .mocked(fetch)
-      .mock.calls.filter(
-        ([input, init]) =>
-          String(input).includes("/api/fixed-transactions/") &&
-          init?.method === "DELETE",
-      );
+      .mock.calls.filter(([input, init]) => String(input).includes("/api/fixed-transactions/") && init?.method === "DELETE");
     expect(deleteCalls.length).toBe(0);
   });
 
@@ -355,10 +306,7 @@ describe("FixedExpensesPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/fixed-transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -389,9 +337,7 @@ describe("FixedExpensesPage", () => {
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Não foi possível excluir a transação fixa."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Não foi possível excluir a transação fixa.")).toBeInTheDocument();
     });
   });
 
@@ -428,12 +374,7 @@ describe("FixedExpensesPage", () => {
         totalPages: 1,
       }),
     );
-    mockFetchUrl(
-      "/api/categories/options",
-      mockJsonResponse([
-        { id: "cat-1", name: "Streaming", icon: "tv", color: "#e91e63" },
-      ]),
-    );
+    mockFetchUrl("/api/categories/options", mockJsonResponse([{ id: "cat-1", name: "Streaming", icon: "tv", color: "#e91e63" }]));
     mockFetchUrl(
       "/api/accounts/options",
       mockJsonResponse([
@@ -447,10 +388,7 @@ describe("FixedExpensesPage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/fixed-transactions"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",

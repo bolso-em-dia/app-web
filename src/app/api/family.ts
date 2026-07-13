@@ -36,10 +36,7 @@ export type FamilyMemberListParams = {
   status?: "ALL" | "ACTIVE" | "ARCHIVED";
 };
 
-export function listFamilyMemberPage(
-  { page, size, search, status = "ACTIVE" }: FamilyMemberListParams,
-  accessToken: string,
-) {
+export function listFamilyMemberPage({ page, size, search, status = "ACTIVE" }: FamilyMemberListParams, accessToken: string) {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
@@ -50,19 +47,14 @@ export function listFamilyMemberPage(
     query.set("search", search.trim());
   }
 
-  return apiRequest<PageResponse<FamilyMember>>(
-    `/api/family-members?${query.toString()}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+  return apiRequest<PageResponse<FamilyMember>>(`/api/family-members?${query.toString()}`, {
+    method: "GET",
+    accessToken,
+  });
 }
 
 export async function listFamilyMembers(accessToken: string) {
-  const response = await apiRequest<
-    PageResponse<FamilyMember> | FamilyMember[]
-  >("/api/family-members?page=0&size=200&status=ACTIVE", {
+  const response = await apiRequest<PageResponse<FamilyMember> | FamilyMember[]>("/api/family-members?page=0&size=200&status=ACTIVE", {
     method: "GET",
     accessToken,
   });
@@ -70,10 +62,7 @@ export async function listFamilyMembers(accessToken: string) {
   return Array.isArray(response) ? response : response.items;
 }
 
-export function createFamilyMember(
-  payload: CreateFamilyMemberRequest,
-  accessToken: string,
-) {
+export function createFamilyMember(payload: CreateFamilyMemberRequest, accessToken: string) {
   return apiRequest<FamilyMember>("/api/family-members", {
     method: "POST",
     accessToken,
@@ -81,11 +70,7 @@ export function createFamilyMember(
   });
 }
 
-export function updateFamilyMember(
-  id: string,
-  payload: UpdateFamilyMemberRequest,
-  accessToken: string,
-) {
+export function updateFamilyMember(id: string, payload: UpdateFamilyMemberRequest, accessToken: string) {
   return apiRequest<FamilyMember>(`/api/family-members/${id}`, {
     method: "PUT",
     accessToken,

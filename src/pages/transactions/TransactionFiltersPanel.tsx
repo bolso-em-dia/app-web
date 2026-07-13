@@ -1,10 +1,6 @@
 import { useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type {
-  OwnershipType,
-  TransactionFilters,
-  TransactionType,
-} from "../../app/api/transactions";
+import type { OwnershipType, TransactionFilters, TransactionType } from "../../app/api/transactions";
 import { useI18n } from "../../app/i18n/I18nContext";
 import FilterToolbar from "../../components/ui/FilterToolbar";
 import FilterCategoryMultiInput from "../../components/ui/filterFields/FilterCategoryMultiInput";
@@ -22,18 +18,13 @@ type TransactionFiltersPanelProps = {
   onChange: Dispatch<SetStateAction<TransactionFilters>>;
 };
 
-export default function TransactionFiltersPanel({
-  value,
-  onChange,
-}: TransactionFiltersPanelProps) {
+export default function TransactionFiltersPanel({ value, onChange }: TransactionFiltersPanelProps) {
   const { t } = useI18n();
   const controller = useFilterController(value, onChange);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const { filters, patch } = controller;
   const { options: accountOptions } = useAccountOptions();
-  const { options: categoryOptions } = useCategoryOptions(
-    filters.referenceMonth,
-  );
+  const { options: categoryOptions } = useCategoryOptions(filters.referenceMonth);
   const { options: memberOptions } = useFamilyMemberOptions({
     allowanceEnabledOnly: true,
   });

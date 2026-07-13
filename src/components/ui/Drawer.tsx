@@ -11,12 +11,7 @@ type DrawerProps = {
   children: ReactNode;
 };
 
-export default function Drawer({
-  title,
-  description,
-  onClose,
-  children,
-}: DrawerProps) {
+export default function Drawer({ title, description, onClose, children }: DrawerProps) {
   const { t } = useI18n();
   const panelRef = useRef<HTMLElement>(null);
   const titleId = useId();
@@ -63,35 +58,16 @@ export default function Drawer({
 
   return (
     <>
-      <button
-        aria-label={t("common.closeDrawer")}
-        className={styles.backdrop}
-        onClick={onClose}
-        type="button"
-      />
-      <aside
-        aria-labelledby={titleId}
-        aria-modal="true"
-        className={styles.panel}
-        ref={panelRef}
-        role="dialog"
-      >
+      <button aria-label={t("common.closeDrawer")} className={styles.backdrop} onClick={onClose} type="button" />
+      <aside aria-labelledby={titleId} aria-modal="true" className={styles.panel} ref={panelRef} role="dialog">
         <header className={styles.header}>
           <div>
             <h2 className={styles.title} id={titleId}>
               {title}
             </h2>
-            {description ? (
-              <p className={styles.description}>{description}</p>
-            ) : null}
+            {description ? <p className={styles.description}>{description}</p> : null}
           </div>
-          <Button
-            aria-label={t("common.closeDrawer")}
-            className={styles.closeButton}
-            onClick={onClose}
-            type="button"
-            variant="subtle"
-          >
+          <Button aria-label={t("common.closeDrawer")} className={styles.closeButton} onClick={onClose} type="button" variant="subtle">
             <X aria-hidden="true" className={styles.closeIcon} />
           </Button>
         </header>

@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  listAccountPage,
-  type Account,
-  type AccountListParams,
-  type AccountType,
-} from "../../app/api/accounts";
+import { listAccountPage, type Account, type AccountListParams, type AccountType } from "../../app/api/accounts";
 import { useAuth } from "../../app/auth/useAuth";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
@@ -26,12 +21,7 @@ interface AccountListProps {
   refreshKey: number;
 }
 
-export default function AccountList({
-  filters,
-  selectedId,
-  onSelect,
-  refreshKey,
-}: AccountListProps) {
+export default function AccountList({ filters, selectedId, onSelect, refreshKey }: AccountListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
 
@@ -87,15 +77,7 @@ export default function AccountList({
       status: filters.status,
       type: filters.type || undefined,
     });
-  }, [
-    loadAccounts,
-    page,
-    pageSize,
-    filters.search,
-    filters.status,
-    filters.type,
-    refreshKey,
-  ]);
+  }, [loadAccounts, page, pageSize, filters.search, filters.status, filters.type, refreshKey]);
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);

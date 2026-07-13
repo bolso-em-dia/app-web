@@ -1,23 +1,13 @@
 import { z } from "zod";
 import type { Translate } from "../../app/i18n/I18nContext";
-import type {
-  OwnershipType,
-  TransactionType,
-} from "../../app/api/transactions";
+import type { OwnershipType, TransactionType } from "../../app/api/transactions";
 import { validationMessage } from "./validationMessages";
 
-const TRANSACTION_TYPE_VALUES = [
-  "INCOME",
-  "EXPENSE",
-] as const satisfies readonly TransactionType[];
-const OWNERSHIP_TYPE_VALUES = [
-  "SHARED",
-  "INDIVIDUAL",
-] as const satisfies readonly OwnershipType[];
+const TRANSACTION_TYPE_VALUES = ["INCOME", "EXPENSE"] as const satisfies readonly TransactionType[];
+const OWNERSHIP_TYPE_VALUES = ["SHARED", "INDIVIDUAL"] as const satisfies readonly OwnershipType[];
 
 export function createTransactionSchema(t: Translate) {
-  const message = (key: Parameters<typeof validationMessage>[1]) =>
-    validationMessage(t, key);
+  const message = (key: Parameters<typeof validationMessage>[1]) => validationMessage(t, key);
 
   return z
     .object({
@@ -27,20 +17,12 @@ export function createTransactionSchema(t: Translate) {
       ownershipType: z.enum(OWNERSHIP_TYPE_VALUES, {
         errorMap: () => ({ message: message("validation.requiredOwnership") }),
       }),
-      description: z
-        .string()
-        .trim()
-        .min(1, message("validation.requiredDescription"))
-        .max(160, message("validation.descriptionMax160")),
+      description: z.string().trim().min(1, message("validation.requiredDescription")).max(160, message("validation.descriptionMax160")),
       amount: z.preprocess(
         (value) => (value === "" ? undefined : value),
-        z.coerce
-          .number({ invalid_type_error: message("validation.invalidNumber") })
-          .positive(message("validation.amountPositive")),
+        z.coerce.number({ invalid_type_error: message("validation.invalidNumber") }).positive(message("validation.amountPositive")),
       ),
-      transactionDate: z
-        .string()
-        .min(1, message("validation.requiredTransactionDate")),
+      transactionDate: z.string().min(1, message("validation.requiredTransactionDate")),
       accountId: z.string().min(1, message("validation.requiredAccount")),
       categoryId: z.string().min(1, message("validation.requiredCategory")),
       memberId: z.string(),
@@ -56,10 +38,7 @@ export function createTransactionSchema(t: Translate) {
       ),
     })
     .superRefine((values, context) => {
-      if (
-        values.ownershipType === "INDIVIDUAL" &&
-        values.memberId.trim().length === 0
-      ) {
+      if (values.ownershipType === "INDIVIDUAL" && values.memberId.trim().length === 0) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["memberId"],
@@ -67,11 +46,7 @@ export function createTransactionSchema(t: Translate) {
         });
       }
 
-      if (
-        values.type === "EXPENSE" &&
-        values.isInstallment &&
-        values.installmentCount === undefined
-      ) {
+      if (values.type === "EXPENSE" && values.isInstallment && values.installmentCount === undefined) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["installmentCount"],
@@ -81,6 +56,4 @@ export function createTransactionSchema(t: Translate) {
     });
 }
 
-export type TransactionFormValues = z.infer<
-  ReturnType<typeof createTransactionSchema>
->;
+export type TransactionFormValues = z.infer<ReturnType<typeof createTransactionSchema>>;

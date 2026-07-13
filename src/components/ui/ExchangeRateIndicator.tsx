@@ -1,9 +1,6 @@
 import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import {
-  getLatestExchangeRate,
-  refreshExchangeRate,
-} from "../../app/api/exchangeRate";
+import { getLatestExchangeRate, refreshExchangeRate } from "../../app/api/exchangeRate";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { formatCurrency } from "../../lib/formatters/currency";
@@ -54,11 +51,7 @@ export default function ExchangeRateIndicator() {
 
   if (!showForeignCurrency || rate == null) return null;
 
-  const tooltipContent = error
-    ? t("exchangeRate.fetchError")
-    : stale
-      ? t("exchangeRate.staleTooltip")
-      : t("exchangeRate.updated");
+  const tooltipContent = error ? t("exchangeRate.fetchError") : stale ? t("exchangeRate.staleTooltip") : t("exchangeRate.updated");
 
   return (
     <div className={styles.root}>
@@ -73,11 +66,7 @@ export default function ExchangeRateIndicator() {
         type="button"
         variant="subtle"
       >
-        <RefreshCw
-          aria-hidden="true"
-          className={refreshing ? styles.spinning : undefined}
-          size={14}
-        />
+        <RefreshCw aria-hidden="true" className={refreshing ? styles.spinning : undefined} size={14} />
       </Button>
     </div>
   );

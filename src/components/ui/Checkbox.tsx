@@ -7,10 +7,7 @@ type CheckboxProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
 };
 
-const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
-  { className, label, ...props },
-  ref,
-) {
+const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox({ className, label, ...props }, ref) {
   return (
     <label className={clsx(styles.root, className)}>
       <input ref={ref} className={styles.input} type="checkbox" {...props} />

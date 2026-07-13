@@ -11,13 +11,7 @@ function ColorSwatchSelectHarness() {
 
   return (
     <>
-      <ColorSwatchSelect
-        clearLabel="Sem cor"
-        id="category-color"
-        onChange={setValue}
-        options={colorOptions.slice(0, 3)}
-        value={value}
-      />
+      <ColorSwatchSelect clearLabel="Sem cor" id="category-color" onChange={setValue} options={colorOptions.slice(0, 3)} value={value} />
       <output>{value || "empty"}</output>
     </>
   );

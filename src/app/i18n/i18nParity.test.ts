@@ -38,17 +38,13 @@ describe("i18n key parity", () => {
 
   it("has no Portuguese keys missing from English", () => {
     if (missingInEn.length > 0) {
-      throw new Error(
-        `Missing en-US keys:\n${missingInEn.map((k) => `  - ${k}`).join("\n")}`,
-      );
+      throw new Error(`Missing en-US keys:\n${missingInEn.map((k) => `  - ${k}`).join("\n")}`);
     }
   });
 
   it("has no English keys missing from Portuguese", () => {
     if (extraInEn.length > 0) {
-      throw new Error(
-        `Extra en-US keys (not in pt-BR):\n${extraInEn.map((k) => `  - ${k}`).join("\n")}`,
-      );
+      throw new Error(`Extra en-US keys (not in pt-BR):\n${extraInEn.map((k) => `  - ${k}`).join("\n")}`);
     }
   });
 
@@ -60,9 +56,7 @@ describe("i18n key parity", () => {
     const sourceKeys = extractKeysFromSource("src/app/i18n/messages.ts");
     const dupes = findDuplicates(sourceKeys);
     if (dupes.length > 0) {
-      throw new Error(
-        `Duplicate pt-BR keys:\n${dupes.map((k) => `  - ${k}`).join("\n")}`,
-      );
+      throw new Error(`Duplicate pt-BR keys:\n${dupes.map((k) => `  - ${k}`).join("\n")}`);
     }
   });
 
@@ -70,9 +64,7 @@ describe("i18n key parity", () => {
     const sourceKeys = extractKeysFromSource("src/app/i18n/enUSMessages.ts");
     const dupes = findDuplicates(sourceKeys);
     if (dupes.length > 0) {
-      throw new Error(
-        `Duplicate en-US keys:\n${dupes.map((k) => `  - ${k}`).join("\n")}`,
-      );
+      throw new Error(`Duplicate en-US keys:\n${dupes.map((k) => `  - ${k}`).join("\n")}`);
     }
   });
 });

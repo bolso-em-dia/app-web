@@ -29,16 +29,14 @@ export default function FixedExpensesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const referenceMonth = getCurrentReferenceMonth();
-  const { filters, patchFilters, clearFilter } =
-    useFiltersState(DEFAULT_FILTERS);
+  const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [showDrawer, setShowDrawer] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<FixedExpenseTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<FixedExpenseTemplate | null>(null);
 
   function handleSelect(_id: string, template: FixedExpenseTemplate) {
     setSelectedId(template.id);
@@ -134,10 +132,7 @@ export default function FixedExpensesPage() {
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {
-              clearFilter(
-                name as keyof FixedExpenseFilters,
-                defaultValue as FixedExpenseFilters[keyof FixedExpenseFilters],
-              );
+              clearFilter(name as keyof FixedExpenseFilters, defaultValue as FixedExpenseFilters[keyof FixedExpenseFilters]);
             }}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
           />
@@ -155,17 +150,9 @@ export default function FixedExpensesPage() {
 
         {isDrawerOpen ? (
           <Drawer
-            description={
-              isCreating
-                ? t("fixedTransactions.newDescription")
-                : t("fixedTransactions.editDescription")
-            }
+            description={isCreating ? t("fixedTransactions.newDescription") : t("fixedTransactions.editDescription")}
             onClose={handleCloseDrawer}
-            title={
-              isCreating
-                ? t("fixedTransactions.newTitle")
-                : t("fixedTransactions.detailsTitle")
-            }
+            title={isCreating ? t("fixedTransactions.newTitle") : t("fixedTransactions.detailsTitle")}
           >
             <FixedExpenseForm
               template={selectedTemplate}

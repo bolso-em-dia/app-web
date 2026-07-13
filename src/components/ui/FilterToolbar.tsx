@@ -15,24 +15,12 @@ type FilterToolbarProps = {
   onResetField: (name: string, defaultValue: unknown) => void;
 };
 
-export default function FilterToolbar({
-  fields,
-  isPanelOpen,
-  onTogglePanel,
-  onClosePanel,
-  onResetField,
-}: FilterToolbarProps) {
+export default function FilterToolbar({ fields, isPanelOpen, onTogglePanel, onClosePanel, onResetField }: FilterToolbarProps) {
   const { t } = useI18n();
   const isCompact = useBreakpoint(960);
   const fieldEntries = useMemo(() => Object.entries(fields), [fields]);
-  const visibleFields = useMemo(
-    () => fieldEntries.filter(([, field]) => field.placement === "visible"),
-    [fieldEntries],
-  );
-  const expandedFields = useMemo(
-    () => fieldEntries.filter(([, field]) => field.placement === "expanded"),
-    [fieldEntries],
-  );
+  const visibleFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "visible"), [fieldEntries]);
+  const expandedFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "expanded"), [fieldEntries]);
   const activeFilters = useMemo(
     () =>
       fieldEntries.flatMap(([name, field]) => {
@@ -53,10 +41,7 @@ export default function FilterToolbar({
     [fieldEntries, onResetField],
   );
   const activeCount = activeFilters.length;
-  const filtersLabel =
-    activeCount > 0
-      ? `${t("common.filters")} (${activeCount})`
-      : t("common.filters");
+  const filtersLabel = activeCount > 0 ? `${t("common.filters")} (${activeCount})` : t("common.filters");
 
   return (
     <div className={styles.root}>
@@ -67,12 +52,7 @@ export default function FilterToolbar({
           ))}
         </div>
         <div className={styles.actions}>
-          <Button
-            aria-expanded={isPanelOpen}
-            onClick={onTogglePanel}
-            type="button"
-            variant="secondary"
-          >
+          <Button aria-expanded={isPanelOpen} onClick={onTogglePanel} type="button" variant="secondary">
             {filtersLabel}
           </Button>
           {activeCount > 0 ? (
@@ -94,11 +74,7 @@ export default function FilterToolbar({
       {activeCount > 0 ? (
         <div className={styles.chips}>
           {activeFilters.map((filter) => (
-            <FilterChip
-              key={filter.key}
-              label={filter.label}
-              onRemove={filter.onRemove}
-            />
+            <FilterChip key={filter.key} label={filter.label} onRemove={filter.onRemove} />
           ))}
         </div>
       ) : null}
@@ -155,13 +131,9 @@ function buildActiveFilterLabel(field: FilterFields[string]) {
       return null;
     }
 
-    const selectedOption = field.options.find(
-      (option) => option.value === field.value,
-    );
+    const selectedOption = field.options.find((option) => option.value === field.value);
 
-    return selectedOption
-      ? `${field.label}: ${selectedOption.label}`
-      : `${field.label}: ${field.value}`;
+    return selectedOption ? `${field.label}: ${selectedOption.label}` : `${field.label}: ${field.value}`;
   }
 
   if (field.value.length === 0 && field.defaultValue.length === 0) {
@@ -173,9 +145,7 @@ function buildActiveFilterLabel(field: FilterFields[string]) {
   }
 
   const selectedLabels = field.value
-    .map(
-      (value) => field.options.find((option) => option.value === value)?.label,
-    )
+    .map((value) => field.options.find((option) => option.value === value)?.label)
     .filter((label): label is string => Boolean(label));
 
   if (selectedLabels.length === 0) {

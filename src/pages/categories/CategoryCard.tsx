@@ -10,10 +10,7 @@ type CategoryCardProps = {
   onSelect: (id: string) => void;
 };
 
-export default function CategoryCard({
-  category,
-  onSelect,
-}: CategoryCardProps) {
+export default function CategoryCard({ category, onSelect }: CategoryCardProps) {
   const { t } = useI18n();
   const Icon = getStoredIcon(category.icon);
 
@@ -22,21 +19,13 @@ export default function CategoryCard({
       <button
         className={styles.categoryButton}
         onClick={() => onSelect(category.id)}
-        style={
-          category.color
-            ? { borderInlineStartColor: category.color }
-            : undefined
-        }
+        style={category.color ? { borderInlineStartColor: category.color } : undefined}
         type="button"
       >
         <div className={styles.categoryCardHeader}>
           <div className={styles.categoryTitleRow}>
             {Icon ? (
-              <span
-                aria-hidden="true"
-                className={styles.categoryTitleIcon}
-                style={category.color ? { color: category.color } : undefined}
-              >
+              <span aria-hidden="true" className={styles.categoryTitleIcon} style={category.color ? { color: category.color } : undefined}>
                 <Icon className={styles.categoryMetaIcon} />
               </span>
             ) : null}
@@ -45,15 +34,9 @@ export default function CategoryCard({
 
           <div className={styles.categoryBadges}>
             <span
-              className={
-                category.archivedFromMonth
-                  ? `${styles.badge} ${styles.badgeMuted}`
-                  : `${styles.badge} ${styles.badgeSuccess}`
-              }
+              className={category.archivedFromMonth ? `${styles.badge} ${styles.badgeMuted}` : `${styles.badge} ${styles.badgeSuccess}`}
             >
-              {category.archivedFromMonth
-                ? t("common.archived")
-                : t("common.active")}
+              {category.archivedFromMonth ? t("common.archived") : t("common.active")}
             </span>
           </div>
         </div>

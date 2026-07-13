@@ -1,10 +1,7 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
-export function useFilterController<T extends Record<string, unknown>>(
-  filters: T,
-  onChange: Dispatch<SetStateAction<T>>,
-) {
+export function useFilterController<T extends Record<string, unknown>>(filters: T, onChange: Dispatch<SetStateAction<T>>) {
   const patch = useCallback(
     (partial: Partial<T>) => {
       onChange((current) => ({ ...current, ...partial }));

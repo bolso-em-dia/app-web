@@ -36,18 +36,12 @@ describe("CategoryMultiSelect", () => {
   it("allows selecting multiple categories and shows selected labels with icons", () => {
     render(<Harness />);
 
-    fireEvent.click(
-      screen.getByRole("button", { name: /Selecione categorias/i }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /Selecione categorias/i }));
 
     const listbox = screen.getByRole("listbox");
 
-    fireEvent.click(
-      within(listbox).getByRole("option", { name: /Groceries/i }),
-    );
-    fireEvent.click(
-      within(listbox).getByRole("option", { name: /Transport/i }),
-    );
+    fireEvent.click(within(listbox).getByRole("option", { name: /Groceries/i }));
+    fireEvent.click(within(listbox).getByRole("option", { name: /Transport/i }));
 
     expect(screen.getAllByText("Groceries")).toHaveLength(2);
     expect(screen.getAllByText("Transport")).toHaveLength(2);

@@ -56,11 +56,7 @@ function FallbackUI({ error, onRetry }: { error: Error; onRetry: () => void }) {
           <Button onClick={onRetry} type="button">
             {t("errorBoundary.retry")}
           </Button>
-          <Button
-            onClick={() => window.location.assign("/dashboard")}
-            type="button"
-            variant="secondary"
-          >
+          <Button onClick={() => window.location.assign("/dashboard")} type="button" variant="secondary">
             {t("errorBoundary.goToDashboard")}
           </Button>
         </div>
@@ -71,7 +67,5 @@ function FallbackUI({ error, onRetry }: { error: Error; onRetry: () => void }) {
 
 export default function ErrorBoundary({ children }: Props) {
   const location = useLocation();
-  return (
-    <ErrorBoundaryInner key={location.pathname}>{children}</ErrorBoundaryInner>
-  );
+  return <ErrorBoundaryInner key={location.pathname}>{children}</ErrorBoundaryInner>;
 }

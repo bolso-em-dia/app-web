@@ -88,13 +88,7 @@ export default function ConfirmAction({
         onClick={onCancel}
         type="button"
       />
-      <aside
-        aria-modal="true"
-        aria-labelledby="confirm-action-title"
-        className={styles.dialog}
-        ref={dialogRef}
-        role="alertdialog"
-      >
+      <aside aria-modal="true" aria-labelledby="confirm-action-title" className={styles.dialog} ref={dialogRef} role="alertdialog">
         <div className={styles.content}>
           <h2 className={styles.title} id="confirm-action-title">
             {title}
@@ -102,21 +96,10 @@ export default function ConfirmAction({
           <p className={styles.message}>{message}</p>
           {children}
           <div className={styles.actions}>
-            <Button
-              autoFocus
-              disabled={loading}
-              onClick={onCancel}
-              type="button"
-              variant="secondary"
-            >
+            <Button autoFocus disabled={loading} onClick={onCancel} type="button" variant="secondary">
               {cancelLabel ?? t("common.cancel")}
             </Button>
-            <Button
-              loading={loading}
-              onClick={onConfirm}
-              type="button"
-              variant={variant}
-            >
+            <Button loading={loading} onClick={onConfirm} type="button" variant={variant}>
               {confirmLabel}
             </Button>
           </div>

@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 
 export function useBreakpoint(maxWidth: number) {
-  const [matches, setMatches] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth <= maxWidth : false,
-  );
+  const [matches, setMatches] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= maxWidth : false));
 
   useEffect(() => {
     function handleResize() {

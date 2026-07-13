@@ -13,6 +13,4 @@ export type AuthContextValue = {
   updateUser: (user: AuthUser) => void;
 };
 
-export const AuthContext = createContext<AuthContextValue | undefined>(
-  undefined,
-);
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);

@@ -40,17 +40,12 @@ export default function PaginationBar({
   return (
     <Card className={styles.footerPanel}>
       <div className={styles.footer}>
-        <p className={styles.rangeLabel}>
-          {t("common.range", { start, end, total })}
-        </p>
+        <p className={styles.rangeLabel}>{t("common.range", { start, end, total })}</p>
 
         <div className={styles.paginationControls}>
           <label className={styles.rowsControl}>
             <span>{t("common.rows")}</span>
-            <Select
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              value={String(pageSize)}
-            >
+            <Select onChange={(e) => onPageSizeChange(Number(e.target.value))} value={String(pageSize)}>
               {pageSizeOptions.map((size) => (
                 <option key={size} value={String(size)}>
                   {size}
@@ -60,25 +55,13 @@ export default function PaginationBar({
           </label>
 
           <div className={styles.paginationButtons}>
-            <Button
-              disabled={!hasPrevious}
-              onClick={onPrevious}
-              type="button"
-              variant="subtle"
-            >
+            <Button disabled={!hasPrevious} onClick={onPrevious} type="button" variant="subtle">
               {t("common.previous")}
             </Button>
             {showPageIndicator && page != null && totalPages != null ? (
-              <span className={styles.pageIndicator}>
-                {t("common.pageOf", { page, total: totalPages })}
-              </span>
+              <span className={styles.pageIndicator}>{t("common.pageOf", { page, total: totalPages })}</span>
             ) : null}
-            <Button
-              disabled={!hasNext}
-              onClick={onNext}
-              type="button"
-              variant="subtle"
-            >
+            <Button disabled={!hasNext} onClick={onNext} type="button" variant="subtle">
               {t("common.next")}
             </Button>
           </div>

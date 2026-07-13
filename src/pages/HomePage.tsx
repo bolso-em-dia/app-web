@@ -17,10 +17,7 @@ import styles from "./HomePage.module.scss";
 
 const ITEMS_PER_PAGE = 10;
 
-function getBudgetConsumptionPercent(
-  consumedAmount: number,
-  monthlyLimit: number,
-) {
+function getBudgetConsumptionPercent(consumedAmount: number, monthlyLimit: number) {
   if (monthlyLimit <= 0) {
     return 0;
   }
@@ -34,19 +31,13 @@ export default function HomePage() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [referenceMonth, setReferenceMonth] = useState(
-    getCurrentReferenceMonth,
-  );
-  const [considerBudgetsInBalance, setConsiderBudgetsInBalance] = useState(
-    user?.preferences.showBalanceWithBudgets ?? false,
-  );
+  const [referenceMonth, setReferenceMonth] = useState(getCurrentReferenceMonth);
+  const [considerBudgetsInBalance, setConsiderBudgetsInBalance] = useState(user?.preferences.showBalanceWithBudgets ?? false);
   const [recentTxPage, setRecentTxPage] = useState(0);
   const [catPage, setCatPage] = useState(0);
 
   useEffect(() => {
-    setConsiderBudgetsInBalance(
-      user?.preferences.showBalanceWithBudgets ?? false,
-    );
+    setConsiderBudgetsInBalance(user?.preferences.showBalanceWithBudgets ?? false);
   }, [user?.preferences.showBalanceWithBudgets]);
 
   useEffect(() => {
@@ -80,46 +71,25 @@ export default function HomePage() {
     void loadDashboard();
   }, [loadDashboard]);
 
-  const displayedBalance = considerBudgetsInBalance
-    ? (dashboard?.summary.availableBalance ?? 0)
-    : (dashboard?.summary.balance ?? 0);
+  const displayedBalance = considerBudgetsInBalance ? (dashboard?.summary.availableBalance ?? 0) : (dashboard?.summary.balance ?? 0);
 
-  const balanceLabel = considerBudgetsInBalance
-    ? t("home.availableBalance")
-    : t("home.balance");
+  const balanceLabel = considerBudgetsInBalance ? t("home.availableBalance") : t("home.balance");
 
   const balanceAmountClass =
-    displayedBalance > 0
-      ? styles.amountPositive
-      : displayedBalance < 0
-        ? styles.amountNegative
-        : styles.amountNeutral;
+    displayedBalance > 0 ? styles.amountPositive : displayedBalance < 0 ? styles.amountNegative : styles.amountNeutral;
 
   const displayExpense = considerBudgetsInBalance
-    ? (dashboard?.summary.totalExpense ?? 0) +
-      (dashboard?.summary.reservedBudgetAmount ?? 0)
+    ? (dashboard?.summary.totalExpense ?? 0) + (dashboard?.summary.reservedBudgetAmount ?? 0)
     : (dashboard?.summary.totalExpense ?? 0);
 
-  const expenseLabel = considerBudgetsInBalance
-    ? t("home.expenseWithBudgets")
-    : t("home.expense");
+  const expenseLabel = considerBudgetsInBalance ? t("home.expenseWithBudgets") : t("home.expense");
 
-  const recentTxPages = Math.ceil(
-    (dashboard?.recentTransactions.length ?? 0) / ITEMS_PER_PAGE,
-  );
-  const recentTxSlice = (dashboard?.recentTransactions ?? []).slice(
-    recentTxPage * ITEMS_PER_PAGE,
-    (recentTxPage + 1) * ITEMS_PER_PAGE,
-  );
+  const recentTxPages = Math.ceil((dashboard?.recentTransactions.length ?? 0) / ITEMS_PER_PAGE);
+  const recentTxSlice = (dashboard?.recentTransactions ?? []).slice(recentTxPage * ITEMS_PER_PAGE, (recentTxPage + 1) * ITEMS_PER_PAGE);
 
   const totalExpense = dashboard?.summary.totalExpense ?? 0;
-  const catPages = Math.ceil(
-    (dashboard?.categoryBreakdown.length ?? 0) / ITEMS_PER_PAGE,
-  );
-  const catSlice = (dashboard?.categoryBreakdown ?? []).slice(
-    catPage * ITEMS_PER_PAGE,
-    (catPage + 1) * ITEMS_PER_PAGE,
-  );
+  const catPages = Math.ceil((dashboard?.categoryBreakdown.length ?? 0) / ITEMS_PER_PAGE);
+  const catSlice = (dashboard?.categoryBreakdown ?? []).slice(catPage * ITEMS_PER_PAGE, (catPage + 1) * ITEMS_PER_PAGE);
 
   return (
     <AppShell title={t("home.title")}>
@@ -128,24 +98,15 @@ export default function HomePage() {
           <Switch
             checked={considerBudgetsInBalance}
             label={t("home.considerBudgetsInBalance")}
-            onChange={(event) =>
-              setConsiderBudgetsInBalance(event.currentTarget.checked)
-            }
+            onChange={(event) => setConsiderBudgetsInBalance(event.currentTarget.checked)}
           />
           <span className={styles.balanceModeMeta}>
-            {t("home.reservedBudgetAmount")}:{" "}
-            {formatCurrency(dashboard?.summary.reservedBudgetAmount ?? 0)}
+            {t("home.reservedBudgetAmount")}: {formatCurrency(dashboard?.summary.reservedBudgetAmount ?? 0)}
           </span>
         </Card>
         <Card className={styles.summaryCard}>
-          <span className={styles.summaryLabel}>
-            {t("home.referenceMonth")}
-          </span>
-          <MonthSelector
-            id="dashboard-month"
-            onChange={setReferenceMonth}
-            value={referenceMonth}
-          />
+          <span className={styles.summaryLabel}>{t("home.referenceMonth")}</span>
+          <MonthSelector id="dashboard-month" onChange={setReferenceMonth} value={referenceMonth} />
         </Card>
       </section>
 
@@ -153,10 +114,7 @@ export default function HomePage() {
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>{t("home.income")}</span>
           <strong className={styles.summaryValue}>
-            <MoneyAmount
-              amount={dashboard?.summary.totalIncome ?? 0}
-              type="INCOME"
-            />
+            <MoneyAmount amount={dashboard?.summary.totalIncome ?? 0} type="INCOME" />
           </strong>
         </Card>
         <Card className={styles.summaryCard}>
@@ -167,9 +125,7 @@ export default function HomePage() {
         </Card>
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>{balanceLabel}</span>
-          <strong className={`${styles.summaryValue} ${balanceAmountClass}`}>
-            {formatCurrency(displayedBalance)}
-          </strong>
+          <strong className={`${styles.summaryValue} ${balanceAmountClass}`}>{formatCurrency(displayedBalance)}</strong>
         </Card>
       </section>
 
@@ -195,14 +151,8 @@ export default function HomePage() {
             <h2 className={styles.panelTitle}>{t("home.budgets")}</h2>
             <ul className={styles.itemList}>
               {dashboard.budgets.map((budget) => {
-                const consumptionPercent = getBudgetConsumptionPercent(
-                  budget.consumedAmount,
-                  budget.monthlyLimit,
-                );
-                const rawRatio =
-                  budget.monthlyLimit > 0
-                    ? (budget.consumedAmount / budget.monthlyLimit) * 100
-                    : 0;
+                const consumptionPercent = getBudgetConsumptionPercent(budget.consumedAmount, budget.monthlyLimit);
+                const rawRatio = budget.monthlyLimit > 0 ? (budget.consumedAmount / budget.monthlyLimit) * 100 : 0;
 
                 let fillClass = styles.progressFill;
                 if (rawRatio > 100) {
@@ -214,27 +164,17 @@ export default function HomePage() {
                 }
 
                 return (
-                  <li
-                    key={budget.id}
-                    className={`${styles.itemRow} ${styles.budgetRow}`}
-                  >
+                  <li key={budget.id} className={`${styles.itemRow} ${styles.budgetRow}`}>
                     <div className={styles.budgetHeader}>
                       <strong>{budget.name}</strong>
                     </div>
                     <div className={styles.itemAmountBlock}>
                       <strong>
-                        {formatCurrency(budget.consumedAmount)} /{" "}
-                        {formatCurrency(budget.monthlyLimit)}
+                        {formatCurrency(budget.consumedAmount)} / {formatCurrency(budget.monthlyLimit)}
                       </strong>
                     </div>
-                    <div
-                      aria-hidden="true"
-                      className={`${styles.progressTrack} ${styles.budgetProgress}`}
-                    >
-                      <span
-                        className={fillClass}
-                        style={{ width: `${consumptionPercent}%` }}
-                      />
+                    <div aria-hidden="true" className={`${styles.progressTrack} ${styles.budgetProgress}`}>
+                      <span className={fillClass} style={{ width: `${consumptionPercent}%` }} />
                     </div>
                   </li>
                 );
@@ -246,10 +186,7 @@ export default function HomePage() {
             <h2 className={styles.panelTitle}>{t("home.categoryBreakdown")}</h2>
             <ul className={styles.itemList}>
               {catSlice.map((category) => {
-                const percent =
-                  totalExpense > 0
-                    ? ((category.amount / totalExpense) * 100).toFixed(1)
-                    : "0.0";
+                const percent = totalExpense > 0 ? ((category.amount / totalExpense) * 100).toFixed(1) : "0.0";
 
                 return (
                   <li key={category.categoryId} className={styles.itemRow}>
@@ -257,76 +194,46 @@ export default function HomePage() {
                       <div className={styles.categoryRow}>
                         <strong>{category.categoryName}</strong>
                         <span className={styles.categoryMetrics}>
-                          <MoneyAmount
-                            amount={category.amount}
-                            type="EXPENSE"
-                          />
-                          <span className={styles.categoryPercent}>
-                            {percent}%
-                          </span>
+                          <MoneyAmount amount={category.amount} type="EXPENSE" />
+                          <span className={styles.categoryPercent}>{percent}%</span>
                         </span>
                       </div>
                       <div aria-hidden="true" className={styles.progressTrack}>
-                        <span
-                          className={styles.progressFill}
-                          style={{ width: `${percent}%` }}
-                        />
+                        <span className={styles.progressFill} style={{ width: `${percent}%` }} />
                       </div>
                     </div>
                   </li>
                 );
               })}
             </ul>
-            <SimplePagination
-              page={catPage}
-              totalPages={catPages}
-              onPageChange={setCatPage}
-            />
+            <SimplePagination page={catPage} totalPages={catPages} onPageChange={setCatPage} />
           </Card>
 
           <Card className={styles.panel}>
-            <h2 className={styles.panelTitle}>
-              {t("home.recentTransactions")}
-            </h2>
+            <h2 className={styles.panelTitle}>{t("home.recentTransactions")}</h2>
             <ul className={styles.itemList}>
               {recentTxSlice.map((transaction) => (
                 <li key={transaction.id} className={styles.itemRow}>
                   <div>
                     <strong>
                       {transaction.description}
-                      {transaction.projected ? (
-                        <span className={styles.projectedBadge}>
-                          {" "}
-                          {t("transactions.projected")}
-                        </span>
-                      ) : null}
+                      {transaction.projected ? <span className={styles.projectedBadge}> {t("transactions.projected")}</span> : null}
                     </strong>
                     <p className={styles.itemMeta}>
-                      {transaction.categoryName} · {transaction.accountName} ·{" "}
-                      {formatDay(transaction.transactionDate)}
-                      {transaction.currency === "USD" &&
-                      transaction.exchangeRate != null
+                      {transaction.categoryName} · {transaction.accountName} · {formatDay(transaction.transactionDate)}
+                      {transaction.currency === "USD" && transaction.exchangeRate != null
                         ? ` · ${formatCurrency(
-                            transaction.type === "EXPENSE"
-                              ? -Math.abs(transaction.amount)
-                              : Math.abs(transaction.amount),
+                            transaction.type === "EXPENSE" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
                             "USD",
                           )} (cot. ${transaction.exchangeRate.toFixed(2)})`
                         : null}
                     </p>
                   </div>
-                  <MoneyAmount
-                    amount={transaction.convertedAmount}
-                    type={transaction.type as "INCOME" | "EXPENSE"}
-                  />
+                  <MoneyAmount amount={transaction.convertedAmount} type={transaction.type as "INCOME" | "EXPENSE"} />
                 </li>
               ))}
             </ul>
-            <SimplePagination
-              page={recentTxPage}
-              totalPages={recentTxPages}
-              onPageChange={setRecentTxPage}
-            />
+            <SimplePagination page={recentTxPage} totalPages={recentTxPages} onPageChange={setRecentTxPage} />
           </Card>
         </section>
       ) : null}

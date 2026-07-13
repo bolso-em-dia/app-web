@@ -74,16 +74,13 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
 
   // Error Boundary
   "errorBoundary.title": "Something went wrong",
-  "errorBoundary.message":
-    "An unexpected error occurred. You can try reloading this page or returning to the dashboard.",
+  "errorBoundary.message": "An unexpected error occurred. You can try reloading this page or returning to the dashboard.",
   "errorBoundary.details": "Technical details",
   "errorBoundary.retry": "Try again",
   "errorBoundary.goToDashboard": "Go to Dashboard",
   "exchangeRate.updated": "Exchange rate updated",
-  "exchangeRate.staleTooltip":
-    "Exchange rate is stale. Last update may be incorrect.",
-  "exchangeRate.fetchError":
-    "Failed to fetch exchange rate. Using last known value.",
+  "exchangeRate.staleTooltip": "Exchange rate is stale. Last update may be incorrect.",
+  "exchangeRate.fetchError": "Failed to fetch exchange rate. Using last known value.",
   "exchangeRate.refresh": "Refresh exchange rate",
 
   // Home
@@ -111,21 +108,18 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   // Settings
   "settings.title": "Settings",
   "settings.account.label": "Default account",
-  "settings.account.description":
-    "Initial account preselected in account-based forms.",
+  "settings.account.description": "Initial account preselected in account-based forms.",
   "settings.account.empty": "No default account",
   "settings.locale.label": "Language",
   "settings.locale.description": "Language used when loading the application.",
   "settings.locale.pt-BR": "Portuguese (Brazil)",
   "settings.locale.en-US": "English (United States)",
   "settings.balance.label": "Initial free balance mode",
-  "settings.balance.description":
-    "Defines whether the Home screen initially considers budgets in free balance.",
+  "settings.balance.description": "Defines whether the Home screen initially considers budgets in free balance.",
   "settings.balance.withBudgets": "Consider budgets",
   "settings.balance.withoutBudgets": "Ignore budgets",
   "settings.foreignCurrency.label": "Foreign currencies",
-  "settings.foreignCurrency.description":
-    "Enable US Dollar (USD) support with real-time exchange rates.",
+  "settings.foreignCurrency.description": "Enable US Dollar (USD) support with real-time exchange rates.",
   "settings.foreignCurrency.enabled": "Enabled",
   "settings.foreignCurrency.disabled": "Disabled",
   "settings.loading": "Loading settings",
@@ -136,19 +130,16 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "settings.saveSuccess": "Settings saved.",
   "settings.save": "Save",
   "settings.password.title": "Password",
-  "settings.password.subtitle":
-    "Change your password by providing the current one and confirming the new one.",
+  "settings.password.subtitle": "Change your password by providing the current one and confirming the new one.",
   "settings.password.current": "Current password",
   "settings.password.new": "New password",
   "settings.password.confirm": "Confirm new password",
   "settings.password.save": "Save",
   "settings.password.success": "Password updated.",
   "settings.password.saveError": "Unable to update the password.",
-  "settings.password.confirmationMismatch":
-    "Password confirmation does not match.",
+  "settings.password.confirmationMismatch": "Password confirmation does not match.",
   "settings.password.firstAccessTitle": "Set a new password",
-  "settings.password.firstAccessSubtitle":
-    "The initial administrator access requires a password change before continuing.",
+  "settings.password.firstAccessSubtitle": "The initial administrator access requires a password change before continuing.",
   "settings.password.firstAccessSave": "Save new password",
 
   // Fixed Transactions
@@ -162,12 +153,10 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "fixedTransactions.newTitle": "New fixed transaction",
   "fixedTransactions.newDescription": "Create a recurring fixed transaction.",
   "fixedTransactions.detailsTitle": "Fixed transaction details",
-  "fixedTransactions.editDescription":
-    "Update the recurring name, type, amount, category, account, and recurring day.",
+  "fixedTransactions.editDescription": "Update the recurring name, type, amount, category, account, and recurring day.",
   "fixedTransactions.create": "Create fixed transaction",
   "fixedTransactions.searchPlaceholder": "Search fixed transactions",
-  "fixedTransactions.empty":
-    "No fixed transactions found for the current filters.",
+  "fixedTransactions.empty": "No fixed transactions found for the current filters.",
   "fixedTransactions.amount": "Amount",
   "fixedTransactions.receiptDay": "Receipt day",
   "fixedTransactions.dueOnDay": "Due on day {{day}}",
@@ -187,8 +176,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.newTitle": "New transaction",
   "transactions.newDescription": "Create a transaction for the selected month.",
   "transactions.detailsTitle": "Transaction details",
-  "transactions.editDescription":
-    "Update the transaction fields such as description, amount, and date.",
+  "transactions.editDescription": "Update the transaction fields such as description, amount, and date.",
   "transactions.create": "Create transaction",
   "transactions.save": "Save",
   "transactions.saveAndCreateNew": "Save and create new",
@@ -199,10 +187,8 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.installmentCount": "Number of installments",
   "transactions.noInstallmentGroup": "Single transaction",
   "transactions.deleteTitle": "Delete transaction",
-  "transactions.deleteSubtitle":
-    "Confirm deletion of the selected transaction or the remaining installments in the group.",
-  "transactions.deleteSingleSubtitle":
-    "Confirm deletion of the selected transaction.",
+  "transactions.deleteSubtitle": "Confirm deletion of the selected transaction or the remaining installments in the group.",
+  "transactions.deleteSingleSubtitle": "Confirm deletion of the selected transaction.",
   "transactions.deleteScope": "Deletion scope",
   "transactions.deleteScope.single": "Only this installment",
   "transactions.deleteScope.future": "This and future installments",
@@ -225,15 +211,12 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "budgets.newTitle": "New budget",
   "budgets.create": "Create budget",
   "budgets.detailsTitle": "Budget details",
-  "budgets.editDescription":
-    "Update the budget name, monthly limit, and linked categories.",
-  "budgets.newDescription":
-    "Define a budget with a monthly spending limit linked to specific categories.",
+  "budgets.editDescription": "Update the budget name, monthly limit, and linked categories.",
+  "budgets.newDescription": "Define a budget with a monthly spending limit linked to specific categories.",
   "budgets.monthlyLimit": "Monthly limit",
   "budgets.ownerMember": "Allowance owner",
   "budgets.linkedCategoriesTitle": "Linked categories",
-  "budgets.globalHelper":
-    "Global budgets limit spending across the household. Allowance budgets limit spending for a specific member.",
+  "budgets.globalHelper": "Global budgets limit spending across the household. Allowance budgets limit spending for a specific member.",
   "budgets.currentImpact": "Current impact",
   "budgets.currentImpactSubtitle": "Budget consumption for {{month}}.",
   "budgets.limit": "Limit",
@@ -241,10 +224,8 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "budgets.remaining": "Remaining",
   "budgets.categoryBreakdown": "Spending per category",
   "budgets.matchedTransactions": "Matched transactions",
-  "budgets.noCategoryConsumption":
-    "No consumption recorded for the linked categories in this month.",
-  "budgets.noMatchedTransactions":
-    "No transactions matched this budget in the current month.",
+  "budgets.noCategoryConsumption": "No consumption recorded for the linked categories in this month.",
+  "budgets.noMatchedTransactions": "No transactions matched this budget in the current month.",
   "budgets.consumedOfLimit": "Used {{consumed}}",
   "budgets.archiveTitle": "Archive budget",
   "budgets.archivedFrom": "Archived from {{month}}",
@@ -282,11 +263,9 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "accounts.empty": "No accounts found for the current filters.",
   "accounts.new": "New account",
   "accounts.newTitle": "New account",
-  "accounts.newDescription":
-    "Create a bank, card, savings or investment account.",
+  "accounts.newDescription": "Create a bank, card, savings or investment account.",
   "accounts.detailsTitle": "Account details",
-  "accounts.editDescription":
-    "Update the account name, type, brand and closing dates.",
+  "accounts.editDescription": "Update the account name, type, brand and closing dates.",
   "accounts.create": "Create account",
   "accounts.brand": "Brand",
   "accounts.color": "Color",
@@ -352,11 +331,9 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "family.empty": "No members found for the current filters.",
   "family.new": "New member",
   "family.newTitle": "New member",
-  "family.newDescription":
-    "Add a new family member with an initial role and allowance settings.",
+  "family.newDescription": "Add a new family member with an initial role and allowance settings.",
   "family.detailsTitle": "Member details",
-  "family.editDescription":
-    "Update the member role, allowance settings, or set a new password.",
+  "family.editDescription": "Update the member role, allowance settings, or set a new password.",
   "family.create": "Create member",
   "family.password": "Password",
   "family.passwordOptional": "Leave blank to keep the current password.",
@@ -380,8 +357,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactionTypes.EXPENSE": "Expense",
 
   // Confirmations
-  "confirmations.archiveBudget":
-    "Are you sure you want to archive this budget? It will stop appearing from the current month onward.",
+  "confirmations.archiveBudget": "Are you sure you want to archive this budget? It will stop appearing from the current month onward.",
   "confirmations.archiveCategory":
     "Are you sure you want to archive this category? The replacement category will be used from the current month onward.",
   "confirmations.archiveAccount":
@@ -390,10 +366,8 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
     "Are you sure you want to archive this fixed transaction? Already materialized transactions will be preserved, but the template will stop generating new ones.",
   "confirmations.deleteFixedExpense":
     "Are you sure you want to delete this fixed transaction? Transactions materialized from the current month onward will be removed. Past month transactions will be preserved.",
-  "confirmations.archiveMember":
-    "Are you sure you want to archive this member? They will no longer be able to log in.",
-  "confirmations.restoreMember":
-    "Are you sure you want to restore this member?",
+  "confirmations.archiveMember": "Are you sure you want to archive this member? They will no longer be able to log in.",
+  "confirmations.restoreMember": "Are you sure you want to restore this member?",
 
   // Budget Types
   "budgetTypes.GLOBAL": "Global",
@@ -404,16 +378,14 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "budgets.loadingDetails": "Loading budget details",
   "budgets.noSharedCategories": "This budget is not linked to any categories.",
   "budgets.selectToReview": "Select a budget to review current month details.",
-  "budgets.archiveSubtitle":
-    "Stop using this budget starting from a future month.",
+  "budgets.archiveSubtitle": "Stop using this budget starting from a future month.",
 
   // Additional categories keys
   "categories.noIcon": "No icon",
   "categories.noColor": "No color",
   "categories.iconPreviewNone": "No icon selected",
   "categories.archiveTitle": "Archive category",
-  "categories.archiveSubtitle":
-    "Stop using this category starting from a future month.",
+  "categories.archiveSubtitle": "Stop using this category starting from a future month.",
   "categories.selectReplacement": "Select a replacement category",
 
   // Additional family keys
@@ -438,28 +410,20 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "validation.amountPositive": "Amount must be greater than zero.",
   "validation.invalidNumber": "Enter a valid number.",
   "validation.requiredTransactionDate": "Transaction date is required.",
-  "validation.installmentCountInteger":
-    "Number of installments must be a whole number.",
-  "validation.installmentCountRange":
-    "Number of installments must be between 2 and 120.",
-  "validation.requiredInstallmentCount":
-    "Enter the number of installments for expenses.",
-  "validation.requiredIndividualMember":
-    "Select a member for individual transactions.",
-  "validation.requiredAllowanceOwner":
-    "Select the member who receives this allowance.",
-  "validation.requiredGlobalBudgetCategory":
-    "Select at least one category for a global budget.",
+  "validation.installmentCountInteger": "Number of installments must be a whole number.",
+  "validation.installmentCountRange": "Number of installments must be between 2 and 120.",
+  "validation.requiredInstallmentCount": "Enter the number of installments for expenses.",
+  "validation.requiredIndividualMember": "Select a member for individual transactions.",
+  "validation.requiredAllowanceOwner": "Select the member who receives this allowance.",
+  "validation.requiredGlobalBudgetCategory": "Select at least one category for a global budget.",
   "validation.monthlyLimitPositive": "Monthly limit must be greater than zero.",
   "validation.iconMax80": "Icon name must be at most 80 characters.",
   "validation.colorMax20": "Color must be at most 20 characters.",
   "validation.requiredReplacementCategory": "Select a replacement category.",
   "validation.brandMax80": "Brand must be at most 80 characters.",
   "validation.requiredCreditCardBrand": "Brand is required for credit cards.",
-  "validation.requiredCreditCardClosingDay":
-    "Closing day is required for credit cards.",
-  "validation.requiredCreditCardDueDay":
-    "Due day is required for credit cards.",
+  "validation.requiredCreditCardClosingDay": "Closing day is required for credit cards.",
+  "validation.requiredCreditCardDueDay": "Due day is required for credit cards.",
   "validation.dueDayInteger": "Due day must be a whole number.",
   "validation.dueDayRange": "Due day must be between 1 and 31.",
   "validation.dayInteger": "Day must be a whole number.",

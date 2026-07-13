@@ -12,20 +12,11 @@ type IconSelectProps = {
   onChange: (value: string) => void;
 };
 
-export default function IconSelect({
-  id,
-  value,
-  options,
-  clearLabel,
-  onChange,
-}: IconSelectProps) {
+export default function IconSelect({ id, value, options, clearLabel, onChange }: IconSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const listboxId = useId();
-  const selectedOption = useMemo(
-    () => options.find((option) => option.value === value) ?? null,
-    [options, value],
-  );
+  const selectedOption = useMemo(() => options.find((option) => option.value === value) ?? null, [options, value]);
   const SelectedIcon = getStoredIcon(selectedOption?.value);
 
   useEffect(() => {
@@ -61,9 +52,7 @@ export default function IconSelect({
         <span aria-hidden="true" className={styles.preview}>
           {SelectedIcon ? <SelectedIcon className={styles.icon} /> : "-"}
         </span>
-        <span className={styles.triggerLabel}>
-          {selectedOption?.label ?? clearLabel}
-        </span>
+        <span className={styles.triggerLabel}>{selectedOption?.label ?? clearLabel}</span>
         <span aria-hidden="true" className={styles.chevron}>
           ▾
         </span>
@@ -73,10 +62,7 @@ export default function IconSelect({
         <div className={styles.dropdown} id={listboxId} role="listbox">
           <button
             aria-selected={value === ""}
-            className={clsx(
-              styles.option,
-              value === "" ? styles.optionSelected : "",
-            )}
+            className={clsx(styles.option, value === "" ? styles.optionSelected : "")}
             onClick={() => {
               onChange("");
               setIsOpen(false);
@@ -96,10 +82,7 @@ export default function IconSelect({
             return (
               <button
                 aria-selected={value === option.value}
-                className={clsx(
-                  styles.option,
-                  value === option.value ? styles.optionSelected : "",
-                )}
+                className={clsx(styles.option, value === option.value ? styles.optionSelected : "")}
                 key={option.value}
                 onClick={() => {
                   onChange(option.value);

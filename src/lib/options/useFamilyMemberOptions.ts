@@ -16,9 +16,7 @@ type UseFamilyMemberOptionsResult = {
   error: string | null;
 };
 
-export function useFamilyMemberOptions({
-  allowanceEnabledOnly = false,
-}: UseFamilyMemberOptionsParams = {}): UseFamilyMemberOptionsResult {
+export function useFamilyMemberOptions({ allowanceEnabledOnly = false }: UseFamilyMemberOptionsParams = {}): UseFamilyMemberOptionsResult {
   const { accessToken } = useAuth();
 
   const load = useCallback(() => {
@@ -29,18 +27,12 @@ export function useFamilyMemberOptions({
     return listFamilyMembers(accessToken);
   }, [accessToken]);
 
-  const { data, isLoading, error } = useCachedOptionsResource(
-    accessToken ? `family-members:${accessToken}` : null,
-    load,
-  );
+  const { data, isLoading, error } = useCachedOptionsResource(accessToken ? `family-members:${accessToken}` : null, load);
 
   const allItems = useMemo(() => data ?? [], [data]);
 
   const items = useMemo(
-    () =>
-      allowanceEnabledOnly
-        ? allItems.filter((member) => member.active && member.allowanceEnabled)
-        : allItems,
+    () => (allowanceEnabledOnly ? allItems.filter((member) => member.active && member.allowanceEnabled) : allItems),
     [allItems, allowanceEnabledOnly],
   );
 
@@ -54,10 +46,7 @@ export function useFamilyMemberOptions({
     [items],
   );
 
-  const byValue = useMemo(
-    () => new Map(items.map((item) => [item.id, item])),
-    [items],
-  );
+  const byValue = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
 
   return {
     items,

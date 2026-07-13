@@ -10,9 +10,7 @@ const DAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
 
 export function getCurrentReferenceMonth() {
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString()
-    .slice(0, 10);
+  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
 }
 
 export function shiftReferenceMonth(value: string, deltaMonths: number) {

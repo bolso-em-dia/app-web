@@ -23,10 +23,7 @@ export function useAccountOptions(): UseAccountOptionsResult {
     return listAccounts(accessToken);
   }, [accessToken]);
 
-  const { data, isLoading, error } = useCachedOptionsResource(
-    accessToken ? `accounts:${accessToken}` : null,
-    load,
-  );
+  const { data, isLoading, error } = useCachedOptionsResource(accessToken ? `accounts:${accessToken}` : null, load);
 
   const items = useMemo(() => data ?? [], [data]);
 
@@ -40,10 +37,7 @@ export function useAccountOptions(): UseAccountOptionsResult {
     [items],
   );
 
-  const byValue = useMemo(
-    () => new Map(items.map((item) => [item.id, item])),
-    [items],
-  );
+  const byValue = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
 
   return {
     items,

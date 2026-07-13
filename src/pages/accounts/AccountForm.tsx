@@ -20,10 +20,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { buildColorOptions, getColorLabel } from "../../lib/uiOptions";
 import { useConfirmDialog } from "../../lib/useConfirmDialog";
-import {
-  createAccountSchema,
-  type AccountFormValues,
-} from "../../lib/validation/accountSchema";
+import { createAccountSchema, type AccountFormValues } from "../../lib/validation/accountSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./AccountsPage.module.scss";
 
@@ -57,26 +54,15 @@ interface AccountFormProps {
   onCancel: () => void;
 }
 
-export default function AccountForm({
-  account,
-  user,
-  onSuccess,
-  onCancel,
-}: AccountFormProps) {
+export default function AccountForm({ account, user, onSuccess, onCancel }: AccountFormProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
 
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [archivedFromMonth, setArchivedFromMonth] = useState<string | null>(
-    account?.archivedFromMonth ?? null,
-  );
-  const {
-    closeDialog: closeArchiveDialog,
-    open: isArchiveDialogOpen,
-    openDialog: openArchiveDialog,
-  } = useConfirmDialog();
+  const [archivedFromMonth, setArchivedFromMonth] = useState<string | null>(account?.archivedFromMonth ?? null);
+  const { closeDialog: closeArchiveDialog, open: isArchiveDialogOpen, openDialog: openArchiveDialog } = useConfirmDialog();
 
   const showForeignCurrency = user.preferences.showForeignCurrency ?? false;
   const isCreating = account === null;
@@ -120,11 +106,7 @@ export default function AccountForm({
 
       try {
         if (editingAccountId) {
-          await updateAccount(
-            editingAccountId,
-            mapFormValuesToPayload(values),
-            accessToken,
-          );
+          await updateAccount(editingAccountId, mapFormValuesToPayload(values), accessToken);
         } else {
           await createAccount(mapFormValuesToPayload(values), accessToken);
         }
@@ -156,14 +138,7 @@ export default function AccountForm({
     } finally {
       setIsArchiving(false);
     }
-  }, [
-    accessToken,
-    closeArchiveDialog,
-    archivedFromMonth,
-    editingAccountId,
-    onSuccess,
-    t,
-  ]);
+  }, [accessToken, closeArchiveDialog, archivedFromMonth, editingAccountId, onSuccess, t]);
 
   const accountType = form.watch("type");
   const colorValue = form.watch("color");
@@ -171,16 +146,8 @@ export default function AccountForm({
 
   return (
     <>
-      <form
-        className={styles.form}
-        noValidate
-        onSubmit={form.handleSubmit(onSubmit)}
-      >
-        <Field
-          error={form.formState.errors.name?.message}
-          htmlFor="account-name"
-          label={t("common.name")}
-        >
+      <form className={styles.form} noValidate onSubmit={form.handleSubmit(onSubmit)}>
+        <Field error={form.formState.errors.name?.message} htmlFor="account-name" label={t("common.name")}>
           <Input
             id="account-name"
             {...form.register("name")}
@@ -190,21 +157,11 @@ export default function AccountForm({
         </Field>
 
         <div className={styles.typeGrid}>
-          <Field
-            error={form.formState.errors.type?.message}
-            htmlFor="account-type"
-            label={t("common.type")}
-          >
-            <Select
-              id="account-type"
-              {...form.register("type")}
-              hasError={Boolean(form.formState.errors.type)}
-            >
+          <Field error={form.formState.errors.type?.message} htmlFor="account-type" label={t("common.type")}>
+            <Select id="account-type" {...form.register("type")} hasError={Boolean(form.formState.errors.type)}>
               <option value="CHECKING">{t("accountTypes.CHECKING")}</option>
               <option value="SAVINGS">{t("accountTypes.SAVINGS")}</option>
-              <option value="CREDIT_CARD">
-                {t("accountTypes.CREDIT_CARD")}
-              </option>
+              <option value="CREDIT_CARD">{t("accountTypes.CREDIT_CARD")}</option>
               <option value="INVESTMENT">{t("accountTypes.INVESTMENT")}</option>
             </Select>
           </Field>
@@ -218,11 +175,7 @@ export default function AccountForm({
             </Field>
           ) : null}
 
-          <Field
-            error={form.formState.errors.color?.message}
-            htmlFor="account-color"
-            label={t("accounts.color")}
-          >
+          <Field error={form.formState.errors.color?.message} htmlFor="account-color" label={t("accounts.color")}>
             <ColorSwatchSelect
               clearLabel={t("common.clearSelection")}
               id="account-color"
@@ -241,11 +194,7 @@ export default function AccountForm({
 
         {isCreditCard ? (
           <div className={styles.cardFields}>
-            <Field
-              error={form.formState.errors.brand?.message}
-              htmlFor="account-brand"
-              label={t("accounts.brand")}
-            >
+            <Field error={form.formState.errors.brand?.message} htmlFor="account-brand" label={t("accounts.brand")}>
               <Input
                 id="account-brand"
                 {...form.register("brand")}
@@ -254,11 +203,7 @@ export default function AccountForm({
               />
             </Field>
 
-            <Field
-              error={form.formState.errors.closingDay?.message}
-              htmlFor="account-closing-day"
-              label={t("accounts.closingDay")}
-            >
+            <Field error={form.formState.errors.closingDay?.message} htmlFor="account-closing-day" label={t("accounts.closingDay")}>
               <Input
                 id="account-closing-day"
                 {...form.register("closingDay")}
@@ -270,11 +215,7 @@ export default function AccountForm({
               />
             </Field>
 
-            <Field
-              error={form.formState.errors.dueDay?.message}
-              htmlFor="account-due-day"
-              label={t("accounts.dueDay")}
-            >
+            <Field error={form.formState.errors.dueDay?.message} htmlFor="account-due-day" label={t("accounts.dueDay")}>
               <Input
                 id="account-due-day"
                 {...form.register("dueDay")}
@@ -290,13 +231,8 @@ export default function AccountForm({
 
         {colorValue ? (
           <div className={styles.swatch}>
-            <span
-              className={styles.swatchDot}
-              style={{ backgroundColor: colorValue }}
-            />
-            <span>
-              {getColorLabel(colorValue, t) || t("common.clearSelection")}
-            </span>
+            <span className={styles.swatchDot} style={{ backgroundColor: colorValue }} />
+            <span>{getColorLabel(colorValue, t) || t("common.clearSelection")}</span>
           </div>
         ) : null}
 

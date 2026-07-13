@@ -1,8 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import type {
-  Transaction,
-  TransactionFilters,
-} from "../../app/api/transactions";
+import type { Transaction, TransactionFilters } from "../../app/api/transactions";
 import { useAuth } from "../../app/auth/useAuth";
 import Spinner from "../../components/feedback/Spinner";
 import AppShell from "../../components/layout/AppShell";
@@ -10,10 +7,7 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
 import { useI18n } from "../../app/i18n/I18nContext";
-import {
-  formatReferenceMonth,
-  getCurrentReferenceMonth,
-} from "../../lib/formatters/date";
+import { formatReferenceMonth, getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { useAccountOptions } from "../../lib/options/useAccountOptions";
 import { useCategoryOptions } from "../../lib/options/useCategoryOptions";
 import { useFamilyMemberOptions } from "../../lib/options/useFamilyMemberOptions";
@@ -30,18 +24,13 @@ export default function TransactionsPage() {
     referenceMonth: initialReferenceMonth,
   });
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedTransactionId, setSelectedTransactionId] = useState<
-    string | null
-  >(null);
-  const [selectedTransaction, setSelectedTransaction] =
-    useState<Transaction | null>(null);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const { items: accounts, isLoading: isAccountsLoading } = useAccountOptions();
-  const { items: categoryOptions, isLoading: isCategoriesLoading } =
-    useCategoryOptions(filters.referenceMonth);
-  const { items: members, isLoading: isMembersLoading } =
-    useFamilyMemberOptions();
+  const { items: categoryOptions, isLoading: isCategoriesLoading } = useCategoryOptions(filters.referenceMonth);
+  const { items: members, isLoading: isMembersLoading } = useFamilyMemberOptions();
 
   const handleSelect = useCallback((id: string, transaction: Transaction) => {
     setSelectedTransactionId(id);
@@ -72,8 +61,7 @@ export default function TransactionsPage() {
   }, []);
 
   const isCreating = selectedTransactionId === null;
-  const isReferenceDataLoading =
-    isAccountsLoading || isCategoriesLoading || isMembersLoading;
+  const isReferenceDataLoading = isAccountsLoading || isCategoriesLoading || isMembersLoading;
 
   return (
     <AppShell
@@ -107,11 +95,7 @@ export default function TransactionsPage() {
                   })
             }
             onClose={handleCancelForm}
-            title={
-              isCreating
-                ? t("transactions.newTitle")
-                : t("transactions.detailsTitle")
-            }
+            title={isCreating ? t("transactions.newTitle") : t("transactions.detailsTitle")}
           >
             <div className={styles.drawerStack}>
               {isReferenceDataLoading ? (

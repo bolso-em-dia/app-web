@@ -22,13 +22,7 @@ export default function Button({
 
   return (
     <button
-      className={clsx(
-        styles.root,
-        styles[variant],
-        loading ? styles.loading : "",
-        fullWidth ? styles.fullWidth : "",
-        className,
-      )}
+      className={clsx(styles.root, styles[variant], loading ? styles.loading : "", fullWidth ? styles.fullWidth : "", className)}
       disabled={disabled || loading}
       {...props}
     >

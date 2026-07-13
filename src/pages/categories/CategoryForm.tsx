@@ -1,13 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  archiveCategory,
-  createCategory,
-  updateCategory,
-  type Category,
-  type CategoryOption,
-} from "../../app/api/categories";
+import { archiveCategory, createCategory, updateCategory, type Category, type CategoryOption } from "../../app/api/categories";
 import { useAuth } from "../../app/auth/useAuth";
 import type { AuthUser } from "../../app/api/auth";
 import Button from "../../components/ui/Button";
@@ -42,12 +36,7 @@ interface CategoryFormProps {
   onCancel: () => void;
 }
 
-export default function CategoryForm({
-  category,
-  categoryOptions,
-  onSuccess,
-  onCancel,
-}: CategoryFormProps) {
+export default function CategoryForm({ category, categoryOptions, onSuccess, onCancel }: CategoryFormProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const isCreating = category === null;
@@ -68,10 +57,7 @@ export default function CategoryForm({
   const [error, setError] = useState<string | null>(null);
 
   const categorySchema = useMemo(() => createCategorySchema(t), [t]);
-  const archiveCategorySchema = useMemo(
-    () => createArchiveCategorySchema(t),
-    [t],
-  );
+  const archiveCategorySchema = useMemo(() => createArchiveCategorySchema(t), [t]);
   const colorOptions = useMemo(() => buildColorOptions(t), [t]);
   const iconOptions = useMemo(() => buildIconOptions(t), [t]);
 
@@ -83,14 +69,11 @@ export default function CategoryForm({
   const archiveForm = useForm<ArchiveCategoryFormValues>({
     resolver: zodResolver(archiveCategorySchema),
     defaultValues: {
-      replacementCategoryId:
-        categoryOptions.find((o) => o.id !== categoryId)?.id ?? "",
+      replacementCategoryId: categoryOptions.find((o) => o.id !== categoryId)?.id ?? "",
     },
   });
 
-  const archiveOptions = categoryOptions.filter(
-    (option) => option.id !== categoryId,
-  );
+  const archiveOptions = categoryOptions.filter((option) => option.id !== categoryId);
 
   async function handleSubmit(values: CategoryFormValues) {
     if (!accessToken) {
@@ -152,28 +135,12 @@ export default function CategoryForm({
 
   return (
     <div className={styles.drawerStack}>
-      <form
-        className={styles.form}
-        onSubmit={form.handleSubmit(handleSubmit)}
-        noValidate
-      >
-        <Field
-          error={form.formState.errors.name?.message}
-          htmlFor="category-name"
-          label={t("common.name")}
-        >
-          <Input
-            hasError={Boolean(form.formState.errors.name)}
-            id="category-name"
-            {...form.register("name")}
-          />
+      <form className={styles.form} onSubmit={form.handleSubmit(handleSubmit)} noValidate>
+        <Field error={form.formState.errors.name?.message} htmlFor="category-name" label={t("common.name")}>
+          <Input hasError={Boolean(form.formState.errors.name)} id="category-name" {...form.register("name")} />
         </Field>
 
-        <Field
-          error={form.formState.errors.icon?.message}
-          htmlFor="category-icon"
-          label={t("categories.icon")}
-        >
+        <Field error={form.formState.errors.icon?.message} htmlFor="category-icon" label={t("categories.icon")}>
           <IconSelect
             clearLabel={t("common.clearSelection")}
             id="category-icon"
@@ -189,11 +156,7 @@ export default function CategoryForm({
           />
         </Field>
 
-        <Field
-          error={form.formState.errors.color?.message}
-          htmlFor="category-color"
-          label={t("categories.color")}
-        >
+        <Field error={form.formState.errors.color?.message} htmlFor="category-color" label={t("categories.color")}>
           <ColorSwatchSelect
             clearLabel={t("common.clearSelection")}
             id="category-color"
@@ -235,9 +198,7 @@ export default function CategoryForm({
               name="replacementCategoryId"
               render={({ field }) => (
                 <CategorySelect
-                  hasError={Boolean(
-                    archiveForm.formState.errors.replacementCategoryId,
-                  )}
+                  hasError={Boolean(archiveForm.formState.errors.replacementCategoryId)}
                   id="replacement-category"
                   onChange={field.onChange}
                   options={archiveOptions}
@@ -249,11 +210,7 @@ export default function CategoryForm({
           </Field>
 
           <div className={styles.formActions}>
-            <Button
-              type="button"
-              onClick={() => setIsArchiveConfirmOpen(true)}
-              variant="danger"
-            >
+            <Button type="button" onClick={() => setIsArchiveConfirmOpen(true)} variant="danger">
               {t("common.archive")}
             </Button>
           </div>

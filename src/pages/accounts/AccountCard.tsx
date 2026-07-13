@@ -18,21 +18,13 @@ export default function AccountCard({ account, onSelect }: AccountCardProps) {
       <button
         className={styles.accountButton}
         onClick={() => onSelect(account.id)}
-        style={
-          account.color ? { borderInlineStartColor: account.color } : undefined
-        }
+        style={account.color ? { borderInlineStartColor: account.color } : undefined}
         type="button"
       >
         <div className={styles.accountHeader}>
           <div>
             <div className={styles.accountTitleRow}>
-              {account.color ? (
-                <span
-                  aria-hidden="true"
-                  className={styles.swatchDot}
-                  style={{ backgroundColor: account.color }}
-                />
-              ) : null}
+              {account.color ? <span aria-hidden="true" className={styles.swatchDot} style={{ backgroundColor: account.color }} /> : null}
               <strong>{account.name}</strong>
             </div>
             <p className={styles.accountMeta}>
@@ -43,9 +35,7 @@ export default function AccountCard({ account, onSelect }: AccountCardProps) {
         </div>
 
         <div className={styles.accountBadges}>
-          <span className={styles.badge}>
-            {t(`accountTypes.${account.type}` as const)}
-          </span>
+          <span className={styles.badge}>{t(`accountTypes.${account.type}` as const)}</span>
           {account.closingDay && account.dueDay ? (
             <span className={`${styles.badge} ${styles.badgeInfo}`}>
               {t("accounts.billingCycle", {
@@ -54,13 +44,7 @@ export default function AccountCard({ account, onSelect }: AccountCardProps) {
               })}
             </span>
           ) : null}
-          <span
-            className={
-              account.archivedFromMonth
-                ? `${styles.badge} ${styles.badgeMuted}`
-                : `${styles.badge} ${styles.badgeSuccess}`
-            }
-          >
+          <span className={account.archivedFromMonth ? `${styles.badge} ${styles.badgeMuted}` : `${styles.badge} ${styles.badgeSuccess}`}>
             {account.archivedFromMonth
               ? t("common.archivedFrom", {
                   month: formatReferenceMonth(account.archivedFromMonth),

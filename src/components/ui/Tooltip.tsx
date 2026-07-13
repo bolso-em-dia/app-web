@@ -9,21 +9,12 @@ type TooltipProps = {
   children?: ReactNode;
 };
 
-export default function Tooltip({
-  content,
-  className,
-  children,
-}: TooltipProps) {
+export default function Tooltip({ content, className, children }: TooltipProps) {
   const tooltipId = useId();
 
   return (
     <span className={clsx(styles.root, className)}>
-      <button
-        aria-describedby={tooltipId}
-        aria-label={content}
-        className={styles.trigger}
-        type="button"
-      >
+      <button aria-describedby={tooltipId} aria-label={content} className={styles.trigger} type="button">
         {children ?? <CircleHelp aria-hidden="true" className={styles.icon} />}
       </button>
       <span className={styles.content} id={tooltipId} role="tooltip">

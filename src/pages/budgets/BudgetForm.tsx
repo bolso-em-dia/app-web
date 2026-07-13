@@ -6,17 +6,8 @@ import { useI18n } from "../../app/i18n/I18nContext";
 import type { CategoryOption } from "../../app/api/categories";
 import type { FamilyMember } from "../../app/api/family";
 import type { AuthUser } from "../../app/api/auth";
-import {
-  archiveBudget,
-  createBudget,
-  updateBudget,
-  type Budget,
-  type BudgetPayload,
-} from "../../app/api/budgets";
-import {
-  createBudgetSchema,
-  type BudgetFormValues,
-} from "../../lib/validation/budgetSchema";
+import { archiveBudget, createBudget, updateBudget, type Budget, type BudgetPayload } from "../../app/api/budgets";
+import { createBudgetSchema, type BudgetFormValues } from "../../lib/validation/budgetSchema";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import ConfirmAction from "../../components/ui/ConfirmAction";
@@ -41,10 +32,7 @@ function mapFormValuesToPayload(values: BudgetFormValues): BudgetPayload {
   return {
     name: values.name,
     type: values.type,
-    ownerMemberId:
-      values.type === "ALLOWANCE" && values.ownerMemberId
-        ? values.ownerMemberId
-        : undefined,
+    ownerMemberId: values.type === "ALLOWANCE" && values.ownerMemberId ? values.ownerMemberId : undefined,
     categoryIds: values.type === "GLOBAL" ? values.categoryIds : undefined,
     monthlyLimit: values.monthlyLimit,
   };
@@ -60,24 +48,13 @@ interface BudgetFormProps {
   onCancel: () => void;
 }
 
-export default function BudgetForm({
-  budget,
-  categories,
-  members,
-  referenceMonth,
-  onSuccess,
-  onCancel,
-}: BudgetFormProps) {
+export default function BudgetForm({ budget, categories, members, referenceMonth, onSuccess, onCancel }: BudgetFormProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const {
-    closeDialog: closeArchiveDialog,
-    open: isArchiveDialogOpen,
-    openDialog: openArchiveDialog,
-  } = useConfirmDialog();
+  const { closeDialog: closeArchiveDialog, open: isArchiveDialogOpen, openDialog: openArchiveDialog } = useConfirmDialog();
 
   const budgetSchema = useMemo(() => createBudgetSchema(t), [t]);
   const form = useForm<BudgetFormValues>({
@@ -106,10 +83,7 @@ export default function BudgetForm({
     }
   }, [initialValues, form]);
 
-  const availableAllowanceMembers = useMemo(
-    () => members.filter((member) => member.active && member.allowanceEnabled),
-    [members],
-  );
+  const availableAllowanceMembers = useMemo(() => members.filter((member) => member.active && member.allowanceEnabled), [members]);
 
   const isCreating = !budget;
   const budgetType = form.watch("type");
@@ -125,11 +99,7 @@ export default function BudgetForm({
 
       try {
         if (budget) {
-          await updateBudget(
-            budget.id,
-            mapFormValuesToPayload(values),
-            accessToken,
-          );
+          await updateBudget(budget.id, mapFormValuesToPayload(values), accessToken);
         } else {
           await createBudget(mapFormValuesToPayload(values), accessToken);
         }
@@ -164,43 +134,19 @@ export default function BudgetForm({
 
   return (
     <>
-      <form
-        className={styles.form}
-        onSubmit={form.handleSubmit(handleSubmit)}
-        noValidate
-      >
-        <Field
-          error={form.formState.errors.name?.message}
-          htmlFor="budget-name"
-          label={t("common.name")}
-        >
-          <Input
-            id="budget-name"
-            hasError={Boolean(form.formState.errors.name)}
-            {...form.register("name")}
-          />
+      <form className={styles.form} onSubmit={form.handleSubmit(handleSubmit)} noValidate>
+        <Field error={form.formState.errors.name?.message} htmlFor="budget-name" label={t("common.name")}>
+          <Input id="budget-name" hasError={Boolean(form.formState.errors.name)} {...form.register("name")} />
         </Field>
 
-        <Field
-          error={form.formState.errors.type?.message}
-          htmlFor="budget-type"
-          label={t("common.type")}
-        >
-          <Select
-            id="budget-type"
-            hasError={Boolean(form.formState.errors.type)}
-            {...form.register("type")}
-          >
+        <Field error={form.formState.errors.type?.message} htmlFor="budget-type" label={t("common.type")}>
+          <Select id="budget-type" hasError={Boolean(form.formState.errors.type)} {...form.register("type")}>
             <option value="GLOBAL">{t("budgetTypes.GLOBAL")}</option>
             <option value="ALLOWANCE">{t("budgetTypes.ALLOWANCE")}</option>
           </Select>
         </Field>
 
-        <Field
-          error={form.formState.errors.monthlyLimit?.message}
-          htmlFor="budget-monthly-limit"
-          label={t("budgets.monthlyLimit")}
-        >
+        <Field error={form.formState.errors.monthlyLimit?.message} htmlFor="budget-monthly-limit" label={t("budgets.monthlyLimit")}>
           <Controller
             control={form.control}
             name="monthlyLimit"
@@ -218,16 +164,8 @@ export default function BudgetForm({
         </Field>
 
         {budgetType === "ALLOWANCE" ? (
-          <Field
-            error={form.formState.errors.ownerMemberId?.message}
-            htmlFor="budget-owner-member"
-            label={t("budgets.ownerMember")}
-          >
-            <Select
-              id="budget-owner-member"
-              hasError={Boolean(form.formState.errors.ownerMemberId)}
-              {...form.register("ownerMemberId")}
-            >
+          <Field error={form.formState.errors.ownerMemberId?.message} htmlFor="budget-owner-member" label={t("budgets.ownerMember")}>
+            <Select id="budget-owner-member" hasError={Boolean(form.formState.errors.ownerMemberId)} {...form.register("ownerMemberId")}>
               <option value="">{t("common.selectMember")}</option>
               {availableAllowanceMembers.map((member) => (
                 <option key={member.id} value={member.id}>
@@ -277,9 +215,7 @@ export default function BudgetForm({
               type="button"
               variant={budget?.archivedFromMonth ? "subtle" : "danger"}
             >
-              {budget?.archivedFromMonth
-                ? t("budgets.archived")
-                : t("common.archive")}
+              {budget?.archivedFromMonth ? t("budgets.archived") : t("common.archive")}
             </Button>
           )}
         </div>
@@ -289,39 +225,23 @@ export default function BudgetForm({
         <>
           <Card className={styles.detailPanel}>
             <div className={styles.detailHeader}>
-              <h3 className={styles.detailTitle}>
-                {t("budgets.currentImpact")}
-              </h3>
-              <p className={styles.detailSubtitle}>
-                {t("budgets.currentImpactSubtitle")}
-              </p>
+              <h3 className={styles.detailTitle}>{t("budgets.currentImpact")}</h3>
+              <p className={styles.detailSubtitle}>{t("budgets.currentImpactSubtitle")}</p>
             </div>
 
             <div className={styles.detailSection}>
               <section className={styles.summaryGrid}>
                 <div className={styles.summaryCard}>
-                  <span className={styles.summaryLabel}>
-                    {t("budgets.limit")}
-                  </span>
-                  <strong className={styles.summaryValue}>
-                    {budget?.monthlyLimit ?? 0}
-                  </strong>
+                  <span className={styles.summaryLabel}>{t("budgets.limit")}</span>
+                  <strong className={styles.summaryValue}>{budget?.monthlyLimit ?? 0}</strong>
                 </div>
                 <div className={styles.summaryCard}>
-                  <span className={styles.summaryLabel}>
-                    {t("budgets.consumed")}
-                  </span>
-                  <strong className={styles.summaryValue}>
-                    {budget?.consumedAmount ?? 0}
-                  </strong>
+                  <span className={styles.summaryLabel}>{t("budgets.consumed")}</span>
+                  <strong className={styles.summaryValue}>{budget?.consumedAmount ?? 0}</strong>
                 </div>
                 <div className={styles.summaryCard}>
-                  <span className={styles.summaryLabel}>
-                    {t("budgets.remaining")}
-                  </span>
-                  <strong className={styles.summaryValue}>
-                    {budget?.remainingAmount ?? 0}
-                  </strong>
+                  <span className={styles.summaryLabel}>{t("budgets.remaining")}</span>
+                  <strong className={styles.summaryValue}>{budget?.remainingAmount ?? 0}</strong>
                 </div>
               </section>
             </div>

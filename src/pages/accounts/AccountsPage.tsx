@@ -31,8 +31,7 @@ const DEFAULT_FILTERS: AccountFilters = {
 export default function AccountsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { filters, patchFilters, clearFilter } =
-    useFiltersState(DEFAULT_FILTERS);
+  const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
@@ -165,35 +164,19 @@ export default function AccountsPage() {
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {
-              clearFilter(
-                name as keyof AccountFilters,
-                defaultValue as AccountFilters[keyof AccountFilters],
-              );
+              clearFilter(name as keyof AccountFilters, defaultValue as AccountFilters[keyof AccountFilters]);
             }}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
           />
         </Card>
 
-        <AccountList
-          filters={filters}
-          selectedId={selectedId}
-          onSelect={handleSelect}
-          refreshKey={refreshKey}
-        />
+        <AccountList filters={filters} selectedId={selectedId} onSelect={handleSelect} refreshKey={refreshKey} />
 
         {showDrawer ? (
           <Drawer
-            description={
-              selectedId === null
-                ? t("accounts.newDescription")
-                : t("accounts.editDescription")
-            }
+            description={selectedId === null ? t("accounts.newDescription") : t("accounts.editDescription")}
             onClose={handleCloseDrawer}
-            title={
-              selectedId === null
-                ? t("accounts.newTitle")
-                : t("accounts.detailsTitle")
-            }
+            title={selectedId === null ? t("accounts.newTitle") : t("accounts.detailsTitle")}
           >
             <div className={styles.drawerStack}>
               <AccountForm

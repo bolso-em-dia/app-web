@@ -15,10 +15,7 @@ import {
 import { useAuth } from "../../app/auth/useAuth";
 import type { Currency } from "../../lib/formatters/currency";
 import { useConfirmDialog } from "../../lib/useConfirmDialog";
-import {
-  createFixedExpenseSchema,
-  type FixedExpenseFormValues,
-} from "../../lib/validation/fixedExpenseSchema";
+import { createFixedExpenseSchema, type FixedExpenseFormValues } from "../../lib/validation/fixedExpenseSchema";
 import Button from "../../components/ui/Button";
 import CategorySelect from "../../components/ui/CategorySelect";
 import ConfirmAction from "../../components/ui/ConfirmAction";
@@ -49,9 +46,7 @@ function createDefaultValues(defaultAccountId: string): FixedExpenseFormValues {
   };
 }
 
-function mapFormValuesToPayload(
-  values: FixedExpenseFormValues,
-): FixedExpenseTemplatePayload {
+function mapFormValuesToPayload(values: FixedExpenseFormValues): FixedExpenseTemplatePayload {
   return {
     name: values.name,
     type: values.type,
@@ -62,32 +57,19 @@ function mapFormValuesToPayload(
   };
 }
 
-export default function FixedExpenseForm({
-  template,
-  user,
-  accountOptions,
-  categoryOptions,
-  onSuccess,
-  onCancel,
-}: FixedExpenseFormProps) {
+export default function FixedExpenseForm({ template, user, accountOptions, categoryOptions, onSuccess, onCancel }: FixedExpenseFormProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const {
-    closeDialog: closeDeleteDialog,
-    open: isDeleteDialogOpen,
-    openDialog: openDeleteDialog,
-  } = useConfirmDialog();
+  const { closeDialog: closeDeleteDialog, open: isDeleteDialogOpen, openDialog: openDeleteDialog } = useConfirmDialog();
 
   const isCreating = template === null;
   const editingId = template?.id ?? null;
 
   const initialValues = useMemo(() => {
-    const defaults = createDefaultValues(
-      user.preferences.defaultAccountId ?? "",
-    );
+    const defaults = createDefaultValues(user.preferences.defaultAccountId ?? "");
     if (!template) {
       return defaults;
     }
@@ -114,8 +96,7 @@ export default function FixedExpenseForm({
 
   const formAccountId = form.watch("accountId");
   const selectedAccountCurrency = useMemo(
-    (): Currency | undefined =>
-      accountOptions.find((account) => account.id === formAccountId)?.currency,
+    (): Currency | undefined => accountOptions.find((account) => account.id === formAccountId)?.currency,
     [accountOptions, formAccountId],
   );
 
@@ -130,17 +111,10 @@ export default function FixedExpenseForm({
 
       try {
         if (editingId) {
-          await updateFixedExpenseTemplate(
-            editingId,
-            mapFormValuesToPayload(values),
-            accessToken,
-          );
+          await updateFixedExpenseTemplate(editingId, mapFormValuesToPayload(values), accessToken);
           onSuccess();
         } else {
-          await createFixedExpenseTemplate(
-            mapFormValuesToPayload(values),
-            accessToken,
-          );
+          await createFixedExpenseTemplate(mapFormValuesToPayload(values), accessToken);
           onSuccess();
         }
       } catch {
@@ -175,43 +149,19 @@ export default function FixedExpenseForm({
 
   return (
     <>
-      <form
-        className={styles.form}
-        onSubmit={form.handleSubmit(handleSubmit)}
-        noValidate
-      >
-        <Field
-          error={form.formState.errors.name?.message}
-          htmlFor="fixed-expense-name"
-          label={t("common.name")}
-        >
-          <Input
-            hasError={Boolean(form.formState.errors.name)}
-            id="fixed-expense-name"
-            {...form.register("name")}
-          />
+      <form className={styles.form} onSubmit={form.handleSubmit(handleSubmit)} noValidate>
+        <Field error={form.formState.errors.name?.message} htmlFor="fixed-expense-name" label={t("common.name")}>
+          <Input hasError={Boolean(form.formState.errors.name)} id="fixed-expense-name" {...form.register("name")} />
         </Field>
 
-        <Field
-          error={form.formState.errors.type?.message}
-          htmlFor="fixed-transaction-type"
-          label={t("common.type")}
-        >
-          <Select
-            hasError={Boolean(form.formState.errors.type)}
-            id="fixed-transaction-type"
-            {...form.register("type")}
-          >
+        <Field error={form.formState.errors.type?.message} htmlFor="fixed-transaction-type" label={t("common.type")}>
+          <Select hasError={Boolean(form.formState.errors.type)} id="fixed-transaction-type" {...form.register("type")}>
             <option value="EXPENSE">{t("transactionTypes.EXPENSE")}</option>
             <option value="INCOME">{t("transactionTypes.INCOME")}</option>
           </Select>
         </Field>
 
-        <Field
-          error={form.formState.errors.amount?.message}
-          htmlFor="fixed-expense-amount"
-          label={t("fixedTransactions.amount")}
-        >
+        <Field error={form.formState.errors.amount?.message} htmlFor="fixed-expense-amount" label={t("fixedTransactions.amount")}>
           <Controller
             control={form.control}
             name="amount"
@@ -229,11 +179,7 @@ export default function FixedExpenseForm({
           />
         </Field>
 
-        <Field
-          error={form.formState.errors.categoryId?.message}
-          htmlFor="fixed-expense-category"
-          label={t("common.category")}
-        >
+        <Field error={form.formState.errors.categoryId?.message} htmlFor="fixed-expense-category" label={t("common.category")}>
           <Controller
             control={form.control}
             name="categoryId"
@@ -250,16 +196,8 @@ export default function FixedExpenseForm({
           />
         </Field>
 
-        <Field
-          error={form.formState.errors.accountId?.message}
-          htmlFor="fixed-expense-account"
-          label={t("common.account")}
-        >
-          <Select
-            hasError={Boolean(form.formState.errors.accountId)}
-            id="fixed-expense-account"
-            {...form.register("accountId")}
-          >
+        <Field error={form.formState.errors.accountId?.message} htmlFor="fixed-expense-account" label={t("common.account")}>
+          <Select hasError={Boolean(form.formState.errors.accountId)} id="fixed-expense-account" {...form.register("accountId")}>
             <option value="">{t("common.selectAccount")}</option>
             {accountOptions.map((account) => (
               <option key={account.id} value={account.id}>
@@ -272,11 +210,7 @@ export default function FixedExpenseForm({
         <Field
           error={form.formState.errors.dueDay?.message}
           htmlFor="fixed-expense-due-day"
-          label={t(
-            selectedType === "INCOME"
-              ? "fixedTransactions.receiptDay"
-              : "accounts.dueDay",
-          )}
+          label={t(selectedType === "INCOME" ? "fixedTransactions.receiptDay" : "accounts.dueDay")}
         >
           <Input
             hasError={Boolean(form.formState.errors.dueDay)}
@@ -293,9 +227,7 @@ export default function FixedExpenseForm({
 
         <div className={styles.formActions}>
           <Button loading={isSaving} type="submit">
-            {isCreating
-              ? t("fixedTransactions.create")
-              : t("common.saveChanges")}
+            {isCreating ? t("fixedTransactions.create") : t("common.saveChanges")}
           </Button>
           {isCreating ? (
             <Button onClick={onCancel} type="button" variant="subtle">

@@ -53,14 +53,7 @@ export type StoredIconId =
   | "paw-print"
   | "wrench";
 
-export type NavigationIconId =
-  | "dashboard"
-  | "budgets"
-  | "fixed-expenses"
-  | "transactions"
-  | "family"
-  | "categories"
-  | "accounts";
+export type NavigationIconId = "dashboard" | "budgets" | "fixed-expenses" | "transactions" | "family" | "categories" | "accounts";
 
 const storedIconMap: Record<StoredIconId, LucideIcon> = {
   "shopping-cart": ShoppingCart,

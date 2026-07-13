@@ -18,12 +18,7 @@ interface FamilyMemberListProps {
   refreshKey: number;
 }
 
-export default function FamilyMemberList({
-  filters,
-  selectedId,
-  onSelect,
-  refreshKey,
-}: FamilyMemberListProps) {
+export default function FamilyMemberList({ filters, selectedId, onSelect, refreshKey }: FamilyMemberListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [members, setMembers] = useState<FamilyMember[]>([]);
@@ -34,12 +29,7 @@ export default function FamilyMemberList({
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   const loadMembers = useCallback(
-    async (
-      pageNum: number,
-      size: number,
-      query: string,
-      status: StatusFilter,
-    ) => {
+    async (pageNum: number, size: number, query: string, status: StatusFilter) => {
       if (!accessToken) {
         return;
       }
@@ -47,10 +37,7 @@ export default function FamilyMemberList({
       setIsLoading(true);
 
       try {
-        const response = await listFamilyMemberPage(
-          { page: pageNum, size, search: query, status },
-          accessToken,
-        );
+        const response = await listFamilyMemberPage({ page: pageNum, size, search: query, status }, accessToken);
         setMembers(response.items);
         setPage(response.page);
         setPageSize(response.size);

@@ -36,10 +36,7 @@ export type CategoryListParams = {
   status?: "ALL" | "ACTIVE" | "ARCHIVED";
 };
 
-export function listCategories(
-  { page, size, search, status = "ACTIVE" }: CategoryListParams,
-  accessToken: string,
-) {
+export function listCategories({ page, size, search, status = "ACTIVE" }: CategoryListParams, accessToken: string) {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
@@ -50,13 +47,10 @@ export function listCategories(
     query.set("search", search.trim());
   }
 
-  return apiRequest<PageResponse<Category>>(
-    `/api/categories?${query.toString()}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+  return apiRequest<PageResponse<Category>>(`/api/categories?${query.toString()}`, {
+    method: "GET",
+    accessToken,
+  });
 }
 
 export function createCategory(payload: CategoryPayload, accessToken: string) {
@@ -67,11 +61,7 @@ export function createCategory(payload: CategoryPayload, accessToken: string) {
   });
 }
 
-export function updateCategory(
-  id: string,
-  payload: CategoryPayload,
-  accessToken: string,
-) {
+export function updateCategory(id: string, payload: CategoryPayload, accessToken: string) {
   return apiRequest<Category>(`/api/categories/${id}`, {
     method: "PUT",
     accessToken,
@@ -79,11 +69,7 @@ export function updateCategory(
   });
 }
 
-export function archiveCategory(
-  id: string,
-  payload: ArchiveCategoryPayload,
-  accessToken: string,
-) {
+export function archiveCategory(id: string, payload: ArchiveCategoryPayload, accessToken: string) {
   return apiRequest<Category>(`/api/categories/${id}/archive`, {
     method: "PATCH",
     accessToken,
@@ -91,15 +77,9 @@ export function archiveCategory(
   });
 }
 
-export function listCategoryOptions(
-  referenceMonth: string,
-  accessToken: string,
-) {
-  return apiRequest<CategoryOption[]>(
-    `/api/categories/options?referenceMonth=${referenceMonth}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+export function listCategoryOptions(referenceMonth: string, accessToken: string) {
+  return apiRequest<CategoryOption[]>(`/api/categories/options?referenceMonth=${referenceMonth}`, {
+    method: "GET",
+    accessToken,
+  });
 }

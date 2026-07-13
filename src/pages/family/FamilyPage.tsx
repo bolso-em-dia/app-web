@@ -23,13 +23,10 @@ const DEFAULT_FILTERS: FamilyFilters = {
 
 export default function FamilyPage() {
   const { t } = useI18n();
-  const { filters, patchFilters, clearFilter } =
-    useFiltersState(DEFAULT_FILTERS);
+  const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
-    null,
-  );
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const isCreating = isDrawerOpen && !selectedMember;
@@ -123,37 +120,21 @@ export default function FamilyPage() {
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {
-              clearFilter(
-                name as keyof FamilyFilters,
-                defaultValue as FamilyFilters[keyof FamilyFilters],
-              );
+              clearFilter(name as keyof FamilyFilters, defaultValue as FamilyFilters[keyof FamilyFilters]);
             }}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
           />
         </Card>
 
-        <FamilyMemberList
-          filters={filters}
-          selectedId={selectedMember?.id ?? null}
-          onSelect={handleSelect}
-          refreshKey={refreshKey}
-        />
+        <FamilyMemberList filters={filters} selectedId={selectedMember?.id ?? null} onSelect={handleSelect} refreshKey={refreshKey} />
 
         {isDrawerOpen ? (
           <Drawer
-            description={
-              isCreating
-                ? t("family.newDescription")
-                : t("family.editDescription")
-            }
+            description={isCreating ? t("family.newDescription") : t("family.editDescription")}
             onClose={handleCloseDrawer}
             title={isCreating ? t("family.newTitle") : t("family.detailsTitle")}
           >
-            <FamilyMemberForm
-              member={selectedMember}
-              onSuccess={handleSuccess}
-              onCancel={handleCloseDrawer}
-            />
+            <FamilyMemberForm member={selectedMember} onSuccess={handleSuccess} onCancel={handleCloseDrawer} />
           </Drawer>
         ) : null}
       </section>

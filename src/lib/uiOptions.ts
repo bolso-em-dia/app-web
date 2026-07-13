@@ -79,7 +79,5 @@ export function buildIconOptions(t: Translate): IconOption[] {
 }
 
 export function getColorLabel(value: string | null | undefined, t: Translate) {
-  return (
-    buildColorOptions(t).find((option) => option.value === value)?.label ?? null
-  );
+  return buildColorOptions(t).find((option) => option.value === value)?.label ?? null;
 }

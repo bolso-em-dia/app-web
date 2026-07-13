@@ -1,23 +1,9 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import {
-  getCurrentReferenceMonth,
-  shiftReferenceMonth,
-} from "../../lib/formatters/date";
-import {
-  resetFetchMocks,
-  mockJsonResponse,
-  mockErrorResponse,
-  mockFetchUrl,
-} from "../../test/setup";
+import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import BudgetsPage from "./BudgetsPage";
 
 const defaultBudgetsResponse = {
@@ -86,16 +72,10 @@ const defaultMembersResponse = {
 
 function setupDefaultMocks() {
   mockFetchUrl("/api/budgets?", mockJsonResponse(defaultBudgetsResponse));
-  mockFetchUrl(
-    "/api/categories/options",
-    mockJsonResponse(defaultCategoriesResponse),
-  );
+  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
   mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
   // Mock detail view calls
-  mockFetchUrl(
-    "/api/budgets/env-1?",
-    mockJsonResponse(defaultBudgetsResponse.items[0]),
-  );
+  mockFetchUrl("/api/budgets/env-1?", mockJsonResponse(defaultBudgetsResponse.items[0]));
 }
 
 describe("BudgetsPage", () => {
@@ -110,10 +90,7 @@ describe("BudgetsPage", () => {
 
   it("loads budgets and validates budget-specific fields", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/budgets"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -144,23 +121,16 @@ describe("BudgetsPage", () => {
       target: { value: "ALLOWANCE" },
     });
 
-    fireEvent.click(
-      within(drawer).getByRole("button", { name: "Criar orçamento" }),
-    );
+    fireEvent.click(within(drawer).getByRole("button", { name: "Criar orçamento" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("O membro dono é obrigatório para budgets de mesada."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("O membro dono é obrigatório para budgets de mesada.")).toBeInTheDocument();
     });
   });
 
   it("shows monthly limit as the main value and consumed as secondary in budget cards", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/budgets"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -180,9 +150,7 @@ describe("BudgetsPage", () => {
 
     expect(budgetCard).not.toBeNull();
     expect(within(budgetCard!).getByText("R$ 1.200,00")).toBeInTheDocument();
-    expect(
-      within(budgetCard!).getByText((content) => content.includes("R$ 320,00")),
-    ).toBeInTheDocument();
+    expect(within(budgetCard!).getByText((content) => content.includes("R$ 320,00"))).toBeInTheDocument();
   });
 
   it("sends only the compatible payload for an allowance budget", async () => {
@@ -210,10 +178,7 @@ describe("BudgetsPage", () => {
         },
       ]),
     );
-    mockFetchUrl(
-      "/api/family-members",
-      mockJsonResponse(defaultMembersResponse),
-    );
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
 
     // Setup POST mock
     mockFetchUrl("/api/budgets", (input, init) => {
@@ -239,10 +204,7 @@ describe("BudgetsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/budgets"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -257,9 +219,7 @@ describe("BudgetsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByRole("button", { name: "Novo orçamento" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Novo orçamento" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Novo orçamento" }));
     const drawer = screen.getByRole("dialog");
@@ -277,31 +237,18 @@ describe("BudgetsPage", () => {
       target: { value: "member-1" },
     });
 
-    fireEvent.click(
-      within(drawer).getByRole("button", { name: "Criar orçamento" }),
-    );
+    fireEvent.click(within(drawer).getByRole("button", { name: "Criar orçamento" }));
 
     await waitFor(() => {
-      expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(
-            ([input, init]) =>
-              String(input).endsWith("/api/budgets") && init?.method === "POST",
-          ),
-      ).toBe(true);
+      expect(vi.mocked(fetch).mock.calls.some(([input, init]) => String(input).endsWith("/api/budgets") && init?.method === "POST")).toBe(
+        true,
+      );
     });
 
     const createCall = vi
       .mocked(fetch)
-      .mock.calls.find(
-        ([input, init]) =>
-          String(input).endsWith("/api/budgets") && init?.method === "POST",
-      );
-    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<
-      string,
-      unknown
-    >;
+      .mock.calls.find(([input, init]) => String(input).endsWith("/api/budgets") && init?.method === "POST");
+    const payload = JSON.parse(String(createCall?.[1]?.body ?? "{}")) as Record<string, unknown>;
 
     expect(payload).toMatchObject({
       name: "Allowance budget",
@@ -338,10 +285,7 @@ describe("BudgetsPage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/budgets"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -356,9 +300,7 @@ describe("BudgetsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(
-      await screen.findByRole("button", { name: /Filtros/ }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Filtros/ })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Buscar"), {
       target: { value: "  travel  " },
     });
@@ -376,28 +318,17 @@ describe("BudgetsPage", () => {
         .mock.calls.map(([input]) => String(input))
         .filter((url) => url.includes("/api/budgets?"));
       expect(
-        requests.some(
-          (url) =>
-            url.includes("search=travel") &&
-            url.includes("status=ARCHIVED") &&
-            url.includes("type=ALLOWANCE"),
-        ),
+        requests.some((url) => url.includes("search=travel") && url.includes("status=ARCHIVED") && url.includes("type=ALLOWANCE")),
       ).toBe(true);
     });
   });
 
   it("lets the user move to previous and next months and highlights non-current months", async () => {
     const currentReferenceMonth = getCurrentReferenceMonth();
-    const previousReferenceMonth = shiftReferenceMonth(
-      currentReferenceMonth,
-      -1,
-    );
+    const previousReferenceMonth = shiftReferenceMonth(currentReferenceMonth, -1);
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/budgets"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -443,13 +374,7 @@ describe("BudgetsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
     await waitFor(() => {
-      expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(([input]) =>
-            String(input).includes(`referenceMonth=${previousReferenceMonth}`),
-          ),
-      ).toBe(true);
+      expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${previousReferenceMonth}`))).toBe(true);
     });
 
     // Setup mocks for next month (back to current)
@@ -491,22 +416,13 @@ describe("BudgetsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
 
     await waitFor(() => {
-      expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(([input]) =>
-            String(input).includes(`referenceMonth=${currentReferenceMonth}`),
-          ),
-      ).toBe(true);
+      expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${currentReferenceMonth}`))).toBe(true);
     });
   });
 
   it("archive opens confirmation and cancels without calling API", async () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/budgets"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -529,9 +445,7 @@ describe("BudgetsPage", () => {
     const confirmDialog = screen.getByRole("alertdialog");
     expect(confirmDialog).toBeInTheDocument();
 
-    fireEvent.click(
-      within(confirmDialog).getByRole("button", { name: "Cancelar" }),
-    );
+    fireEvent.click(within(confirmDialog).getByRole("button", { name: "Cancelar" }));
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   });
 
@@ -613,10 +527,7 @@ describe("BudgetsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/budgets"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -707,10 +618,7 @@ describe("BudgetsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/budgets"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -734,9 +642,7 @@ describe("BudgetsPage", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Arquivar" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Não foi possível arquivar o orçamento."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Não foi possível arquivar o orçamento.")).toBeInTheDocument();
     });
   });
 
@@ -751,10 +657,7 @@ describe("BudgetsPage", () => {
     mockFetchUrl("/api/budgets?", () => promise);
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/budgets"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -785,9 +688,7 @@ describe("BudgetsPage", () => {
     } as Response);
 
     await waitFor(() => {
-      expect(
-        screen.queryByText("Carregando orçamentos"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Carregando orçamentos")).not.toBeInTheDocument();
     });
   });
 });

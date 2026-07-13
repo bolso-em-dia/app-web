@@ -1,19 +1,8 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import {
-  resetFetchMocks,
-  mockJsonResponse,
-  mockErrorResponse,
-  mockFetchUrl,
-} from "../../test/setup";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import CategoriesPage from "./CategoriesPage";
 
 const defaultCategoryResponse = {
@@ -46,10 +35,7 @@ const defaultCategoriesOptions = [
 ];
 
 function setupDefaultMocks() {
-  mockFetchUrl(
-    "/api/categories/options",
-    mockJsonResponse(defaultCategoriesOptions),
-  );
+  mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesOptions));
   mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
 }
 
@@ -66,10 +52,7 @@ describe("CategoriesPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/categories"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -105,10 +88,7 @@ describe("CategoriesPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/categories"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -172,10 +152,7 @@ describe("CategoriesPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/categories"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -208,9 +185,7 @@ describe("CategoriesPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Criar categoria" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveValue(
-        "Gro",
-      );
+      expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveValue("Gro");
     });
 
     if (!screen.queryByLabelText("Status")) {
@@ -222,16 +197,10 @@ describe("CategoriesPage", () => {
     const categoryRequests = vi
       .mocked(fetch)
       .mock.calls.map(([input]) => String(input))
-      .filter(
-        (url) => url.includes("/api/categories?") && !url.includes("options"),
-      );
+      .filter((url) => url.includes("/api/categories?") && !url.includes("options"));
 
-    expect(categoryRequests.some((url) => url.includes("search=Gro"))).toBe(
-      true,
-    );
-    expect(categoryRequests.some((url) => url.includes("status=ACTIVE"))).toBe(
-      true,
-    );
+    expect(categoryRequests.some((url) => url.includes("search=Gro"))).toBe(true);
+    expect(categoryRequests.some((url) => url.includes("status=ACTIVE"))).toBe(true);
   });
 
   it("opens archive confirmation dialog and cancels without calling the API", async () => {
@@ -257,10 +226,7 @@ describe("CategoriesPage", () => {
     mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/categories"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -303,10 +269,7 @@ describe("CategoriesPage", () => {
 
     const archiveCalls = vi
       .mocked(fetch)
-      .mock.calls.filter(
-        ([input, init]) =>
-          String(input).includes("/archive") && init?.method === "PATCH",
-      );
+      .mock.calls.filter(([input, init]) => String(input).includes("/archive") && init?.method === "PATCH");
     expect(archiveCalls).toHaveLength(0);
   });
 
@@ -353,10 +316,7 @@ describe("CategoriesPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/categories"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -397,9 +357,7 @@ describe("CategoriesPage", () => {
       const patchCall = vi
         .mocked(fetch)
         .mock.calls.find(
-          ([callInput, callInit]) =>
-            String(callInput).includes("/api/categories/cat-1/archive") &&
-            callInit?.method === "PATCH",
+          ([callInput, callInit]) => String(callInput).includes("/api/categories/cat-1/archive") && callInit?.method === "PATCH",
         );
       expect(patchCall).toBeDefined();
       const body = JSON.parse((patchCall![1] as RequestInit).body as string);
@@ -438,10 +396,7 @@ describe("CategoriesPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/categories"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -479,9 +434,7 @@ describe("CategoriesPage", () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Não foi possível arquivar a categoria."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Não foi possível arquivar a categoria.")).toBeInTheDocument();
     });
   });
 });

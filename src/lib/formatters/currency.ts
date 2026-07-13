@@ -29,10 +29,7 @@ export function parseCurrencyInput(value: string) {
   return Number(digits) / 100;
 }
 
-export function formatCurrencyInput(
-  value: number | null | undefined,
-  currency?: Currency,
-) {
+export function formatCurrencyInput(value: number | null | undefined, currency?: Currency) {
   if (typeof value !== "number" || Number.isNaN(value)) {
     return formatCurrency(0, currency);
   }

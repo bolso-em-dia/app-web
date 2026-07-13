@@ -17,11 +17,7 @@ export default function BudgetCard({ budget, onSelect }: BudgetCardProps) {
 
   return (
     <Card key={budget.id} className={styles.budgetCard}>
-      <button
-        className={styles.budgetButton}
-        onClick={() => onSelect(budget.id)}
-        type="button"
-      >
+      <button className={styles.budgetButton} onClick={() => onSelect(budget.id)} type="button">
         <div className={styles.budgetHeader}>
           <div>
             <strong>{budget.name}</strong>
@@ -38,23 +34,14 @@ export default function BudgetCard({ budget, onSelect }: BudgetCardProps) {
           <div className={styles.budgetAmounts}>
             <strong>{formatCurrency(budget.monthlyLimit)}</strong>
             <p className={styles.budgetMeta}>
-              {t("budgets.consumed")}{" "}
-              <MoneyAmount amount={budget.consumedAmount} type="EXPENSE" />
+              {t("budgets.consumed")} <MoneyAmount amount={budget.consumedAmount} type="EXPENSE" />
             </p>
           </div>
         </div>
 
         <div className={styles.badgeRow}>
-          <span className={styles.badge}>
-            {t(`budgetTypes.${budget.type}` as const)}
-          </span>
-          <span
-            className={
-              budget.archivedFromMonth
-                ? `${styles.badge} ${styles.badgeMuted}`
-                : `${styles.badge} ${styles.badgeSuccess}`
-            }
-          >
+          <span className={styles.badge}>{t(`budgetTypes.${budget.type}` as const)}</span>
+          <span className={budget.archivedFromMonth ? `${styles.badge} ${styles.badgeMuted}` : `${styles.badge} ${styles.badgeSuccess}`}>
             {budget.archivedFromMonth
               ? t("budgets.archivedFrom", {
                   month: formatReferenceMonth(budget.archivedFromMonth),

@@ -1,19 +1,8 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import {
-  resetFetchMocks,
-  mockJsonResponse,
-  mockErrorResponse,
-  mockFetchUrl,
-} from "../../test/setup";
+import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import { createAccount, createUser } from "../../test/fixtures";
 import AccountsPage from "./AccountsPage";
 
@@ -42,10 +31,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -71,24 +57,12 @@ describe("AccountsPage", () => {
       target: { value: "CREDIT_CARD" },
     });
 
-    fireEvent.click(
-      within(drawer).getByRole("button", { name: "Criar conta" }),
-    );
+    fireEvent.click(within(drawer).getByRole("button", { name: "Criar conta" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("A bandeira é obrigatória para cartões de crédito."),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          "O dia de fechamento é obrigatório para cartões de crédito.",
-        ),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          "O dia de vencimento é obrigatório para cartões de crédito.",
-        ),
-      ).toBeInTheDocument();
+      expect(screen.getByText("A bandeira é obrigatória para cartões de crédito.")).toBeInTheDocument();
+      expect(screen.getByText("O dia de fechamento é obrigatório para cartões de crédito.")).toBeInTheDocument();
+      expect(screen.getByText("O dia de vencimento é obrigatório para cartões de crédito.")).toBeInTheDocument();
     });
   });
 
@@ -96,10 +70,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -142,10 +113,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -183,11 +151,7 @@ describe("AccountsPage", () => {
 
     const archiveCalls = vi
       .mocked(fetch)
-      .mock.calls.filter(
-        ([input]) =>
-          String(input).includes("/api/accounts/") &&
-          String(input).includes("/archive"),
-      );
+      .mock.calls.filter(([input]) => String(input).includes("/api/accounts/") && String(input).includes("/archive"));
     expect(archiveCalls).toHaveLength(0);
   });
 
@@ -260,10 +224,7 @@ describe("AccountsPage", () => {
     );
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -299,17 +260,11 @@ describe("AccountsPage", () => {
 
     const patchCalls = vi
       .mocked(fetch)
-      .mock.calls.filter(
-        ([input, init]) =>
-          String(input).includes("/api/accounts/account-1/archive") &&
-          init?.method === "PATCH",
-      );
+      .mock.calls.filter(([input, init]) => String(input).includes("/api/accounts/account-1/archive") && init?.method === "PATCH");
     expect(patchCalls).toHaveLength(1);
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Conta arquivada" }),
-      ).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Conta arquivada" })).toBeDisabled();
     });
   });
 
@@ -340,10 +295,7 @@ describe("AccountsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -364,45 +316,30 @@ describe("AccountsPage", () => {
       target: { value: "Main" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Filtros (1)" }));
-    fireEvent.change(
-      screen.getByLabelText("Tipo", { selector: "#account-type-filter" }),
-      {
-        target: { value: "CHECKING" },
-      },
-    );
+    fireEvent.change(screen.getByLabelText("Tipo", { selector: "#account-type-filter" }), {
+      target: { value: "CHECKING" },
+    });
 
     fireEvent.click(screen.getByRole("button", { name: /Main checking/ }));
     fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveValue(
-        "Main",
-      );
+      expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveValue("Main");
     });
 
-    if (
-      !screen.queryByLabelText("Tipo", { selector: "#account-type-filter" })
-    ) {
+    if (!screen.queryByLabelText("Tipo", { selector: "#account-type-filter" })) {
       fireEvent.click(screen.getByRole("button", { name: "Filtros (2)" }));
     }
 
-    expect(
-      screen.getByLabelText("Tipo", { selector: "#account-type-filter" }),
-    ).toHaveValue("CHECKING");
+    expect(screen.getByLabelText("Tipo", { selector: "#account-type-filter" })).toHaveValue("CHECKING");
 
     const accountRequests = vi
       .mocked(fetch)
       .mock.calls.map(([input]) => String(input))
-      .filter(
-        (url) => url.includes("/api/accounts?") && !url.includes("options"),
-      );
+      .filter((url) => url.includes("/api/accounts?") && !url.includes("options"));
 
-    expect(accountRequests.some((url) => url.includes("search=Main"))).toBe(
-      true,
-    );
-    expect(accountRequests.some((url) => url.includes("type=CHECKING"))).toBe(
-      true,
-    );
+    expect(accountRequests.some((url) => url.includes("search=Main"))).toBe(true);
+    expect(accountRequests.some((url) => url.includes("type=CHECKING"))).toBe(true);
   });
 
   it("shows error feedback when archive fails", async () => {
@@ -418,10 +355,7 @@ describe("AccountsPage", () => {
     });
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -452,9 +386,7 @@ describe("AccountsPage", () => {
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Não foi possível arquivar a conta."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Não foi possível arquivar a conta.")).toBeInTheDocument();
     });
   });
 
@@ -462,10 +394,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -497,10 +426,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -532,10 +458,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -570,10 +493,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        initialEntries={["/accounts"]}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={createUser({
             id: "1",

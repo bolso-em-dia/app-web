@@ -4,15 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import ConfirmAction from "./ConfirmAction";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 
-function renderConfirmAction(
-  props: Partial<React.ComponentProps<typeof ConfirmAction>> = {},
-) {
+function renderConfirmAction(props: Partial<React.ComponentProps<typeof ConfirmAction>> = {}) {
   const onConfirm = vi.fn();
   const onCancel = vi.fn();
   const utils = render(
-    <MemoryRouter
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <TestAuthProvider
         user={{
           id: "1",
@@ -40,9 +36,7 @@ function renderConfirmAction(
 describe("ConfirmAction", () => {
   it("renders nothing when closed", () => {
     render(
-      <MemoryRouter
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -52,14 +46,7 @@ describe("ConfirmAction", () => {
             allowanceEnabled: false,
           }}
         >
-          <ConfirmAction
-            open={false}
-            title="Hidden"
-            message="Hidden"
-            confirmLabel="OK"
-            onConfirm={vi.fn()}
-            onCancel={vi.fn()}
-          />
+          <ConfirmAction open={false} title="Hidden" message="Hidden" confirmLabel="OK" onConfirm={vi.fn()} onCancel={vi.fn()} />
         </TestAuthProvider>
       </MemoryRouter>,
     );
@@ -87,11 +74,7 @@ describe("ConfirmAction", () => {
     const { onCancel } = renderConfirmAction();
 
     const dialog = screen.getByRole("alertdialog");
-    fireEvent.click(
-      dialog.querySelector(
-        'button[type="button"]:not([aria-label])',
-      ) as HTMLElement,
-    );
+    fireEvent.click(dialog.querySelector('button[type="button"]:not([aria-label])') as HTMLElement);
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
@@ -107,9 +90,7 @@ describe("ConfirmAction", () => {
 
     const dialog = screen.getByRole("alertdialog");
     const buttons = dialog.querySelectorAll("button");
-    const confirmBtn = Array.from(buttons).find(
-      (b) => b.textContent === "Carregando...",
-    );
+    const confirmBtn = Array.from(buttons).find((b) => b.textContent === "Carregando...");
     expect(confirmBtn).toBeTruthy();
     expect(confirmBtn).toBeDisabled();
   });
@@ -118,9 +99,7 @@ describe("ConfirmAction", () => {
     renderConfirmAction({ loading: true });
 
     const dialog = screen.getByRole("alertdialog");
-    const cancelBtn = Array.from(dialog.querySelectorAll("button")).find(
-      (b) => b.textContent === "Cancelar",
-    );
+    const cancelBtn = Array.from(dialog.querySelectorAll("button")).find((b) => b.textContent === "Cancelar");
     expect(cancelBtn).toBeTruthy();
     expect(cancelBtn).toBeDisabled();
   });

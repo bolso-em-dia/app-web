@@ -15,10 +15,7 @@ import {
   type TransactionPayload,
 } from "../../app/api/transactions";
 import type { AuthUser } from "../../app/api/auth";
-import {
-  createTransactionSchema,
-  type TransactionFormValues,
-} from "../../lib/validation/transactionSchema";
+import { createTransactionSchema, type TransactionFormValues } from "../../lib/validation/transactionSchema";
 import { useAuth } from "../../app/auth/useAuth";
 import type { Currency } from "../../lib/formatters/currency";
 import Button from "../../components/ui/Button";
@@ -43,10 +40,7 @@ interface TransactionFormProps {
   onCancel: () => void;
 }
 
-function createDefaultValues(
-  referenceMonth: string,
-  user: AuthUser,
-): TransactionFormValues {
+function createDefaultValues(referenceMonth: string, user: AuthUser): TransactionFormValues {
   return {
     type: "EXPENSE",
     ownershipType: "SHARED",
@@ -61,9 +55,7 @@ function createDefaultValues(
   };
 }
 
-function mapFormValuesToCreatePayload(
-  values: TransactionFormValues,
-): TransactionPayload {
+function mapFormValuesToCreatePayload(values: TransactionFormValues): TransactionPayload {
   return {
     type: values.type,
     ownershipType: values.ownershipType,
@@ -72,18 +64,12 @@ function mapFormValuesToCreatePayload(
     transactionDate: values.transactionDate,
     accountId: values.accountId,
     categoryId: values.categoryId,
-    memberId:
-      values.ownershipType === "INDIVIDUAL" ? values.memberId : undefined,
-    installmentCount:
-      values.type === "EXPENSE" && values.isInstallment
-        ? values.installmentCount
-        : undefined,
+    memberId: values.ownershipType === "INDIVIDUAL" ? values.memberId : undefined,
+    installmentCount: values.type === "EXPENSE" && values.isInstallment ? values.installmentCount : undefined,
   };
 }
 
-function mapFormValuesToUpdatePayload(
-  values: TransactionFormValues,
-): Omit<TransactionPayload, "installmentCount"> {
+function mapFormValuesToUpdatePayload(values: TransactionFormValues): Omit<TransactionPayload, "installmentCount"> {
   return {
     type: values.type,
     ownershipType: values.ownershipType,
@@ -92,8 +78,7 @@ function mapFormValuesToUpdatePayload(
     transactionDate: values.transactionDate,
     accountId: values.accountId,
     categoryId: values.categoryId,
-    memberId:
-      values.ownershipType === "INDIVIDUAL" ? values.memberId : undefined,
+    memberId: values.ownershipType === "INDIVIDUAL" ? values.memberId : undefined,
   };
 }
 
@@ -114,9 +99,7 @@ export default function TransactionForm({
   const [error, setError] = useState<string | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [deleteScope, setDeleteScope] = useState<DeleteScope>("SINGLE");
-  const [descriptionSuggestions, setDescriptionSuggestions] = useState<
-    string[]
-  >([]);
+  const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
 
   const isCreating = transaction === null;
   const transactionId = transaction?.id ?? null;
@@ -159,15 +142,11 @@ export default function TransactionForm({
   const formAccountId = form.watch("accountId");
 
   const selectedAccountCurrency = useMemo(
-    (): Currency | undefined =>
-      accounts.find((account) => account.id === formAccountId)?.currency,
+    (): Currency | undefined => accounts.find((account) => account.id === formAccountId)?.currency,
     [accounts, formAccountId],
   );
 
-  const allowanceMembers = useMemo(
-    () => members.filter((m) => m.active && m.allowanceEnabled),
-    [members],
-  );
+  const allowanceMembers = useMemo(() => members.filter((m) => m.active && m.allowanceEnabled), [members]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -184,10 +163,7 @@ export default function TransactionForm({
 
     const loadSuggestions = async () => {
       try {
-        const suggestions = await listTransactionDescriptionSuggestions(
-          normalizedQuery,
-          accessToken,
-        );
+        const suggestions = await listTransactionDescriptionSuggestions(normalizedQuery, accessToken);
         if (!isActive) {
           return;
         }
@@ -218,36 +194,25 @@ export default function TransactionForm({
       categoryId: values.categoryId,
       memberId: values.ownershipType === "INDIVIDUAL" ? values.memberId : "",
       isInstallment: values.type === "EXPENSE" ? values.isInstallment : false,
-      installmentCount: values.isInstallment
-        ? (values.installmentCount ?? 2)
-        : 2,
+      installmentCount: values.isInstallment ? (values.installmentCount ?? 2) : 2,
     });
   }
 
-  async function onSubmit(
-    values: TransactionFormValues,
-    event?: BaseSyntheticEvent,
-  ) {
+  async function onSubmit(values: TransactionFormValues, event?: BaseSyntheticEvent) {
     if (!accessToken) {
       return;
     }
 
     const nativeEvent = event?.nativeEvent as SubmitEvent | undefined;
     const submitter = nativeEvent?.submitter as HTMLButtonElement | undefined;
-    const intent =
-      submitter?.value === "save-and-create-new"
-        ? "save-and-create-new"
-        : "save";
+    const intent = submitter?.value === "save-and-create-new" ? "save-and-create-new" : "save";
 
     setIsSaving(true);
     setError(null);
 
     try {
       if (isCreating) {
-        await createTransaction(
-          mapFormValuesToCreatePayload(values),
-          accessToken,
-        );
+        await createTransaction(mapFormValuesToCreatePayload(values), accessToken);
 
         if (intent === "save-and-create-new") {
           resetForNextCreate(values);
@@ -256,11 +221,7 @@ export default function TransactionForm({
           onSuccess();
         }
       } else if (transactionId) {
-        await updateTransaction(
-          transactionId,
-          mapFormValuesToUpdatePayload(values),
-          accessToken,
-        );
+        await updateTransaction(transactionId, mapFormValuesToUpdatePayload(values), accessToken);
         onSuccess();
       }
     } catch {
@@ -307,16 +268,8 @@ export default function TransactionForm({
 
   return (
     <>
-      <form
-        className={styles.form}
-        onSubmit={form.handleSubmit(onSubmit)}
-        noValidate
-      >
-        <Field
-          error={form.formState.errors.description?.message}
-          htmlFor="transaction-description"
-          label={t("transactions.description")}
-        >
+      <form className={styles.form} onSubmit={form.handleSubmit(onSubmit)} noValidate>
+        <Field error={form.formState.errors.description?.message} htmlFor="transaction-description" label={t("transactions.description")}>
           <Input
             id="transaction-description"
             autoComplete="off"
@@ -324,10 +277,7 @@ export default function TransactionForm({
             list="transaction-description-suggestions"
             {...form.register("description")}
           />
-          <datalist
-            data-testid="transaction-description-suggestions"
-            id="transaction-description-suggestions"
-          >
+          <datalist data-testid="transaction-description-suggestions" id="transaction-description-suggestions">
             {descriptionSuggestions.map((suggestion) => (
               <option key={suggestion} value={suggestion}>
                 {suggestion}
@@ -336,11 +286,7 @@ export default function TransactionForm({
           </datalist>
         </Field>
 
-        <Field
-          error={form.formState.errors.amount?.message}
-          htmlFor="transaction-amount"
-          label={t("transactions.amount")}
-        >
+        <Field error={form.formState.errors.amount?.message} htmlFor="transaction-amount" label={t("transactions.amount")}>
           <Controller
             control={form.control}
             name="amount"
@@ -358,11 +304,7 @@ export default function TransactionForm({
           />
         </Field>
 
-        <Field
-          error={form.formState.errors.transactionDate?.message}
-          htmlFor="transaction-date"
-          label={t("transactions.transactionDate")}
-        >
+        <Field error={form.formState.errors.transactionDate?.message} htmlFor="transaction-date" label={t("transactions.transactionDate")}>
           <Input
             id="transaction-date"
             hasError={Boolean(form.formState.errors.transactionDate)}
@@ -371,26 +313,15 @@ export default function TransactionForm({
           />
         </Field>
 
-        <Field
-          error={form.formState.errors.type?.message}
-          htmlFor="transaction-type-expense"
-          label={t("common.type")}
-        >
+        <Field error={form.formState.errors.type?.message} htmlFor="transaction-type-expense" label={t("common.type")}>
           <Controller
             control={form.control}
             name="type"
             render={({ field }) => (
-              <div
-                aria-label={t("common.type")}
-                className={styles.segmentedControl}
-                role="radiogroup"
-              >
+              <div aria-label={t("common.type")} className={styles.segmentedControl} role="radiogroup">
                 {(["EXPENSE", "INCOME"] as const).map((typeOption) => {
                   const isActive = field.value === typeOption;
-                  const toneClass =
-                    typeOption === "INCOME"
-                      ? styles.segmentButtonIncome
-                      : styles.segmentButtonExpense;
+                  const toneClass = typeOption === "INCOME" ? styles.segmentButtonIncome : styles.segmentButtonExpense;
                   const activeClass = isActive
                     ? typeOption === "INCOME"
                       ? styles.segmentButtonIncomeActive
@@ -419,10 +350,7 @@ export default function TransactionForm({
 
         <div className={styles.switchGrid}>
           {user?.allowanceEnabled ? (
-            <Field
-              htmlFor="transaction-ownership-switch"
-              label={t("common.ownership")}
-            >
+            <Field htmlFor="transaction-ownership-switch" label={t("common.ownership")}>
               <Controller
                 control={form.control}
                 name="ownershipType"
@@ -432,11 +360,7 @@ export default function TransactionForm({
                     id="transaction-ownership-switch"
                     label={t("ownershipTypes.INDIVIDUAL")}
                     onBlur={field.onBlur}
-                    onChange={(event) =>
-                      field.onChange(
-                        event.target.checked ? "INDIVIDUAL" : "SHARED",
-                      )
-                    }
+                    onChange={(event) => field.onChange(event.target.checked ? "INDIVIDUAL" : "SHARED")}
                     ref={field.ref}
                   />
                 )}
@@ -445,10 +369,7 @@ export default function TransactionForm({
           ) : null}
 
           {isCreating && transactionType === "EXPENSE" ? (
-            <Field
-              htmlFor="transaction-installment-switch"
-              label={t("transactions.installmentToggle")}
-            >
+            <Field htmlFor="transaction-installment-switch" label={t("transactions.installmentToggle")}>
               <Controller
                 control={form.control}
                 name="isInstallment"
@@ -467,16 +388,8 @@ export default function TransactionForm({
           ) : null}
         </div>
 
-        <Field
-          error={form.formState.errors.accountId?.message}
-          htmlFor="transaction-account"
-          label={t("common.account")}
-        >
-          <Select
-            id="transaction-account"
-            hasError={Boolean(form.formState.errors.accountId)}
-            {...form.register("accountId")}
-          >
+        <Field error={form.formState.errors.accountId?.message} htmlFor="transaction-account" label={t("common.account")}>
+          <Select id="transaction-account" hasError={Boolean(form.formState.errors.accountId)} {...form.register("accountId")}>
             <option value="">{t("common.selectAccount")}</option>
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>
@@ -486,11 +399,7 @@ export default function TransactionForm({
           </Select>
         </Field>
 
-        <Field
-          error={form.formState.errors.categoryId?.message}
-          htmlFor="transaction-category"
-          label={t("common.category")}
-        >
+        <Field error={form.formState.errors.categoryId?.message} htmlFor="transaction-category" label={t("common.category")}>
           <Controller
             control={form.control}
             name="categoryId"
@@ -508,16 +417,8 @@ export default function TransactionForm({
         </Field>
 
         {ownershipType === "INDIVIDUAL" ? (
-          <Field
-            error={form.formState.errors.memberId?.message}
-            htmlFor="transaction-member"
-            label={t("common.member")}
-          >
-            <Select
-              id="transaction-member"
-              hasError={Boolean(form.formState.errors.memberId)}
-              {...form.register("memberId")}
-            >
+          <Field error={form.formState.errors.memberId?.message} htmlFor="transaction-member" label={t("common.member")}>
+            <Select id="transaction-member" hasError={Boolean(form.formState.errors.memberId)} {...form.register("memberId")}>
               <option value="">{t("common.selectMember")}</option>
               {allowanceMembers.map((member) => (
                 <option key={member.id} value={member.id}>
@@ -551,19 +452,10 @@ export default function TransactionForm({
         <div className={styles.formActions}>
           {isCreating ? (
             <>
-              <Button
-                loading={isSaving}
-                type="submit"
-                value="save-and-create-new"
-              >
+              <Button loading={isSaving} type="submit" value="save-and-create-new">
                 {t("transactions.saveAndCreateNew")}
               </Button>
-              <Button
-                loading={isSaving}
-                type="submit"
-                value="save"
-                variant="secondary"
-              >
+              <Button loading={isSaving} type="submit" value="save" variant="secondary">
                 {t("transactions.save")}
               </Button>
               <Button onClick={onCancel} type="button" variant="subtle">
@@ -575,12 +467,7 @@ export default function TransactionForm({
               <Button loading={isSaving} type="submit">
                 {t("common.save")}
               </Button>
-              <Button
-                disabled={isDeleting}
-                onClick={handleOpenDeleteConfirm}
-                type="button"
-                variant="danger"
-              >
+              <Button disabled={isDeleting} onClick={handleOpenDeleteConfirm} type="button" variant="danger">
                 {t("common.delete")}
               </Button>
             </>
@@ -591,34 +478,21 @@ export default function TransactionForm({
       <ConfirmAction
         confirmLabel={t("common.delete")}
         loading={isDeleting}
-        message={
-          supportsGroupedDelete
-            ? t("transactions.deleteSubtitle")
-            : t("transactions.deleteSingleSubtitle")
-        }
+        message={supportsGroupedDelete ? t("transactions.deleteSubtitle") : t("transactions.deleteSingleSubtitle")}
         onCancel={handleCloseDeleteConfirm}
         onConfirm={() => void handleDelete()}
         open={isDeleteConfirmOpen}
         title={t("transactions.deleteTitle")}
       >
         {supportsGroupedDelete ? (
-          <Field
-            htmlFor="transaction-delete-scope"
-            label={t("transactions.deleteScope")}
-          >
+          <Field htmlFor="transaction-delete-scope" label={t("transactions.deleteScope")}>
             <Select
               id="transaction-delete-scope"
-              onChange={(event) =>
-                setDeleteScope(event.target.value as DeleteScope)
-              }
+              onChange={(event) => setDeleteScope(event.target.value as DeleteScope)}
               value={deleteScope}
             >
-              <option value="SINGLE">
-                {t("transactions.deleteScope.single")}
-              </option>
-              <option value="FUTURE">
-                {t("transactions.deleteScope.future")}
-              </option>
+              <option value="SINGLE">{t("transactions.deleteScope.single")}</option>
+              <option value="FUTURE">{t("transactions.deleteScope.future")}</option>
               <option value="ALL">{t("transactions.deleteScope.all")}</option>
             </Select>
           </Field>

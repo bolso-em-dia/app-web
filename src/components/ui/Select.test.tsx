@@ -32,12 +32,8 @@ describe("Select (native mode)", () => {
         </select>
       </label>,
     );
-    expect(
-      screen.getByRole("option", { name: "Option A" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("option", { name: "Option B" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Option A" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Option B" })).toBeInTheDocument();
   });
 
   it("fires onChange", () => {

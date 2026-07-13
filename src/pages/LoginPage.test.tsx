@@ -62,9 +62,7 @@ describe("LoginPage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
-    expect(
-      await screen.findByRole("button", { name: "Carregando..." }),
-    ).toBeDisabled();
+    expect(await screen.findByRole("button", { name: "Carregando..." })).toBeDisabled();
 
     await act(async () => {
       resolveLogin?.();
@@ -89,10 +87,6 @@ describe("LoginPage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
-    expect(
-      await screen.findByText(
-        "Não foi possível entrar. Verifique o e-mail e a senha.",
-      ),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Não foi possível entrar. Verifique o e-mail e a senha.")).toBeInTheDocument();
   });
 });

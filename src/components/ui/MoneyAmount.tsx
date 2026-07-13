@@ -11,27 +11,10 @@ type MoneyAmountProps = {
   className?: string;
 };
 
-export default memo(function MoneyAmount({
-  amount,
-  type,
-  as: Tag = "span",
-  className,
-}: MoneyAmountProps) {
+export default memo(function MoneyAmount({ amount, type, as: Tag = "span", className }: MoneyAmountProps) {
   const isZero = amount === 0;
-  const signedAmount = isZero
-    ? 0
-    : type === "EXPENSE"
-      ? -Math.abs(amount)
-      : amount;
-  const colorClass = isZero
-    ? ""
-    : type === "EXPENSE"
-      ? styles.expense
-      : styles.income;
+  const signedAmount = isZero ? 0 : type === "EXPENSE" ? -Math.abs(amount) : amount;
+  const colorClass = isZero ? "" : type === "EXPENSE" ? styles.expense : styles.income;
 
-  return (
-    <Tag className={`${colorClass} ${className ?? ""}`.trim()}>
-      {formatCurrency(signedAmount)}
-    </Tag>
-  );
+  return <Tag className={`${colorClass} ${className ?? ""}`.trim()}>{formatCurrency(signedAmount)}</Tag>;
 });

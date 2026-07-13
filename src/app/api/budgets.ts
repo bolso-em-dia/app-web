@@ -66,17 +66,7 @@ export type BudgetListParams = {
   type?: BudgetType;
 };
 
-export function listBudgets(
-  {
-    referenceMonth,
-    page,
-    size,
-    search,
-    status = "ACTIVE",
-    type,
-  }: BudgetListParams,
-  accessToken: string,
-) {
+export function listBudgets({ referenceMonth, page, size, search, status = "ACTIVE", type }: BudgetListParams, accessToken: string) {
   const query = new URLSearchParams({
     referenceMonth,
     page: String(page),
@@ -106,11 +96,7 @@ export function createBudget(payload: BudgetPayload, accessToken: string) {
   });
 }
 
-export function updateBudget(
-  id: string,
-  payload: BudgetPayload,
-  accessToken: string,
-) {
+export function updateBudget(id: string, payload: BudgetPayload, accessToken: string) {
   return apiRequest<Budget>(`/api/budgets/${id}`, {
     method: "PUT",
     accessToken,
@@ -118,16 +104,9 @@ export function updateBudget(
   });
 }
 
-export function archiveBudget(
-  id: string,
-  referenceMonth: string,
-  accessToken: string,
-) {
-  return apiRequest<Budget>(
-    `/api/budgets/${id}/archive?referenceMonth=${referenceMonth}`,
-    {
-      method: "PATCH",
-      accessToken,
-    },
-  );
+export function archiveBudget(id: string, referenceMonth: string, accessToken: string) {
+  return apiRequest<Budget>(`/api/budgets/${id}/archive?referenceMonth=${referenceMonth}`, {
+    method: "PATCH",
+    accessToken,
+  });
 }

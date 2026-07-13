@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../app/auth/useAuth";
 import { type CategoryOption } from "../../app/api/categories";
-import {
-  listTransactions,
-  materializeTransactions,
-  type Transaction,
-  type TransactionFilters,
-} from "../../app/api/transactions";
+import { listTransactions, materializeTransactions, type Transaction, type TransactionFilters } from "../../app/api/transactions";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
@@ -24,13 +19,7 @@ interface TransactionListProps {
   refreshKey: number;
 }
 
-export default function TransactionList({
-  categoryOptions,
-  filters,
-  selectedId,
-  onSelect,
-  refreshKey,
-}: TransactionListProps) {
+export default function TransactionList({ categoryOptions, filters, selectedId, onSelect, refreshKey }: TransactionListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -41,15 +30,7 @@ export default function TransactionList({
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const loadCounterRef = useRef(0);
 
-  const {
-    referenceMonth,
-    search,
-    type: typeFilter,
-    ownershipType: ownershipFilter,
-    accountId,
-    categoryIds,
-    memberId,
-  } = filters;
+  const { referenceMonth, search, type: typeFilter, ownershipType: ownershipFilter, accountId, categoryIds, memberId } = filters;
 
   const filterKey = useMemo(() => JSON.stringify(filters), [filters]);
 
@@ -73,18 +54,15 @@ export default function TransactionList({
         page,
         size: pageSize,
       };
+
       if (search) params.search = search;
       if (typeFilter) params.type = typeFilter;
       if (ownershipFilter) params.ownershipType = ownershipFilter;
       if (accountId) params.accountId = accountId;
-      if (categoryIds && categoryIds.length > 0)
-        params.categoryIds = categoryIds;
+      if (categoryIds && categoryIds.length > 0) params.categoryIds = categoryIds;
       if (memberId) params.memberId = memberId;
 
-      const transactionsResponse = await listTransactions(
-        params as Parameters<typeof listTransactions>[0],
-        accessToken,
-      );
+      const transactionsResponse = await listTransactions(params as Parameters<typeof listTransactions>[0], accessToken);
 
       if (loadId !== loadCounterRef.current) return;
 
@@ -103,28 +81,13 @@ export default function TransactionList({
         setHasLoadedOnce(true);
       }
     }
-  }, [
-    accessToken,
-    page,
-    pageSize,
-    referenceMonth,
-    search,
-    typeFilter,
-    ownershipFilter,
-    accountId,
-    categoryIds,
-    memberId,
-  ]);
+  }, [accessToken, page, pageSize, referenceMonth, search, typeFilter, ownershipFilter, accountId, categoryIds, memberId]);
 
   useEffect(() => {
     void loadPageData();
   }, [loadPageData, refreshKey]);
 
-  const categoryOptionsById = useMemo(
-    () => new Map(categoryOptions.map((cat) => [cat.id, cat])),
-    [categoryOptions],
-  );
-
+  const categoryOptionsById = useMemo(() => new Map(categoryOptions.map((cat) => [cat.id, cat])), [categoryOptions]);
   const showInitialLoading = isLoading && !hasLoadedOnce;
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
   const pagination = usePagination(page, pageSize, totalItems, totalPages);
@@ -156,9 +119,7 @@ export default function TransactionList({
           </Card>
         ) : (
           transactions.map((transaction) => {
-            const categoryOption = categoryOptionsById.get(
-              transaction.categoryId,
-            );
+            const categoryOption = categoryOptionsById.get(transaction.categoryId);
             return (
               <TransactionCard
                 key={transaction.id}

@@ -21,11 +21,7 @@ export default function FilterSelectInput<TValue extends string = string>({
 }: FilterSelectInputProps<TValue>) {
   return (
     <Field htmlFor={id} label={label}>
-      <Select
-        id={id}
-        onChange={(event) => onChange(event.target.value as TValue | "")}
-        value={value}
-      >
+      <Select id={id} onChange={(event) => onChange(event.target.value as TValue | "")} value={value}>
         <option value="">{placeholder}</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>

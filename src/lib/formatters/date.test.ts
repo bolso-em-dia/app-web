@@ -1,11 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  getCurrentReferenceMonth,
-  shiftReferenceMonth,
-  isCurrentReferenceMonth,
-  formatReferenceMonth,
-  formatDay,
-} from "./date";
+import { getCurrentReferenceMonth, shiftReferenceMonth, isCurrentReferenceMonth, formatReferenceMonth, formatDay } from "./date";
 
 describe("getCurrentReferenceMonth", () => {
   it("returns the first day of the current month", () => {

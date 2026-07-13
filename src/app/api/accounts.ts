@@ -36,10 +36,7 @@ export type AccountListParams = {
   type?: AccountType;
 };
 
-export function listAccountPage(
-  { page, size, search, status = "ACTIVE", type }: AccountListParams,
-  accessToken: string,
-) {
+export function listAccountPage({ page, size, search, status = "ACTIVE", type }: AccountListParams, accessToken: string) {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
@@ -54,23 +51,17 @@ export function listAccountPage(
     query.set("type", type);
   }
 
-  return apiRequest<PageResponse<Account>>(
-    `/api/accounts?${query.toString()}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+  return apiRequest<PageResponse<Account>>(`/api/accounts?${query.toString()}`, {
+    method: "GET",
+    accessToken,
+  });
 }
 
 export async function listAccounts(accessToken: string) {
-  const response = await apiRequest<PageResponse<Account> | Account[]>(
-    "/api/accounts?page=0&size=200&status=ACTIVE",
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+  const response = await apiRequest<PageResponse<Account> | Account[]>("/api/accounts?page=0&size=200&status=ACTIVE", {
+    method: "GET",
+    accessToken,
+  });
 
   return Array.isArray(response) ? response : response.items;
 }
@@ -83,17 +74,11 @@ export type AccountOption = {
   color?: string;
 };
 
-export function listAccountOptions(
-  referenceMonth: string,
-  accessToken: string,
-) {
-  return apiRequest<AccountOption[]>(
-    `/api/accounts/options?referenceMonth=${referenceMonth}`,
-    {
-      method: "GET",
-      accessToken,
-    },
-  );
+export function listAccountOptions(referenceMonth: string, accessToken: string) {
+  return apiRequest<AccountOption[]>(`/api/accounts/options?referenceMonth=${referenceMonth}`, {
+    method: "GET",
+    accessToken,
+  });
 }
 
 export function createAccount(payload: AccountPayload, accessToken: string) {
@@ -104,11 +89,7 @@ export function createAccount(payload: AccountPayload, accessToken: string) {
   });
 }
 
-export function updateAccount(
-  id: string,
-  payload: AccountPayload,
-  accessToken: string,
-) {
+export function updateAccount(id: string, payload: AccountPayload, accessToken: string) {
   return apiRequest<Account>(`/api/accounts/${id}`, {
     method: "PUT",
     accessToken,
