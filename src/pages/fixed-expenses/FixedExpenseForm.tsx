@@ -13,6 +13,8 @@ import {
   type FixedExpenseTemplate,
 } from "../../app/api/fixedExpenses";
 import { useAuth } from "../../app/auth/useAuth";
+import type { Currency } from "../../lib/formatters/currency";
+import { useConfirmDialog } from "../../lib/useConfirmDialog";
 import {
   createFixedExpenseSchema,
   type FixedExpenseFormValues,
@@ -72,8 +74,12 @@ export default function FixedExpenseForm({
   const { t } = useI18n();
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {
+    closeDialog: closeDeleteDialog,
+    open: isDeleteDialogOpen,
+    openDialog: openDeleteDialog,
+  } = useConfirmDialog();
 
   const isCreating = template === null;
   const editingId = template?.id ?? null;
@@ -108,9 +114,8 @@ export default function FixedExpenseForm({
 
   const formAccountId = form.watch("accountId");
   const selectedAccountCurrency = useMemo(
-    () =>
-      accountOptions.find((a) => a.id === formAccountId)?.currency as
-        "BRL" | "USD" | undefined,
+    (): Currency | undefined =>
+      accountOptions.find((account) => account.id === formAccountId)?.currency,
     [accountOptions, formAccountId],
   );
 
@@ -152,6 +157,7 @@ export default function FixedExpenseForm({
       return;
     }
 
+    closeDeleteDialog();
     setIsDeleting(true);
     setError(null);
 
@@ -163,7 +169,7 @@ export default function FixedExpenseForm({
     } finally {
       setIsDeleting(false);
     }
-  }, [accessToken, editingId, onSuccess, t]);
+  }, [accessToken, closeDeleteDialog, editingId, onSuccess, t]);
 
   const selectedType = form.watch("type");
 
@@ -297,11 +303,7 @@ export default function FixedExpenseForm({
             </Button>
           ) : null}
           {!isCreating ? (
-            <Button
-              onClick={() => setIsDeleteConfirmOpen(true)}
-              type="button"
-              variant="danger"
-            >
+            <Button onClick={openDeleteDialog} type="button" variant="danger">
               {t("common.delete")}
             </Button>
           ) : null}
@@ -312,12 +314,9 @@ export default function FixedExpenseForm({
         confirmLabel={t("common.delete")}
         loading={isDeleting}
         message={t("confirmations.deleteFixedExpense")}
-        onCancel={() => setIsDeleteConfirmOpen(false)}
-        onConfirm={() => {
-          setIsDeleteConfirmOpen(false);
-          void handleDelete();
-        }}
-        open={isDeleteConfirmOpen}
+        onCancel={closeDeleteDialog}
+        onConfirm={() => void handleDelete()}
+        open={isDeleteDialogOpen}
         title={t("fixedTransactions.deleteAction")}
       />
     </>

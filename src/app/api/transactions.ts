@@ -1,9 +1,10 @@
 import { apiRequest, type PageResponse } from "./client";
+import type { Currency } from "../../lib/formatters/currency";
 
 export type TransactionType = "INCOME" | "EXPENSE";
 export type OwnershipType = "SHARED" | "INDIVIDUAL";
 export type DeleteScope = "SINGLE" | "FUTURE" | "ALL";
-type SourceType = "MANUAL" | "INSTALLMENT" | "FIXED_EXPENSE";
+export type SourceType = "MANUAL" | "INSTALLMENT" | "FIXED_EXPENSE";
 
 export type Transaction = {
   id: string;
@@ -27,7 +28,7 @@ export type Transaction = {
   projected?: boolean;
   convertedAmount: number;
   exchangeRate?: number | null;
-  currency: string;
+  currency: Currency;
   createdAt: string | null;
   updatedAt: string | null;
 };

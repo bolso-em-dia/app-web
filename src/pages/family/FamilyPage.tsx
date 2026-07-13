@@ -9,17 +9,27 @@ import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import { type StatusFilter } from "../../lib/constants";
+import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
+import {
+  buildSearchActiveFilter,
+  buildStatusActiveFilter,
+  compileActiveFilters,
+} from "../../lib/activeFilters";
+import { useFiltersState } from "../../lib/useFiltersState";
 import FamilyMemberList from "./FamilyMemberList";
 import FamilyMemberForm from "./FamilyMemberForm";
 import styles from "./FamilyPage.module.scss";
 
 type FamilyFilters = { search: string; status: StatusFilter };
-const DEFAULT_FILTERS: FamilyFilters = { search: "", status: "ACTIVE" };
+const DEFAULT_FILTERS: FamilyFilters = {
+  search: "",
+  status: ACTIVE_STATUS_FILTER,
+};
 
 export default function FamilyPage() {
   const { t } = useI18n();
-  const [filters, setFilters] = useState<FamilyFilters>(DEFAULT_FILTERS);
+  const { filters, patchFilters, clearFilter, resetFilters } =
+    useFiltersState(DEFAULT_FILTERS);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
@@ -45,44 +55,23 @@ export default function FamilyPage() {
     setRefreshKey((k) => k + 1);
   }
 
-  const handleSelect = useCallback((id: string, member: FamilyMember) => {
+  const handleSelect = useCallback((_id: string, member: FamilyMember) => {
     setSelectedMember(member);
     setIsDrawerOpen(true);
   }, []);
 
   const activeFilters = useMemo(
-    () => [
-      ...(filters.search
-        ? [
-            {
-              key: "search",
-              label: `${t("common.search")}: ${filters.search}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, search: "" }));
-              },
-            },
-          ]
-        : []),
-      ...(filters.status !== "ACTIVE"
-        ? [
-            {
-              key: "status",
-              label: `${t("common.status")}: ${t(
-                filters.status === "ALL" ? "common.all" : "common.archived",
-              )}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, status: "ACTIVE" }));
-              },
-            },
-          ]
-        : []),
-    ],
-    [filters.search, filters.status, t],
+    () =>
+      compileActiveFilters([
+        buildSearchActiveFilter(filters.search, t("common.search"), () => {
+          clearFilter("search", "");
+        }),
+        buildStatusActiveFilter(filters.status, t, () => {
+          clearFilter("status", ACTIVE_STATUS_FILTER);
+        }),
+      ]),
+    [filters.search, filters.status, t, clearFilter],
   );
-
-  function clearFilters() {
-    setFilters(DEFAULT_FILTERS);
-  }
 
   return (
     <AppShell
@@ -98,7 +87,7 @@ export default function FamilyPage() {
           <FilterToolbar
             activeFilters={activeFilters}
             isPanelOpen={isFiltersOpen}
-            onClearFilters={clearFilters}
+            onClearFilters={() => resetFilters()}
             onClosePanel={() => setIsFiltersOpen(false)}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
             primaryContent={
@@ -106,7 +95,7 @@ export default function FamilyPage() {
                 <Input
                   id="family-search"
                   onChange={(event) => {
-                    setFilters((c) => ({ ...c, search: event.target.value }));
+                    patchFilters({ search: event.target.value });
                   }}
                   placeholder={t("family.searchPlaceholder")}
                   value={filters.search}
@@ -122,10 +111,9 @@ export default function FamilyPage() {
                   <Select
                     id="family-status-filter"
                     onChange={(event) => {
-                      setFilters((c) => ({
-                        ...c,
+                      patchFilters({
                         status: event.target.value as StatusFilter,
-                      }));
+                      });
                     }}
                     value={filters.status}
                   >

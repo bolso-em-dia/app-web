@@ -14,7 +14,7 @@ import {
   mockErrorResponse,
   mockFetchUrl,
 } from "../../test/setup";
-import { createAccount } from "../../test/fixtures";
+import { createAccount, createUser } from "../../test/fixtures";
 import AccountsPage from "./AccountsPage";
 
 const defaultAccountsResponse = {
@@ -575,19 +575,15 @@ describe("AccountsPage", () => {
         initialEntries={["/accounts"]}
       >
         <TestAuthProvider
-          user={{
+          user={createUser({
             id: "1",
-            name: "Admin",
-            email: "admin@bolso-em-dia.local",
-            role: "ADMIN",
-            allowanceEnabled: false,
             preferences: {
               defaultAccountId: null,
               locale: "pt-BR",
               showBalanceWithBudgets: false,
               showForeignCurrency: false,
             },
-          }}
+          })}
         >
           <AccountsPage />
         </TestAuthProvider>

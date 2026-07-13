@@ -5,36 +5,45 @@ import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
-import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
-import Input from "../../components/ui/Input";
-import Select from "../../components/ui/Select";
-
 import { useI18n } from "../../app/i18n/I18nContext";
+import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
+import {
+  buildSearchActiveFilter,
+  buildStatusActiveFilter,
+  buildTypeActiveFilter,
+  compileActiveFilters,
+} from "../../lib/activeFilters";
+import { useFiltersState } from "../../lib/useFiltersState";
 import AccountList from "./AccountList";
 import AccountForm from "./AccountForm";
+import {
+  AccountFiltersPrimary,
+  AccountFiltersSecondary,
+} from "./AccountFiltersContent";
 import styles from "./AccountsPage.module.scss";
 
 type AccountFilters = {
   search: string;
-  status: "ALL" | "ACTIVE" | "ARCHIVED";
+  status: StatusFilter;
   type: "" | AccountType;
 };
 
 const DEFAULT_FILTERS: AccountFilters = {
   search: "",
-  status: "ACTIVE",
+  status: ACTIVE_STATUS_FILTER,
   type: "",
 };
 
 export default function AccountsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
+  const { filters, patchFilters, clearFilter, resetFilters } =
+    useFiltersState(DEFAULT_FILTERS);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [showDrawer, setShowDrawer] = useState(false);
-  const [filters, setFilters] = useState<AccountFilters>(DEFAULT_FILTERS);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -66,49 +75,27 @@ export default function AccountsPage() {
   }, []);
 
   const activeFilters = useMemo(
-    () => [
-      ...(filters.search
-        ? [
-            {
-              key: "search",
-              label: `${t("common.search")}: ${filters.search}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, search: "" }));
-              },
-            },
-          ]
-        : []),
-      ...(filters.status !== "ACTIVE"
-        ? [
-            {
-              key: "status",
-              label: `${t("common.status")}: ${t(
-                filters.status === "ALL" ? "common.all" : "common.archived",
-              )}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, status: "ACTIVE" }));
-              },
-            },
-          ]
-        : []),
-      ...(filters.type
-        ? [
-            {
-              key: "type",
-              label: `${t("common.type")}: ${t(`accountTypes.${filters.type}`)}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, type: "" }));
-              },
-            },
-          ]
-        : []),
-    ],
-    [filters.search, filters.status, filters.type, t],
+    () =>
+      compileActiveFilters([
+        buildSearchActiveFilter(filters.search, t("common.search"), () => {
+          clearFilter("search", "");
+        }),
+        buildStatusActiveFilter(filters.status, t, () => {
+          clearFilter("status", ACTIVE_STATUS_FILTER);
+        }),
+        buildTypeActiveFilter(
+          "type",
+          filters.type,
+          filters.type
+            ? `${t("common.type")}: ${t(`accountTypes.${filters.type}` as const)}`
+            : "",
+          () => {
+            clearFilter("type", "" as "" | AccountType);
+          },
+        ),
+      ]),
+    [filters.search, filters.status, filters.type, t, clearFilter],
   );
-
-  function clearFilters() {
-    setFilters(DEFAULT_FILTERS);
-  }
 
   return (
     <AppShell
@@ -124,68 +111,20 @@ export default function AccountsPage() {
           <FilterToolbar
             activeFilters={activeFilters}
             isPanelOpen={isFiltersOpen}
-            onClearFilters={clearFilters}
+            onClearFilters={() => resetFilters()}
             onClosePanel={() => setIsFiltersOpen(false)}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
             primaryContent={
-              <Field htmlFor="account-search" label={t("common.search")}>
-                <Input
-                  id="account-search"
-                  onChange={(event) => {
-                    setFilters((c) => ({ ...c, search: event.target.value }));
-                  }}
-                  placeholder={t("accounts.searchPlaceholder")}
-                  value={filters.search}
-                />
-              </Field>
+              <AccountFiltersPrimary
+                filters={filters}
+                onFiltersChange={patchFilters}
+              />
             }
             secondaryContent={
-              <>
-                <Field
-                  htmlFor="account-status-filter"
-                  label={t("common.status")}
-                >
-                  <Select
-                    id="account-status-filter"
-                    onChange={(event) => {
-                      setFilters((c) => ({
-                        ...c,
-                        status: event.target.value as
-                          "ALL" | "ACTIVE" | "ARCHIVED",
-                      }));
-                    }}
-                    value={filters.status}
-                  >
-                    <option value="ALL">{t("common.all")}</option>
-                    <option value="ACTIVE">{t("common.active")}</option>
-                    <option value="ARCHIVED">{t("common.archived")}</option>
-                  </Select>
-                </Field>
-                <Field htmlFor="account-type-filter" label={t("common.type")}>
-                  <Select
-                    id="account-type-filter"
-                    onChange={(event) => {
-                      setFilters((c) => ({
-                        ...c,
-                        type: event.target.value as "" | AccountType,
-                      }));
-                    }}
-                    value={filters.type}
-                  >
-                    <option value="">{t("common.allTypes")}</option>
-                    <option value="CHECKING">
-                      {t("accountTypes.CHECKING")}
-                    </option>
-                    <option value="SAVINGS">{t("accountTypes.SAVINGS")}</option>
-                    <option value="CREDIT_CARD">
-                      {t("accountTypes.CREDIT_CARD")}
-                    </option>
-                    <option value="INVESTMENT">
-                      {t("accountTypes.INVESTMENT")}
-                    </option>
-                  </Select>
-                </Field>
-              </>
+              <AccountFiltersSecondary
+                filters={filters}
+                onFiltersChange={patchFilters}
+              />
             }
           />
         </Card>

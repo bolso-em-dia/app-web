@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
-import { COLOR_OPTIONS } from "../../lib/uiOptions";
+import { ptBRMessages } from "../../app/i18n/messages";
+import { buildColorOptions } from "../../lib/uiOptions";
 import ColorSwatchSelect from "./ColorSwatchSelect";
+
+const colorOptions = buildColorOptions((key) => ptBRMessages[key]);
 
 function ColorSwatchSelectHarness() {
   const [value, setValue] = useState("");
@@ -12,7 +15,7 @@ function ColorSwatchSelectHarness() {
         clearLabel="Sem cor"
         id="category-color"
         onChange={setValue}
-        options={COLOR_OPTIONS.slice(0, 3)}
+        options={colorOptions.slice(0, 3)}
         value={value}
       />
       <output>{value || "empty"}</output>

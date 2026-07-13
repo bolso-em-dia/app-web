@@ -1,4 +1,6 @@
 import { apiRequest } from "./client";
+import type { Currency } from "../../lib/formatters/currency";
+import type { SourceType, TransactionType } from "./transactions";
 
 type DashboardSummary = {
   totalIncome: number;
@@ -10,14 +12,14 @@ type DashboardSummary = {
 
 type DashboardTransaction = {
   id: string;
-  type: string;
+  type: TransactionType;
   ownershipType: string;
-  sourceType: string;
+  sourceType: SourceType;
   description: string;
   amount: number;
   convertedAmount: number;
   exchangeRate?: number | null;
-  currency: string;
+  currency: Currency;
   transactionDate: string;
   referenceMonth: string;
   accountId: string;

@@ -48,7 +48,7 @@ export default function LoginPage() {
     <div className={styles.page}>
       <Card className={styles.card}>
         <div className={styles.heading}>
-          <span className={styles.eyebrow}>Bolso em Dia</span>
+          <span className={styles.eyebrow}>{t("app.brand")}</span>
           <h1 className={styles.title}>{t("login.title")}</h1>
           <p className={styles.subtitle}>{t("login.subtitle")}</p>
         </div>

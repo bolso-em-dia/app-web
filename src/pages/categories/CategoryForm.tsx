@@ -18,7 +18,7 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import IconSelect from "../../components/ui/IconSelect";
 import Input from "../../components/ui/Input";
-import { COLOR_OPTIONS, ICON_OPTIONS } from "../../lib/uiOptions";
+import { buildColorOptions, buildIconOptions } from "../../lib/uiOptions";
 import {
   createArchiveCategorySchema,
   createCategorySchema,
@@ -72,6 +72,8 @@ export default function CategoryForm({
     () => createArchiveCategorySchema(t),
     [t],
   );
+  const colorOptions = useMemo(() => buildColorOptions(t), [t]);
+  const iconOptions = useMemo(() => buildIconOptions(t), [t]);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -182,7 +184,7 @@ export default function CategoryForm({
                 shouldValidate: true,
               })
             }
-            options={ICON_OPTIONS}
+            options={iconOptions}
             value={iconValue}
           />
         </Field>
@@ -202,7 +204,7 @@ export default function CategoryForm({
                 shouldValidate: true,
               })
             }
-            options={COLOR_OPTIONS}
+            options={colorOptions}
             value={colorValue}
           />
         </Field>

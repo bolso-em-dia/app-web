@@ -18,12 +18,13 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import { buildColorOptions, getColorLabel } from "../../lib/uiOptions";
+import { useConfirmDialog } from "../../lib/useConfirmDialog";
 import {
   createAccountSchema,
   type AccountFormValues,
 } from "../../lib/validation/accountSchema";
 import { useI18n } from "../../app/i18n/I18nContext";
-import { COLOR_OPTIONS, getColorLabel } from "../../lib/uiOptions";
 import styles from "./AccountsPage.module.scss";
 
 const DEFAULT_VALUES: AccountFormValues = {
@@ -67,11 +68,15 @@ export default function AccountForm({
 
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
-  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [archivedFromMonth, setArchivedFromMonth] = useState<string | null>(
     account?.archivedFromMonth ?? null,
   );
+  const {
+    closeDialog: closeArchiveDialog,
+    open: isArchiveDialogOpen,
+    openDialog: openArchiveDialog,
+  } = useConfirmDialog();
 
   const showForeignCurrency = user.preferences.showForeignCurrency ?? false;
   const isCreating = account === null;
@@ -82,7 +87,7 @@ export default function AccountForm({
     : {
         name: account.name,
         type: account.type,
-        currency: (account.currency as "BRL" | "USD") ?? "BRL",
+        currency: account.currency ?? "BRL",
         brand: account.brand ?? "",
         color: account.color ?? "",
         closingDay: account.closingDay ?? undefined,
@@ -90,6 +95,7 @@ export default function AccountForm({
       };
 
   const accountSchema = useMemo(() => createAccountSchema(t), [t]);
+  const colorOptions = useMemo(() => buildColorOptions(t), [t]);
 
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
@@ -137,7 +143,7 @@ export default function AccountForm({
       return;
     }
 
-    setIsArchiveConfirmOpen(false);
+    closeArchiveDialog();
     setIsArchiving(true);
     setError(null);
 
@@ -150,7 +156,14 @@ export default function AccountForm({
     } finally {
       setIsArchiving(false);
     }
-  }, [accessToken, archivedFromMonth, editingAccountId, onSuccess, t]);
+  }, [
+    accessToken,
+    closeArchiveDialog,
+    archivedFromMonth,
+    editingAccountId,
+    onSuccess,
+    t,
+  ]);
 
   const accountType = form.watch("type");
   const colorValue = form.watch("color");
@@ -199,8 +212,8 @@ export default function AccountForm({
           {showForeignCurrency ? (
             <Field htmlFor="account-currency" label={t("accounts.currency")}>
               <Select id="account-currency" {...form.register("currency")}>
-                <option value="BRL">Real (BRL)</option>
-                <option value="USD">Dólar (USD)</option>
+                <option value="BRL">{t("currencies.BRL")}</option>
+                <option value="USD">{t("currencies.USD")}</option>
               </Select>
             </Field>
           ) : null}
@@ -220,7 +233,7 @@ export default function AccountForm({
                   shouldValidate: true,
                 })
               }
-              options={COLOR_OPTIONS}
+              options={colorOptions}
               value={colorValue}
             />
           </Field>
@@ -282,7 +295,7 @@ export default function AccountForm({
               style={{ backgroundColor: colorValue }}
             />
             <span>
-              {getColorLabel(colorValue) || t("common.clearSelection")}
+              {getColorLabel(colorValue, t) || t("common.clearSelection")}
             </span>
           </div>
         ) : null}
@@ -300,7 +313,7 @@ export default function AccountForm({
           ) : (
             <Button
               disabled={Boolean(archivedFromMonth)}
-              onClick={() => setIsArchiveConfirmOpen(true)}
+              onClick={openArchiveDialog}
               type="button"
               variant={archivedFromMonth ? "subtle" : "danger"}
             >
@@ -314,9 +327,9 @@ export default function AccountForm({
         confirmLabel={t("common.archive")}
         loading={isArchiving}
         message={t("confirmations.archiveAccount")}
-        onCancel={() => setIsArchiveConfirmOpen(false)}
+        onCancel={closeArchiveDialog}
         onConfirm={onArchive}
-        open={isArchiveConfirmOpen}
+        open={isArchiveDialogOpen}
         title={t("accounts.archiveTitle")}
       />
     </>
