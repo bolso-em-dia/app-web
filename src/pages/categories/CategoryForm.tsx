@@ -5,6 +5,7 @@ import {
   archiveCategory,
   createCategory,
   updateCategory,
+  type Category,
   type CategoryOption,
 } from "../../app/api/categories";
 import { useAuth } from "../../app/auth/useAuth";
@@ -34,26 +35,32 @@ const DEFAULT_VALUES: CategoryFormValues = {
 };
 
 interface CategoryFormProps {
-  categoryId: string | null;
-  categoryArchivedFromMonth: string | null;
-  initialValues: CategoryFormValues | null;
-  user: AuthUser;
+  category: Category | null;
   categoryOptions: CategoryOption[];
+  user: AuthUser;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 export default function CategoryForm({
-  categoryId,
-  categoryArchivedFromMonth,
-  initialValues,
+  category,
   categoryOptions,
   onSuccess,
   onCancel,
 }: CategoryFormProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
-  const isCreating = categoryId === null;
+  const isCreating = category === null;
+  const categoryId = category?.id ?? null;
+  const archivedFromMonth = category?.archivedFromMonth ?? null;
+
+  const initialValues = !category
+    ? DEFAULT_VALUES
+    : {
+        name: category.name,
+        icon: category.icon ?? "",
+        color: category.color ?? "",
+      };
 
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
@@ -214,7 +221,7 @@ export default function CategoryForm({
         </div>
       </form>
 
-      {!isCreating && !categoryArchivedFromMonth ? (
+      {!isCreating && !archivedFromMonth ? (
         <form className={styles.form} noValidate>
           <Field
             error={archiveForm.formState.errors.replacementCategoryId?.message}

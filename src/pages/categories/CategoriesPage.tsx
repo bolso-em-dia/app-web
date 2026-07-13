@@ -9,95 +9,89 @@ import FilterToolbar from "../../components/ui/FilterToolbar";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import type { Category, CategoryOption } from "../../app/api/categories";
-import type { CategoryFormValues } from "../../lib/validation/categorySchema";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { type StatusFilter } from "../../lib/constants";
 import CategoryList from "./CategoryList";
 import CategoryForm from "./CategoryForm";
 import styles from "./CategoriesPage.module.scss";
 
+type CategoryFilters = { search: string; status: StatusFilter };
+const DEFAULT_FILTERS: CategoryFilters = { search: "", status: "ACTIVE" };
+
 export default function CategoriesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ACTIVE");
+  const [filters, setFilters] = useState<CategoryFilters>(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [initialFormValues, setInitialFormValues] =
-    useState<CategoryFormValues | null>(null);
-  const [categoryArchivedFromMonth, setCategoryArchivedFromMonth] = useState<
-    string | null
-  >(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
+  const [showDrawer, setShowDrawer] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
 
   const activeFilters = useMemo(
     () => [
-      ...(search
+      ...(filters.search
         ? [
             {
               key: "search",
-              label: `${t("common.search")}: ${search}`,
+              label: `${t("common.search")}: ${filters.search}`,
               onRemove: () => {
-                setSearch("");
+                setFilters((c) => ({ ...c, search: "" }));
               },
             },
           ]
         : []),
-      ...(statusFilter !== "ACTIVE"
+      ...(filters.status !== "ACTIVE"
         ? [
             {
               key: "status",
               label: `${t("common.status")}: ${t(
-                statusFilter === "ALL" ? "common.all" : "common.archived",
+                filters.status === "ALL" ? "common.all" : "common.archived",
               )}`,
               onRemove: () => {
-                setStatusFilter("ACTIVE");
+                setFilters((c) => ({ ...c, status: "ACTIVE" }));
               },
             },
           ]
         : []),
     ],
-    [search, statusFilter, t],
+    [filters, t],
   );
 
   function clearFilters() {
-    setSearch("");
-    setStatusFilter("ACTIVE");
-  }
-
-  function handleStartCreate() {
-    setIsCreating(true);
-    setSelectedId(null);
-    setInitialFormValues(null);
-    setCategoryArchivedFromMonth(null);
-  }
-
-  function handleCloseDrawer() {
-    setIsCreating(false);
-    setSelectedId(null);
-    setInitialFormValues(null);
-    setCategoryArchivedFromMonth(null);
-  }
-
-  function handleSuccess() {
-    handleCloseDrawer();
-    setRefreshKey((k) => k + 1);
+    setFilters(DEFAULT_FILTERS);
   }
 
   function handleSelect(_id: string, category: Category) {
-    setIsCreating(false);
     setSelectedId(category.id);
-    setInitialFormValues({
-      name: category.name,
-      icon: category.icon ?? "",
-      color: category.color ?? "",
-    });
-    setCategoryArchivedFromMonth(category.archivedFromMonth);
+    setSelectedCategory(category);
+    setShowDrawer(true);
   }
 
-  const drawerOpen = isCreating || selectedId !== null;
+  function handleStartCreate() {
+    setSelectedId(null);
+    setSelectedCategory(null);
+    setShowDrawer(true);
+  }
+
+  function handleCloseDrawer() {
+    setSelectedId(null);
+    setSelectedCategory(null);
+    setShowDrawer(false);
+  }
+
+  function handleSuccess() {
+    setRefreshKey((k) => k + 1);
+    setSelectedId(null);
+    setSelectedCategory(null);
+    setShowDrawer(false);
+  }
+
+  const isCreating = selectedId === null;
+  const isDrawerOpen = showDrawer;
 
   return (
     <AppShell
@@ -121,10 +115,10 @@ export default function CategoriesPage() {
                 <Input
                   id="category-search"
                   onChange={(event) => {
-                    setSearch(event.target.value);
+                    setFilters((c) => ({ ...c, search: event.target.value }));
                   }}
                   placeholder={t("categories.searchPlaceholder")}
-                  value={search}
+                  value={filters.search}
                 />
               </Field>
             }
@@ -137,9 +131,12 @@ export default function CategoriesPage() {
                   <Select
                     id="category-status-filter"
                     onChange={(event) => {
-                      setStatusFilter(event.target.value as StatusFilter);
+                      setFilters((c) => ({
+                        ...c,
+                        status: event.target.value as StatusFilter,
+                      }));
                     }}
-                    value={statusFilter}
+                    value={filters.status}
                   >
                     <option value="ALL">{t("common.all")}</option>
                     <option value="ACTIVE">{t("common.active")}</option>
@@ -152,15 +149,14 @@ export default function CategoriesPage() {
         </Card>
 
         <CategoryList
-          search={search}
-          statusFilter={statusFilter}
+          filters={filters}
           selectedId={selectedId}
           onSelect={handleSelect}
           refreshKey={refreshKey}
           onOptionsLoaded={setCategoryOptions}
         />
 
-        {drawerOpen ? (
+        {isDrawerOpen ? (
           <Drawer
             description={
               isCreating
@@ -175,13 +171,9 @@ export default function CategoriesPage() {
             }
           >
             <CategoryForm
-              categoryId={isCreating ? null : selectedId}
-              categoryArchivedFromMonth={
-                isCreating ? null : categoryArchivedFromMonth
-              }
-              initialValues={isCreating ? null : initialFormValues}
-              user={user!}
+              category={selectedCategory}
               categoryOptions={categoryOptions}
+              user={user!}
               onSuccess={handleSuccess}
               onCancel={handleCloseDrawer}
             />
