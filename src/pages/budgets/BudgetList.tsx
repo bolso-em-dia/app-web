@@ -15,15 +15,17 @@ import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
 import BudgetCard from "./BudgetCard";
-import { DEFAULT_PAGE_SIZE, type StatusFilter } from "../../lib/constants";
+import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
 import { usePagination } from "../../lib/usePagination";
 import styles from "./BudgetsPage.module.scss";
 
 interface BudgetListProps {
-  search: string;
-  statusFilter: StatusFilter;
-  typeFilter: BudgetType | "ALL";
-  referenceMonth: string;
+  filters: {
+    search: string;
+    status: "ALL" | "ACTIVE" | "ARCHIVED";
+    type: BudgetType | "ALL";
+    referenceMonth: string;
+  };
   selectedId: string | null;
   onSelect: (id: string, budget: Budget) => void;
   refreshKey: number;
@@ -34,10 +36,7 @@ interface BudgetListProps {
 }
 
 export default function BudgetList({
-  search,
-  statusFilter,
-  typeFilter,
-  referenceMonth,
+  filters,
   selectedId,
   onSelect,
   refreshKey,
@@ -65,16 +64,16 @@ export default function BudgetList({
           await Promise.all([
             listBudgets(
               {
-                referenceMonth,
+                referenceMonth: filters.referenceMonth,
                 page: currentPage,
                 size: currentPageSize,
-                search: search || undefined,
-                status: statusFilter,
-                type: typeFilter === "ALL" ? undefined : typeFilter,
+                search: filters.search || undefined,
+                status: filters.status,
+                type: filters.type === "ALL" ? undefined : filters.type,
               },
               accessToken,
             ),
-            listCategoryOptions(referenceMonth, accessToken),
+            listCategoryOptions(filters.referenceMonth, accessToken),
             listFamilyMembers(accessToken),
           ]);
 
@@ -95,17 +94,17 @@ export default function BudgetList({
     },
     [
       accessToken,
-      referenceMonth,
-      search,
-      statusFilter,
-      typeFilter,
+      filters.referenceMonth,
+      filters.search,
+      filters.status,
+      filters.type,
       onReferenceDataLoaded,
     ],
   );
 
   useEffect(() => {
     setPage(0);
-  }, [search, statusFilter, typeFilter, referenceMonth]);
+  }, [filters.search, filters.status, filters.type, filters.referenceMonth]);
 
   useEffect(() => {
     void loadBudgetsData(page, pageSize);

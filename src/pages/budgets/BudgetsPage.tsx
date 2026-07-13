@@ -17,24 +17,32 @@ import { useI18n } from "../../app/i18n/I18nContext";
 import type { Budget, BudgetType } from "../../app/api/budgets";
 import type { CategoryOption } from "../../app/api/categories";
 import type { FamilyMember } from "../../app/api/family";
-import type { BudgetFormValues } from "../../lib/validation/budgetSchema";
 import BudgetList from "./BudgetList";
 import BudgetForm from "./BudgetForm";
 import styles from "./BudgetsPage.module.scss";
 
+type BudgetFilters = {
+  search: string;
+  status: "ALL" | "ACTIVE" | "ARCHIVED";
+  type: BudgetType | "ALL";
+  referenceMonth: string;
+};
+
+const initialRefMonth = getCurrentReferenceMonth();
+const DEFAULT_FILTERS: BudgetFilters = {
+  search: "",
+  status: "ACTIVE",
+  type: "ALL",
+  referenceMonth: initialRefMonth,
+};
+
 export default function BudgetsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const initialReferenceMonth = useMemo(() => getCurrentReferenceMonth(), []);
-  const [referenceMonth, setReferenceMonth] = useState(initialReferenceMonth);
+  const [filters, setFilters] = useState<BudgetFilters>(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "ACTIVE" | "ARCHIVED"
-  >("ACTIVE");
-  const [typeFilter, setTypeFilter] = useState<BudgetType | "ALL">("ALL");
+  const [showDrawer, setShowDrawer] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [referenceData, setReferenceData] = useState<{
@@ -43,89 +51,77 @@ export default function BudgetsPage() {
   }>({ categories: [], members: [] });
 
   function handleSelect(id: string, budget: Budget) {
-    setIsCreating(false);
     setSelectedId(id);
     setSelectedBudget(budget);
+    setShowDrawer(true);
   }
 
   function handleStartCreate() {
-    setIsCreating(true);
     setSelectedId(null);
     setSelectedBudget(null);
+    setShowDrawer(true);
   }
 
   function handleCloseDrawer() {
-    setIsCreating(false);
     setSelectedId(null);
     setSelectedBudget(null);
+    setShowDrawer(false);
   }
 
-  function handleFormSuccess() {
-    setIsCreating(false);
+  function handleSuccess() {
     setSelectedId(null);
     setSelectedBudget(null);
+    setShowDrawer(false);
     setRefreshKey((k) => k + 1);
   }
 
-  const initialValues = useMemo<BudgetFormValues | null>(() => {
-    if (isCreating || !selectedBudget) {
-      return null;
-    }
-    return {
-      name: selectedBudget.name,
-      type: selectedBudget.type,
-      ownerMemberId: selectedBudget.ownerMemberId ?? "",
-      categoryIds: selectedBudget.categories.map((c) => c.id),
-      monthlyLimit: selectedBudget.monthlyLimit,
-    };
-  }, [isCreating, selectedBudget]);
-
   const activeFilters = useMemo(
     () => [
-      ...(search
+      ...(filters.search
         ? [
             {
               key: "search",
-              label: `${t("common.search")}: ${search}`,
+              label: `${t("common.search")}: ${filters.search}`,
               onRemove: () => {
-                setSearch("");
+                setFilters((c) => ({ ...c, search: "" }));
               },
             },
           ]
         : []),
-      ...(statusFilter !== "ACTIVE"
+      ...(filters.status !== "ACTIVE"
         ? [
             {
               key: "status",
               label: `${t("common.status")}: ${t(
-                statusFilter === "ALL" ? "common.all" : "common.archived",
+                filters.status === "ALL" ? "common.all" : "common.archived",
               )}`,
               onRemove: () => {
-                setStatusFilter("ACTIVE");
+                setFilters((c) => ({ ...c, status: "ACTIVE" }));
               },
             },
           ]
         : []),
-      ...(typeFilter !== "ALL"
+      ...(filters.type !== "ALL"
         ? [
             {
               key: "type",
-              label: `${t("common.type")}: ${t(`budgetTypes.${typeFilter}`)}`,
+              label: `${t("common.type")}: ${t(`budgetTypes.${filters.type}`)}`,
               onRemove: () => {
-                setTypeFilter("ALL");
+                setFilters((c) => ({ ...c, type: "ALL" }));
               },
             },
           ]
         : []),
     ],
-    [search, statusFilter, t, typeFilter],
+    [filters.search, filters.status, filters.type, t],
   );
 
   function clearFilters() {
-    setSearch("");
-    setStatusFilter("ACTIVE");
-    setTypeFilter("ALL");
+    setFilters((c) => ({ ...DEFAULT_FILTERS, referenceMonth: c.referenceMonth }));
   }
+
+  const isCreating = selectedId === null;
+  const isDrawerOpen = showDrawer;
 
   return (
     <AppShell
@@ -153,9 +149,9 @@ export default function BudgetsPage() {
                   <MonthSelector
                     id="budget-reference-month"
                     onChange={(newMonth) => {
-                      setReferenceMonth(newMonth);
+                      setFilters((c) => ({ ...c, referenceMonth: newMonth }));
                     }}
-                    value={referenceMonth}
+                    value={filters.referenceMonth}
                   />
                 </Field>
                 <Field htmlFor="budget-search" label={t("common.search")}>
@@ -163,10 +159,10 @@ export default function BudgetsPage() {
                   <Input
                     id="budget-search"
                     onChange={(event) => {
-                      setSearch(event.target.value);
+                      setFilters((c) => ({ ...c, search: event.target.value }));
                     }}
                     placeholder={t("budgets.searchPlaceholder")}
-                    value={search}
+                    value={filters.search}
                   />
                 </Field>
               </>
@@ -180,11 +176,15 @@ export default function BudgetsPage() {
                   <Select
                     id="budget-status-filter"
                     onChange={(event) => {
-                      setStatusFilter(
-                        event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                      );
+                      setFilters((c) => ({
+                        ...c,
+                        status: event.target.value as
+                          | "ALL"
+                          | "ACTIVE"
+                          | "ARCHIVED",
+                      }));
                     }}
-                    value={statusFilter}
+                    value={filters.status}
                   >
                     <option value="ALL">{t("common.all")}</option>
                     <option value="ACTIVE">{t("common.active")}</option>
@@ -196,9 +196,12 @@ export default function BudgetsPage() {
                   <Select
                     id="budget-type-filter"
                     onChange={(event) => {
-                      setTypeFilter(event.target.value as BudgetType | "ALL");
+                      setFilters((c) => ({
+                        ...c,
+                        type: event.target.value as BudgetType | "ALL",
+                      }));
                     }}
-                    value={typeFilter}
+                    value={filters.type}
                   >
                     <option value="ALL">{t("common.allTypes")}</option>
                     <option value="GLOBAL">{t("budgetTypes.GLOBAL")}</option>
@@ -213,23 +216,20 @@ export default function BudgetsPage() {
         </Card>
 
         <BudgetList
-          search={search}
-          statusFilter={statusFilter}
-          typeFilter={typeFilter}
-          referenceMonth={referenceMonth}
+          filters={filters}
           selectedId={selectedId}
           onSelect={handleSelect}
           refreshKey={refreshKey}
           onReferenceDataLoaded={setReferenceData}
         />
 
-        {isCreating || selectedBudget ? (
+        {isDrawerOpen ? (
           <Drawer
             description={
               isCreating
                 ? t("budgets.newDescription")
                 : t("budgets.editDescription", {
-                    month: formatReferenceMonth(referenceMonth),
+                    month: formatReferenceMonth(filters.referenceMonth),
                   })
             }
             onClose={handleCloseDrawer}
@@ -239,13 +239,12 @@ export default function BudgetsPage() {
           >
             <div className={styles.drawerStack}>
               <BudgetForm
-                initialValues={initialValues}
                 budget={selectedBudget}
                 user={user!}
                 categories={referenceData.categories}
                 members={referenceData.members}
-                referenceMonth={referenceMonth}
-                onSuccess={handleFormSuccess}
+                referenceMonth={filters.referenceMonth}
+                onSuccess={handleSuccess}
                 onCancel={handleCloseDrawer}
               />
             </div>
