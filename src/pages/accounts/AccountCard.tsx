@@ -48,7 +48,10 @@ export default function AccountCard({ account, onSelect }: AccountCardProps) {
           </span>
           {account.closingDay && account.dueDay ? (
             <span className={`${styles.badge} ${styles.badgeInfo}`}>
-              Fecha {account.closingDay} · Vence {account.dueDay}
+              {t("accounts.billingCycle", {
+                closingDay: account.closingDay,
+                dueDay: account.dueDay,
+              })}
             </span>
           ) : null}
           <span

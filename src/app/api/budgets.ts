@@ -1,5 +1,5 @@
 import { apiRequest, type PageResponse } from "./client";
-import type { TransactionType } from "./transactions";
+import type { SourceType, TransactionType } from "./transactions";
 
 export type BudgetType = "GLOBAL" | "ALLOWANCE";
 
@@ -13,7 +13,7 @@ type BudgetTransaction = {
   id: string;
   type: TransactionType;
   ownershipType: string;
-  sourceType: string;
+  sourceType: SourceType;
   description: string;
   amount: number;
   transactionDate: string;

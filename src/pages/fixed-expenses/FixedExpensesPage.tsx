@@ -13,19 +13,29 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { useI18n } from "../../app/i18n/I18nContext";
-import type { StatusFilter } from "../../lib/constants";
+import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
+import {
+  buildSearchActiveFilter,
+  buildStatusActiveFilter,
+  compileActiveFilters,
+} from "../../lib/activeFilters";
+import { useFiltersState } from "../../lib/useFiltersState";
 import FixedExpenseList from "./FixedExpenseList";
 import FixedExpenseForm from "./FixedExpenseForm";
 import styles from "./FixedExpensesPage.module.scss";
 
 type FixedExpenseFilters = { search: string; status: StatusFilter };
-const DEFAULT_FILTERS: FixedExpenseFilters = { search: "", status: "ACTIVE" };
+const DEFAULT_FILTERS: FixedExpenseFilters = {
+  search: "",
+  status: ACTIVE_STATUS_FILTER,
+};
 
 export default function FixedExpensesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const referenceMonth = getCurrentReferenceMonth();
-  const [filters, setFilters] = useState<FixedExpenseFilters>(DEFAULT_FILTERS);
+  const { filters, patchFilters, clearFilter, resetFilters } =
+    useFiltersState(DEFAULT_FILTERS);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
@@ -35,8 +45,8 @@ export default function FixedExpensesPage() {
   const [selectedTemplate, setSelectedTemplate] =
     useState<FixedExpenseTemplate | null>(null);
 
-  function handleSelect(id: string, template: FixedExpenseTemplate) {
-    setSelectedId(id);
+  function handleSelect(_id: string, template: FixedExpenseTemplate) {
+    setSelectedId(template.id);
     setSelectedTemplate(template);
     setShowDrawer(true);
   }
@@ -59,38 +69,17 @@ export default function FixedExpensesPage() {
   }
 
   const activeFilters = useMemo(
-    () => [
-      ...(filters.search
-        ? [
-            {
-              key: "search",
-              label: `${t("common.search")}: ${filters.search}`,
-              onRemove: () => {
-                setFilters((f) => ({ ...f, search: "" }));
-              },
-            },
-          ]
-        : []),
-      ...(filters.status !== "ACTIVE"
-        ? [
-            {
-              key: "status",
-              label: `${t("common.status")}: ${t(
-                filters.status === "ALL" ? "common.all" : "common.archived",
-              )}`,
-              onRemove: () => {
-                setFilters((f) => ({ ...f, status: "ACTIVE" }));
-              },
-            },
-          ]
-        : []),
-    ],
-    [filters, t],
+    () =>
+      compileActiveFilters([
+        buildSearchActiveFilter(filters.search, t("common.search"), () => {
+          clearFilter("search", "");
+        }),
+        buildStatusActiveFilter(filters.status, t, () => {
+          clearFilter("status", ACTIVE_STATUS_FILTER);
+        }),
+      ]),
+    [filters, t, clearFilter],
   );
-
-  function clearFilters() {
-    setFilters(DEFAULT_FILTERS);
-  }
 
   const isCreating = selectedId === null;
   const isDrawerOpen = showDrawer;
@@ -109,7 +98,7 @@ export default function FixedExpensesPage() {
           <FilterToolbar
             activeFilters={activeFilters}
             isPanelOpen={isFiltersOpen}
-            onClearFilters={clearFilters}
+            onClearFilters={() => resetFilters()}
             onClosePanel={() => setIsFiltersOpen(false)}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
             primaryContent={
@@ -117,7 +106,7 @@ export default function FixedExpensesPage() {
                 <Input
                   id="fixed-expense-search"
                   onChange={(event) => {
-                    setFilters((f) => ({ ...f, search: event.target.value }));
+                    patchFilters({ search: event.target.value });
                   }}
                   placeholder={t("fixedTransactions.searchPlaceholder")}
                   value={filters.search}
@@ -133,10 +122,9 @@ export default function FixedExpensesPage() {
                   <Select
                     id="fixed-expense-status-filter"
                     onChange={(event) => {
-                      setFilters((f) => ({
-                        ...f,
+                      patchFilters({
                         status: event.target.value as StatusFilter,
-                      }));
+                      });
                     }}
                     value={filters.status}
                   >

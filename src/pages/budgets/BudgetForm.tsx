@@ -26,6 +26,7 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import { useConfirmDialog } from "../../lib/useConfirmDialog";
 import styles from "./BudgetsPage.module.scss";
 
 const DEFAULT_VALUES: BudgetFormValues = {
@@ -71,8 +72,12 @@ export default function BudgetForm({
   const { t } = useI18n();
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
-  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {
+    closeDialog: closeArchiveDialog,
+    open: isArchiveDialogOpen,
+    openDialog: openArchiveDialog,
+  } = useConfirmDialog();
 
   const budgetSchema = useMemo(() => createBudgetSchema(t), [t]);
   const form = useForm<BudgetFormValues>({
@@ -143,19 +148,19 @@ export default function BudgetForm({
       return;
     }
 
+    closeArchiveDialog();
     setIsArchiving(true);
     setError(null);
 
     try {
       await archiveBudget(budget.id, referenceMonth, accessToken);
-      setIsArchiveConfirmOpen(false);
       onSuccess();
     } catch {
       setError(t("budgets.archiveError"));
     } finally {
       setIsArchiving(false);
     }
-  }, [accessToken, budget, referenceMonth, onSuccess, t]);
+  }, [accessToken, budget, closeArchiveDialog, referenceMonth, onSuccess, t]);
 
   return (
     <>
@@ -268,7 +273,7 @@ export default function BudgetForm({
           ) : (
             <Button
               disabled={Boolean(budget?.archivedFromMonth)}
-              onClick={() => setIsArchiveConfirmOpen(true)}
+              onClick={openArchiveDialog}
               type="button"
               variant={budget?.archivedFromMonth ? "subtle" : "danger"}
             >
@@ -326,9 +331,9 @@ export default function BudgetForm({
             confirmLabel={t("common.archive")}
             loading={isArchiving}
             message={t("confirmations.archiveBudget")}
-            onCancel={() => setIsArchiveConfirmOpen(false)}
+            onCancel={closeArchiveDialog}
             onConfirm={handleArchive}
-            open={isArchiveConfirmOpen}
+            open={isArchiveDialogOpen}
             title={t("budgets.archiveTitle")}
           />
         </>

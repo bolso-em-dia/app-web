@@ -10,18 +10,28 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import type { Category, CategoryOption } from "../../app/api/categories";
 import { useI18n } from "../../app/i18n/I18nContext";
-import { type StatusFilter } from "../../lib/constants";
+import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
+import {
+  buildSearchActiveFilter,
+  buildStatusActiveFilter,
+  compileActiveFilters,
+} from "../../lib/activeFilters";
+import { useFiltersState } from "../../lib/useFiltersState";
 import CategoryList from "./CategoryList";
 import CategoryForm from "./CategoryForm";
 import styles from "./CategoriesPage.module.scss";
 
 type CategoryFilters = { search: string; status: StatusFilter };
-const DEFAULT_FILTERS: CategoryFilters = { search: "", status: "ACTIVE" };
+const DEFAULT_FILTERS: CategoryFilters = {
+  search: "",
+  status: ACTIVE_STATUS_FILTER,
+};
 
 export default function CategoriesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const [filters, setFilters] = useState<CategoryFilters>(DEFAULT_FILTERS);
+  const { filters, patchFilters, clearFilter, resetFilters } =
+    useFiltersState(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
@@ -32,38 +42,17 @@ export default function CategoriesPage() {
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
 
   const activeFilters = useMemo(
-    () => [
-      ...(filters.search
-        ? [
-            {
-              key: "search",
-              label: `${t("common.search")}: ${filters.search}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, search: "" }));
-              },
-            },
-          ]
-        : []),
-      ...(filters.status !== "ACTIVE"
-        ? [
-            {
-              key: "status",
-              label: `${t("common.status")}: ${t(
-                filters.status === "ALL" ? "common.all" : "common.archived",
-              )}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, status: "ACTIVE" }));
-              },
-            },
-          ]
-        : []),
-    ],
-    [filters, t],
+    () =>
+      compileActiveFilters([
+        buildSearchActiveFilter(filters.search, t("common.search"), () => {
+          clearFilter("search", "");
+        }),
+        buildStatusActiveFilter(filters.status, t, () => {
+          clearFilter("status", ACTIVE_STATUS_FILTER);
+        }),
+      ]),
+    [filters, t, clearFilter],
   );
-
-  function clearFilters() {
-    setFilters(DEFAULT_FILTERS);
-  }
 
   function handleSelect(_id: string, category: Category) {
     setSelectedId(category.id);
@@ -107,7 +96,7 @@ export default function CategoriesPage() {
           <FilterToolbar
             activeFilters={activeFilters}
             isPanelOpen={isFiltersOpen}
-            onClearFilters={clearFilters}
+            onClearFilters={() => resetFilters()}
             onClosePanel={() => setIsFiltersOpen(false)}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
             primaryContent={
@@ -115,7 +104,7 @@ export default function CategoriesPage() {
                 <Input
                   id="category-search"
                   onChange={(event) => {
-                    setFilters((c) => ({ ...c, search: event.target.value }));
+                    patchFilters({ search: event.target.value });
                   }}
                   placeholder={t("categories.searchPlaceholder")}
                   value={filters.search}
@@ -131,10 +120,9 @@ export default function CategoriesPage() {
                   <Select
                     id="category-status-filter"
                     onChange={(event) => {
-                      setFilters((c) => ({
-                        ...c,
+                      patchFilters({
                         status: event.target.value as StatusFilter,
-                      }));
+                      });
                     }}
                     value={filters.status}
                   >

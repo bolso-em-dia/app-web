@@ -4,11 +4,7 @@ import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
-import MonthSelector from "../../components/ui/MonthSelector";
-import Input from "../../components/ui/Input";
-import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
-import Select from "../../components/ui/Select";
 import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
@@ -17,13 +13,25 @@ import { useI18n } from "../../app/i18n/I18nContext";
 import type { Budget, BudgetType } from "../../app/api/budgets";
 import type { CategoryOption } from "../../app/api/categories";
 import type { FamilyMember } from "../../app/api/family";
+import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
+import {
+  buildSearchActiveFilter,
+  buildStatusActiveFilter,
+  buildTypeActiveFilter,
+  compileActiveFilters,
+} from "../../lib/activeFilters";
+import { useFiltersState } from "../../lib/useFiltersState";
 import BudgetList from "./BudgetList";
 import BudgetForm from "./BudgetForm";
+import {
+  BudgetFiltersPrimary,
+  BudgetFiltersSecondary,
+} from "./BudgetFiltersContent";
 import styles from "./BudgetsPage.module.scss";
 
 type BudgetFilters = {
   search: string;
-  status: "ALL" | "ACTIVE" | "ARCHIVED";
+  status: StatusFilter;
   type: BudgetType | "ALL";
   referenceMonth: string;
 };
@@ -31,7 +39,7 @@ type BudgetFilters = {
 const initialRefMonth = getCurrentReferenceMonth();
 const DEFAULT_FILTERS: BudgetFilters = {
   search: "",
-  status: "ACTIVE",
+  status: ACTIVE_STATUS_FILTER,
   type: "ALL",
   referenceMonth: initialRefMonth,
 };
@@ -39,7 +47,8 @@ const DEFAULT_FILTERS: BudgetFilters = {
 export default function BudgetsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const [filters, setFilters] = useState<BudgetFilters>(DEFAULT_FILTERS);
+  const { filters, patchFilters, clearFilter, resetFilters } =
+    useFiltersState(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
   const [showDrawer, setShowDrawer] = useState(false);
@@ -50,8 +59,8 @@ export default function BudgetsPage() {
     members: FamilyMember[];
   }>({ categories: [], members: [] });
 
-  function handleSelect(id: string, budget: Budget) {
-    setSelectedId(id);
+  function handleSelect(_id: string, budget: Budget) {
+    setSelectedId(budget.id);
     setSelectedBudget(budget);
     setShowDrawer(true);
   }
@@ -76,52 +85,27 @@ export default function BudgetsPage() {
   }
 
   const activeFilters = useMemo(
-    () => [
-      ...(filters.search
-        ? [
-            {
-              key: "search",
-              label: `${t("common.search")}: ${filters.search}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, search: "" }));
-              },
-            },
-          ]
-        : []),
-      ...(filters.status !== "ACTIVE"
-        ? [
-            {
-              key: "status",
-              label: `${t("common.status")}: ${t(
-                filters.status === "ALL" ? "common.all" : "common.archived",
-              )}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, status: "ACTIVE" }));
-              },
-            },
-          ]
-        : []),
-      ...(filters.type !== "ALL"
-        ? [
-            {
-              key: "type",
-              label: `${t("common.type")}: ${t(`budgetTypes.${filters.type}`)}`,
-              onRemove: () => {
-                setFilters((c) => ({ ...c, type: "ALL" }));
-              },
-            },
-          ]
-        : []),
-    ],
-    [filters.search, filters.status, filters.type, t],
+    () =>
+      compileActiveFilters([
+        buildSearchActiveFilter(filters.search, t("common.search"), () => {
+          clearFilter("search", "");
+        }),
+        buildStatusActiveFilter(filters.status, t, () => {
+          clearFilter("status", ACTIVE_STATUS_FILTER);
+        }),
+        buildTypeActiveFilter(
+          "type",
+          filters.type === "ALL" ? undefined : filters.type,
+          filters.type !== "ALL"
+            ? `${t("common.type")}: ${t(`budgetTypes.${filters.type}` as const)}`
+            : "",
+          () => {
+            clearFilter("type", "ALL" as BudgetType | "ALL");
+          },
+        ),
+      ]),
+    [filters.search, filters.status, filters.type, t, clearFilter],
   );
-
-  function clearFilters() {
-    setFilters((c) => ({
-      ...DEFAULT_FILTERS,
-      referenceMonth: c.referenceMonth,
-    }));
-  }
 
   const isCreating = selectedId === null;
   const isDrawerOpen = showDrawer;
@@ -140,78 +124,25 @@ export default function BudgetsPage() {
           <FilterToolbar
             activeFilters={activeFilters}
             isPanelOpen={isFiltersOpen}
-            onClearFilters={clearFilters}
+            onClearFilters={() =>
+              resetFilters({
+                ...DEFAULT_FILTERS,
+                referenceMonth: filters.referenceMonth,
+              })
+            }
             onClosePanel={() => setIsFiltersOpen(false)}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
             primaryContent={
-              <>
-                <Field
-                  htmlFor="budget-reference-month"
-                  label={t("common.month")}
-                >
-                  <MonthSelector
-                    id="budget-reference-month"
-                    onChange={(newMonth) => {
-                      setFilters((c) => ({ ...c, referenceMonth: newMonth }));
-                    }}
-                    value={filters.referenceMonth}
-                  />
-                </Field>
-                <Field htmlFor="budget-search" label={t("common.search")}>
-                  {" "}
-                  <Input
-                    id="budget-search"
-                    onChange={(event) => {
-                      setFilters((c) => ({ ...c, search: event.target.value }));
-                    }}
-                    placeholder={t("budgets.searchPlaceholder")}
-                    value={filters.search}
-                  />
-                </Field>
-              </>
+              <BudgetFiltersPrimary
+                filters={filters}
+                onFiltersChange={patchFilters}
+              />
             }
             secondaryContent={
-              <>
-                <Field
-                  htmlFor="budget-status-filter"
-                  label={t("common.status")}
-                >
-                  <Select
-                    id="budget-status-filter"
-                    onChange={(event) => {
-                      setFilters((c) => ({
-                        ...c,
-                        status: event.target.value as
-                          "ALL" | "ACTIVE" | "ARCHIVED",
-                      }));
-                    }}
-                    value={filters.status}
-                  >
-                    <option value="ALL">{t("common.all")}</option>
-                    <option value="ACTIVE">{t("common.active")}</option>
-                    <option value="ARCHIVED">{t("common.archived")}</option>
-                  </Select>
-                </Field>
-
-                <Field htmlFor="budget-type-filter" label={t("common.type")}>
-                  <Select
-                    id="budget-type-filter"
-                    onChange={(event) => {
-                      setFilters((c) => ({
-                        ...c,
-                        type: event.target.value as BudgetType | "ALL",
-                      }));
-                    }}
-                    value={filters.type}
-                  >
-                    <option value="ALL">{t("common.allTypes")}</option>
-                    <option value="GLOBAL">{t("budgetTypes.GLOBAL")}</option>
-                    <option value="ALLOWANCE">
-                      {t("budgetTypes.ALLOWANCE")}
-                    </option>
-                  </Select>
-                </Field>
-              </>
+              <BudgetFiltersSecondary
+                filters={filters}
+                onFiltersChange={patchFilters}
+              />
             }
           />
         </Card>

@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
-import { ICON_OPTIONS } from "../../lib/uiOptions";
+import { ptBRMessages } from "../../app/i18n/messages";
+import { buildIconOptions } from "../../lib/uiOptions";
 import IconSelect from "./IconSelect";
+
+const iconOptions = buildIconOptions((key) => ptBRMessages[key]);
 
 function IconSelectHarness() {
   const [value, setValue] = useState("");
@@ -12,7 +15,7 @@ function IconSelectHarness() {
         clearLabel="Sem ícone"
         id="category-icon"
         onChange={setValue}
-        options={ICON_OPTIONS.slice(0, 3)}
+        options={iconOptions.slice(0, 3)}
         value={value}
       />
       <output>{value || "empty"}</output>

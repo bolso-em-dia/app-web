@@ -18,9 +18,11 @@ const defaultPreferences: UserPreferences = {
 export function TestAuthProvider({
   children,
   user,
+  authOverrides,
 }: {
   children: ReactNode;
   user?: TestAuthUser | null;
+  authOverrides?: Partial<AuthContextValue>;
 }) {
   const resolvedUser = user
     ? {
@@ -39,6 +41,7 @@ export function TestAuthProvider({
     logout: async () => undefined,
     updateUserPreferences: () => undefined,
     updateUser: () => undefined,
+    ...authOverrides,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

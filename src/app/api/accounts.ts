@@ -1,4 +1,5 @@
 import { apiRequest, type PageResponse } from "./client";
+import type { Currency } from "../../lib/formatters/currency";
 
 export type AccountType = "CHECKING" | "SAVINGS" | "CREDIT_CARD" | "INVESTMENT";
 
@@ -6,7 +7,7 @@ export type Account = {
   id: string;
   name: string;
   type: AccountType;
-  currency?: string;
+  currency?: Currency;
   brand: string | null;
   color: string | null;
   closingDay: number | null;
@@ -20,7 +21,7 @@ export type Account = {
 export type AccountPayload = {
   name: string;
   type: AccountType;
-  currency?: string;
+  currency?: Currency;
   brand?: string;
   color?: string;
   closingDay?: number;
@@ -78,7 +79,7 @@ export type AccountOption = {
   id: string;
   name: string;
   type: AccountType;
-  currency?: string;
+  currency?: Currency;
   color?: string;
 };
 

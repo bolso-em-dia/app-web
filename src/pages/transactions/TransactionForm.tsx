@@ -20,6 +20,7 @@ import {
   type TransactionFormValues,
 } from "../../lib/validation/transactionSchema";
 import { useAuth } from "../../app/auth/useAuth";
+import type { Currency } from "../../lib/formatters/currency";
 import Button from "../../components/ui/Button";
 import CategorySelect from "../../components/ui/CategorySelect";
 import ConfirmAction from "../../components/ui/ConfirmAction";
@@ -158,9 +159,8 @@ export default function TransactionForm({
   const formAccountId = form.watch("accountId");
 
   const selectedAccountCurrency = useMemo(
-    () =>
-      accounts.find((a) => a.id === formAccountId)?.currency as
-        "BRL" | "USD" | undefined,
+    (): Currency | undefined =>
+      accounts.find((account) => account.id === formAccountId)?.currency,
     [accounts, formAccountId],
   );
 
