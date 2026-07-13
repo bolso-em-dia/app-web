@@ -50,7 +50,6 @@ function mapFormValuesToPayload(values: BudgetFormValues): BudgetPayload {
 }
 
 interface BudgetFormProps {
-  initialValues: BudgetFormValues | null;
   budget: Budget | null;
   user: AuthUser;
   categories: CategoryOption[];
@@ -61,7 +60,6 @@ interface BudgetFormProps {
 }
 
 export default function BudgetForm({
-  initialValues,
   budget,
   categories,
   members,
@@ -81,6 +79,19 @@ export default function BudgetForm({
     resolver: zodResolver(budgetSchema),
     defaultValues: DEFAULT_VALUES,
   });
+
+  const initialValues = useMemo(() => {
+    if (!budget) {
+      return DEFAULT_VALUES;
+    }
+    return {
+      name: budget.name,
+      type: budget.type,
+      ownerMemberId: budget.ownerMemberId ?? "",
+      categoryIds: budget.categories.map((c) => c.id),
+      monthlyLimit: budget.monthlyLimit,
+    };
+  }, [budget]);
 
   useEffect(() => {
     if (initialValues) {
