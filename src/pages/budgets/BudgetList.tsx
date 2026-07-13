@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "../../app/auth/useAuth";
-import { useI18n } from "../../app/i18n/I18nContext";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { listBudgets, type Budget, type BudgetType } from "../../app/api/budgets";
 import { listCategoryOptions, type CategoryOption } from "../../app/api/categories";
 import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
-import { listBudgets, type Budget, type BudgetType } from "../../app/api/budgets";
+import { useAuth } from "../../app/auth/useAuth";
+import { useI18n } from "../../app/i18n/I18nContext";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
-import BudgetCard from "./BudgetCard";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
-import { usePagination } from "../../lib/usePagination";
+import { useInfinitePageList } from "../../lib/useInfinitePageList";
+import BudgetCard from "./BudgetCard";
 import styles from "./BudgetsPage.module.scss";
 
 interface BudgetListProps {
@@ -28,69 +28,62 @@ interface BudgetListProps {
 export default function BudgetList({ filters, selectedId, onSelect, refreshKey, onReferenceDataLoaded }: BudgetListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const [referenceDataError, setReferenceDataError] = useState<string | null>(null);
+  const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
 
-  const loadBudgetsData = useCallback(
-    async (currentPage: number, currentPageSize: number) => {
-      if (!accessToken) {
-        return;
-      }
+  const loadReferenceData = useCallback(async () => {
+    if (!accessToken) {
+      return;
+    }
 
-      setIsLoading(true);
+    setReferenceDataError(null);
 
-      try {
-        const [budgetsResponse, categoryOptionsResponse, membersResponse] = await Promise.all([
-          listBudgets(
-            {
-              referenceMonth: filters.referenceMonth,
-              page: currentPage,
-              size: currentPageSize,
-              search: filters.search || undefined,
-              status: filters.status,
-              type: filters.type === "ALL" ? undefined : filters.type,
-            },
-            accessToken,
-          ),
-          listCategoryOptions(filters.referenceMonth, accessToken),
-          listFamilyMembers(accessToken),
-        ]);
+    try {
+      const [categories, members] = await Promise.all([
+        listCategoryOptions(filters.referenceMonth, accessToken),
+        listFamilyMembers(accessToken),
+      ]);
 
-        setBudgets(budgetsResponse.items);
-        setPage(budgetsResponse.page);
-        setPageSize(budgetsResponse.size);
-        setTotalItems(budgetsResponse.totalItems);
-        onReferenceDataLoaded({
-          categories: categoryOptionsResponse,
-          members: membersResponse,
-        });
-      } catch {
-        // error is handled by the loading state; list still renders with empty data
-      } finally {
-        setIsLoading(false);
-        setHasLoadedOnce(true);
-      }
-    },
-    [accessToken, filters.referenceMonth, filters.search, filters.status, filters.type, onReferenceDataLoaded],
-  );
+      onReferenceDataLoaded({ categories, members });
+    } catch {
+      setReferenceDataError(t("budgets.error"));
+    }
+  }, [accessToken, filters.referenceMonth, onReferenceDataLoaded, t]);
 
   useEffect(() => {
-    setPage(0);
-  }, [filters.search, filters.status, filters.type, filters.referenceMonth]);
+    void loadReferenceData();
+  }, [loadReferenceData, refreshKey]);
 
-  useEffect(() => {
-    void loadBudgetsData(page, pageSize);
-  }, [loadBudgetsData, page, pageSize, refreshKey]);
+  const {
+    items: budgets,
+    totalItems,
+    isInitialLoading,
+    hasNextPage,
+    isLoadingMore,
+    error,
+    retry,
+    sentinelRef,
+  } = useInfinitePageList<Budget>({
+    enabled: Boolean(accessToken),
+    queryKey,
+    initialPageSize: DEFAULT_PAGE_SIZE,
+    loadPage: (page, size) =>
+      listBudgets(
+        {
+          referenceMonth: filters.referenceMonth,
+          page,
+          size,
+          search: filters.search || undefined,
+          status: filters.status,
+          type: filters.type === "ALL" ? undefined : filters.type,
+        },
+        accessToken!,
+      ),
+  });
 
-  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
-  const showInitialLoading = isLoading && !hasLoadedOnce;
-  const pagination = usePagination(page, pageSize, totalItems, totalPages);
+  const listError = referenceDataError ?? (error ? t("budgets.error") : null);
 
-  if (showInitialLoading) {
+  if (isInitialLoading) {
     return (
       <Card className={styles.loadingCard}>
         <Spinner label={t("budgets.loading")} />
@@ -98,7 +91,7 @@ export default function BudgetList({ filters, selectedId, onSelect, refreshKey, 
     );
   }
 
-  if (budgets.length === 0) {
+  if (budgets.length === 0 && !listError) {
     return (
       <section className={styles.budgetGrid}>
         <Card className={styles.emptyState}>
@@ -116,19 +109,16 @@ export default function BudgetList({ filters, selectedId, onSelect, refreshKey, 
         ))}
       </section>
 
+      {listError ? <p>{listError}</p> : null}
+
       <PaginationBar
-        start={pagination.rangeStart}
-        end={pagination.rangeEnd}
+        loaded={budgets.length}
         total={totalItems}
-        pageSize={pageSize}
-        hasPrevious={pagination.hasPreviousPage}
-        hasNext={pagination.hasNextPage}
-        onPrevious={() => setPage((p) => p - 1)}
-        onNext={() => setPage((p) => p + 1)}
-        onPageSizeChange={(s) => {
-          setPageSize(s);
-          setPage(0);
-        }}
+        isLoadingMore={isLoadingMore}
+        hasNextPage={hasNextPage}
+        error={listError}
+        onRetry={retry}
+        sentinelRef={sentinelRef}
       />
     </>
   );

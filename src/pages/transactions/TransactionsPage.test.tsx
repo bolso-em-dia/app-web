@@ -141,7 +141,7 @@ describe("TransactionsPage", () => {
     );
 
     expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
-    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
+    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação" }));
     const drawer = screen.getByRole("dialog");
@@ -907,7 +907,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("1-1 de 1")).toBeInTheDocument();
+    expect(await screen.findByText("1 de 1 itens")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
@@ -1032,7 +1032,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("1-1 de 1")).toBeInTheDocument();
+    expect(await screen.findByText("1 de 1 itens")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
 
@@ -1071,7 +1071,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("1-1 de 1")).toBeInTheDocument();
+    expect(await screen.findByText("1 de 1 itens")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Filtros" }));
     fireEvent.click(screen.getByLabelText("Categorias", { selector: "button" }));

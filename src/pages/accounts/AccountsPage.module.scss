@@ -49,8 +49,7 @@
   border-inline-start: var(--space-1) solid transparent;
   border-radius: inherit;
   background: transparent;
-  padding: var(--space-4) var(--space-4) var(--space-4)
-    calc(var(--space-4) - var(--space-1));
+  padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) - var(--space-1));
   text-align: left;
   cursor: pointer;
 }

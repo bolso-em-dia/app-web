@@ -84,7 +84,7 @@ describe("FixedExpensesPage", () => {
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
     expect(screen.getByText("Housing · Main checking · Vence dia 05")).toBeInTheDocument();
-    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
+    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Nova transação fixa" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -178,7 +178,7 @@ describe("FixedExpensesPage", () => {
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
     expect(screen.getByText("Salary")).toBeInTheDocument();
-    expect(screen.getByText("1-2 de 2")).toBeInTheDocument();
+    expect(screen.getByText("2 de 2 itens")).toBeInTheDocument();
   });
 
   it("shows range text when no templates exist", async () => {
@@ -213,7 +213,7 @@ describe("FixedExpensesPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("0-0 de 0")).toBeInTheDocument();
+    expect(await screen.findByText("0 de 0 itens")).toBeInTheDocument();
   });
 
   it("opens delete confirmation alertdialog when the delete button is clicked", async () => {

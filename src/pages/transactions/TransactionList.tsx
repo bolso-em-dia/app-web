@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAuth } from "../../app/auth/useAuth";
+import { useCallback, useMemo } from "react";
 import { type CategoryOption } from "../../app/api/categories";
 import { listTransactions, materializeTransactions, type Transaction, type TransactionFilters } from "../../app/api/transactions";
+import { useAuth } from "../../app/auth/useAuth";
+import { useI18n } from "../../app/i18n/I18nContext";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
-import { useI18n } from "../../app/i18n/I18nContext";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
-import { usePagination } from "../../lib/usePagination";
+import { useInfinitePageList } from "../../lib/useInfinitePageList";
 import TransactionCard from "./TransactionCard";
 import styles from "./TransactionsPage.module.scss";
 
@@ -22,77 +22,54 @@ interface TransactionListProps {
 export default function TransactionList({ categoryOptions, filters, selectedId, onSelect, refreshKey }: TransactionListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const loadCounterRef = useRef(0);
-
   const { referenceMonth, search, type: typeFilter, ownershipType: ownershipFilter, accountId, categoryIds, memberId } = filters;
+  const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
 
-  const filterKey = useMemo(() => JSON.stringify(filters), [filters]);
-
-  useEffect(() => {
-    setPage(0);
-  }, [filterKey]);
-
-  const loadPageData = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
-
-    const loadId = ++loadCounterRef.current;
-    setIsLoading(true);
-
-    try {
-      await materializeTransactions(referenceMonth, accessToken);
-
-      const params: Record<string, unknown> = {
-        referenceMonth,
-        page,
-        size: pageSize,
-      };
-
-      if (search) params.search = search;
-      if (typeFilter) params.type = typeFilter;
-      if (ownershipFilter) params.ownershipType = ownershipFilter;
-      if (accountId) params.accountId = accountId;
-      if (categoryIds && categoryIds.length > 0) params.categoryIds = categoryIds;
-      if (memberId) params.memberId = memberId;
-
-      const transactionsResponse = await listTransactions(params as Parameters<typeof listTransactions>[0], accessToken);
-
-      if (loadId !== loadCounterRef.current) return;
-
-      setTransactions(transactionsResponse.items);
-      setPage(transactionsResponse.page);
-      setPageSize(transactionsResponse.size);
-      setTotalItems(transactionsResponse.totalItems);
-    } catch {
-      if (loadId === loadCounterRef.current) {
-        setTransactions([]);
-        setTotalItems(0);
+  const loadPageData = useCallback(
+    async (page: number, size: number) => {
+      if (page === 0) {
+        await materializeTransactions(referenceMonth, accessToken!);
       }
-    } finally {
-      if (loadId === loadCounterRef.current) {
-        setIsLoading(false);
-        setHasLoadedOnce(true);
-      }
-    }
-  }, [accessToken, page, pageSize, referenceMonth, search, typeFilter, ownershipFilter, accountId, categoryIds, memberId]);
 
-  useEffect(() => {
-    void loadPageData();
-  }, [loadPageData, refreshKey]);
+      return listTransactions(
+        {
+          referenceMonth,
+          page,
+          size,
+          search,
+          type: typeFilter,
+          ownershipType: ownershipFilter,
+          accountId,
+          categoryIds,
+          memberId,
+        },
+        accessToken!,
+      );
+    },
+    [accessToken, accountId, categoryIds, memberId, ownershipFilter, referenceMonth, search, typeFilter],
+  );
+
+  const {
+    items: transactions,
+    totalItems,
+    isInitialLoading,
+    hasLoadedOnce,
+    hasNextPage,
+    isLoadingMore,
+    error,
+    retry,
+    sentinelRef,
+  } = useInfinitePageList<Transaction>({
+    enabled: Boolean(accessToken),
+    queryKey,
+    initialPageSize: DEFAULT_PAGE_SIZE,
+    loadPage: loadPageData,
+  });
 
   const categoryOptionsById = useMemo(() => new Map(categoryOptions.map((cat) => [cat.id, cat])), [categoryOptions]);
-  const showInitialLoading = isLoading && !hasLoadedOnce;
-  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
-  const pagination = usePagination(page, pageSize, totalItems, totalPages);
+  const listError = error ? t("transactions.error") : null;
 
-  if (showInitialLoading) {
+  if (isInitialLoading) {
     return (
       <Card className={styles.loadingCard}>
         <Spinner label={t("transactions.loading")} />
@@ -100,7 +77,7 @@ export default function TransactionList({ categoryOptions, filters, selectedId, 
     );
   }
 
-  if (transactions.length === 0 && !isLoading) {
+  if (transactions.length === 0 && hasLoadedOnce && !listError) {
     return (
       <section className={styles.transactionGrid}>
         <Card className={styles.emptyState}>
@@ -113,39 +90,31 @@ export default function TransactionList({ categoryOptions, filters, selectedId, 
   return (
     <>
       <section className={styles.transactionGrid}>
-        {isLoading && hasLoadedOnce ? (
-          <Card className={styles.loadingCard}>
-            <Spinner label={t("transactions.loading")} />
-          </Card>
-        ) : (
-          transactions.map((transaction) => {
-            const categoryOption = categoryOptionsById.get(transaction.categoryId);
-            return (
-              <TransactionCard
-                key={transaction.id}
-                transaction={transaction}
-                categoryOption={categoryOption}
-                isSelected={selectedId === transaction.id}
-                onSelect={(id) => onSelect(id, transaction)}
-              />
-            );
-          })
-        )}
+        {transactions.map((transaction) => {
+          const categoryOption = categoryOptionsById.get(transaction.categoryId);
+
+          return (
+            <TransactionCard
+              key={transaction.id}
+              transaction={transaction}
+              categoryOption={categoryOption}
+              isSelected={selectedId === transaction.id}
+              onSelect={(id) => onSelect(id, transaction)}
+            />
+          );
+        })}
       </section>
 
+      {listError ? <p>{listError}</p> : null}
+
       <PaginationBar
-        start={pagination.rangeStart}
-        end={pagination.rangeEnd}
+        loaded={transactions.length}
         total={totalItems}
-        pageSize={pageSize}
-        hasPrevious={pagination.hasPreviousPage}
-        hasNext={pagination.hasNextPage}
-        onPrevious={() => setPage((p) => p - 1)}
-        onNext={() => setPage((p) => p + 1)}
-        onPageSizeChange={(s) => {
-          setPageSize(s);
-          setPage(0);
-        }}
+        isLoadingMore={isLoadingMore}
+        hasNextPage={hasNextPage}
+        error={listError}
+        onRetry={retry}
+        sentinelRef={sentinelRef}
       />
     </>
   );

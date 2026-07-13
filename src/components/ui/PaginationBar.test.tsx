@@ -4,15 +4,12 @@ import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import PaginationBar from "./PaginationBar";
 
 function renderPaginationBar(props: {
-  start: number;
-  end: number;
+  loaded: number;
   total: number;
-  pageSize: number;
-  hasPrevious: boolean;
-  hasNext: boolean;
-  onPrevious: () => void;
-  onNext: () => void;
-  onPageSizeChange: (size: number) => void;
+  isLoadingMore: boolean;
+  hasNextPage: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }) {
   return render(
     <MemoryRouter>
@@ -33,55 +30,40 @@ function renderPaginationBar(props: {
 
 describe("PaginationBar", () => {
   const defaultProps = {
-    start: 1,
-    end: 12,
+    loaded: 12,
     total: 100,
-    pageSize: 12,
-    hasPrevious: false,
-    hasNext: true,
-    onPrevious: vi.fn(),
-    onNext: vi.fn(),
-    onPageSizeChange: vi.fn(),
+    isLoadingMore: false,
+    hasNextPage: true,
   };
 
-  it("renders range text", () => {
+  it("renders loaded summary", () => {
     renderPaginationBar(defaultProps);
-    expect(screen.getByText("1-12 de 100")).toBeInTheDocument();
+    expect(screen.getByText("12 de 100 itens")).toBeInTheDocument();
   });
 
-  it("disables previous button when hasPrevious is false", () => {
+  it("shows scroll hint when there are more pages", () => {
     renderPaginationBar(defaultProps);
-    const prevButton = screen.getByRole("button", { name: "Anterior" });
-    expect(prevButton).toBeDisabled();
+    expect(screen.getByText("Role para carregar mais")).toBeInTheDocument();
   });
 
-  it("enables next button when hasNext is true", () => {
-    renderPaginationBar(defaultProps);
-    const nextButton = screen.getByRole("button", { name: "Próxima" });
-    expect(nextButton).not.toBeDisabled();
+  it("shows loading state", () => {
+    renderPaginationBar({ ...defaultProps, isLoadingMore: true });
+    expect(screen.getByText("Carregando mais...")).toBeInTheDocument();
   });
 
-  it("calls onPrevious when previous button is clicked", () => {
-    const onPrevious = vi.fn();
-    renderPaginationBar({ ...defaultProps, hasPrevious: true, onPrevious });
-    const prevButton = screen.getByRole("button", { name: "Anterior" });
-    fireEvent.click(prevButton);
-    expect(onPrevious).toHaveBeenCalled();
+  it("shows completion state", () => {
+    renderPaginationBar({ ...defaultProps, loaded: 100, hasNextPage: false });
+    expect(screen.getByText("Todos os itens carregados")).toBeInTheDocument();
   });
 
-  it("calls onNext when next button is clicked", () => {
-    const onNext = vi.fn();
-    renderPaginationBar({ ...defaultProps, onNext });
-    const nextButton = screen.getByRole("button", { name: "Próxima" });
-    fireEvent.click(nextButton);
-    expect(onNext).toHaveBeenCalled();
-  });
-
-  it("changes page size", () => {
-    const onPageSizeChange = vi.fn();
-    renderPaginationBar({ ...defaultProps, onPageSizeChange });
-    const select = screen.getByRole("combobox", { name: "Linhas" });
-    fireEvent.change(select, { target: { value: "24" } });
-    expect(onPageSizeChange).toHaveBeenCalledWith(24);
+  it("allows retry after error", () => {
+    const onRetry = vi.fn();
+    renderPaginationBar({
+      ...defaultProps,
+      error: "Falha ao carregar.",
+      onRetry,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    expect(onRetry).toHaveBeenCalled();
   });
 });

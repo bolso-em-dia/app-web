@@ -106,7 +106,7 @@ describe("BudgetsPage", () => {
     );
 
     expect(await screen.findByText("Household")).toBeInTheDocument();
-    expect(screen.getByText("1-1 de 1")).toBeInTheDocument();
+    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Novo orçamento" }));
     const drawer = screen.getByRole("dialog");

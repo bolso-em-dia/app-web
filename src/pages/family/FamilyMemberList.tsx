@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import type { FamilyMember } from "../../app/api/family";
-import { listFamilyMemberPage } from "../../app/api/family";
+import { useMemo } from "react";
+import { listFamilyMemberPage, type FamilyMember } from "../../app/api/family";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
-import Card from "../../components/ui/Card";
 import Spinner from "../../components/feedback/Spinner";
+import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
 import { DEFAULT_PAGE_SIZE, type StatusFilter } from "../../lib/constants";
-import { usePagination } from "../../lib/usePagination";
+import { useInfinitePageList } from "../../lib/useInfinitePageList";
 import FamilyMemberCard from "./FamilyMemberCard";
 import styles from "./FamilyPage.module.scss";
 
@@ -21,51 +20,25 @@ interface FamilyMemberListProps {
 export default function FamilyMemberList({ filters, selectedId, onSelect, refreshKey }: FamilyMemberListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
-  const [members, setMembers] = useState<FamilyMember[]>([]);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
+  const {
+    items: members,
+    totalItems,
+    isInitialLoading,
+    hasNextPage,
+    isLoadingMore,
+    error,
+    retry,
+    sentinelRef,
+  } = useInfinitePageList<FamilyMember>({
+    enabled: Boolean(accessToken),
+    queryKey,
+    initialPageSize: DEFAULT_PAGE_SIZE,
+    loadPage: (page, size) => listFamilyMemberPage({ page, size, search: filters.search, status: filters.status }, accessToken!),
+  });
+  const listError = error ? t("family.error") : null;
 
-  const loadMembers = useCallback(
-    async (pageNum: number, size: number, query: string, status: StatusFilter) => {
-      if (!accessToken) {
-        return;
-      }
-
-      setIsLoading(true);
-
-      try {
-        const response = await listFamilyMemberPage({ page: pageNum, size, search: query, status }, accessToken);
-        setMembers(response.items);
-        setPage(response.page);
-        setPageSize(response.size);
-        setTotalItems(response.totalItems);
-      } catch {
-        setMembers([]);
-        setTotalItems(0);
-      } finally {
-        setIsLoading(false);
-        setHasLoadedOnce(true);
-      }
-    },
-    [accessToken],
-  );
-
-  useEffect(() => {
-    void loadMembers(page, pageSize, filters.search, filters.status);
-  }, [loadMembers, page, pageSize, filters.search, filters.status, refreshKey]);
-
-  useEffect(() => {
-    setPage(0);
-  }, [filters.search, filters.status]);
-
-  const showInitialLoading = isLoading && !hasLoadedOnce;
-  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize);
-  const pagination = usePagination(page, pageSize, totalItems, totalPages);
-
-  if (showInitialLoading) {
+  if (isInitialLoading) {
     return (
       <Card className={styles.loadingCard}>
         <Spinner label={t("family.loading")} />
@@ -73,7 +46,7 @@ export default function FamilyMemberList({ filters, selectedId, onSelect, refres
     );
   }
 
-  if (members.length === 0) {
+  if (members.length === 0 && !listError) {
     return (
       <section className={styles.memberGrid}>
         <Card className={styles.emptyState}>
@@ -96,19 +69,16 @@ export default function FamilyMemberList({ filters, selectedId, onSelect, refres
         ))}
       </section>
 
+      {listError ? <p>{listError}</p> : null}
+
       <PaginationBar
-        start={pagination.rangeStart}
-        end={pagination.rangeEnd}
+        loaded={members.length}
         total={totalItems}
-        pageSize={pageSize}
-        hasPrevious={pagination.hasPreviousPage}
-        hasNext={pagination.hasNextPage}
-        onPrevious={() => setPage((p) => p - 1)}
-        onNext={() => setPage((p) => p + 1)}
-        onPageSizeChange={(s) => {
-          setPageSize(s);
-          setPage(0);
-        }}
+        isLoadingMore={isLoadingMore}
+        hasNextPage={hasNextPage}
+        error={listError}
+        onRetry={retry}
+        sentinelRef={sentinelRef}
       />
     </>
   );
