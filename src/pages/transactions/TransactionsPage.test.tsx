@@ -18,6 +18,7 @@ import {
   mockErrorResponse,
   mockFetchUrl,
 } from "../../test/setup";
+import { clearCachedOptionsResources } from "../../lib/options/useCachedOptionsResource";
 import TransactionsPage from "./TransactionsPage";
 
 const defaultTransactionsResponse = {
@@ -134,6 +135,7 @@ function selectCategory(container: HTMLElement, categoryName: string) {
 
 describe("TransactionsPage", () => {
   beforeEach(() => {
+    clearCachedOptionsResources();
     resetFetchMocks();
   });
 

@@ -6,21 +6,14 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
 import FilterToolbar from "../../components/ui/FilterToolbar";
+import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInput";
+import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
-import {
-  buildSearchActiveFilter,
-  buildStatusActiveFilter,
-  buildTypeActiveFilter,
-  compileActiveFilters,
-} from "../../lib/activeFilters";
+import type { FilterFields } from "../../lib/filterFields";
 import { useFiltersState } from "../../lib/useFiltersState";
 import AccountList from "./AccountList";
 import AccountForm from "./AccountForm";
-import {
-  AccountFiltersPrimary,
-  AccountFiltersSecondary,
-} from "./AccountFiltersContent";
 import styles from "./AccountsPage.module.scss";
 
 type AccountFilters = {
@@ -38,7 +31,7 @@ const DEFAULT_FILTERS: AccountFilters = {
 export default function AccountsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { filters, patchFilters, clearFilter, resetFilters } =
+  const { filters, patchFilters, clearFilter } =
     useFiltersState(DEFAULT_FILTERS);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -74,27 +67,86 @@ export default function AccountsPage() {
     setRefreshKey((k) => k + 1);
   }, []);
 
-  const activeFilters = useMemo(
-    () =>
-      compileActiveFilters([
-        buildSearchActiveFilter(filters.search, t("common.search"), () => {
-          clearFilter("search", "");
-        }),
-        buildStatusActiveFilter(filters.status, t, () => {
-          clearFilter("status", ACTIVE_STATUS_FILTER);
-        }),
-        buildTypeActiveFilter(
-          "type",
-          filters.type,
-          filters.type
-            ? `${t("common.type")}: ${t(`accountTypes.${filters.type}` as const)}`
-            : "",
-          () => {
-            clearFilter("type", "" as "" | AccountType);
-          },
+  const fields = useMemo<FilterFields>(
+    () => ({
+      search: {
+        kind: "text",
+        label: t("common.search"),
+        value: filters.search,
+        defaultValue: "",
+        placement: "visible",
+        element: (
+          <FilterTextInput
+            id="account-search"
+            label={t("common.search")}
+            onChange={(search) => {
+              patchFilters({ search });
+            }}
+            placeholder={t("accounts.searchPlaceholder")}
+            value={filters.search}
+          />
         ),
-      ]),
-    [filters.search, filters.status, filters.type, t, clearFilter],
+      },
+      status: {
+        kind: "select",
+        label: t("common.status"),
+        value: filters.status,
+        defaultValue: ACTIVE_STATUS_FILTER,
+        placement: "expanded",
+        options: [
+          { value: "ALL", label: t("common.all") },
+          { value: "ACTIVE", label: t("common.active") },
+          { value: "ARCHIVED", label: t("common.archived") },
+        ],
+        element: (
+          <FilterSelectInput<StatusFilter>
+            id="account-status-filter"
+            label={t("common.status")}
+            onChange={(status) => {
+              patchFilters({ status: status as StatusFilter });
+            }}
+            options={[
+              { value: "ALL", label: t("common.all") },
+              { value: "ACTIVE", label: t("common.active") },
+              { value: "ARCHIVED", label: t("common.archived") },
+            ]}
+            placeholder={t("common.all")}
+            value={filters.status}
+          />
+        ),
+      },
+      type: {
+        kind: "select",
+        label: t("common.type"),
+        value: filters.type,
+        defaultValue: "",
+        placement: "expanded",
+        options: [
+          { value: "CHECKING", label: t("accountTypes.CHECKING") },
+          { value: "SAVINGS", label: t("accountTypes.SAVINGS") },
+          { value: "CREDIT_CARD", label: t("accountTypes.CREDIT_CARD") },
+          { value: "INVESTMENT", label: t("accountTypes.INVESTMENT") },
+        ],
+        element: (
+          <FilterSelectInput<AccountType>
+            id="account-type-filter"
+            label={t("common.type")}
+            onChange={(type) => {
+              patchFilters({ type });
+            }}
+            options={[
+              { value: "CHECKING", label: t("accountTypes.CHECKING") },
+              { value: "SAVINGS", label: t("accountTypes.SAVINGS") },
+              { value: "CREDIT_CARD", label: t("accountTypes.CREDIT_CARD") },
+              { value: "INVESTMENT", label: t("accountTypes.INVESTMENT") },
+            ]}
+            placeholder={t("common.allTypes")}
+            value={filters.type}
+          />
+        ),
+      },
+    }),
+    [filters.search, filters.status, filters.type, patchFilters, t],
   );
 
   return (
@@ -109,23 +161,16 @@ export default function AccountsPage() {
       <section className={styles.stack}>
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
-            activeFilters={activeFilters}
+            fields={fields}
             isPanelOpen={isFiltersOpen}
-            onClearFilters={() => resetFilters()}
             onClosePanel={() => setIsFiltersOpen(false)}
+            onResetField={(name, defaultValue) => {
+              clearFilter(
+                name as keyof AccountFilters,
+                defaultValue as AccountFilters[keyof AccountFilters],
+              );
+            }}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
-            primaryContent={
-              <AccountFiltersPrimary
-                filters={filters}
-                onFiltersChange={patchFilters}
-              />
-            }
-            secondaryContent={
-              <AccountFiltersSecondary
-                filters={filters}
-                onFiltersChange={patchFilters}
-              />
-            }
           />
         </Card>
 

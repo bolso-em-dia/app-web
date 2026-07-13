@@ -5,6 +5,9 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
 import FilterToolbar from "../../components/ui/FilterToolbar";
+import FilterMonthInput from "../../components/ui/filterFields/FilterMonthInput";
+import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInput";
+import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
 import {
   formatReferenceMonth,
   getCurrentReferenceMonth,
@@ -14,19 +17,10 @@ import type { Budget, BudgetType } from "../../app/api/budgets";
 import type { CategoryOption } from "../../app/api/categories";
 import type { FamilyMember } from "../../app/api/family";
 import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
-import {
-  buildSearchActiveFilter,
-  buildStatusActiveFilter,
-  buildTypeActiveFilter,
-  compileActiveFilters,
-} from "../../lib/activeFilters";
+import type { FilterFields } from "../../lib/filterFields";
 import { useFiltersState } from "../../lib/useFiltersState";
 import BudgetList from "./BudgetList";
 import BudgetForm from "./BudgetForm";
-import {
-  BudgetFiltersPrimary,
-  BudgetFiltersSecondary,
-} from "./BudgetFiltersContent";
 import styles from "./BudgetsPage.module.scss";
 
 type BudgetFilters = {
@@ -47,7 +41,7 @@ const DEFAULT_FILTERS: BudgetFilters = {
 export default function BudgetsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
-  const { filters, patchFilters, clearFilter, resetFilters } =
+  const { filters, patchFilters, clearFilter } =
     useFiltersState(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
@@ -84,27 +78,106 @@ export default function BudgetsPage() {
     setRefreshKey((k) => k + 1);
   }
 
-  const activeFilters = useMemo(
-    () =>
-      compileActiveFilters([
-        buildSearchActiveFilter(filters.search, t("common.search"), () => {
-          clearFilter("search", "");
-        }),
-        buildStatusActiveFilter(filters.status, t, () => {
-          clearFilter("status", ACTIVE_STATUS_FILTER);
-        }),
-        buildTypeActiveFilter(
-          "type",
-          filters.type === "ALL" ? undefined : filters.type,
-          filters.type !== "ALL"
-            ? `${t("common.type")}: ${t(`budgetTypes.${filters.type}` as const)}`
-            : "",
-          () => {
-            clearFilter("type", "ALL" as BudgetType | "ALL");
-          },
+  const fields = useMemo<FilterFields>(
+    () => ({
+      referenceMonth: {
+        kind: "text",
+        label: t("common.month"),
+        value: filters.referenceMonth,
+        defaultValue: filters.referenceMonth,
+        placement: "visible",
+        element: (
+          <FilterMonthInput
+            id="budget-reference-month"
+            label={t("common.month")}
+            onChange={(referenceMonth) => {
+              patchFilters({ referenceMonth });
+            }}
+            value={filters.referenceMonth}
+          />
         ),
-      ]),
-    [filters.search, filters.status, filters.type, t, clearFilter],
+      },
+      search: {
+        kind: "text",
+        label: t("common.search"),
+        value: filters.search,
+        defaultValue: "",
+        placement: "visible",
+        element: (
+          <FilterTextInput
+            id="budget-search"
+            label={t("common.search")}
+            onChange={(search) => {
+              patchFilters({ search });
+            }}
+            placeholder={t("budgets.searchPlaceholder")}
+            value={filters.search}
+          />
+        ),
+      },
+      status: {
+        kind: "select",
+        label: t("common.status"),
+        value: filters.status,
+        defaultValue: ACTIVE_STATUS_FILTER,
+        placement: "expanded",
+        options: [
+          { value: "ALL", label: t("common.all") },
+          { value: "ACTIVE", label: t("common.active") },
+          { value: "ARCHIVED", label: t("common.archived") },
+        ],
+        element: (
+          <FilterSelectInput<StatusFilter>
+            id="budget-status-filter"
+            label={t("common.status")}
+            onChange={(status) => {
+              patchFilters({ status: status as StatusFilter });
+            }}
+            options={[
+              { value: "ALL", label: t("common.all") },
+              { value: "ACTIVE", label: t("common.active") },
+              { value: "ARCHIVED", label: t("common.archived") },
+            ]}
+            placeholder={t("common.all")}
+            value={filters.status}
+          />
+        ),
+      },
+      type: {
+        kind: "select",
+        label: t("common.type"),
+        value: filters.type,
+        defaultValue: "ALL",
+        placement: "expanded",
+        options: [
+          { value: "GLOBAL", label: t("budgetTypes.GLOBAL") },
+          { value: "ALLOWANCE", label: t("budgetTypes.ALLOWANCE") },
+        ],
+        element: (
+          <FilterSelectInput<BudgetType | "ALL">
+            id="budget-type-filter"
+            label={t("common.type")}
+            onChange={(type) => {
+              patchFilters({ type: type as BudgetType | "ALL" });
+            }}
+            options={[
+              { value: "GLOBAL", label: t("budgetTypes.GLOBAL") },
+              { value: "ALLOWANCE", label: t("budgetTypes.ALLOWANCE") },
+            ]}
+            placeholder={t("common.allTypes")}
+            value={filters.type}
+          />
+        ),
+      },
+    }),
+    [
+      filters.referenceMonth,
+      filters.search,
+      filters.status,
+      filters.type,
+      patchFilters,
+      t,
+    ],
   );
 
   const isCreating = selectedId === null;
@@ -122,28 +195,16 @@ export default function BudgetsPage() {
       <section className={styles.stack}>
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
-            activeFilters={activeFilters}
+            fields={fields}
             isPanelOpen={isFiltersOpen}
-            onClearFilters={() =>
-              resetFilters({
-                ...DEFAULT_FILTERS,
-                referenceMonth: filters.referenceMonth,
-              })
-            }
             onClosePanel={() => setIsFiltersOpen(false)}
+            onResetField={(name, defaultValue) => {
+              clearFilter(
+                name as keyof BudgetFilters,
+                defaultValue as BudgetFilters[keyof BudgetFilters],
+              );
+            }}
             onTogglePanel={() => setIsFiltersOpen((current) => !current)}
-            primaryContent={
-              <BudgetFiltersPrimary
-                filters={filters}
-                onFiltersChange={patchFilters}
-              />
-            }
-            secondaryContent={
-              <BudgetFiltersSecondary
-                filters={filters}
-                onFiltersChange={patchFilters}
-              />
-            }
           />
         </Card>
 

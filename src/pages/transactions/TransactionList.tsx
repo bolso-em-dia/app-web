@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../app/auth/useAuth";
-import { listAccounts, type Account } from "../../app/api/accounts";
-import {
-  listCategoryOptions,
-  type CategoryOption,
-} from "../../app/api/categories";
-import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
+import { type CategoryOption } from "../../app/api/categories";
 import {
   listTransactions,
   materializeTransactions,
@@ -22,36 +17,29 @@ import TransactionCard from "./TransactionCard";
 import styles from "./TransactionsPage.module.scss";
 
 interface TransactionListProps {
+  categoryOptions: CategoryOption[];
   filters: TransactionFilters;
   selectedId: string | null;
   onSelect: (id: string, transaction: Transaction) => void;
   refreshKey: number;
-  onReferenceDataLoaded: (data: {
-    accounts: Account[];
-    categories: CategoryOption[];
-    members: FamilyMember[];
-  }) => void;
 }
 
 export default function TransactionList({
+  categoryOptions,
   filters,
   selectedId,
   onSelect,
   refreshKey,
-  onReferenceDataLoaded,
 }: TransactionListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const loadCounterRef = useRef(0);
-  const onReferenceDataLoadedRef = useRef(onReferenceDataLoaded);
-  onReferenceDataLoadedRef.current = onReferenceDataLoaded;
 
   const {
     referenceMonth,
@@ -93,20 +81,10 @@ export default function TransactionList({
         params.categoryIds = categoryIds;
       if (memberId) params.memberId = memberId;
 
-      const [
-        transactionsResponse,
-        accountsResponse,
-        categoriesResponse,
-        membersResponse,
-      ] = await Promise.all([
-        listTransactions(
-          params as Parameters<typeof listTransactions>[0],
-          accessToken,
-        ),
-        listAccounts(accessToken),
-        listCategoryOptions(referenceMonth, accessToken),
-        listFamilyMembers(accessToken),
-      ]);
+      const transactionsResponse = await listTransactions(
+        params as Parameters<typeof listTransactions>[0],
+        accessToken,
+      );
 
       if (loadId !== loadCounterRef.current) return;
 
@@ -114,12 +92,6 @@ export default function TransactionList({
       setPage(transactionsResponse.page);
       setPageSize(transactionsResponse.size);
       setTotalItems(transactionsResponse.totalItems);
-      setCategories(categoriesResponse);
-      onReferenceDataLoadedRef.current({
-        accounts: accountsResponse,
-        categories: categoriesResponse,
-        members: membersResponse,
-      });
     } catch {
       if (loadId === loadCounterRef.current) {
         setTransactions([]);
@@ -149,8 +121,8 @@ export default function TransactionList({
   }, [loadPageData, refreshKey]);
 
   const categoryOptionsById = useMemo(
-    () => new Map(categories.map((cat) => [cat.id, cat])),
-    [categories],
+    () => new Map(categoryOptions.map((cat) => [cat.id, cat])),
+    [categoryOptions],
   );
 
   const showInitialLoading = isLoading && !hasLoadedOnce;
