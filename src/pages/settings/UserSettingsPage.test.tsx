@@ -268,6 +268,122 @@ describe("UserSettingsPage", () => {
     });
   });
 
+  it("saves the foreign currency preference when enabling it", async () => {
+    render(
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/settings"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <UserSettingsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const prefsForm = (
+      await screen.findByText("Preferências pessoais")
+    ).closest("form")!;
+    fireEvent.click(screen.getByRole("switch", { name: "Desabilitado" }));
+    fireEvent.click(within(prefsForm).getByRole("button", { name: "Salvar" }));
+
+    expect(
+      await screen.findByText("Configurações salvas."),
+    ).toBeInTheDocument();
+    expect(savedPayload).toEqual({
+      defaultAccountId: null,
+      locale: "pt-BR",
+      showBalanceWithBudgets: false,
+      showForeignCurrency: true,
+    });
+  });
+
+  it("saves the foreign currency preference when disabling it", async () => {
+    resetFetchMocks();
+    savedPayload = null;
+
+    mockFetchUrl(
+      "/api/accounts/options",
+      mockJsonResponse([
+        {
+          id: "acc-1",
+          name: "Main Checking",
+          type: "CHECKING",
+        },
+      ]),
+    );
+
+    mockFetchUrl("/api/me/preferences", (input, init) => {
+      if (init?.method === "PUT") {
+        savedPayload = JSON.parse(String(init.body ?? "{}")) as Record<
+          string,
+          unknown
+        >;
+        return mockJsonResponse({
+          defaultAccountId: null,
+          locale: "pt-BR",
+          showBalanceWithBudgets: false,
+          showForeignCurrency: false,
+        });
+      }
+
+      return mockJsonResponse({
+        defaultAccountId: null,
+        locale: "pt-BR",
+        showBalanceWithBudgets: false,
+        showForeignCurrency: true,
+      });
+    });
+
+    render(
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/settings"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+              showForeignCurrency: true,
+            },
+          }}
+        >
+          <UserSettingsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const prefsForm = (
+      await screen.findByText("Preferências pessoais")
+    ).closest("form")!;
+    fireEvent.click(screen.getByRole("switch", { name: "Habilitado" }));
+    fireEvent.click(within(prefsForm).getByRole("button", { name: "Salvar" }));
+
+    expect(
+      await screen.findByText("Configurações salvas."),
+    ).toBeInTheDocument();
+    expect(savedPayload).toEqual({
+      defaultAccountId: null,
+      locale: "pt-BR",
+      showBalanceWithBudgets: false,
+      showForeignCurrency: false,
+    });
+  });
+
   it("changes the current user password from settings", async () => {
     render(
       <MemoryRouter

@@ -565,4 +565,39 @@ describe("AccountsPage", () => {
     });
     expect(within(drawer).getByDisplayValue("Dólar (USD)")).toBeInTheDocument();
   });
+
+  it("hides currency select when foreign currency is disabled", async () => {
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        initialEntries={["/accounts"]}
+      >
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+            preferences: {
+              defaultAccountId: null,
+              locale: "pt-BR",
+              showBalanceWithBudgets: false,
+              showForeignCurrency: false,
+            },
+          }}
+        >
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
+    const drawer = screen.getByRole("dialog");
+
+    expect(within(drawer).queryByLabelText("Moeda")).not.toBeInTheDocument();
+  });
 });

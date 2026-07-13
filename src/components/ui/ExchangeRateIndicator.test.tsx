@@ -24,12 +24,20 @@ const userWithForeignCurrency = {
   },
 };
 
-function renderIndicator() {
+const userWithoutForeignCurrency = {
+  ...userWithForeignCurrency,
+  preferences: {
+    ...userWithForeignCurrency.preferences,
+    showForeignCurrency: false,
+  },
+};
+
+function renderIndicator(user = userWithForeignCurrency) {
   return render(
     <MemoryRouter
       future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
-      <TestAuthProvider user={userWithForeignCurrency}>
+      <TestAuthProvider user={user}>
         <ExchangeRateIndicator />
       </TestAuthProvider>
     </MemoryRouter>,
@@ -53,6 +61,15 @@ describe("ExchangeRateIndicator", () => {
     await waitFor(() => {
       expect(container.textContent).toBe("");
     });
+  });
+
+  it("does not render or fetch when foreign currency is disabled", async () => {
+    renderIndicator(userWithoutForeignCurrency);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/US\$ 1 =/)).not.toBeInTheDocument();
+    });
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   it("shows rate when API returns data", async () => {

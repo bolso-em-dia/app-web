@@ -18,9 +18,10 @@ export default function ExchangeRateIndicator() {
   const [stale, setStale] = useState(false);
   const [error, setError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const showForeignCurrency = user?.preferences.showForeignCurrency ?? false;
 
   const fetchRate = useCallback(async () => {
-    if (!accessToken) return;
+    if (!accessToken || !showForeignCurrency) return;
     try {
       const data = await getLatestExchangeRate(accessToken);
       setRate(data.rate);
@@ -29,14 +30,15 @@ export default function ExchangeRateIndicator() {
     } catch {
       setError(true);
     }
-  }, [accessToken]);
+  }, [accessToken, showForeignCurrency]);
 
   useEffect(() => {
+    if (!showForeignCurrency) return;
     void fetchRate();
-  }, [fetchRate]);
+  }, [fetchRate, showForeignCurrency]);
 
   async function handleRefresh() {
-    if (!accessToken || refreshing) return;
+    if (!accessToken || !showForeignCurrency || refreshing) return;
     setRefreshing(true);
     try {
       const data = await refreshExchangeRate(accessToken);
@@ -50,7 +52,7 @@ export default function ExchangeRateIndicator() {
     }
   }
 
-  if (!user?.preferences.showForeignCurrency || rate == null) return null;
+  if (!showForeignCurrency || rate == null) return null;
 
   const tooltipContent = error
     ? t("exchangeRate.fetchError")
