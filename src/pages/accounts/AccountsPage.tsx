@@ -9,128 +9,102 @@ import Field from "../../components/ui/Field";
 import FilterToolbar from "../../components/ui/FilterToolbar";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import type { AccountFormValues } from "../../lib/validation/accountSchema";
+
 import { useI18n } from "../../app/i18n/I18nContext";
 import AccountList from "./AccountList";
 import AccountForm from "./AccountForm";
 import styles from "./AccountsPage.module.scss";
 
-const DEFAULT_VALUES: AccountFormValues = {
-  name: "",
-  type: "CHECKING",
-  currency: "BRL",
-  brand: "",
-  color: "",
-  closingDay: undefined,
-  dueDay: undefined,
+type AccountFilters = {
+  search: string;
+  status: "ALL" | "ACTIVE" | "ARCHIVED";
+  type: "" | AccountType;
 };
+
+const DEFAULT_FILTERS: AccountFilters = { search: "", status: "ACTIVE", type: "" };
 
 export default function AccountsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "ACTIVE" | "ARCHIVED"
-  >("ACTIVE");
-  const [typeFilter, setTypeFilter] = useState<"" | AccountType>("");
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [filters, setFilters] = useState<AccountFilters>(DEFAULT_FILTERS);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleSelect = useCallback((id: string, account: Account) => {
-    setIsCreating(false);
     setSelectedId(id);
     setSelectedAccount(account);
+    setShowDrawer(true);
   }, []);
 
   const handleStartCreate = useCallback(() => {
-    setIsCreating(true);
     setSelectedId(null);
     setSelectedAccount(null);
+    setShowDrawer(true);
   }, []);
 
   const handleCloseDrawer = useCallback(() => {
-    setIsCreating(false);
     setSelectedId(null);
     setSelectedAccount(null);
+    setShowDrawer(false);
   }, []);
 
-  const handleSuccess = useCallback(() => {
-    setIsCreating(false);
-    setSelectedId(null);
-    setSelectedAccount(null);
-    setRefreshKey((k) => k + 1);
-  }, []);
-
-  const handleRefresh = useCallback(() => {
+  const handleSuccess = useCallback((intent?: "archived") => {
+    if (intent !== "archived") {
+      setSelectedId(null);
+      setSelectedAccount(null);
+      setShowDrawer(false);
+    }
     setRefreshKey((k) => k + 1);
   }, []);
 
   const activeFilters = useMemo(
     () => [
-      ...(search
+      ...(filters.search
         ? [
             {
               key: "search",
-              label: `${t("common.search")}: ${search}`,
+              label: `${t("common.search")}: ${filters.search}`,
               onRemove: () => {
-                setSearch("");
+                setFilters((c) => ({ ...c, search: "" }));
               },
             },
           ]
         : []),
-      ...(statusFilter !== "ACTIVE"
+      ...(filters.status !== "ACTIVE"
         ? [
             {
               key: "status",
               label: `${t("common.status")}: ${t(
-                statusFilter === "ALL" ? "common.all" : "common.archived",
+                filters.status === "ALL" ? "common.all" : "common.archived",
               )}`,
               onRemove: () => {
-                setStatusFilter("ACTIVE");
+                setFilters((c) => ({ ...c, status: "ACTIVE" }));
               },
             },
           ]
         : []),
-      ...(typeFilter
+      ...(filters.type
         ? [
             {
               key: "type",
-              label: `${t("common.type")}: ${t(`accountTypes.${typeFilter}`)}`,
+              label: `${t("common.type")}: ${t(`accountTypes.${filters.type}`)}`,
               onRemove: () => {
-                setTypeFilter("");
+                setFilters((c) => ({ ...c, type: "" }));
               },
             },
           ]
         : []),
     ],
-    [search, statusFilter, t, typeFilter],
+    [filters.search, filters.status, filters.type, t],
   );
 
   function clearFilters() {
-    setSearch("");
-    setStatusFilter("ACTIVE");
-    setTypeFilter("");
+    setFilters(DEFAULT_FILTERS);
   }
-
-  const isDrawerOpen = isCreating || selectedAccount !== null;
-
-  const initialValues = isCreating
-    ? DEFAULT_VALUES
-    : selectedAccount
-      ? {
-          name: selectedAccount.name,
-          type: selectedAccount.type,
-          currency: (selectedAccount.currency as "BRL" | "USD") ?? "BRL",
-          brand: selectedAccount.brand ?? "",
-          color: selectedAccount.color ?? "",
-          closingDay: selectedAccount.closingDay ?? undefined,
-          dueDay: selectedAccount.dueDay ?? undefined,
-        }
-      : null;
 
   return (
     <AppShell
@@ -154,10 +128,10 @@ export default function AccountsPage() {
                 <Input
                   id="account-search"
                   onChange={(event) => {
-                    setSearch(event.target.value);
+                    setFilters((c) => ({ ...c, search: event.target.value }));
                   }}
                   placeholder={t("accounts.searchPlaceholder")}
-                  value={search}
+                  value={filters.search}
                 />
               </Field>
             }
@@ -170,11 +144,15 @@ export default function AccountsPage() {
                   <Select
                     id="account-status-filter"
                     onChange={(event) => {
-                      setStatusFilter(
-                        event.target.value as "ALL" | "ACTIVE" | "ARCHIVED",
-                      );
+                      setFilters((c) => ({
+                        ...c,
+                        status: event.target.value as
+                          | "ALL"
+                          | "ACTIVE"
+                          | "ARCHIVED",
+                      }));
                     }}
-                    value={statusFilter}
+                    value={filters.status}
                   >
                     <option value="ALL">{t("common.all")}</option>
                     <option value="ACTIVE">{t("common.active")}</option>
@@ -185,17 +163,18 @@ export default function AccountsPage() {
                   <Select
                     id="account-type-filter"
                     onChange={(event) => {
-                      setTypeFilter(event.target.value as "" | AccountType);
+                      setFilters((c) => ({
+                        ...c,
+                        type: event.target.value as "" | AccountType,
+                      }));
                     }}
-                    value={typeFilter}
+                    value={filters.type}
                   >
                     <option value="">{t("common.allTypes")}</option>
                     <option value="CHECKING">
                       {t("accountTypes.CHECKING")}
                     </option>
-                    <option value="SAVINGS">
-                      {t("accountTypes.SAVINGS")}
-                    </option>
+                    <option value="SAVINGS">{t("accountTypes.SAVINGS")}</option>
                     <option value="CREDIT_CARD">
                       {t("accountTypes.CREDIT_CARD")}
                     </option>
@@ -210,36 +189,32 @@ export default function AccountsPage() {
         </Card>
 
         <AccountList
-          search={search}
-          statusFilter={statusFilter}
-          typeFilter={typeFilter}
+          filters={filters}
           selectedId={selectedId}
           onSelect={handleSelect}
           refreshKey={refreshKey}
         />
 
-        {isDrawerOpen ? (
+        {showDrawer ? (
           <Drawer
             description={
-              isCreating
+              selectedId === null
                 ? t("accounts.newDescription")
                 : t("accounts.editDescription")
             }
             onClose={handleCloseDrawer}
             title={
-              isCreating ? t("accounts.newTitle") : t("accounts.detailsTitle")
+              selectedId === null
+                ? t("accounts.newTitle")
+                : t("accounts.detailsTitle")
             }
           >
             <div className={styles.drawerStack}>
               <AccountForm
-                initialValues={initialValues}
-                editingAccountId={
-                  isCreating || !selectedAccount ? null : selectedAccount.id
-                }
-                editingAccount={selectedAccount}
+                account={selectedAccount}
+                accountOptions={[]}
                 user={user!}
                 onSuccess={handleSuccess}
-                onRefresh={handleRefresh}
                 onCancel={handleCloseDrawer}
               />
             </div>

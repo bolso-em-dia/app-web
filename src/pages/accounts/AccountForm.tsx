@@ -6,6 +6,7 @@ import {
   createAccount,
   updateAccount,
   type Account,
+  type AccountOption,
   type AccountPayload,
 } from "../../app/api/accounts";
 import type { AuthUser } from "../../app/api/auth";
@@ -48,22 +49,17 @@ function mapFormValuesToPayload(values: AccountFormValues): AccountPayload {
 }
 
 interface AccountFormProps {
-  initialValues: AccountFormValues | null;
-  editingAccountId: string | null;
-  editingAccount: Account | null;
+  account: Account | null;
+  accountOptions: AccountOption[];
   user: AuthUser;
-  onSuccess: () => void;
-  onRefresh: () => void;
+  onSuccess: (intent?: "archived") => void;
   onCancel: () => void;
 }
 
 export default function AccountForm({
-  initialValues,
-  editingAccountId,
-  editingAccount,
+  account,
   user,
   onSuccess,
-  onRefresh,
   onCancel,
 }: AccountFormProps) {
   const { accessToken } = useAuth();
@@ -74,11 +70,24 @@ export default function AccountForm({
   const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [archivedFromMonth, setArchivedFromMonth] = useState<string | null>(
-    editingAccount?.archivedFromMonth ?? null,
+    account?.archivedFromMonth ?? null,
   );
 
   const showForeignCurrency = user.preferences.showForeignCurrency ?? false;
-  const isCreating = editingAccountId === null;
+  const isCreating = account === null;
+  const editingAccountId = account?.id ?? null;
+
+  const initialValues: AccountFormValues = !account
+    ? DEFAULT_VALUES
+    : {
+        name: account.name,
+        type: account.type,
+        currency: (account.currency as "BRL" | "USD") ?? "BRL",
+        brand: account.brand ?? "",
+        color: account.color ?? "",
+        closingDay: account.closingDay ?? undefined,
+        dueDay: account.dueDay ?? undefined,
+      };
 
   const accountSchema = useMemo(() => createAccountSchema(t), [t]);
 
@@ -89,12 +98,10 @@ export default function AccountForm({
 
   const initialValuesKey = JSON.stringify(initialValues);
   useEffect(() => {
-    if (initialValues) {
-      form.reset(initialValues);
-      setArchivedFromMonth(editingAccount?.archivedFromMonth ?? null);
-    }
+    form.reset(initialValues);
+    setArchivedFromMonth(account?.archivedFromMonth ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialValuesKey, editingAccountId]);
+  }, [initialValuesKey, account?.id]);
 
   const onSubmit = useCallback(
     async (values: AccountFormValues) => {
@@ -113,10 +120,7 @@ export default function AccountForm({
             accessToken,
           );
         } else {
-          await createAccount(
-            mapFormValuesToPayload(values),
-            accessToken,
-          );
+          await createAccount(mapFormValuesToPayload(values), accessToken);
         }
         onSuccess();
       } catch {
@@ -140,17 +144,13 @@ export default function AccountForm({
     try {
       const archived = await archiveAccount(editingAccountId, accessToken);
       setArchivedFromMonth(archived.archivedFromMonth);
-      onRefresh();
+      onSuccess("archived");
     } catch {
       setError(t("accounts.archiveError"));
     } finally {
       setIsArchiving(false);
     }
-  }, [accessToken, archivedFromMonth, editingAccountId, onRefresh, t]);
-
-  if (!initialValues) {
-    return null;
-  }
+  }, [accessToken, archivedFromMonth, editingAccountId, onSuccess, t]);
 
   const accountType = form.watch("type");
   const colorValue = form.watch("color");
@@ -304,9 +304,7 @@ export default function AccountForm({
               type="button"
               variant={archivedFromMonth ? "subtle" : "danger"}
             >
-              {archivedFromMonth
-                ? t("accounts.archived")
-                : t("common.archive")}
+              {archivedFromMonth ? t("accounts.archived") : t("common.archive")}
             </Button>
           )}
         </div>
