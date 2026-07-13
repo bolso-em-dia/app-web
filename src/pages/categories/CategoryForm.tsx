@@ -1,4 +1,14 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  archiveCategory,
+  createCategory,
+  updateCategory,
+  type CategoryOption,
+} from "../../app/api/categories";
+import { useAuth } from "../../app/auth/useAuth";
+import type { AuthUser } from "../../app/api/auth";
 import Button from "../../components/ui/Button";
 import CategorySelect from "../../components/ui/CategorySelect";
 import ColorSwatchSelect from "../../components/ui/ColorSwatchSelect";
@@ -8,48 +18,126 @@ import FormError from "../../components/ui/FormError";
 import IconSelect from "../../components/ui/IconSelect";
 import Input from "../../components/ui/Input";
 import { COLOR_OPTIONS, ICON_OPTIONS } from "../../lib/uiOptions";
-import type {
-  ArchiveCategoryFormValues,
-  CategoryFormValues,
+import {
+  createArchiveCategorySchema,
+  createCategorySchema,
+  type ArchiveCategoryFormValues,
+  type CategoryFormValues,
 } from "../../lib/validation/categorySchema";
-import type { Category, CategoryOption } from "../../app/api/categories";
 import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./CategoriesPage.module.scss";
 
+const DEFAULT_VALUES: CategoryFormValues = {
+  name: "",
+  icon: "",
+  color: "",
+};
+
 interface CategoryFormProps {
-  form: UseFormReturn<CategoryFormValues>;
-  archiveForm: UseFormReturn<ArchiveCategoryFormValues>;
-  isCreating: boolean;
-  isSaving: boolean;
-  isArchiving: boolean;
-  isArchiveConfirmOpen: boolean;
-  error: string | null;
-  archiveOptions: CategoryOption[];
-  selectedCategory: Category | null;
-  onCancelCreate: () => void;
-  onSubmit: (values: CategoryFormValues) => void;
-  onArchiveOpen: () => void;
-  onArchiveCancel: () => void;
-  onArchiveSubmit: () => void;
+  categoryId: string | null;
+  categoryArchivedFromMonth: string | null;
+  initialValues: CategoryFormValues | null;
+  user: AuthUser;
+  categoryOptions: CategoryOption[];
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
 export default function CategoryForm({
-  form,
-  archiveForm,
-  isCreating,
-  isSaving,
-  isArchiving,
-  isArchiveConfirmOpen,
-  error,
-  archiveOptions,
-  selectedCategory,
-  onCancelCreate,
-  onSubmit,
-  onArchiveOpen,
-  onArchiveCancel,
-  onArchiveSubmit,
+  categoryId,
+  categoryArchivedFromMonth,
+  initialValues,
+  categoryOptions,
+  onSuccess,
+  onCancel,
 }: CategoryFormProps) {
+  const { accessToken } = useAuth();
   const { t } = useI18n();
+  const isCreating = categoryId === null;
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const categorySchema = useMemo(() => createCategorySchema(t), [t]);
+  const archiveCategorySchema = useMemo(
+    () => createArchiveCategorySchema(t),
+    [t],
+  );
+
+  const form = useForm<CategoryFormValues>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: initialValues ?? DEFAULT_VALUES,
+  });
+
+  const archiveForm = useForm<ArchiveCategoryFormValues>({
+    resolver: zodResolver(archiveCategorySchema),
+    defaultValues: {
+      replacementCategoryId:
+        categoryOptions.find((o) => o.id !== categoryId)?.id ?? "",
+    },
+  });
+
+  const archiveOptions = categoryOptions.filter(
+    (option) => option.id !== categoryId,
+  );
+
+  async function handleSubmit(values: CategoryFormValues) {
+    if (!accessToken) {
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      if (isCreating) {
+        await createCategory(
+          {
+            name: values.name,
+            icon: values.icon || undefined,
+            color: values.color || undefined,
+          },
+          accessToken,
+        );
+      } else if (categoryId) {
+        await updateCategory(
+          categoryId,
+          {
+            name: values.name,
+            icon: values.icon || undefined,
+            color: values.color || undefined,
+          },
+          accessToken,
+        );
+      }
+      onSuccess();
+    } catch {
+      setError(t("categories.saveError"));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleArchive(values: ArchiveCategoryFormValues) {
+    if (!accessToken || !categoryId) {
+      return;
+    }
+
+    setIsArchiving(true);
+    setError(null);
+
+    try {
+      await archiveCategory(categoryId, values, accessToken);
+      onSuccess();
+    } catch {
+      setError(t("categories.archiveError"));
+    } finally {
+      setIsArchiving(false);
+    }
+  }
+
   const iconValue = form.watch("icon");
   const colorValue = form.watch("color");
 
@@ -57,7 +145,7 @@ export default function CategoryForm({
     <div className={styles.drawerStack}>
       <form
         className={styles.form}
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit)}
         noValidate
       >
         <Field
@@ -119,16 +207,14 @@ export default function CategoryForm({
             {isCreating ? t("categories.create") : t("common.save")}
           </Button>
           {isCreating ? (
-            <Button onClick={onCancelCreate} type="button" variant="subtle">
+            <Button onClick={onCancel} type="button" variant="subtle">
               {t("common.cancel")}
             </Button>
           ) : null}
         </div>
       </form>
 
-      {!isCreating &&
-      selectedCategory &&
-      !selectedCategory.archivedFromMonth ? (
+      {!isCreating && !categoryArchivedFromMonth ? (
         <form className={styles.form} noValidate>
           <Field
             error={archiveForm.formState.errors.replacementCategoryId?.message}
@@ -154,7 +240,11 @@ export default function CategoryForm({
           </Field>
 
           <div className={styles.formActions}>
-            <Button type="button" onClick={onArchiveOpen} variant="danger">
+            <Button
+              type="button"
+              onClick={() => setIsArchiveConfirmOpen(true)}
+              variant="danger"
+            >
               {t("common.archive")}
             </Button>
           </div>
@@ -165,8 +255,11 @@ export default function CategoryForm({
         confirmLabel={t("common.archive")}
         loading={isArchiving}
         message={t("confirmations.archiveCategory")}
-        onCancel={onArchiveCancel}
-        onConfirm={onArchiveSubmit}
+        onCancel={() => setIsArchiveConfirmOpen(false)}
+        onConfirm={() => {
+          setIsArchiveConfirmOpen(false);
+          void archiveForm.handleSubmit(handleArchive)();
+        }}
         open={isArchiveConfirmOpen}
         title={t("categories.archiveTitle")}
       />
