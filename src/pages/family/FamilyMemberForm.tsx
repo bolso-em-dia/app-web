@@ -1,6 +1,17 @@
-import type { UseFormReturn } from "react-hook-form";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { AuthUser } from "../../app/api/auth";
+import {
+  archiveFamilyMember,
+  createFamilyMember,
+  restoreFamilyMember,
+  type FamilyMember,
+  type FamilyRole,
+  updateFamilyMember,
+} from "../../app/api/family";
+import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
-import type { FamilyMember } from "../../app/api/family";
 import Button from "../../components/ui/Button";
 import Checkbox from "../../components/ui/Checkbox";
 import ConfirmAction from "../../components/ui/ConfirmAction";
@@ -8,50 +19,146 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import {
+  createFamilyMemberSchema as buildCreateFamilyMemberSchema,
+  type CreateFamilyMemberFormValues,
+  type UpdateFamilyMemberFormValues,
+  createUpdateFamilyMemberSchema,
+} from "../../lib/validation/familyMemberSchema";
 import styles from "./FamilyPage.module.scss";
 
-type FormValues =
-  | import("../../lib/validation/familyMemberSchema").CreateFamilyMemberFormValues
-  | import("../../lib/validation/familyMemberSchema").UpdateFamilyMemberFormValues;
+type FamilyMemberFormValues =
+  | CreateFamilyMemberFormValues
+  | UpdateFamilyMemberFormValues;
 
-type FamilyMemberFormProps = {
-  form: UseFormReturn<FormValues>;
-  isCreating: boolean;
-  isSaving: boolean;
-  isArchiving: boolean;
-  error: string | null;
-  selectedMember: FamilyMember | null;
-  isArchiveConfirmOpen: boolean;
-  isRestoreConfirmOpen: boolean;
-  onArchiveOpen: () => void;
-  onArchiveCancel: () => void;
-  onArchiveConfirm: () => void;
-  onRestoreOpen: () => void;
-  onRestoreCancel: () => void;
-  onRestoreConfirm: () => void;
-  onCancelCreate: () => void;
-  onSubmit: (values: FormValues) => void;
+const CREATE_DEFAULT_VALUES: CreateFamilyMemberFormValues = {
+  name: "",
+  email: "",
+  password: "",
+  role: "USER",
+  allowanceEnabled: false,
 };
 
+type FamilyMemberFormProps = {
+  member: FamilyMember | null;
+  user: AuthUser;
+  onSuccess: () => void;
+  onCancel: () => void;
+};
+
+function buildInitialValues(member: FamilyMember | null): FamilyMemberFormValues {
+  if (!member) {
+    return CREATE_DEFAULT_VALUES;
+  }
+
+  return {
+    name: member.name,
+    email: member.email,
+    password: "",
+    role: member.role,
+    allowanceEnabled: member.allowanceEnabled,
+  };
+}
+
 export default function FamilyMemberForm({
-  form,
-  isCreating,
-  isSaving,
-  isArchiving,
-  error,
-  selectedMember,
-  isArchiveConfirmOpen,
-  isRestoreConfirmOpen,
-  onArchiveOpen,
-  onArchiveCancel,
-  onArchiveConfirm,
-  onRestoreOpen,
-  onRestoreCancel,
-  onRestoreConfirm,
-  onCancelCreate,
-  onSubmit,
+  member,
+  user,
+  onSuccess,
+  onCancel,
 }: FamilyMemberFormProps) {
+  const { accessToken } = useAuth();
   const { t } = useI18n();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
+  const [isRestoreConfirmOpen, setIsRestoreConfirmOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isCreating = member === null;
+  const initialValues = useMemo(() => buildInitialValues(member), [member]);
+
+  const createFamilyMemberSchema = useMemo(
+    () => buildCreateFamilyMemberSchema(t),
+    [t],
+  );
+  const updateFamilyMemberSchema = useMemo(
+    () => createUpdateFamilyMemberSchema(t),
+    [t],
+  );
+
+  const form = useForm<FamilyMemberFormValues>({
+    resolver: zodResolver(
+      isCreating ? createFamilyMemberSchema : updateFamilyMemberSchema,
+    ),
+    defaultValues: initialValues,
+  });
+
+  useEffect(() => {
+    form.reset(initialValues);
+  }, [initialValues, form]);
+
+  async function onSubmit(values: FamilyMemberFormValues) {
+    if (!accessToken) {
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      if (isCreating) {
+        await createFamilyMember(
+          {
+            name: values.name,
+            email: values.email,
+            password: values.password,
+            role: values.role as FamilyRole,
+            allowanceEnabled: values.allowanceEnabled,
+          },
+          accessToken,
+        );
+      } else if (member) {
+        await updateFamilyMember(
+          member.id,
+          {
+            name: values.name,
+            email: values.email,
+            password: values.password || undefined,
+            role: values.role as FamilyRole,
+            allowanceEnabled: values.allowanceEnabled,
+          },
+          accessToken,
+        );
+      }
+      onSuccess();
+    } catch {
+      setError(t("family.saveError"));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleArchiveToggle() {
+    if (!accessToken || !member) {
+      return;
+    }
+
+    setIsArchiving(true);
+    setError(null);
+
+    try {
+      if (member.active) {
+        await archiveFamilyMember(member.id, accessToken);
+      } else {
+        await restoreFamilyMember(member.id, accessToken);
+      }
+      onSuccess();
+    } catch {
+      setError(t("family.statusError"));
+    } finally {
+      setIsArchiving(false);
+    }
+  }
 
   return (
     <>
@@ -128,16 +235,20 @@ export default function FamilyMemberForm({
               {isCreating ? t("family.create") : t("common.save")}
             </Button>
             {isCreating ? (
-              <Button onClick={onCancelCreate} type="button" variant="subtle">
+              <Button onClick={onCancel} type="button" variant="subtle">
                 {t("common.cancel")}
               </Button>
             ) : (
               <Button
-                onClick={selectedMember?.active ? onArchiveOpen : onRestoreOpen}
+                onClick={
+                  member?.active
+                    ? () => setIsArchiveConfirmOpen(true)
+                    : () => setIsRestoreConfirmOpen(true)
+                }
                 type="button"
-                variant={selectedMember?.active ? "danger" : "secondary"}
+                variant={member?.active ? "danger" : "secondary"}
               >
-                {selectedMember?.active
+                {member?.active
                   ? t("common.archive")
                   : t("family.restoreMember")}
               </Button>
@@ -150,8 +261,11 @@ export default function FamilyMemberForm({
         confirmLabel={t("common.archive")}
         loading={isArchiving}
         message={t("confirmations.archiveMember")}
-        onCancel={onArchiveCancel}
-        onConfirm={onArchiveConfirm}
+        onCancel={() => setIsArchiveConfirmOpen(false)}
+        onConfirm={() => {
+          setIsArchiveConfirmOpen(false);
+          void handleArchiveToggle();
+        }}
         open={isArchiveConfirmOpen}
         title={t("family.archiveMember")}
       />
@@ -159,8 +273,11 @@ export default function FamilyMemberForm({
         confirmLabel={t("family.restoreMember")}
         loading={isArchiving}
         message={t("confirmations.restoreMember")}
-        onCancel={onRestoreCancel}
-        onConfirm={onRestoreConfirm}
+        onCancel={() => setIsRestoreConfirmOpen(false)}
+        onConfirm={() => {
+          setIsRestoreConfirmOpen(false);
+          void handleArchiveToggle();
+        }}
         open={isRestoreConfirmOpen}
         title={t("family.restoreMember")}
       />
