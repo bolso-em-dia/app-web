@@ -1,12 +1,24 @@
-import { type BaseSyntheticEvent } from "react";
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { type BaseSyntheticEvent, useEffect, useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { Account } from "../../app/api/accounts";
 import type { CategoryOption } from "../../app/api/categories";
 import type { FamilyMember } from "../../app/api/family";
-import type { DeleteScope, Transaction } from "../../app/api/transactions";
+import {
+  createTransaction,
+  deleteTransaction,
+  listTransactionDescriptionSuggestions,
+  updateTransaction,
+  type DeleteScope,
+  type TransactionPayload,
+} from "../../app/api/transactions";
 import type { AuthUser } from "../../app/api/auth";
-import type { TransactionFormValues } from "../../lib/validation/transactionSchema";
+import {
+  createTransactionSchema,
+  type TransactionFormValues,
+} from "../../lib/validation/transactionSchema";
+import { useAuth } from "../../app/auth/useAuth";
 import Button from "../../components/ui/Button";
 import CategorySelect from "../../components/ui/CategorySelect";
 import ConfirmAction from "../../components/ui/ConfirmAction";
@@ -19,61 +31,271 @@ import Switch from "../../components/ui/Switch";
 import styles from "./TransactionsPage.module.scss";
 
 interface TransactionFormProps {
-  isCreating: boolean;
-  selectedTransaction: Transaction | null;
-  form: UseFormReturn<TransactionFormValues>;
-  descriptionSuggestions: string[];
-  accounts: Account[];
-  categoryOptions: CategoryOption[];
-  allowanceMembers: FamilyMember[];
-  selectedAccountCurrency: "BRL" | "USD" | undefined;
+  transactionId: string | null;
+  installmentGroupId: string | null;
+  initialValues: TransactionFormValues | null;
   user: AuthUser | null;
-  isSaving: boolean;
-  isDeleting: boolean;
-  error: string | null;
-  isDeleteConfirmOpen: boolean;
-  deleteScope: DeleteScope;
-  onSubmit: (
-    values: TransactionFormValues,
-    event?: BaseSyntheticEvent,
-  ) => Promise<void>;
-  onCancelCreate: () => void;
-  onOpenDeleteConfirm: () => void;
-  onCloseDeleteConfirm: () => void;
-  onDeleteConfirm: () => void;
-  setDeleteScope: (scope: DeleteScope) => void;
+  accounts: Account[];
+  categories: CategoryOption[];
+  members: FamilyMember[];
+  referenceMonth: string;
+  onSuccess: (intent?: "save-and-create-new") => void;
+  onCancel: () => void;
+}
+
+function createDefaultValues(
+  referenceMonth: string,
+  defaultAccountId: string,
+): TransactionFormValues {
+  return {
+    type: "EXPENSE",
+    ownershipType: "SHARED",
+    description: "",
+    amount: 0,
+    transactionDate: referenceMonth,
+    accountId: defaultAccountId,
+    categoryId: "",
+    memberId: "",
+    isInstallment: false,
+    installmentCount: 2,
+  };
+}
+
+function mapFormValuesToCreatePayload(
+  values: TransactionFormValues,
+): TransactionPayload {
+  return {
+    type: values.type,
+    ownershipType: values.ownershipType,
+    description: values.description,
+    amount: values.amount,
+    transactionDate: values.transactionDate,
+    accountId: values.accountId,
+    categoryId: values.categoryId,
+    memberId:
+      values.ownershipType === "INDIVIDUAL" ? values.memberId : undefined,
+    installmentCount:
+      values.type === "EXPENSE" && values.isInstallment
+        ? values.installmentCount
+        : undefined,
+  };
+}
+
+function mapFormValuesToUpdatePayload(
+  values: TransactionFormValues,
+): Omit<TransactionPayload, "installmentCount"> {
+  return {
+    type: values.type,
+    ownershipType: values.ownershipType,
+    description: values.description,
+    amount: values.amount,
+    transactionDate: values.transactionDate,
+    accountId: values.accountId,
+    categoryId: values.categoryId,
+    memberId:
+      values.ownershipType === "INDIVIDUAL" ? values.memberId : undefined,
+  };
 }
 
 export default function TransactionForm({
-  isCreating,
-  selectedTransaction,
-  form,
-  descriptionSuggestions,
-  accounts,
-  categoryOptions,
-  allowanceMembers,
-  selectedAccountCurrency,
+  transactionId,
+  installmentGroupId,
+  initialValues,
   user,
-  isSaving,
-  isDeleting,
-  error,
-  isDeleteConfirmOpen,
-  deleteScope,
-  onSubmit,
-  onCancelCreate,
-  onOpenDeleteConfirm,
-  onCloseDeleteConfirm,
-  onDeleteConfirm,
-  setDeleteScope,
+  accounts,
+  categories,
+  members,
+  referenceMonth,
+  onSuccess,
+  onCancel,
 }: TransactionFormProps) {
+  const { accessToken } = useAuth();
   const { t } = useI18n();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deleteScope, setDeleteScope] = useState<DeleteScope>("SINGLE");
+  const [descriptionSuggestions, setDescriptionSuggestions] = useState<
+    string[]
+  >([]);
+
+  const isCreating = transactionId === null;
+
+  const transactionSchema = useMemo(() => createTransactionSchema(t), [t]);
+
+  const defaultValues = useMemo(
+    () =>
+      initialValues ??
+      createDefaultValues(
+        referenceMonth,
+        user?.preferences?.defaultAccountId ?? "",
+      ),
+    [initialValues, referenceMonth, user],
+  );
+
+  const form = useForm<TransactionFormValues>({
+    resolver: zodResolver(transactionSchema),
+    defaultValues,
+  });
+
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [defaultValues, form]);
+
+  const descriptionValue = form.watch("description");
   const transactionType = form.watch("type");
   const ownershipType = form.watch("ownershipType");
   const isInstallment = form.watch("isInstallment");
+  const formAccountId = form.watch("accountId");
 
-  const supportsGroupedDelete = Boolean(
-    selectedTransaction?.installmentGroupId,
+  const selectedAccountCurrency = useMemo(
+    () =>
+      accounts.find((a) => a.id === formAccountId)?.currency as
+        "BRL" | "USD" | undefined,
+    [accounts, formAccountId],
   );
+
+  const allowanceMembers = useMemo(
+    () => members.filter((m) => m.active && m.allowanceEnabled),
+    [members],
+  );
+
+  useEffect(() => {
+    if (!accessToken) {
+      return;
+    }
+
+    const normalizedQuery = descriptionValue.trim();
+    if (normalizedQuery.length < 2) {
+      setDescriptionSuggestions([]);
+      return;
+    }
+
+    let isActive = true;
+
+    const loadSuggestions = async () => {
+      try {
+        const suggestions = await listTransactionDescriptionSuggestions(
+          normalizedQuery,
+          accessToken,
+        );
+        if (!isActive) {
+          return;
+        }
+        setDescriptionSuggestions(suggestions);
+      } catch {
+        if (!isActive) {
+          return;
+        }
+        setDescriptionSuggestions([]);
+      }
+    };
+
+    void loadSuggestions();
+
+    return () => {
+      isActive = false;
+    };
+  }, [accessToken, descriptionValue]);
+
+  function resetForNextCreate(values: TransactionFormValues) {
+    form.reset({
+      type: values.type,
+      ownershipType: values.ownershipType,
+      description: "",
+      amount: 0,
+      transactionDate: values.transactionDate,
+      accountId: values.accountId,
+      categoryId: values.categoryId,
+      memberId: values.ownershipType === "INDIVIDUAL" ? values.memberId : "",
+      isInstallment: values.type === "EXPENSE" ? values.isInstallment : false,
+      installmentCount: values.isInstallment
+        ? (values.installmentCount ?? 2)
+        : 2,
+    });
+  }
+
+  async function onSubmit(
+    values: TransactionFormValues,
+    event?: BaseSyntheticEvent,
+  ) {
+    if (!accessToken) {
+      return;
+    }
+
+    const nativeEvent = event?.nativeEvent as SubmitEvent | undefined;
+    const submitter = nativeEvent?.submitter as HTMLButtonElement | undefined;
+    const intent =
+      submitter?.value === "save-and-create-new"
+        ? "save-and-create-new"
+        : "save";
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      if (isCreating) {
+        await createTransaction(
+          mapFormValuesToCreatePayload(values),
+          accessToken,
+        );
+
+        if (intent === "save-and-create-new") {
+          resetForNextCreate(values);
+          onSuccess("save-and-create-new");
+        } else {
+          onSuccess();
+        }
+      } else if (transactionId) {
+        await updateTransaction(
+          transactionId,
+          mapFormValuesToUpdatePayload(values),
+          accessToken,
+        );
+        onSuccess();
+      }
+    } catch {
+      setError(t("transactions.saveError"));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!accessToken || !transactionId) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      await deleteTransaction(transactionId, deleteScope, accessToken);
+      setIsDeleteConfirmOpen(false);
+      onSuccess();
+    } catch {
+      setError(t("transactions.deleteError"));
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  function handleOpenDeleteConfirm() {
+    setDeleteScope("SINGLE");
+    setIsDeleteConfirmOpen(true);
+  }
+
+  function handleCloseDeleteConfirm() {
+    if (isDeleting) {
+      return;
+    }
+
+    setIsDeleteConfirmOpen(false);
+    setDeleteScope("SINGLE");
+  }
+
+  const supportsGroupedDelete = Boolean(installmentGroupId);
 
   return (
     <>
@@ -269,7 +491,7 @@ export default function TransactionForm({
                 hasError={Boolean(form.formState.errors.categoryId)}
                 id="transaction-category"
                 onChange={field.onChange}
-                options={categoryOptions}
+                options={categories}
                 placeholder={t("common.selectCategory")}
                 value={field.value}
               />
@@ -336,7 +558,7 @@ export default function TransactionForm({
               >
                 {t("transactions.save")}
               </Button>
-              <Button onClick={onCancelCreate} type="button" variant="subtle">
+              <Button onClick={onCancel} type="button" variant="subtle">
                 {t("common.cancel")}
               </Button>
             </>
@@ -347,7 +569,7 @@ export default function TransactionForm({
               </Button>
               <Button
                 disabled={isDeleting}
-                onClick={onOpenDeleteConfirm}
+                onClick={handleOpenDeleteConfirm}
                 type="button"
                 variant="danger"
               >
@@ -366,8 +588,8 @@ export default function TransactionForm({
             ? t("transactions.deleteSubtitle")
             : t("transactions.deleteSingleSubtitle")
         }
-        onCancel={onCloseDeleteConfirm}
-        onConfirm={onDeleteConfirm}
+        onCancel={handleCloseDeleteConfirm}
+        onConfirm={() => void handleDelete()}
         open={isDeleteConfirmOpen}
         title={t("transactions.deleteTitle")}
       >
