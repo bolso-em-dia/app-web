@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { t } from "../../test/i18n";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import UserSettingsPage from "./UserSettingsPage";
 
@@ -114,10 +115,10 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("Preferências pessoais")).toBeInTheDocument();
-    fireEvent.click(within(screen.getByText("Preferências pessoais").closest("form")!).getByRole("button", { name: "Salvar" }));
+    expect(await screen.findByText(t("settings.formTitle"))).toBeInTheDocument();
+    fireEvent.click(within(screen.getByText(t("settings.formTitle")).closest("form")!).getByRole("button", { name: t("common.save") }));
 
-    expect(await screen.findByText("Configurações salvas.")).toBeInTheDocument();
+    expect(await screen.findByText(t("settings.saveSuccess"))).toBeInTheDocument();
     expect(savedPayload).toEqual({
       defaultAccountId: null,
       locale: "pt-BR",
@@ -176,10 +177,10 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("Preferências pessoais")).toBeInTheDocument();
-    fireEvent.click(within(screen.getByText("Preferências pessoais").closest("form")!).getByRole("button", { name: "Salvar" }));
+    expect(await screen.findByText(t("settings.formTitle"))).toBeInTheDocument();
+    fireEvent.click(within(screen.getByText(t("settings.formTitle")).closest("form")!).getByRole("button", { name: t("common.save") }));
 
-    expect(await screen.findByText("Não foi possível salvar as configurações.")).toBeInTheDocument();
+    expect(await screen.findByText(t("settings.saveError"))).toBeInTheDocument();
   });
 
   it("renders the direct form and saves the preferences", async () => {
@@ -199,21 +200,21 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole("heading", { name: "Configurações" })).toBeInTheDocument();
-    expect(await screen.findByText("Preferências pessoais")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: t("settings.title") })).toBeInTheDocument();
+    expect(await screen.findByText(t("settings.formTitle"))).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
 
-    const prefsForm = screen.getByText("Preferências pessoais").closest("form")!;
-    fireEvent.change(screen.getByRole("combobox", { name: "Conta padrão" }), {
+    const prefsForm = screen.getByText(t("settings.formTitle")).closest("form")!;
+    fireEvent.change(screen.getByRole("combobox", { name: t("settings.account.label") }), {
       target: { value: "acc-1" },
     });
-    fireEvent.change(screen.getByRole("combobox", { name: "Idioma" }), {
+    fireEvent.change(screen.getByRole("combobox", { name: t("settings.locale.label") }), {
       target: { value: "en-US" },
     });
-    fireEvent.click(screen.getByRole("switch", { name: "Considera orçamentos" }));
-    fireEvent.click(within(prefsForm).getByRole("button", { name: "Salvar" }));
+    fireEvent.click(screen.getByRole("switch", { name: t("settings.balance.withBudgets") }));
+    fireEvent.click(within(prefsForm).getByRole("button", { name: t("common.save") }));
 
-    expect(await screen.findByText("Configurações salvas.")).toBeInTheDocument();
+    expect(await screen.findByText(t("settings.saveSuccess"))).toBeInTheDocument();
     expect(savedPayload).toEqual({
       defaultAccountId: "acc-1",
       locale: "en-US",
@@ -239,11 +240,11 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    const prefsForm = (await screen.findByText("Preferências pessoais")).closest("form")!;
-    fireEvent.click(screen.getByRole("switch", { name: "Desabilitado" }));
-    fireEvent.click(within(prefsForm).getByRole("button", { name: "Salvar" }));
+    const prefsForm = (await screen.findByText(t("settings.formTitle"))).closest("form")!;
+    fireEvent.click(screen.getByRole("switch", { name: t("settings.foreignCurrency.disabled") }));
+    fireEvent.click(within(prefsForm).getByRole("button", { name: t("common.save") }));
 
-    expect(await screen.findByText("Configurações salvas.")).toBeInTheDocument();
+    expect(await screen.findByText(t("settings.saveSuccess"))).toBeInTheDocument();
     expect(savedPayload).toEqual({
       defaultAccountId: null,
       locale: "pt-BR",
@@ -308,11 +309,11 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    const prefsForm = (await screen.findByText("Preferências pessoais")).closest("form")!;
-    fireEvent.click(screen.getByRole("switch", { name: "Habilitado" }));
-    fireEvent.click(within(prefsForm).getByRole("button", { name: "Salvar" }));
+    const prefsForm = (await screen.findByText(t("settings.formTitle"))).closest("form")!;
+    fireEvent.click(screen.getByRole("switch", { name: t("settings.foreignCurrency.enabled") }));
+    fireEvent.click(within(prefsForm).getByRole("button", { name: t("common.save") }));
 
-    expect(await screen.findByText("Configurações salvas.")).toBeInTheDocument();
+    expect(await screen.findByText(t("settings.saveSuccess"))).toBeInTheDocument();
     expect(savedPayload).toEqual({
       defaultAccountId: null,
       locale: "pt-BR",
@@ -338,19 +339,23 @@ describe("UserSettingsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("Preferências pessoais")).toBeInTheDocument();
+    expect(await screen.findByText(t("settings.formTitle"))).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Senha atual"), {
+    fireEvent.change(screen.getByLabelText(t("settings.password.current")), {
       target: { value: "admin12345678" },
     });
-    fireEvent.change(screen.getByLabelText("Nova senha"), {
+    fireEvent.change(screen.getByLabelText(t("settings.password.new")), {
       target: { value: "novaSenha123" },
     });
-    fireEvent.change(screen.getByLabelText("Confirmar nova senha"), {
+    fireEvent.change(screen.getByLabelText(t("settings.password.confirm")), {
       target: { value: "novaSenha123" },
     });
-    fireEvent.click(within(screen.getByRole("heading", { name: "Senha" }).closest("form")!).getByRole("button", { name: "Salvar" }));
+    fireEvent.click(
+      within(screen.getByRole("heading", { name: t("settings.password.title") }).closest("form")!).getByRole("button", {
+        name: t("common.save"),
+      }),
+    );
 
-    expect(await screen.findByText("Senha atualizada.")).toBeInTheDocument();
+    expect(await screen.findByText(t("settings.password.success"))).toBeInTheDocument();
   });
 });

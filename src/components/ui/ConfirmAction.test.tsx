@@ -1,8 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
-import ConfirmAction from "./ConfirmAction";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { t } from "../../test/i18n";
+import ConfirmAction from "./ConfirmAction";
 
 function renderConfirmAction(props: Partial<React.ComponentProps<typeof ConfirmAction>> = {}) {
   const onConfirm = vi.fn();
@@ -81,7 +82,7 @@ describe("ConfirmAction", () => {
   it("backdrop click calls onCancel", () => {
     const { onCancel } = renderConfirmAction();
 
-    fireEvent.click(screen.getByLabelText("Cancelar"));
+    fireEvent.click(screen.getByLabelText(t("common.cancel")));
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
@@ -90,7 +91,7 @@ describe("ConfirmAction", () => {
 
     const dialog = screen.getByRole("alertdialog");
     const buttons = dialog.querySelectorAll("button");
-    const confirmBtn = Array.from(buttons).find((b) => b.textContent === "Carregando...");
+    const confirmBtn = Array.from(buttons).find((b) => b.textContent === t("common.loading"));
     expect(confirmBtn).toBeTruthy();
     expect(confirmBtn).toBeDisabled();
   });
@@ -99,7 +100,7 @@ describe("ConfirmAction", () => {
     renderConfirmAction({ loading: true });
 
     const dialog = screen.getByRole("alertdialog");
-    const cancelBtn = Array.from(dialog.querySelectorAll("button")).find((b) => b.textContent === "Cancelar");
+    const cancelBtn = Array.from(dialog.querySelectorAll("button")).find((b) => b.textContent === t("common.cancel"));
     expect(cancelBtn).toBeTruthy();
     expect(cancelBtn).toBeDisabled();
   });

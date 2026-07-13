@@ -1,6 +1,8 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { t } from "../../test/i18n";
 import PaginationBar from "./PaginationBar";
 
 function renderPaginationBar(props: {
@@ -38,22 +40,22 @@ describe("PaginationBar", () => {
 
   it("renders loaded summary", () => {
     renderPaginationBar(defaultProps);
-    expect(screen.getByText("12 de 100 itens")).toBeInTheDocument();
+    expect(screen.getByText(t("common.loadedItems", { loaded: 12, total: 100 }))).toBeInTheDocument();
   });
 
   it("shows scroll hint when there are more pages", () => {
     renderPaginationBar(defaultProps);
-    expect(screen.getByText("Role para carregar mais")).toBeInTheDocument();
+    expect(screen.getByText(t("common.scrollToLoadMore"))).toBeInTheDocument();
   });
 
   it("shows loading state", () => {
     renderPaginationBar({ ...defaultProps, isLoadingMore: true });
-    expect(screen.getByText("Carregando mais...")).toBeInTheDocument();
+    expect(screen.getByText(t("common.loadingMore"))).toBeInTheDocument();
   });
 
   it("shows completion state", () => {
     renderPaginationBar({ ...defaultProps, loaded: 100, hasNextPage: false });
-    expect(screen.getByText("Todos os itens carregados")).toBeInTheDocument();
+    expect(screen.getByText(t("common.allItemsLoaded"))).toBeInTheDocument();
   });
 
   it("allows retry after error", () => {
@@ -63,7 +65,7 @@ describe("PaginationBar", () => {
       error: "Falha ao carregar.",
       onRetry,
     });
-    fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.retry") }));
     expect(onRetry).toHaveBeenCalled();
   });
 });

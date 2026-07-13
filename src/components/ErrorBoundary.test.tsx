@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
+import { t } from "../test/i18n";
 import ErrorBoundary from "./ErrorBoundary";
 
 afterEach(() => {
@@ -42,13 +43,13 @@ describe("ErrorBoundary", () => {
 
   it("shows fallback UI when child component throws", () => {
     renderWithErrorBoundary(<ThrowingComponent />);
-    expect(screen.getByText("Algo deu errado")).toBeInTheDocument();
-    expect(screen.getByText(/Um erro inesperado ocorreu/)).toBeInTheDocument();
+    expect(screen.getByText(t("errorBoundary.title"))).toBeInTheDocument();
+    expect(screen.getByText(t("errorBoundary.message"))).toBeInTheDocument();
   });
 
   it("shows error details in expandable section", () => {
     renderWithErrorBoundary(<ThrowingComponent />);
-    const details = screen.getByText("Detalhes técnicos");
+    const details = screen.getByText(t("errorBoundary.details"));
     expect(details.tagName).toBe("SUMMARY");
     expect(details.closest("details")).toBeInTheDocument();
   });
@@ -61,11 +62,11 @@ describe("ErrorBoundary", () => {
     }
 
     renderWithErrorBoundary(<ConditionalThrow />);
-    expect(screen.getByText("Algo deu errado")).toBeInTheDocument();
+    expect(screen.getByText(t("errorBoundary.title"))).toBeInTheDocument();
 
     shouldThrow = false;
     const retryButton = screen.getByRole("button", {
-      name: "Tentar novamente",
+      name: t("errorBoundary.retry"),
     });
     fireEvent.click(retryButton);
 
@@ -78,7 +79,7 @@ describe("ErrorBoundary", () => {
 
     renderWithErrorBoundary(<ThrowingComponent />);
     const dashboardButton = screen.getByRole("button", {
-      name: "Ir para o Dashboard",
+      name: t("errorBoundary.goToDashboard"),
     });
     fireEvent.click(dashboardButton);
     expect(assignMock).toHaveBeenCalledWith("/dashboard");

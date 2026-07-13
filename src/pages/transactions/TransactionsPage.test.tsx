@@ -4,6 +4,7 @@ import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import { t } from "../../test/i18n";
 import { clearCachedOptionsResources } from "../../lib/options/useCachedOptionsResource";
 import TransactionsPage from "./TransactionsPage";
 
@@ -103,7 +104,7 @@ function setupDefaultMocks() {
 }
 
 function selectCategory(container: HTMLElement, categoryName: string) {
-  fireEvent.click(within(container).getByLabelText("Categoria", { selector: "button" }));
+  fireEvent.click(within(container).getByLabelText(t("common.category"), { selector: "button" }));
   fireEvent.click(
     within(container).getByRole("option", {
       name: new RegExp(categoryName, "i"),
@@ -141,19 +142,19 @@ describe("TransactionsPage", () => {
     );
 
     expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
-    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
+    expect(screen.getByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("transactions.new") }));
     const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(within(drawer).getByLabelText("Descrição"), {
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.description")), {
       target: { value: "A" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Valor"), {
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.amount")), {
       target: { value: "45" },
     });
     fireEvent.change(
-      within(drawer).getByLabelText("Conta", {
+      within(drawer).getByLabelText(t("common.account"), {
         selector: "#transaction-account",
       }),
       {
@@ -161,12 +162,12 @@ describe("TransactionsPage", () => {
       },
     );
     selectCategory(drawer, "Groceries");
-    fireEvent.click(within(drawer).getByRole("switch", { name: "Titularidade Individual" }));
+    fireEvent.click(within(drawer).getByRole("switch", { name: `${t("common.ownership")} ${t("ownershipTypes.INDIVIDUAL")}` }));
 
-    fireEvent.click(within(drawer).getByRole("button", { name: "Salvar e criar novo" }));
+    fireEvent.click(within(drawer).getByRole("button", { name: t("transactions.saveAndCreateNew") }));
 
     await waitFor(() => {
-      expect(screen.getByText("O membro é obrigatório para transações individuais.")).toBeInTheDocument();
+      expect(screen.getByText(t("validation.requiredIndividualMember"))).toBeInTheDocument();
     });
   });
 
@@ -291,11 +292,11 @@ describe("TransactionsPage", () => {
 
     expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("transactions.new") }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.click(within(drawer).getByRole("radio", { name: "Receita" }));
-    fireEvent.change(within(drawer).getByLabelText("Descrição"), {
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.description")), {
       target: { value: "Gro" },
     });
 
@@ -303,14 +304,14 @@ describe("TransactionsPage", () => {
       expect(within(screen.getByTestId("transaction-description-suggestions")).getByText("Groceries monthly")).toBeInTheDocument();
     });
 
-    fireEvent.change(within(drawer).getByLabelText("Valor"), {
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.amount")), {
       target: { value: "90" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Data da transação"), {
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.transactionDate")), {
       target: { value: "2026-07-03" },
     });
     fireEvent.change(
-      within(drawer).getByLabelText("Conta", {
+      within(drawer).getByLabelText(t("common.account"), {
         selector: "#transaction-account",
       }),
       {
@@ -319,16 +320,16 @@ describe("TransactionsPage", () => {
     );
     selectCategory(drawer, "Groceries");
 
-    fireEvent.click(within(drawer).getByRole("button", { name: "Salvar e criar novo" }));
+    fireEvent.click(within(drawer).getByRole("button", { name: t("transactions.saveAndCreateNew") }));
 
     await waitFor(() => {
-      expect(within(drawer).getByLabelText("Descrição")).toHaveValue("");
+      expect(within(drawer).getByLabelText(t("transactions.description"))).toHaveValue("");
     });
 
     expect(within(drawer).getByRole("radio", { name: "Receita" })).toHaveAttribute("aria-checked", "true");
-    expect(within(drawer).getByLabelText("Data da transação")).toHaveValue("2026-07-03");
+    expect(within(drawer).getByLabelText(t("transactions.transactionDate"))).toHaveValue("2026-07-03");
     expect(
-      within(drawer).getByLabelText("Conta", {
+      within(drawer).getByLabelText(t("common.account"), {
         selector: "#transaction-account",
       }),
     ).toHaveValue("account-1");
@@ -405,18 +406,18 @@ describe("TransactionsPage", () => {
 
     expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("transactions.new") }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.click(within(drawer).getByRole("radio", { name: "Receita" }));
-    fireEvent.change(within(drawer).getByLabelText("Descrição"), {
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.description")), {
       target: { value: "A" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Valor"), {
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.amount")), {
       target: { value: "90" },
     });
     fireEvent.change(
-      within(drawer).getByLabelText("Conta", {
+      within(drawer).getByLabelText(t("common.account"), {
         selector: "#transaction-account",
       }),
       {
@@ -425,7 +426,7 @@ describe("TransactionsPage", () => {
     );
     selectCategory(drawer, "Groceries");
 
-    fireEvent.click(within(drawer).getByRole("button", { name: "Salvar" }));
+    fireEvent.click(within(drawer).getByRole("button", { name: t("transactions.save") }));
 
     await waitFor(() => {
       expect(
@@ -501,17 +502,17 @@ describe("TransactionsPage", () => {
 
     expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("transactions.new") }));
     const drawer = screen.getByRole("dialog");
 
-    fireEvent.change(within(drawer).getByLabelText("Descrição"), {
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.description")), {
       target: { value: "A" },
     });
-    fireEvent.change(within(drawer).getByLabelText("Valor"), {
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.amount")), {
       target: { value: "100" },
     });
     fireEvent.change(
-      within(drawer).getByLabelText("Conta", {
+      within(drawer).getByLabelText(t("common.account"), {
         selector: "#transaction-account",
       }),
       {
@@ -519,8 +520,8 @@ describe("TransactionsPage", () => {
       },
     );
     selectCategory(drawer, "Groceries");
-    fireEvent.click(within(drawer).getByRole("switch", { name: "Titularidade Individual" }));
-    fireEvent.change(within(drawer).getByLabelText("Membro"), {
+    fireEvent.click(within(drawer).getByRole("switch", { name: `${t("common.ownership")} ${t("ownershipTypes.INDIVIDUAL")}` }));
+    fireEvent.change(within(drawer).getByLabelText(t("common.member")), {
       target: { value: "member-1" },
     });
     fireEvent.click(within(drawer).getByRole("switch", { name: /Parcelado/ }));
@@ -528,7 +529,7 @@ describe("TransactionsPage", () => {
       target: { value: "4" },
     });
 
-    fireEvent.click(within(drawer).getByRole("button", { name: "Salvar" }));
+    fireEvent.click(within(drawer).getByRole("button", { name: t("transactions.save") }));
 
     await waitFor(() => {
       expect(
@@ -576,19 +577,19 @@ describe("TransactionsPage", () => {
 
     fireEvent.click(transactionButton);
 
-    expect(screen.queryByRole("alertdialog", { name: "Excluir transação" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("alertdialog", { name: t("transactions.deleteTitle") })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.delete") }));
 
     const modal = screen.getByRole("alertdialog", {
-      name: "Excluir transação",
+      name: t("transactions.deleteTitle"),
     });
-    expect(within(modal).getByText("Confirme a exclusão da transação selecionada.")).toBeInTheDocument();
+    expect(within(modal).getByText(t("transactions.deleteSingleSubtitle"))).toBeInTheDocument();
 
-    fireEvent.click(within(modal).getByRole("button", { name: "Cancelar" }));
+    fireEvent.click(within(modal).getByRole("button", { name: t("common.cancel") }));
 
     await waitFor(() => {
-      expect(screen.queryByRole("alertdialog", { name: "Excluir transação" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("alertdialog", { name: t("transactions.deleteTitle") })).not.toBeInTheDocument();
     });
     expect(
       vi.mocked(fetch).mock.calls.some(([input, init]) => String(input).includes("/api/transactions/tx-1?") && init?.method === "DELETE"),
@@ -921,15 +922,15 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("1 de 1 itens")).toBeInTheDocument();
+    expect(await screen.findByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.previousMonth") }));
 
     await waitFor(() => {
       expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${previousReferenceMonth}`))).toBe(true);
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Próximo mês" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.nextMonth") }));
 
     await waitFor(() => {
       expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${currentReferenceMonth}`))).toBe(true);
@@ -1046,18 +1047,18 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("1 de 1 itens")).toBeInTheDocument();
+    expect(await screen.findByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Mês anterior" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.previousMonth") }));
 
     await waitFor(() => {
       expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes(`referenceMonth=${previousReferenceMonth}`))).toBe(true);
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("transactions.new") }));
 
     const drawer = screen.getByRole("dialog");
-    const dateInput = within(drawer).getByLabelText("Data da transação");
+    const dateInput = within(drawer).getByLabelText(t("transactions.transactionDate"));
 
     await waitFor(() => {
       expect(dateInput).toHaveValue(previousReferenceMonth);
@@ -1085,18 +1086,18 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("1 de 1 itens")).toBeInTheDocument();
+    expect(await screen.findByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Filtros" }));
-    fireEvent.click(screen.getByLabelText("Categorias", { selector: "button" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
+    fireEvent.click(screen.getByLabelText(t("common.categories"), { selector: "button" }));
 
     const listbox = screen.getByRole("listbox");
     fireEvent.click(within(listbox).getByRole("option", { name: /Groceries/i }));
     fireEvent.click(within(listbox).getByRole("option", { name: /Transport/i }));
-    fireEvent.click(screen.getByRole("button", { name: /^Filtros/ }));
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(`^${t("common.filters")}`) }));
 
     await waitFor(() => {
-      expect(screen.getByText("Categorias: Groceries, Transport")).toBeInTheDocument();
+      expect(screen.getByText(`${t("common.categories")}: Groceries, Transport`)).toBeInTheDocument();
     });
 
     const transactionRequests = vi
@@ -1150,7 +1151,7 @@ describe("TransactionsPage", () => {
       </MemoryRouter>,
     );
 
-    const searchInput = await screen.findByLabelText("Buscar");
+    const searchInput = await screen.findByLabelText(t("common.search"));
     fireEvent.change(searchInput, { target: { value: "mercado" } });
 
     await waitFor(() => {

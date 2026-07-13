@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
+import { t } from "../../test/i18n";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import FixedExpensesPage from "./FixedExpensesPage";
 
@@ -83,30 +84,30 @@ describe("FixedExpensesPage", () => {
     );
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
-    expect(screen.getByText("Housing · Main checking · Vence dia 05")).toBeInTheDocument();
-    expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
+    expect(screen.getByText(`Housing · Main checking · ${t("fixedTransactions.dueOnDay", { day: "05" })}`)).toBeInTheDocument();
+    expect(screen.getByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
+    fireEvent.click(screen.getByRole("button", { name: t("fixedTransactions.new") }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Nome"), {
+    fireEvent.change(screen.getByLabelText(t("common.name")), {
       target: { value: "Water bill" },
     });
-    fireEvent.change(screen.getByLabelText("Tipo"), {
+    fireEvent.change(screen.getByLabelText(t("common.type")), {
       target: { value: "INCOME" },
     });
-    fireEvent.change(screen.getByLabelText("Valor"), {
+    fireEvent.change(screen.getByLabelText(t("fixedTransactions.amount")), {
       target: { value: "150" },
     });
-    expect(screen.getByLabelText("Dia do recebimento")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Dia do recebimento"), {
+    expect(screen.getByLabelText(t("fixedTransactions.receiptDay"))).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(t("fixedTransactions.receiptDay")), {
       target: { value: "12" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Criar transação fixa" }));
+    fireEvent.click(screen.getByRole("button", { name: t("fixedTransactions.create") }));
 
     await waitFor(() => {
-      expect(screen.getByText("A categoria é obrigatória.")).toBeInTheDocument();
-      expect(screen.getByText("A conta é obrigatória.")).toBeInTheDocument();
+      expect(screen.getByText(t("validation.requiredCategory"))).toBeInTheDocument();
+      expect(screen.getByText(t("validation.requiredAccount"))).toBeInTheDocument();
     });
   });
 
@@ -178,7 +179,7 @@ describe("FixedExpensesPage", () => {
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
     expect(screen.getByText("Salary")).toBeInTheDocument();
-    expect(screen.getByText("2 de 2 itens")).toBeInTheDocument();
+    expect(screen.getByText(t("common.loadedItems", { loaded: 2, total: 2 }))).toBeInTheDocument();
   });
 
   it("shows range text when no templates exist", async () => {
@@ -213,7 +214,7 @@ describe("FixedExpensesPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText("0 de 0 itens")).toBeInTheDocument();
+    expect(await screen.findByText(t("common.loadedItems", { loaded: 0, total: 0 }))).toBeInTheDocument();
   });
 
   it("opens delete confirmation alertdialog when the delete button is clicked", async () => {
@@ -238,17 +239,13 @@ describe("FixedExpensesPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
 
     const deleteButton = await screen.findByRole("button", {
-      name: "Excluir",
+      name: t("common.delete"),
     });
     fireEvent.click(deleteButton);
 
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
-    expect(
-      within(alertDialog).getByText(
-        "Tem certeza que deseja excluir esta transação fixa? As transações materializadas do mês corrente em diante serão removidas. Transações de meses passados serão preservadas.",
-      ),
-    ).toBeInTheDocument();
+    expect(within(alertDialog).getByText(t("confirmations.deleteFixedExpense"))).toBeInTheDocument();
   });
 
   it("cancels delete confirmation without calling the API", async () => {
@@ -273,14 +270,14 @@ describe("FixedExpensesPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
 
     const deleteButton = await screen.findByRole("button", {
-      name: "Excluir",
+      name: t("common.delete"),
     });
     fireEvent.click(deleteButton);
 
     const alertDialog = screen.getByRole("alertdialog");
     expect(alertDialog).toBeInTheDocument();
 
-    fireEvent.click(within(alertDialog).getByRole("button", { name: "Cancelar" }));
+    fireEvent.click(within(alertDialog).getByRole("button", { name: t("common.cancel") }));
 
     await waitFor(() => {
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
@@ -326,18 +323,18 @@ describe("FixedExpensesPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
 
     const deleteButton = await screen.findByRole("button", {
-      name: "Excluir",
+      name: t("common.delete"),
     });
     fireEvent.click(deleteButton);
 
     const alertDialog = screen.getByRole("alertdialog");
     const confirmButton = within(alertDialog).getByRole("button", {
-      name: "Excluir",
+      name: t("common.delete"),
     });
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Não foi possível excluir a transação fixa.")).toBeInTheDocument();
+      expect(screen.getByText(t("fixedTransactions.deleteError"))).toBeInTheDocument();
     });
   });
 
@@ -408,7 +405,7 @@ describe("FixedExpensesPage", () => {
     fireEvent.click(templateButton.closest("button")!);
 
     // The amount field should show the USD value (100), not the BRL value (510)
-    const amountInput = screen.getByLabelText("Valor");
+    const amountInput = screen.getByLabelText(t("fixedTransactions.amount"));
     expect(amountInput).toHaveValue("$100.00");
   });
 });
