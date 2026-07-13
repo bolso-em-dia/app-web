@@ -1,6 +1,7 @@
 import type { Account } from "../../app/api/accounts";
 import { useI18n } from "../../app/i18n/I18nContext";
 import Card from "../../components/ui/Card";
+import clsx from "../../components/ui/clsx";
 import { formatReferenceMonth } from "../../lib/formatters/date";
 import styles from "./AccountsPage.module.scss";
 
@@ -10,13 +11,14 @@ interface AccountCardProps {
   onSelect: (id: string) => void;
 }
 
-export default function AccountCard({ account, onSelect }: AccountCardProps) {
+export default function AccountCard({ account, isSelected = false, onSelect }: AccountCardProps) {
   const { t } = useI18n();
 
   return (
     <Card key={account.id} className={styles.accountCard}>
       <button
-        className={styles.accountButton}
+        aria-pressed={isSelected}
+        className={clsx(styles.accountButton, isSelected ? styles.accountButtonSelected : "")}
         onClick={() => onSelect(account.id)}
         style={account.color ? { borderInlineStartColor: account.color } : undefined}
         type="button"
@@ -35,7 +37,6 @@ export default function AccountCard({ account, onSelect }: AccountCardProps) {
         </div>
 
         <div className={styles.accountBadges}>
-          <span className={styles.badge}>{t(`accountTypes.${account.type}` as const)}</span>
           {account.closingDay && account.dueDay ? (
             <span className={`${styles.badge} ${styles.badgeInfo}`}>
               {t("accounts.billingCycle", {

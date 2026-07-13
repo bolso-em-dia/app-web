@@ -74,9 +74,6 @@
 }
 
 .transactionTitleRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
   min-width: 0;
 }
 
@@ -105,20 +102,14 @@
   font-size: var(--font-size-100);
 }
 
-.transactionMeta,
-.transactionMetaSeparator {
+.transactionMeta {
   white-space: nowrap;
-}
-
-.transactionMetaSeparator {
-  color: var(--color-text-muted);
 }
 
 .badgeRow {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-inline-start: calc(var(--space-5) + var(--space-3));
 }
 
 .badge {
@@ -152,16 +143,37 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--space-5);
-  height: var(--space-5);
+  width: 1rem;
+  height: 1rem;
   flex: 0 0 auto;
   color: var(--color-text-muted);
 }
 
+.categoryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  min-height: 1.625rem;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-round);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  font-size: var(--font-size-100);
+  font-weight: var(--font-weight-semibold);
+}
+
+.categoryBadgeText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .categoryIcon,
 .categoryDot {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1rem;
+  height: 1rem;
   flex: 0 0 auto;
 }
 
@@ -279,17 +291,12 @@
     flex-direction: column;
   }
 
-  .badgeRow {
-    margin-inline-start: 0;
-  }
-
   .transactionLine,
   .transactionTop {
     align-items: flex-start;
   }
 
-  .transactionMeta,
-  .transactionMetaSeparator {
+  .transactionMeta {
     white-space: normal;
   }
 }

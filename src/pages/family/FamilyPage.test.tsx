@@ -403,7 +403,7 @@ describe("FamilyPage", () => {
     expect(await screen.findByText("Admin")).toBeInTheDocument();
     expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Novo membro" }));
+    fireEvent.click(screen.getByRole("button", { name: "Novo" }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.change(within(drawer).getByLabelText("Nome"), {

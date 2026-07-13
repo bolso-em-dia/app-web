@@ -27,8 +27,6 @@ function CategoryContent({ category }: { category: CategoryOption }) {
 }
 
 export default function CategorySelect({ id, value, options, placeholder, onChange, hasError = false }: CategorySelectProps) {
-  const selectedOption = useMemo(() => options.find((option) => option.id === value) ?? null, [options, value]);
-
   const selectOptions = useMemo(() => options.map((option) => ({ value: option.id, label: option.name })), [options]);
 
   const renderOption = useMemo(
@@ -47,8 +45,8 @@ export default function CategorySelect({ id, value, options, placeholder, onChan
       options={selectOptions}
       placeholder={placeholder}
       renderOption={renderOption}
-      renderValue={() =>
-        selectedOption ? <CategoryContent category={selectedOption} /> : <span className={styles.placeholder}>{placeholder}</span>
+      renderValue={(option) =>
+        option ? <span className={styles.selectedValue}>{option.label}</span> : <span className={styles.placeholder}>{placeholder}</span>
       }
       value={value}
     />

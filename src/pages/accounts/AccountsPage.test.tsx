@@ -49,7 +49,7 @@ describe("AccountsPage", () => {
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
     expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     const drawer = screen.getByRole("dialog");
     expect(drawer).toBeInTheDocument();
 
@@ -416,7 +416,7 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     const drawer = screen.getByRole("dialog");
 
     expect(within(drawer).getByLabelText("Moeda")).toBeInTheDocument();
@@ -448,7 +448,7 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     const drawer = screen.getByRole("dialog");
 
     expect(within(drawer).getByDisplayValue("Real (BRL)")).toBeInTheDocument();
@@ -480,7 +480,7 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     const drawer = screen.getByRole("dialog");
 
     fireEvent.change(within(drawer).getByLabelText("Moeda"), {
@@ -511,7 +511,7 @@ describe("AccountsPage", () => {
     );
 
     expect(await screen.findByText("Main checking")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Nova conta" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     const drawer = screen.getByRole("dialog");
 
     expect(within(drawer).queryByLabelText("Moeda")).not.toBeInTheDocument();

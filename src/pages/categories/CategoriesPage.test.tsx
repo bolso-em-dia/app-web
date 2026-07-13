@@ -70,7 +70,7 @@ describe("CategoriesPage", () => {
     expect(await screen.findByText("Groceries")).toBeInTheDocument();
     expect(screen.getByText("1 de 1 itens")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova categoria" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Nome"), {
@@ -177,7 +177,7 @@ describe("CategoriesPage", () => {
       target: { value: "ACTIVE" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Nova categoria" }));
+    fireEvent.click(screen.getByRole("button", { name: "Nova" }));
     fireEvent.change(screen.getByLabelText("Nome"), {
       target: { value: "Travel" },
     });

@@ -32,49 +32,36 @@ export default function AppShell({ title, subtitle, actions, children }: AppShel
     }
   }, [isCompactNavigation]);
 
+  function renderNavigationSection(title: string | null, items: typeof operationalNavigation) {
+    return (
+      <div className={title ? styles.navSection : `${styles.navSection} ${styles.navSectionUngrouped}`}>
+        {title ? <span className={styles.navSectionTitle}>{title}</span> : null}
+        {items.map((item) => {
+          const Icon = getNavigationIcon(item.iconId);
+
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => (isActive ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem)}
+              onClick={() => setIsNavigationOpen(false)}
+            >
+              <span className={styles.navLead}>
+                <Icon aria-hidden="true" className={styles.navIcon} />
+                <span className={styles.navLabel}>{t(item.labelKey)}</span>
+              </span>
+            </NavLink>
+          );
+        })}
+      </div>
+    );
+  }
+
   function renderNavigation() {
     return (
       <nav className={styles.navigation} aria-label={t("navigation.aria")}>
-        <div className={styles.navSection}>
-          {operationalNavigation.map((item) => {
-            const Icon = getNavigationIcon(item.iconId);
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) => (isActive ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem)}
-                onClick={() => setIsNavigationOpen(false)}
-              >
-                <span className={styles.navLead}>
-                  <Icon aria-hidden="true" className={styles.navIcon} />
-                  <span className={styles.navLabel}>{t(item.labelKey)}</span>
-                </span>
-              </NavLink>
-            );
-          })}
-        </div>
-
-        <div className={styles.navSection}>
-          <span className={styles.navSectionTitle}>{t("navigation.management")}</span>
-          {managementNavigation.map((item) => {
-            const Icon = getNavigationIcon(item.iconId);
-
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) => (isActive ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem)}
-                onClick={() => setIsNavigationOpen(false)}
-              >
-                <span className={styles.navLead}>
-                  <Icon aria-hidden="true" className={styles.navIcon} />
-                  <span className={styles.navLabel}>{t(item.labelKey)}</span>
-                </span>
-              </NavLink>
-            );
-          })}
-        </div>
+        {renderNavigationSection(null, operationalNavigation)}
+        {renderNavigationSection(t("navigation.management"), managementNavigation)}
       </nav>
     );
   }
