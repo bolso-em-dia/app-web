@@ -1,6 +1,5 @@
 import { useI18n } from "../../app/i18n/I18nContext";
 import Card from "../../components/ui/Card";
-import MoneyAmount from "../../components/ui/MoneyAmount";
 import { formatCurrency } from "../../lib/formatters/currency";
 import { formatReferenceMonth } from "../../lib/formatters/date";
 import type { Budget } from "../../app/api/budgets";
@@ -33,9 +32,6 @@ export default function BudgetCard({ budget, onSelect }: BudgetCardProps) {
           </div>
           <div className={styles.budgetAmounts}>
             <strong>{formatCurrency(budget.monthlyLimit)}</strong>
-            <p className={styles.budgetMeta}>
-              {t("budgets.consumed")} <MoneyAmount amount={budget.consumedAmount} type="EXPENSE" />
-            </p>
           </div>
         </div>
 

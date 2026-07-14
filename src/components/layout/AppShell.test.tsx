@@ -45,6 +45,7 @@ describe("AppShell", () => {
     expect(within(navigation).getByRole("link", { name: t("navigation.family") })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: t("navigation.categories") })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: t("navigation.accounts") })).toBeInTheDocument();
+    expect(within(navigation).getAllByRole("link")[0]).toHaveAccessibleName(t("navigation.transactions"));
     expect(container.querySelectorAll("nav svg").length).toBe(7);
     expect(container.querySelector('[class*="navSectionSpacer"]')).toBeNull();
     expect(screen.queryByText("admin@bolso-em-dia.local")).not.toBeInTheDocument();

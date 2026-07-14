@@ -65,6 +65,8 @@
 .triggerChipList {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
   gap: var(--space-2);
 }
 
@@ -81,6 +83,7 @@
 .triggerChip {
   display: inline-flex;
   align-items: center;
+  max-width: 100%;
 }
 
 .triggerChip .value,

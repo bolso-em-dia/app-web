@@ -15,6 +15,11 @@ export type NavigationItem = {
 
 export const operationalNavigation: NavigationItem[] = [
   {
+    labelKey: "navigation.transactions",
+    path: "/transactions",
+    iconId: "transactions",
+  },
+  {
     labelKey: "navigation.dashboard",
     path: "/dashboard",
     iconId: "dashboard",
@@ -28,11 +33,6 @@ export const operationalNavigation: NavigationItem[] = [
     labelKey: "navigation.fixedTransactions",
     path: "/fixed-transactions",
     iconId: "fixed-expenses",
-  },
-  {
-    labelKey: "navigation.transactions",
-    path: "/transactions",
-    iconId: "transactions",
   },
 ];
 

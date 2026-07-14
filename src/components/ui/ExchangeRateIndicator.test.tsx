@@ -188,5 +188,6 @@ describe("ExchangeRateIndicator", () => {
     const button = screen.getByRole("button", { name: "Atualizar cotação" });
     expect(button).toBeInTheDocument();
     expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute("title", "Atualizar cotação");
   });
 });
