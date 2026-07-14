@@ -5,7 +5,6 @@ import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { CategoryOption } from "../../app/api/categories";
 import type { FamilyMember } from "../../app/api/family";
-import type { AuthUser } from "../../app/api/auth";
 import { archiveBudget, createBudget, updateBudget, type Budget, type BudgetPayload } from "../../app/api/budgets";
 import { createBudgetSchema, type BudgetFormValues } from "../../lib/validation/budgetSchema";
 import Button from "../../components/ui/Button";
@@ -40,15 +39,23 @@ function mapFormValuesToPayload(values: BudgetFormValues): BudgetPayload {
 
 interface BudgetFormProps {
   budget: Budget | null;
-  user: AuthUser;
   categories: CategoryOption[];
   members: FamilyMember[];
+  allowanceBudgets: Budget[];
   referenceMonth: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-export default function BudgetForm({ budget, categories, members, referenceMonth, onSuccess, onCancel }: BudgetFormProps) {
+export default function BudgetForm({
+  budget,
+  categories,
+  members,
+  allowanceBudgets,
+  referenceMonth,
+  onSuccess,
+  onCancel,
+}: BudgetFormProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [isSaving, setIsSaving] = useState(false);
@@ -83,7 +90,16 @@ export default function BudgetForm({ budget, categories, members, referenceMonth
     }
   }, [initialValues, form]);
 
-  const availableAllowanceMembers = useMemo(() => members.filter((member) => member.active && member.allowanceEnabled), [members]);
+  const availableAllowanceMembers = useMemo(() => {
+    const currentOwnerId = budget?.type === "ALLOWANCE" ? budget.ownerMemberId : null;
+    const ownerIdsWithAllowance = new Set(
+      allowanceBudgets
+        .map((allowanceBudget) => allowanceBudget.ownerMemberId)
+        .filter((ownerMemberId): ownerMemberId is string => Boolean(ownerMemberId) && ownerMemberId !== currentOwnerId),
+    );
+
+    return members.filter((member) => member.active && !ownerIdsWithAllowance.has(member.id));
+  }, [allowanceBudgets, budget, members]);
 
   const isCreating = !budget;
   const budgetType = form.watch("type");

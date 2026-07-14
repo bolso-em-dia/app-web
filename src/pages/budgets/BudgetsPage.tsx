@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useAuth } from "../../app/auth/useAuth";
 import AppShell from "../../components/layout/AppShell";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -36,7 +35,6 @@ const DEFAULT_FILTERS: BudgetFilters = {
 };
 
 export default function BudgetsPage() {
-  const { user } = useAuth();
   const { t } = useI18n();
   const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -47,7 +45,8 @@ export default function BudgetsPage() {
   const [referenceData, setReferenceData] = useState<{
     categories: CategoryOption[];
     members: FamilyMember[];
-  }>({ categories: [], members: [] });
+    allowanceBudgets: Budget[];
+  }>({ categories: [], members: [], allowanceBudgets: [] });
 
   function handleSelect(_id: string, budget: Budget) {
     setSelectedId(budget.id);
@@ -207,9 +206,9 @@ export default function BudgetsPage() {
             <div className={styles.drawerStack}>
               <BudgetForm
                 budget={selectedBudget}
-                user={user!}
                 categories={referenceData.categories}
                 members={referenceData.members}
+                allowanceBudgets={referenceData.allowanceBudgets}
                 referenceMonth={filters.referenceMonth}
                 onSuccess={handleSuccess}
                 onCancel={handleCloseDrawer}

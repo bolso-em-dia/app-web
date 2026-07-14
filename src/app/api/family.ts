@@ -8,9 +8,9 @@ export type FamilyMember = {
   email: string;
   role: FamilyRole;
   active: boolean;
-  allowanceEnabled: boolean;
   createdAt: string;
   updatedAt: string;
+  [key: string]: unknown;
 };
 
 export type CreateFamilyMemberRequest = {
@@ -18,7 +18,6 @@ export type CreateFamilyMemberRequest = {
   email: string;
   password: string;
   role: FamilyRole;
-  allowanceEnabled: boolean;
 };
 
 export type UpdateFamilyMemberRequest = {
@@ -26,7 +25,6 @@ export type UpdateFamilyMemberRequest = {
   email: string;
   password?: string;
   role: FamilyRole;
-  allowanceEnabled: boolean;
 };
 
 export type FamilyMemberListParams = {

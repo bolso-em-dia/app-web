@@ -94,10 +94,35 @@ const defaultMembersResponse = {
   totalPages: 1,
 };
 
+const defaultAllowanceBudgetsResponse = {
+  items: [
+    {
+      id: "budget-1",
+      name: "Taylor Allowance",
+      type: "ALLOWANCE",
+      ownerMemberId: "member-1",
+      ownerMemberName: "Taylor",
+      monthlyLimit: 300,
+      consumedAmount: 0,
+      remainingAmount: 300,
+      createdInMonth: "2026-06-01",
+      archivedFromMonth: null,
+      active: true,
+      categories: [],
+      transactions: [],
+    },
+  ],
+  page: 0,
+  size: 200,
+  totalItems: 1,
+  totalPages: 1,
+};
+
 function setupDefaultMocks() {
   mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
   mockFetchUrl("/api/transactions?", mockJsonResponse(defaultTransactionsResponse));
   mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+  mockFetchUrl("/api/budgets?", mockJsonResponse(defaultAllowanceBudgetsResponse));
   mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
   mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
   mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));

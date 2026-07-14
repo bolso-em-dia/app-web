@@ -6,9 +6,9 @@ export type AuthUser = {
   name: string;
   email: string;
   role: string;
-  allowanceEnabled: boolean;
   mustChangePassword: boolean;
   preferences: UserPreferences;
+  [key: string]: unknown;
 };
 
 export type AuthResponse = {

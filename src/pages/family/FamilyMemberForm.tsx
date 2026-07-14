@@ -12,7 +12,6 @@ import {
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import Button from "../../components/ui/Button";
-import Checkbox from "../../components/ui/Checkbox";
 import ConfirmAction from "../../components/ui/ConfirmAction";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
@@ -33,7 +32,6 @@ const CREATE_DEFAULT_VALUES: CreateFamilyMemberFormValues = {
   email: "",
   password: "",
   role: "USER",
-  allowanceEnabled: false,
 };
 
 type FamilyMemberFormProps = {
@@ -52,7 +50,6 @@ function buildInitialValues(member: FamilyMember | null): FamilyMemberFormValues
     email: member.email,
     password: "",
     role: member.role,
-    allowanceEnabled: member.allowanceEnabled,
   };
 }
 
@@ -96,7 +93,6 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
             email: values.email,
             password: values.password,
             role: values.role as FamilyRole,
-            allowanceEnabled: values.allowanceEnabled,
           },
           accessToken,
         );
@@ -108,7 +104,6 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
             email: values.email,
             password: values.password || undefined,
             role: values.role as FamilyRole,
-            allowanceEnabled: values.allowanceEnabled,
           },
           accessToken,
         );
@@ -169,8 +164,6 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
               <option value="ADMIN">{t("roles.ADMIN")}</option>
             </Select>
           </Field>
-
-          <Checkbox label={t("family.allowanceEnabled")} {...form.register("allowanceEnabled")} />
 
           <FormError>{error}</FormError>
 

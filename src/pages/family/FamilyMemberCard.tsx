@@ -29,7 +29,6 @@ export default function FamilyMemberCard({ member, onSelect }: FamilyMemberCardP
             {member.active ? t("common.active") : t("common.archived")}
           </span>
           <span className={styles.badge}>{t(member.role === "ADMIN" ? "roles.ADMIN" : "roles.USER")}</span>
-          {member.allowanceEnabled ? <span className={styles.badge}>{t("family.allowance")}</span> : null}
         </div>
       </button>
     </Card>

@@ -22,7 +22,7 @@ interface BudgetListProps {
   selectedId: string | null;
   onSelect: (id: string, budget: Budget) => void;
   refreshKey: number;
-  onReferenceDataLoaded: (data: { categories: CategoryOption[]; members: FamilyMember[] }) => void;
+  onReferenceDataLoaded: (data: { categories: CategoryOption[]; members: FamilyMember[]; allowanceBudgets: Budget[] }) => void;
 }
 
 export default function BudgetList({ filters, selectedId, onSelect, refreshKey, onReferenceDataLoaded }: BudgetListProps) {
@@ -39,12 +39,22 @@ export default function BudgetList({ filters, selectedId, onSelect, refreshKey, 
     setReferenceDataError(null);
 
     try {
-      const [categories, members] = await Promise.all([
+      const [categories, members, allowanceBudgets] = await Promise.all([
         listCategoryOptions(filters.referenceMonth, accessToken),
         listFamilyMembers(accessToken),
+        listBudgets(
+          {
+            referenceMonth: filters.referenceMonth,
+            page: 0,
+            size: 200,
+            status: "ACTIVE",
+            type: "ALLOWANCE",
+          },
+          accessToken,
+        ).then((response) => response.items),
       ]);
 
-      onReferenceDataLoaded({ categories, members });
+      onReferenceDataLoaded({ categories, members, allowanceBudgets });
     } catch {
       setReferenceDataError(t("budgets.error"));
     }

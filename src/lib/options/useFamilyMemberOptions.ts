@@ -1,11 +1,13 @@
 import { useCallback, useMemo } from "react";
+import { listBudgets } from "../../app/api/budgets";
 import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
 import { useAuth } from "../../app/auth/useAuth";
 import type { FilterOption } from "../filterFields";
 import { useCachedOptionsResource } from "./useCachedOptionsResource";
 
 type UseFamilyMemberOptionsParams = {
-  allowanceEnabledOnly?: boolean;
+  allowanceOnly?: boolean;
+  referenceMonth?: string;
 };
 
 type UseFamilyMemberOptionsResult = {
@@ -16,7 +18,10 @@ type UseFamilyMemberOptionsResult = {
   error: string | null;
 };
 
-export function useFamilyMemberOptions({ allowanceEnabledOnly = false }: UseFamilyMemberOptionsParams = {}): UseFamilyMemberOptionsResult {
+export function useFamilyMemberOptions({
+  allowanceOnly = false,
+  referenceMonth,
+}: UseFamilyMemberOptionsParams = {}): UseFamilyMemberOptionsResult {
   const { accessToken } = useAuth();
 
   const load = useCallback(() => {
@@ -24,32 +29,51 @@ export function useFamilyMemberOptions({ allowanceEnabledOnly = false }: UseFami
       return Promise.resolve([] as FamilyMember[]);
     }
 
-    return listFamilyMembers(accessToken);
-  }, [accessToken]);
+    if (!allowanceOnly || !referenceMonth) {
+      return listFamilyMembers(accessToken);
+    }
 
-  const { data, isLoading, error } = useCachedOptionsResource(accessToken ? `family-members:${accessToken}` : null, load);
+    return Promise.all([
+      listFamilyMembers(accessToken),
+      listBudgets(
+        {
+          referenceMonth,
+          page: 0,
+          size: 200,
+          status: "ACTIVE",
+          type: "ALLOWANCE",
+        },
+        accessToken,
+      ),
+    ]).then(([members, response]) => {
+      const eligibleOwnerIds = new Set(
+        response.items.map((budget) => budget.ownerMemberId).filter((memberId): memberId is string => Boolean(memberId)),
+      );
+      return members.filter((member) => member.active && eligibleOwnerIds.has(member.id));
+    });
+  }, [accessToken, allowanceOnly, referenceMonth]);
+
+  const { data, isLoading, error } = useCachedOptionsResource(
+    accessToken ? `family-members:${accessToken}:${allowanceOnly ? (referenceMonth ?? "no-month") : "all"}` : null,
+    load,
+  );
 
   const allItems = useMemo(() => data ?? [], [data]);
 
-  const items = useMemo(
-    () => (allowanceEnabledOnly ? allItems.filter((member) => member.active && member.allowanceEnabled) : allItems),
-    [allItems, allowanceEnabledOnly],
-  );
-
   const options = useMemo(
     () =>
-      items.map((member) => ({
+      allItems.map((member) => ({
         value: member.id,
         label: member.name,
         raw: member,
       })),
-    [items],
+    [allItems],
   );
 
-  const byValue = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
+  const byValue = useMemo(() => new Map(allItems.map((item) => [item.id, item])), [allItems]);
 
   return {
-    items,
+    items: allItems,
     options,
     byValue,
     isLoading,

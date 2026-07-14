@@ -16,7 +16,6 @@ function createBaseSchema(t: Translate) {
     role: z.enum(["ADMIN", "USER"], {
       errorMap: () => ({ message: message("validation.requiredRole") }),
     }),
-    allowanceEnabled: z.boolean(),
   });
 }
 

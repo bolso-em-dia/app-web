@@ -146,7 +146,8 @@ export default function TransactionForm({
     [accounts, formAccountId],
   );
 
-  const allowanceMembers = useMemo(() => members.filter((m) => m.active && m.allowanceEnabled), [members]);
+  const allowanceMembers = useMemo(() => members.filter((member) => member.active), [members]);
+  const canCreateIndividualTransaction = allowanceMembers.length > 0;
 
   useEffect(() => {
     if (!accessToken) {
@@ -349,7 +350,7 @@ export default function TransactionForm({
         </Field>
 
         <div className={styles.switchGrid}>
-          {user?.allowanceEnabled ? (
+          {canCreateIndividualTransaction ? (
             <Field htmlFor="transaction-ownership-switch" label={t("common.ownership")}>
               <Controller
                 control={form.control}
