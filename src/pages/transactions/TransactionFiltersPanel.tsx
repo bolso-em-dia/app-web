@@ -26,7 +26,8 @@ export default function TransactionFiltersPanel({ value, onChange }: Transaction
   const { options: accountOptions } = useAccountOptions();
   const { options: categoryOptions } = useCategoryOptions(filters.referenceMonth);
   const { options: memberOptions } = useFamilyMemberOptions({
-    allowanceEnabledOnly: true,
+    allowanceOnly: true,
+    referenceMonth: filters.referenceMonth,
   });
 
   const fields = useMemo<FilterFields>(

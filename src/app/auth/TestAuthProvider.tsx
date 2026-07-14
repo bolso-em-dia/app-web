@@ -6,7 +6,7 @@ import { AuthContext, type AuthContextValue } from "./authContext";
 type TestAuthUser = Omit<AuthUser, "preferences" | "mustChangePassword"> & {
   preferences?: UserPreferences;
   mustChangePassword?: boolean;
-};
+} & Record<string, unknown>;
 
 const defaultPreferences: UserPreferences = {
   defaultAccountId: null,
@@ -24,12 +24,12 @@ export function TestAuthProvider({
   user?: TestAuthUser | null;
   authOverrides?: Partial<AuthContextValue>;
 }) {
-  const resolvedUser = user
-    ? {
+  const resolvedUser: AuthUser | null = user
+    ? ({
         ...user,
         mustChangePassword: user.mustChangePassword ?? false,
         preferences: user.preferences ?? defaultPreferences,
-      }
+      } as AuthUser)
     : null;
 
   const value: AuthContextValue = {

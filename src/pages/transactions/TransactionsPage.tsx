@@ -30,7 +30,10 @@ export default function TransactionsPage() {
 
   const { items: accounts, isLoading: isAccountsLoading } = useAccountOptions();
   const { items: categoryOptions, isLoading: isCategoriesLoading } = useCategoryOptions(filters.referenceMonth);
-  const { items: members, isLoading: isMembersLoading } = useFamilyMemberOptions();
+  const { items: members, isLoading: isMembersLoading } = useFamilyMemberOptions({
+    allowanceOnly: true,
+    referenceMonth: filters.referenceMonth,
+  });
 
   const handleSelect = useCallback((id: string, transaction: Transaction) => {
     setSelectedTransactionId(id);

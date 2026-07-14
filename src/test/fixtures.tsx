@@ -37,7 +37,6 @@ export function createUser(overrides: Partial<TestUser> = {}): TestUser {
     name: "Admin",
     email: "admin@bolso-em-dia.local",
     role: "ADMIN",
-    allowanceEnabled: false,
     mustChangePassword: false,
     ...overrides,
     preferences: {
@@ -70,7 +69,7 @@ export function createAccount(overrides: Partial<TestAccount> = {}): TestAccount
 
 type RenderWithProvidersOptions = Omit<RenderOptions, "wrapper"> & {
   route?: string;
-  user?: Partial<TestUser> | null;
+  user?: (Partial<TestUser> & Record<string, unknown>) | null;
   authOverrides?: Parameters<typeof TestAuthProvider>[0]["authOverrides"];
 };
 
@@ -82,7 +81,7 @@ function Providers({
 }: {
   children: ReactNode;
   route: string;
-  user?: Partial<TestUser> | null;
+  user?: (Partial<TestUser> & Record<string, unknown>) | null;
   authOverrides?: Parameters<typeof TestAuthProvider>[0]["authOverrides"];
 }) {
   const resolvedUser = user === null ? null : createUser(user);
