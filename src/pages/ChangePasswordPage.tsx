@@ -12,7 +12,7 @@ export default function ChangePasswordPage() {
     <div className={styles.page}>
       <Card className={styles.card}>
         <PasswordChangeForm
-          onSuccess={() => navigate("/dashboard", { replace: true })}
+          onSuccess={() => navigate("/transactions", { replace: true })}
           submitLabel={t("settings.password.firstAccessSave")}
           subtitle={t("settings.password.firstAccessSubtitle")}
           title={t("settings.password.firstAccessTitle")}

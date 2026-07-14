@@ -31,7 +31,7 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   }
 
   if (isAuthenticated && !mustChangePassword && isOnChangePassword) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/transactions" replace />;
   }
 
   return isAuthenticated ? children : <Navigate to="/login" replace />;
@@ -51,7 +51,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Navigate to="/transactions" replace />} />
       <Route
         path="/dashboard"
         element={
