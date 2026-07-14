@@ -193,7 +193,7 @@ describe("HomePage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole("heading", { name: "Dashboard" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Visão geral" })).toBeInTheDocument();
     expect(screen.getByText("Família")).toBeInTheDocument();
     expect(await screen.findByText("Mercado")).toBeInTheDocument();
     expect(await screen.findByText("Market")).toBeInTheDocument();
