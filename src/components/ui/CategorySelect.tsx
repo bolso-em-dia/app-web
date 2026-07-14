@@ -13,26 +13,26 @@ type CategorySelectProps = {
   hasError?: boolean;
 };
 
-function CategoryContent({ category }: { category: CategoryOption }) {
-  const Icon = getStoredIcon(category.icon);
-
-  return (
-    <span className={styles.value}>
-      <span aria-hidden="true" className={styles.lead} style={category.color ? { color: category.color } : undefined}>
-        {Icon ? <Icon className={styles.icon} /> : <span className={styles.dot} />}
-      </span>
-      <span className={styles.text}>{category.name}</span>
-    </span>
-  );
-}
-
 export default function CategorySelect({ id, value, options, placeholder, onChange, hasError = false }: CategorySelectProps) {
   const selectOptions = useMemo(() => options.map((option) => ({ value: option.id, label: option.name })), [options]);
 
   const renderOption = useMemo(
     () => (option: { value: string; label: string }) => {
-      const category = options.find((o) => o.id === option.value);
-      return category ? <CategoryContent category={category} /> : option.label;
+      const category = options.find((currentOption) => currentOption.id === option.value);
+      if (!category) {
+        return option.label;
+      }
+
+      const Icon = getStoredIcon(category.icon);
+
+      return (
+        <span className={styles.value}>
+          <span aria-hidden="true" className={styles.lead} style={category.color ? { color: category.color } : undefined}>
+            {Icon ? <Icon className={styles.icon} /> : <span className={styles.dot} />}
+          </span>
+          <span className={styles.text}>{category.name}</span>
+        </span>
+      );
     },
     [options],
   );
@@ -45,9 +45,7 @@ export default function CategorySelect({ id, value, options, placeholder, onChan
       options={selectOptions}
       placeholder={placeholder}
       renderOption={renderOption}
-      renderValue={(option) =>
-        option ? <span className={styles.selectedValue}>{option.label}</span> : <span className={styles.placeholder}>{placeholder}</span>
-      }
+      renderValue={(option) => (option ? renderOption(option) : <span className={styles.placeholder}>{placeholder}</span>)}
       value={value}
     />
   );

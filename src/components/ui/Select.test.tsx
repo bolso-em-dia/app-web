@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import Select from "./Select";
 
@@ -26,26 +27,34 @@ describe("Select (native mode)", () => {
     renderSelect(
       <label htmlFor="test-select">
         Choose
-        <select id="test-select">
+        <Select id="test-select" defaultValue="a">
           <option value="a">Option A</option>
           <option value="b">Option B</option>
-        </select>
+        </Select>
       </label>,
     );
+
+    expect(screen.getByRole("combobox", { name: "Choose" })).toHaveValue("a");
     expect(screen.getByRole("option", { name: "Option A" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Option B" })).toBeInTheDocument();
   });
 
   it("fires onChange", () => {
+    const handleChange = vi.fn();
+
     renderSelect(
-      <select id="change-select" data-testid="change-select">
+      <Select data-testid="change-select" defaultValue="a" id="change-select" onChange={handleChange}>
         <option value="a">A</option>
         <option value="b">B</option>
-      </select>,
+      </Select>,
     );
+
     const select = screen.getByTestId("change-select");
+
     fireEvent.change(select, { target: { value: "b" } });
+
     expect(select).toHaveValue("b");
+    expect(handleChange).toHaveBeenCalledTimes(1);
   });
 });
 

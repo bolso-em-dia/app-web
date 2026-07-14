@@ -3,6 +3,58 @@
   box-shadow: 0 0 0 4px var(--color-focus-ring);
 }
 
+@mixin field-shell {
+  min-height: 2.75rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  color: var(--color-text);
+  font-size: var(--font-size-100);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+
+  &:focus-visible {
+    @include focus-ring;
+    border-color: var(--color-accent);
+  }
+}
+
+@mixin select-popover {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  box-shadow: var(--shadow-popover);
+}
+
+@mixin selectable-option {
+  min-height: 2.75rem;
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--color-panel);
+  color: var(--color-text);
+  font-size: var(--font-size-100);
+  font-weight: var(--font-weight-medium);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &:hover {
+    background: var(--color-panel-muted);
+  }
+}
+
 @mixin panel-surface {
   background: var(--color-panel);
   border: 1px solid var(--color-border);

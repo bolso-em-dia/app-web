@@ -129,7 +129,7 @@ describe("BudgetsPage", () => {
     });
   });
 
-  it("shows monthly limit as the main value and consumed as secondary in budget cards", async () => {
+  it("shows monthly limit in budget cards without the consumed secondary line", async () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
         <TestAuthProvider
@@ -151,7 +151,8 @@ describe("BudgetsPage", () => {
 
     expect(budgetCard).not.toBeNull();
     expect(within(budgetCard!).getByText("R$ 1.200,00")).toBeInTheDocument();
-    expect(within(budgetCard!).getByText((content) => content.includes("R$ 320,00"))).toBeInTheDocument();
+    expect(within(budgetCard!).queryByText(/Consumido/i)).not.toBeInTheDocument();
+    expect(within(budgetCard!).queryByText((content) => content.includes("R$ 320,00"))).not.toBeInTheDocument();
   });
 
   it("sends only the compatible payload for an allowance budget", async () => {

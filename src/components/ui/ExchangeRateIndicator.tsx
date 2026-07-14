@@ -63,6 +63,7 @@ export default function ExchangeRateIndicator() {
         className={styles.refresh}
         disabled={refreshing}
         onClick={() => void handleRefresh()}
+        title={t("exchangeRate.refresh")}
         type="button"
         variant="subtle"
       >
