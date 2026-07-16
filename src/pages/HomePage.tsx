@@ -225,7 +225,7 @@ export default function HomePage() {
                         ? ` · ${formatCurrency(
                             transaction.type === "EXPENSE" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
                             "USD",
-                          )} (cot. ${transaction.exchangeRate.toFixed(2)})`
+                          )} (cot. ${formatCurrency(transaction.exchangeRate)})`
                         : null}
                     </p>
                   </div>

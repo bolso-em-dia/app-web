@@ -67,7 +67,7 @@ export default function ExchangeRateIndicator() {
         type="button"
         variant="subtle"
       >
-        <RefreshCw aria-hidden="true" className={refreshing ? styles.spinning : undefined} size={14} />
+        <RefreshCw aria-hidden="true" className={refreshing ? `${styles.icon} ${styles.spinning}` : styles.icon} />
       </Button>
     </div>
   );
