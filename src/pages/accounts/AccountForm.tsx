@@ -98,6 +98,7 @@ export default function AccountForm({ account, user, onSuccess, onCancel }: Acco
   const onSubmit = useCallback(
     async (values: AccountFormValues) => {
       if (!accessToken) {
+        setError(t("common.sessionExpired"));
         return;
       }
 
@@ -111,7 +112,8 @@ export default function AccountForm({ account, user, onSuccess, onCancel }: Acco
           await createAccount(mapFormValuesToPayload(values), accessToken);
         }
         onSuccess();
-      } catch {
+      } catch (submitError) {
+        console.error("Failed to save account.", submitError);
         setError(t("accounts.saveError"));
       } finally {
         setIsSaving(false);
@@ -121,7 +123,12 @@ export default function AccountForm({ account, user, onSuccess, onCancel }: Acco
   );
 
   const onArchive = useCallback(async () => {
-    if (!accessToken || !editingAccountId || archivedFromMonth) {
+    if (!editingAccountId || archivedFromMonth) {
+      return;
+    }
+
+    if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -133,7 +140,8 @@ export default function AccountForm({ account, user, onSuccess, onCancel }: Acco
       const archived = await archiveAccount(editingAccountId, accessToken);
       setArchivedFromMonth(archived.archivedFromMonth);
       onSuccess("archived");
-    } catch {
+    } catch (archiveError) {
+      console.error("Failed to archive account.", archiveError);
       setError(t("accounts.archiveError"));
     } finally {
       setIsArchiving(false);
@@ -239,7 +247,7 @@ export default function AccountForm({ account, user, onSuccess, onCancel }: Acco
         <FormError>{error}</FormError>
 
         <div className={styles.formActions}>
-          <Button disabled={isSaving} type="submit">
+          <Button loading={isSaving} type="submit">
             {isCreating ? t("accounts.create") : t("common.save")}
           </Button>
           {isCreating ? (

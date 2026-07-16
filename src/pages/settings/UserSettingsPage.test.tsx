@@ -358,4 +358,27 @@ describe("UserSettingsPage", () => {
 
     expect(await screen.findByText(t("settings.password.success"))).toBeInTheDocument();
   });
+
+  it("shows session expired feedback for preferences and keeps the chosen value", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
+        <TestAuthProvider
+          authOverrides={{ accessToken: null }}
+          user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN" }}
+        >
+          <UserSettingsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(t("common.sessionExpired"))).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("combobox", { name: t("settings.locale.label") }), {
+      target: { value: "en-US" },
+    });
+    fireEvent.click(within(screen.getByText(t("settings.formTitle")).closest("form")!).getByRole("button", { name: t("common.save") }));
+
+    expect(await screen.findAllByText(t("common.sessionExpired"))).not.toHaveLength(0);
+    expect(screen.getByRole("combobox", { name: t("settings.locale.label") })).toHaveValue("en-US");
+  });
 });

@@ -77,6 +77,7 @@ export default function CategoryForm({ category, categoryOptions, onSuccess, onC
 
   async function handleSubmit(values: CategoryFormValues) {
     if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -105,7 +106,8 @@ export default function CategoryForm({ category, categoryOptions, onSuccess, onC
         );
       }
       onSuccess();
-    } catch {
+    } catch (submitError) {
+      console.error("Failed to save category.", submitError);
       setError(t("categories.saveError"));
     } finally {
       setIsSaving(false);
@@ -113,7 +115,12 @@ export default function CategoryForm({ category, categoryOptions, onSuccess, onC
   }
 
   async function handleArchive(values: ArchiveCategoryFormValues) {
-    if (!accessToken || !categoryId) {
+    if (!categoryId) {
+      return;
+    }
+
+    if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -123,7 +130,8 @@ export default function CategoryForm({ category, categoryOptions, onSuccess, onC
     try {
       await archiveCategory(categoryId, values, accessToken);
       onSuccess();
-    } catch {
+    } catch (archiveError) {
+      console.error("Failed to archive category.", archiveError);
       setError(t("categories.archiveError"));
     } finally {
       setIsArchiving(false);

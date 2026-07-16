@@ -5,6 +5,7 @@ import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import { t } from "../../test/i18n";
+import BudgetForm from "./BudgetForm";
 import BudgetsPage from "./BudgetsPage";
 
 const defaultBudgetsResponse = {
@@ -153,6 +154,38 @@ describe("BudgetsPage", () => {
     expect(within(budgetCard!).getByText("R$ 1.200,00")).toBeInTheDocument();
     expect(within(budgetCard!).queryByText(/Consumido/i)).not.toBeInTheDocument();
     expect(within(budgetCard!).queryByText((content) => content.includes("R$ 320,00"))).not.toBeInTheDocument();
+  });
+
+  it("shows session expired feedback and preserves typed values when submitting without token", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
+        <TestAuthProvider
+          authOverrides={{ accessToken: null }}
+          user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN" }}
+        >
+          <BudgetForm
+            allowanceBudgets={[]}
+            budget={null}
+            categories={defaultCategoriesResponse}
+            members={defaultMembersResponse.items}
+            onCancel={vi.fn()}
+            onSuccess={vi.fn()}
+            referenceMonth={getCurrentReferenceMonth()}
+          />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const nameInput = screen.getByLabelText(t("common.name"));
+
+    fireEvent.change(nameInput, { target: { value: "Emergency" } });
+    fireEvent.change(screen.getByLabelText(t("budgets.monthlyLimit")), { target: { value: "500" } });
+    fireEvent.click(screen.getByRole("button", { name: /Categorias vinculadas/i }));
+    fireEvent.click(screen.getByRole("option", { name: /Groceries/i }));
+    fireEvent.click(screen.getByRole("button", { name: t("budgets.create") }));
+
+    expect(await screen.findByText(t("common.sessionExpired"))).toBeInTheDocument();
+    expect(nameInput).toHaveValue("Emergency");
   });
 
   it("sends only the compatible payload for an allowance budget", async () => {

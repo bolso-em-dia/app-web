@@ -71,6 +71,8 @@ export default function UserSettingsPage() {
 
   const loadPageData = useCallback(async () => {
     if (!accessToken) {
+      setError(t("common.sessionExpired"));
+      setIsLoading(false);
       return;
     }
 
@@ -80,7 +82,8 @@ export default function UserSettingsPage() {
     try {
       const accounts = await listAccountOptions(getCurrentReferenceMonth(), accessToken);
       setAccountOptions(accounts);
-    } catch {
+    } catch (loadError) {
+      console.error("Failed to load user settings reference data.", loadError);
       setError(t("settings.error"));
     } finally {
       setIsLoading(false);
@@ -93,6 +96,7 @@ export default function UserSettingsPage() {
 
   async function onSubmit(values: UserSettingsFormValues) {
     if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -112,7 +116,8 @@ export default function UserSettingsPage() {
       );
       applyUserPreferences(updated);
       setSuccessMessage(t("settings.saveSuccess"));
-    } catch {
+    } catch (submitError) {
+      console.error("Failed to save user settings.", submitError);
       setError(t("settings.saveError"));
     } finally {
       setIsSaving(false);

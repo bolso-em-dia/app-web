@@ -53,7 +53,8 @@ export default function FixedExpenseList({
       setCategoryOptions(categoriesResponse);
       onCategoryOptionsLoaded(categoriesResponse);
       onAccountOptionsLoaded(accountsResponse);
-    } catch {
+    } catch (loadError) {
+      console.error("Failed to load fixed transaction reference data.", loadError);
       setReferenceDataError(t("fixedTransactions.error"));
     }
   }, [accessToken, onAccountOptionsLoaded, onCategoryOptionsLoaded, referenceMonth, t]);

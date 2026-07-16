@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
 import { t } from "../test/i18n";
@@ -31,5 +31,27 @@ describe("ChangePasswordPage", () => {
     expect(screen.getByLabelText(t("settings.password.current"))).toBeInTheDocument();
     expect(screen.getByLabelText(t("settings.password.new"))).toBeInTheDocument();
     expect(screen.getByLabelText(t("settings.password.confirm"))).toBeInTheDocument();
+  });
+
+  it("shows session expired feedback and preserves typed values when submitting without token", async () => {
+    render(
+      <MemoryRouter initialEntries={["/change-password"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <TestAuthProvider
+          authOverrides={{ accessToken: null }}
+          user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}
+        >
+          <ChangePasswordPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const currentPasswordInput = screen.getByLabelText(t("settings.password.current"));
+    fireEvent.change(currentPasswordInput, { target: { value: "admin123456" } });
+    fireEvent.change(screen.getByLabelText(t("settings.password.new")), { target: { value: "novaSenha123" } });
+    fireEvent.change(screen.getByLabelText(t("settings.password.confirm")), { target: { value: "novaSenha123" } });
+    fireEvent.click(screen.getByRole("button", { name: t("settings.password.firstAccessSave") }));
+
+    expect(await screen.findByText(t("common.sessionExpired"))).toBeInTheDocument();
+    expect(currentPasswordInput).toHaveValue("admin123456");
   });
 });

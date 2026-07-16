@@ -55,6 +55,7 @@ export default function PasswordChangeForm({ title, subtitle, submitLabel, succe
 
   async function onSubmit(values: PasswordChangeFormValues) {
     if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -69,7 +70,8 @@ export default function PasswordChangeForm({ title, subtitle, submitLabel, succe
         setSuccess(successMessage);
       }
       onSuccess?.();
-    } catch {
+    } catch (submitError) {
+      console.error("Failed to change password.", submitError);
       setError(t("settings.password.saveError"));
     }
   }

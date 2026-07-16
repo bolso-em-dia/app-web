@@ -6,6 +6,8 @@ import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatt
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import { t } from "../../test/i18n";
 import { clearCachedOptionsResources } from "../../lib/options/useCachedOptionsResource";
+import { createUser } from "../../test/fixtures";
+import TransactionForm from "./TransactionForm";
 import TransactionsPage from "./TransactionsPage";
 
 const defaultTransactionsResponse = {
@@ -1448,5 +1450,37 @@ describe("TransactionsPage", () => {
     // The amount field should show the USD value (100), not the BRL value (510)
     const amountInput = screen.getByLabelText("Valor");
     expect(amountInput).toHaveValue("$100.00");
+  });
+
+  it("shows session expired feedback and preserves typed values when submitting without token", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider authOverrides={{ accessToken: null }} user={createUser({ id: "1", allowanceEnabled: true })}>
+          <TransactionForm
+            accounts={defaultAccountsResponse.items}
+            categories={defaultCategoriesResponse}
+            members={defaultMembersResponse.items}
+            onCancel={vi.fn()}
+            onSuccess={vi.fn()}
+            referenceMonth={getCurrentReferenceMonth()}
+            transaction={null}
+            user={createUser({ id: "1", allowanceEnabled: true })}
+          />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const descriptionInput = screen.getByLabelText(t("transactions.description"));
+
+    fireEvent.change(descriptionInput, { target: { value: "Market" } });
+    fireEvent.change(screen.getByLabelText(t("transactions.amount")), { target: { value: "90" } });
+    fireEvent.change(screen.getByLabelText(t("common.account"), { selector: "#transaction-account" }), {
+      target: { value: "account-1" },
+    });
+    selectCategory(document.body, "Groceries");
+    fireEvent.click(screen.getByRole("button", { name: t("transactions.save") }));
+
+    expect(await screen.findByText(t("common.sessionExpired"))).toBeInTheDocument();
+    expect(descriptionInput).toHaveValue("Market");
   });
 });

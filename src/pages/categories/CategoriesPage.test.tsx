@@ -438,4 +438,27 @@ describe("CategoriesPage", () => {
       expect(screen.getByText(t("categories.archiveError"))).toBeInTheDocument();
     });
   });
+
+  it("shows session expired feedback and preserves typed values when submitting without token", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+        <TestAuthProvider
+          authOverrides={{ accessToken: null }}
+          user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN" }}
+        >
+          <CategoriesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: t("categories.new") }));
+    const drawer = screen.getByRole("dialog");
+    const nameInput = within(drawer).getByLabelText(t("common.name"));
+
+    fireEvent.change(nameInput, { target: { value: "Travel" } });
+    fireEvent.click(within(drawer).getByRole("button", { name: t("categories.create") }));
+
+    expect(await screen.findByText(t("common.sessionExpired"))).toBeInTheDocument();
+    expect(nameInput).toHaveValue("Travel");
+  });
 });
