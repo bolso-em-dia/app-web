@@ -6,12 +6,11 @@ import styles from "./Drawer.module.scss";
 
 type DrawerProps = {
   title: string;
-  description?: string;
   onClose: () => void;
   children: ReactNode;
 };
 
-export default function Drawer({ title, description, onClose, children }: DrawerProps) {
+export default function Drawer({ title, onClose, children }: DrawerProps) {
   const { t } = useI18n();
   const panelRef = useRef<HTMLElement>(null);
   const titleId = useId();
@@ -75,7 +74,6 @@ export default function Drawer({ title, description, onClose, children }: Drawer
             <h2 className={styles.title} id={titleId}>
               {title}
             </h2>
-            {description ? <p className={styles.description}>{description}</p> : null}
           </div>
           <Button aria-label={t("common.closeDrawer")} className={styles.closeButton} onClick={onClose} type="button" variant="subtle">
             <X aria-hidden="true" className={styles.closeIcon} />

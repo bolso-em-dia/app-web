@@ -795,6 +795,6 @@ describe("HomePage", () => {
     );
 
     expect(await screen.findByText("Amazon purchase")).toBeInTheDocument();
-    expect(screen.getByText(/cot\. 5\.10/)).toBeInTheDocument();
+    expect(screen.getByText(/cot\. R\$ 5,10/)).toBeInTheDocument();
   });
 });
