@@ -189,14 +189,21 @@ export default function BudgetForm({
 
         {budgetType === "ALLOWANCE" ? (
           <Field error={form.formState.errors.ownerMemberId?.message} htmlFor="budget-owner-member" label={t("budgets.ownerMember")}>
-            <Select id="budget-owner-member" hasError={Boolean(form.formState.errors.ownerMemberId)} {...form.register("ownerMemberId")}>
-              <option value="">{t("common.selectMember")}</option>
-              {availableAllowanceMembers.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-            </Select>
+            {isCreating ? (
+              <Select id="budget-owner-member" hasError={Boolean(form.formState.errors.ownerMemberId)} {...form.register("ownerMemberId")}>
+                <option value="">{t("common.selectMember")}</option>
+                {availableAllowanceMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </Select>
+            ) : (
+              <>
+                <Input className={styles.readOnlyField} disabled id="budget-owner-member" readOnly value={budget?.ownerMemberName ?? ""} />
+                <input type="hidden" {...form.register("ownerMemberId")} />
+              </>
+            )}
           </Field>
         ) : (
           <Field
