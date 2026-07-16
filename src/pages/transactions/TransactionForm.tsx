@@ -148,6 +148,7 @@ export default function TransactionForm({
 
   const allowanceMembers = useMemo(() => members.filter((member) => member.active), [members]);
   const canCreateIndividualTransaction = allowanceMembers.length > 0;
+  const isEditingExistingIndividualTransaction = !isCreating && transaction?.ownershipType === "INDIVIDUAL";
 
   useEffect(() => {
     if (!accessToken) {
@@ -359,7 +360,7 @@ export default function TransactionForm({
         </Field>
 
         <div className={styles.switchGrid}>
-          {canCreateIndividualTransaction ? (
+          {canCreateIndividualTransaction || isEditingExistingIndividualTransaction ? (
             <Field htmlFor="transaction-ownership-switch" label={t("common.ownership")}>
               <Controller
                 control={form.control}
@@ -367,6 +368,7 @@ export default function TransactionForm({
                 render={({ field }) => (
                   <Switch
                     checked={field.value === "INDIVIDUAL"}
+                    disabled={isEditingExistingIndividualTransaction}
                     id="transaction-ownership-switch"
                     label={t("ownershipTypes.INDIVIDUAL")}
                     onBlur={field.onBlur}
@@ -428,14 +430,21 @@ export default function TransactionForm({
 
         {ownershipType === "INDIVIDUAL" ? (
           <Field error={form.formState.errors.memberId?.message} htmlFor="transaction-member" label={t("common.member")}>
-            <Select id="transaction-member" hasError={Boolean(form.formState.errors.memberId)} {...form.register("memberId")}>
-              <option value="">{t("common.selectMember")}</option>
-              {allowanceMembers.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-            </Select>
+            {isCreating ? (
+              <Select id="transaction-member" hasError={Boolean(form.formState.errors.memberId)} {...form.register("memberId")}>
+                <option value="">{t("common.selectMember")}</option>
+                {allowanceMembers.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </Select>
+            ) : (
+              <>
+                <Input className={styles.readOnlyField} disabled id="transaction-member" readOnly value={transaction?.memberName ?? ""} />
+                <input type="hidden" {...form.register("memberId")} />
+              </>
+            )}
           </Field>
         ) : null}
 

@@ -273,6 +273,12 @@
   gap: var(--space-3);
 }
 
+.readOnlyField {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
 @media (width <= 72rem) {
   .filtersGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

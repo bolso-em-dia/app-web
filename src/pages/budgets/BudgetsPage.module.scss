@@ -121,6 +121,12 @@
   gap: var(--space-3);
 }
 
+.readOnlyField {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
 .sectionBlock {
   display: grid;
   gap: var(--space-3);
