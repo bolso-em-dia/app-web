@@ -55,7 +55,8 @@ export default function BudgetList({ filters, selectedId, onSelect, refreshKey, 
       ]);
 
       onReferenceDataLoaded({ categories, members, allowanceBudgets });
-    } catch {
+    } catch (loadError) {
+      console.error("Failed to load budget reference data.", loadError);
       setReferenceDataError(t("budgets.error"));
     }
   }, [accessToken, filters.referenceMonth, onReferenceDataLoaded, t]);

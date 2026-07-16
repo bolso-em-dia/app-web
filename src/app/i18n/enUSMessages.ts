@@ -38,6 +38,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "common.scrollToLoadMore": "Scroll to load more",
   "common.allItemsLoaded": "All items loaded",
   "common.signOut": "Sign out",
+  "common.sessionExpired": "Your session has expired. Sign in again to continue.",
   "common.name": "Name",
   "common.email": "Email",
   "common.role": "Role",

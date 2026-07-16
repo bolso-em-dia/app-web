@@ -31,6 +31,7 @@ export const ptBRMessages = {
   "common.scrollToLoadMore": "Role para carregar mais",
   "common.allItemsLoaded": "Todos os itens carregados",
   "common.signOut": "Sair",
+  "common.sessionExpired": "Sua sessão expirou. Entre novamente para continuar.",
   "common.name": "Nome",
   "common.email": "E-mail",
   "common.role": "Papel",

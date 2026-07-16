@@ -107,6 +107,7 @@ export default function BudgetForm({
   const handleSubmit = useCallback(
     async (values: BudgetFormValues) => {
       if (!accessToken) {
+        setError(t("common.sessionExpired"));
         return;
       }
 
@@ -120,7 +121,8 @@ export default function BudgetForm({
           await createBudget(mapFormValuesToPayload(values), accessToken);
         }
         onSuccess();
-      } catch {
+      } catch (submitError) {
+        console.error("Failed to save budget.", submitError);
         setError(t("budgets.saveError"));
       } finally {
         setIsSaving(false);
@@ -130,7 +132,12 @@ export default function BudgetForm({
   );
 
   const handleArchive = useCallback(async () => {
-    if (!accessToken || !budget || budget.archivedFromMonth) {
+    if (!budget || budget.archivedFromMonth) {
+      return;
+    }
+
+    if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -141,7 +148,8 @@ export default function BudgetForm({
     try {
       await archiveBudget(budget.id, referenceMonth, accessToken);
       onSuccess();
-    } catch {
+    } catch (archiveError) {
+      console.error("Failed to archive budget.", archiveError);
       setError(t("budgets.archiveError"));
     } finally {
       setIsArchiving(false);

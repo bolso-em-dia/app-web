@@ -35,7 +35,8 @@ export default function CategoryList({ filters, selectedId, onSelect, refreshKey
     try {
       const optionsResponse = await listCategoryOptions(getCurrentReferenceMonth(), accessToken);
       onOptionsLoaded(optionsResponse);
-    } catch {
+    } catch (loadError) {
+      console.error("Failed to load category options.", loadError);
       setOptionsError(t("categories.error"));
     }
   }, [accessToken, onOptionsLoaded, t]);

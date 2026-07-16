@@ -490,6 +490,26 @@ describe("AccountsPage", () => {
     expect(within(drawer).getByDisplayValue(t("currencies.USD"))).toBeInTheDocument();
   });
 
+  it("shows session expired feedback and preserves typed values when submitting without token", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+        <TestAuthProvider authOverrides={{ accessToken: null }} user={createUser({ id: "1" })}>
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: t("accounts.new") }));
+    const drawer = screen.getByRole("dialog");
+    const nameInput = within(drawer).getByLabelText(t("common.name"));
+
+    fireEvent.change(nameInput, { target: { value: "Wallet" } });
+    fireEvent.click(within(drawer).getByRole("button", { name: t("accounts.create") }));
+
+    expect(await screen.findByText(t("common.sessionExpired"))).toBeInTheDocument();
+    expect(nameInput).toHaveValue("Wallet");
+  });
+
   it("hides currency select when foreign currency is disabled", async () => {
     setupDefaultMocks();
 

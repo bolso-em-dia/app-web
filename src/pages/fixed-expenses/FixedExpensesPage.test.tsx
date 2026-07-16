@@ -4,6 +4,8 @@ import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { t } from "../../test/i18n";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
+import { createUser } from "../../test/fixtures";
+import FixedExpenseForm from "./FixedExpenseForm";
 import FixedExpensesPage from "./FixedExpensesPage";
 
 const defaultTemplatesResponse = {
@@ -336,6 +338,37 @@ describe("FixedExpensesPage", () => {
     await waitFor(() => {
       expect(screen.getByText(t("fixedTransactions.deleteError"))).toBeInTheDocument();
     });
+  });
+
+  it("shows session expired feedback and preserves typed values when submitting without token", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider authOverrides={{ accessToken: null }} user={createUser({ id: "1" })}>
+          <FixedExpenseForm
+            accountOptions={defaultAccountsResponse}
+            categoryOptions={defaultCategoriesResponse}
+            onCancel={vi.fn()}
+            onSuccess={vi.fn()}
+            template={null}
+            user={createUser({ id: "1" })}
+          />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const nameInput = screen.getByLabelText(t("common.name"));
+
+    fireEvent.change(nameInput, { target: { value: "Water bill" } });
+    fireEvent.change(screen.getByLabelText(t("fixedTransactions.amount")), { target: { value: "150" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Categoria$/i }));
+    fireEvent.click(screen.getByRole("option", { name: /Housing/i }));
+    fireEvent.change(screen.getByLabelText(t("common.account"), { selector: "#fixed-expense-account" }), {
+      target: { value: "account-1" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: t("fixedTransactions.create") }));
+
+    expect(await screen.findByText(t("common.sessionExpired"))).toBeInTheDocument();
+    expect(nameInput).toHaveValue("Water bill");
   });
 
   it("loads USD originalAmount when editing a foreign currency fixed expense", async () => {

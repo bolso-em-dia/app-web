@@ -169,10 +169,11 @@ export default function TransactionForm({
           return;
         }
         setDescriptionSuggestions(suggestions);
-      } catch {
+      } catch (suggestionsError) {
         if (!isActive) {
           return;
         }
+        console.error("Failed to load transaction description suggestions.", suggestionsError);
         setDescriptionSuggestions([]);
       }
     };
@@ -201,6 +202,7 @@ export default function TransactionForm({
 
   async function onSubmit(values: TransactionFormValues, event?: BaseSyntheticEvent) {
     if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -225,7 +227,8 @@ export default function TransactionForm({
         await updateTransaction(transactionId, mapFormValuesToUpdatePayload(values), accessToken);
         onSuccess();
       }
-    } catch {
+    } catch (submitError) {
+      console.error("Failed to save transaction.", submitError);
       setError(t("transactions.saveError"));
     } finally {
       setIsSaving(false);
@@ -233,7 +236,12 @@ export default function TransactionForm({
   }
 
   async function handleDelete() {
-    if (!accessToken || !transactionId) {
+    if (!transactionId) {
+      return;
+    }
+
+    if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -244,7 +252,8 @@ export default function TransactionForm({
       await deleteTransaction(transactionId, deleteScope, accessToken);
       setIsDeleteConfirmOpen(false);
       onSuccess();
-    } catch {
+    } catch (deleteError) {
+      console.error("Failed to delete transaction.", deleteError);
       setError(t("transactions.deleteError"));
     } finally {
       setIsDeleting(false);

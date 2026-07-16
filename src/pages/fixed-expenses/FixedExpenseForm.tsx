@@ -103,6 +103,7 @@ export default function FixedExpenseForm({ template, user, accountOptions, categ
   const handleSubmit = useCallback(
     async (values: FixedExpenseFormValues) => {
       if (!accessToken) {
+        setError(t("common.sessionExpired"));
         return;
       }
 
@@ -117,7 +118,8 @@ export default function FixedExpenseForm({ template, user, accountOptions, categ
           await createFixedExpenseTemplate(mapFormValuesToPayload(values), accessToken);
           onSuccess();
         }
-      } catch {
+      } catch (submitError) {
+        console.error("Failed to save fixed transaction.", submitError);
         setError(t("fixedTransactions.saveError"));
       } finally {
         setIsSaving(false);
@@ -127,7 +129,12 @@ export default function FixedExpenseForm({ template, user, accountOptions, categ
   );
 
   const handleDelete = useCallback(async () => {
-    if (!accessToken || !editingId) {
+    if (!editingId) {
+      return;
+    }
+
+    if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -138,7 +145,8 @@ export default function FixedExpenseForm({ template, user, accountOptions, categ
     try {
       await deleteFixedExpenseTemplate(editingId, accessToken);
       onSuccess();
-    } catch {
+    } catch (deleteError) {
+      console.error("Failed to delete fixed transaction.", deleteError);
       setError(t("fixedTransactions.deleteError"));
     } finally {
       setIsDeleting(false);

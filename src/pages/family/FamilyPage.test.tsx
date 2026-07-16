@@ -423,4 +423,29 @@ describe("FamilyPage", () => {
       expect(screen.getByText(t("validation.passwordMin8"))).toBeInTheDocument();
     });
   });
+
+  it("shows session expired feedback and preserves typed values when submitting without token", async () => {
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+        <TestAuthProvider
+          authOverrides={{ accessToken: null }}
+          user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN" }}
+        >
+          <FamilyPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: t("family.new") }));
+    const drawer = screen.getByRole("dialog");
+    const nameInput = within(drawer).getByLabelText(t("common.name"));
+
+    fireEvent.change(nameInput, { target: { value: "Taylor" } });
+    fireEvent.change(within(drawer).getByLabelText(t("common.email")), { target: { value: "taylor@local.test" } });
+    fireEvent.change(within(drawer).getByLabelText(t("family.password")), { target: { value: "password123" } });
+    fireEvent.click(within(drawer).getByRole("button", { name: t("family.create") }));
+
+    expect(await screen.findByText(t("common.sessionExpired"))).toBeInTheDocument();
+    expect(nameInput).toHaveValue("Taylor");
+  });
 });

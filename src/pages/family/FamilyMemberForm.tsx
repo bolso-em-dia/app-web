@@ -79,6 +79,7 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
 
   async function onSubmit(values: FamilyMemberFormValues) {
     if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -109,7 +110,8 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
         );
       }
       onSuccess();
-    } catch {
+    } catch (submitError) {
+      console.error("Failed to save family member.", submitError);
       setError(t("family.saveError"));
     } finally {
       setIsSaving(false);
@@ -117,7 +119,12 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
   }
 
   async function handleArchiveToggle() {
-    if (!accessToken || !member) {
+    if (!member) {
+      return;
+    }
+
+    if (!accessToken) {
+      setError(t("common.sessionExpired"));
       return;
     }
 
@@ -131,7 +138,8 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
         await restoreFamilyMember(member.id, accessToken);
       }
       onSuccess();
-    } catch {
+    } catch (statusError) {
+      console.error("Failed to change family member status.", statusError);
       setError(t("family.statusError"));
     } finally {
       setIsArchiving(false);

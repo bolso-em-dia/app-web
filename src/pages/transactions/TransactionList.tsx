@@ -27,24 +27,29 @@ export default function TransactionList({ categoryOptions, filters, selectedId, 
 
   const loadPageData = useCallback(
     async (page: number, size: number) => {
-      if (page === 0) {
-        await materializeTransactions(referenceMonth, accessToken!);
-      }
+      try {
+        if (page === 0) {
+          await materializeTransactions(referenceMonth, accessToken!);
+        }
 
-      return listTransactions(
-        {
-          referenceMonth,
-          page,
-          size,
-          search,
-          type: typeFilter,
-          ownershipType: ownershipFilter,
-          accountId,
-          categoryIds,
-          memberId,
-        },
-        accessToken!,
-      );
+        return listTransactions(
+          {
+            referenceMonth,
+            page,
+            size,
+            search,
+            type: typeFilter,
+            ownershipType: ownershipFilter,
+            accountId,
+            categoryIds,
+            memberId,
+          },
+          accessToken!,
+        );
+      } catch (loadError) {
+        console.error("Failed to load transactions.", loadError);
+        throw loadError;
+      }
     },
     [accessToken, accountId, categoryIds, memberId, ownershipFilter, referenceMonth, search, typeFilter],
   );
