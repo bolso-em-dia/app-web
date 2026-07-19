@@ -10,5 +10,9 @@ export default function FormError({ children }: FormErrorProps) {
     return null;
   }
 
-  return <p className={styles.root}>{children}</p>;
+  return (
+    <p className={styles.root} role="alert">
+      {children}
+    </p>
+  );
 }

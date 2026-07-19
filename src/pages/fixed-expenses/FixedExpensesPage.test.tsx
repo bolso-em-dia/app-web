@@ -113,6 +113,58 @@ describe("FixedExpensesPage", () => {
     });
   });
 
+  it("shows mapped error feedback when fixed transaction save fails", async () => {
+    resetFetchMocks();
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/fixed-transactions", (input, init) =>
+      init?.method === "POST"
+        ? mockErrorResponse(
+            404,
+            JSON.stringify({
+              status: 404,
+              code: 40401,
+              error: "Not Found",
+              message: "Account not found.",
+            }),
+          )
+        : mockErrorResponse(404),
+    );
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: t("fixedTransactions.new") }));
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText(t("common.name")), {
+      target: { value: "Water bill" },
+    });
+    fireEvent.change(within(drawer).getByLabelText(t("fixedTransactions.amount")), {
+      target: { value: "150" },
+    });
+    fireEvent.change(
+      within(drawer).getByLabelText(t("common.account"), {
+        selector: "#fixed-expense-account",
+      }),
+      {
+        target: { value: "account-1" },
+      },
+    );
+    fireEvent.click(within(drawer).getByLabelText(t("common.category"), { selector: "button" }));
+    fireEvent.click(within(drawer).getByRole("option", { name: /Housing/i }));
+    fireEvent.click(within(drawer).getByRole("button", { name: t("fixedTransactions.create") }));
+
+    expect(await screen.findByText(t("error.accountNotFound"))).toBeInTheDocument();
+    expect(within(drawer).getByLabelText(t("common.name"))).toHaveValue("Water bill");
+  });
+
   it("renders templates as full-width single-column list", async () => {
     resetFetchMocks();
 
@@ -336,7 +388,7 @@ describe("FixedExpensesPage", () => {
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
-      expect(screen.getByText(t("fixedTransactions.deleteError"))).toBeInTheDocument();
+      expect(screen.getByText(t("error.unexpected"))).toBeInTheDocument();
     });
   });
 

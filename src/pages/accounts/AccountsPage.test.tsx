@@ -387,8 +387,47 @@ describe("AccountsPage", () => {
     fireEvent.click(confirmButton);
 
     await waitFor(() => {
-      expect(screen.getByText(t("accounts.archiveError"))).toBeInTheDocument();
+      expect(screen.getByText(t("error.unexpected"))).toBeInTheDocument();
     });
+  });
+
+  it("shows mapped error feedback when account save fails", async () => {
+    resetFetchMocks();
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/accounts", (input, init) =>
+      init?.method === "POST"
+        ? mockErrorResponse(
+            409,
+            JSON.stringify({
+              status: 409,
+              code: 40903,
+              error: "Conflict",
+              message: "This item was modified by another user. Reload and try again.",
+            }),
+          )
+        : mockErrorResponse(404),
+    );
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: t("accounts.new") }));
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText(t("common.name")), {
+      target: { value: "Travel card" },
+    });
+    fireEvent.click(within(drawer).getByRole("button", { name: t("accounts.create") }));
+
+    expect(await screen.findByText(t("error.concurrentModification"))).toBeInTheDocument();
+    expect(within(drawer).getByLabelText(t("common.name"))).toHaveValue("Travel card");
   });
 
   it("shows currency Select in create form", async () => {

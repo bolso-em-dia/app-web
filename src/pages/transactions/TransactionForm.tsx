@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type BaseSyntheticEvent, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { Account } from "../../app/api/accounts";
 import type { CategoryOption } from "../../app/api/categories";
@@ -27,6 +27,7 @@ import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Switch from "../../components/ui/Switch";
+import { formErrorFrom } from "../../lib/formError";
 import styles from "./TransactionsPage.module.scss";
 
 interface TransactionFormProps {
@@ -92,19 +93,6 @@ export default function TransactionForm({
   onSuccess,
   onCancel,
 }: TransactionFormProps) {
-  const { accessToken } = useAuth();
-  const { t } = useI18n();
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [deleteScope, setDeleteScope] = useState<DeleteScope>("SINGLE");
-  const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
-
-  const isCreating = transaction === null;
-  const transactionId = transaction?.id ?? null;
-  const installmentGroupId = transaction?.installmentGroupId ?? null;
-
   const initialValues = useMemo(
     (): TransactionFormValues =>
       !transaction
@@ -124,6 +112,50 @@ export default function TransactionForm({
     [transaction, referenceMonth, user],
   );
 
+  const formKey = `${transaction?.id ?? `create-${referenceMonth}-${user.preferences?.defaultAccountId ?? ""}`}:${JSON.stringify(initialValues)}`;
+
+  return (
+    <TransactionFormContent
+      key={formKey}
+      accounts={accounts}
+      categories={categories}
+      initialValues={initialValues}
+      members={members}
+      onCancel={onCancel}
+      onSuccess={onSuccess}
+      referenceMonth={referenceMonth}
+      transaction={transaction}
+      user={user}
+    />
+  );
+}
+
+type TransactionFormContentProps = TransactionFormProps & {
+  initialValues: TransactionFormValues;
+};
+
+function TransactionFormContent({
+  transaction,
+  accounts,
+  categories,
+  members,
+  onSuccess,
+  onCancel,
+  initialValues,
+}: TransactionFormContentProps) {
+  const { accessToken } = useAuth();
+  const { t } = useI18n();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deleteScope, setDeleteScope] = useState<DeleteScope>("SINGLE");
+  const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
+
+  const isCreating = transaction === null;
+  const transactionId = transaction?.id ?? null;
+  const installmentGroupId = transaction?.installmentGroupId ?? null;
+
   const transactionSchema = useMemo(() => createTransactionSchema(t), [t]);
 
   const form = useForm<TransactionFormValues>({
@@ -131,15 +163,11 @@ export default function TransactionForm({
     defaultValues: initialValues,
   });
 
-  useEffect(() => {
-    form.reset(initialValues);
-  }, [initialValues, form]);
-
-  const descriptionValue = form.watch("description");
-  const transactionType = form.watch("type");
-  const ownershipType = form.watch("ownershipType");
-  const isInstallment = form.watch("isInstallment");
-  const formAccountId = form.watch("accountId");
+  const descriptionValue = useWatch({ control: form.control, name: "description" });
+  const transactionType = useWatch({ control: form.control, name: "type" });
+  const ownershipType = useWatch({ control: form.control, name: "ownershipType" });
+  const isInstallment = useWatch({ control: form.control, name: "isInstallment" });
+  const formAccountId = useWatch({ control: form.control, name: "accountId" });
 
   const selectedAccountCurrency = useMemo(
     (): Currency | undefined => accounts.find((account) => account.id === formAccountId)?.currency,
@@ -230,7 +258,7 @@ export default function TransactionForm({
       }
     } catch (submitError) {
       console.error("Failed to save transaction.", submitError);
-      setError(t("transactions.saveError"));
+      setError(formErrorFrom(submitError, "transactions.saveError", t));
     } finally {
       setIsSaving(false);
     }
@@ -255,7 +283,7 @@ export default function TransactionForm({
       onSuccess();
     } catch (deleteError) {
       console.error("Failed to delete transaction.", deleteError);
-      setError(t("transactions.deleteError"));
+      setError(formErrorFrom(deleteError, "transactions.deleteError", t));
     } finally {
       setIsDeleting(false);
     }

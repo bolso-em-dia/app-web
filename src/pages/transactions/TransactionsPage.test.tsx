@@ -198,6 +198,56 @@ describe("TransactionsPage", () => {
     });
   });
 
+  it("shows mapped error feedback when transaction save fails", async () => {
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/transactions", (input, init) =>
+      init?.method === "POST"
+        ? mockErrorResponse(
+            409,
+            JSON.stringify({
+              status: 409,
+              code: 40903,
+              error: "Conflict",
+              message: "This item was modified by another user. Reload and try again.",
+            }),
+          )
+        : mockErrorResponse(404),
+    );
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: t("transactions.new") }));
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.description")), {
+      target: { value: "Taxi" },
+    });
+    fireEvent.change(within(drawer).getByLabelText(t("transactions.amount")), {
+      target: { value: "25" },
+    });
+    fireEvent.change(
+      within(drawer).getByLabelText(t("common.account"), {
+        selector: "#transaction-account",
+      }),
+      {
+        target: { value: "account-1" },
+      },
+    );
+    selectCategory(drawer, "Groceries");
+    fireEvent.click(within(drawer).getByRole("button", { name: t("transactions.save") }));
+
+    expect(await screen.findByText(t("error.concurrentModification"))).toBeInTheDocument();
+    expect(within(drawer).getByLabelText(t("transactions.description"))).toHaveValue("Taxi");
+  });
+
   it("renders the category as a badge below the title and keeps account/date in the meta line", async () => {
     setupDefaultMocks();
 
@@ -1231,7 +1281,7 @@ describe("TransactionsPage", () => {
     fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Não foi possível excluir a transação.")).toBeInTheDocument();
+      expect(screen.getByText(t("error.unexpected"))).toBeInTheDocument();
     });
   });
 

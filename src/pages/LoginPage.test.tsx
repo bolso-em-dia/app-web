@@ -1,6 +1,7 @@
 import { act, fireEvent, screen } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { vi } from "vitest";
+import { ApiError } from "../app/api/client";
 import { renderWithProviders } from "../test/fixtures";
 import { t } from "../test/i18n";
 import LoginPage from "./LoginPage";
@@ -72,7 +73,7 @@ describe("LoginPage", () => {
 
   it("shows an error message when authentication fails", async () => {
     const login = vi.fn(async () => {
-      throw new Error("invalid credentials");
+      throw new ApiError(401, 40102, "Invalid email or password.", "Unauthorized");
     });
 
     renderWithProviders(<LoginPage />, {
@@ -88,6 +89,6 @@ describe("LoginPage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: t("login.submit") }));
 
-    expect(await screen.findByText(t("login.error"))).toBeInTheDocument();
+    expect(await screen.findByText(t("error.invalidCredentials"))).toBeInTheDocument();
   });
 });

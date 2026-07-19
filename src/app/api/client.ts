@@ -37,6 +37,63 @@ export type PageResponse<T> = {
   totalPages: number;
 };
 
+const DEFAULT_API_ERROR_MESSAGE = "API_REQUEST_FAILED";
+
+type ApiFieldError = {
+  field: string;
+  message: string;
+};
+
+function isApiFieldError(value: unknown): value is ApiFieldError {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  return typeof candidate.field === "string" && typeof candidate.message === "string";
+}
+
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly code: number | null,
+    public readonly backendMessage: string,
+    public readonly errorType: string,
+    public readonly fieldErrors?: ApiFieldError[],
+  ) {
+    super(backendMessage || errorType || DEFAULT_API_ERROR_MESSAGE);
+    this.name = "ApiError";
+  }
+
+  static fromResponse(status: number, body: Record<string, unknown>) {
+    return new ApiError(
+      status,
+      typeof body.code === "number" ? body.code : null,
+      typeof body.message === "string" ? body.message : "",
+      typeof body.error === "string" ? body.error : "",
+      Array.isArray(body.errors) ? body.errors.filter(isApiFieldError) : undefined,
+    );
+  }
+}
+
+function parseApiErrorBody(bodyText: string) {
+  if (!bodyText) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(bodyText) as unknown;
+    if (typeof parsed === "object" && parsed !== null) {
+      return parsed as Record<string, unknown>;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
 let authConfig: ApiClientAuthConfig = {};
 let refreshInFlight: Promise<string | null> | null = null;
 
@@ -104,8 +161,14 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       authConfig.onUnauthorized?.();
     }
 
-    const message = await response.text();
-    throw new Error(message || "Falha na requisição.");
+    const bodyText = await response.text();
+    const parsedBody = parseApiErrorBody(bodyText);
+
+    if (parsedBody) {
+      throw ApiError.fromResponse(response.status, parsedBody);
+    }
+
+    throw new ApiError(response.status, null, bodyText || DEFAULT_API_ERROR_MESSAGE, response.statusText);
   }
 
   if (response.status === 204) {

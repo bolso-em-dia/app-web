@@ -9,6 +9,7 @@ import Button from "./ui/Button";
 import Field from "./ui/Field";
 import FormError from "./ui/FormError";
 import Input from "./ui/Input";
+import { formErrorFrom } from "../lib/formError";
 import styles from "./PasswordChangeForm.module.scss";
 
 type PasswordChangeFormProps = {
@@ -72,7 +73,7 @@ export default function PasswordChangeForm({ title, subtitle, submitLabel, succe
       onSuccess?.();
     } catch (submitError) {
       console.error("Failed to change password.", submitError);
-      setError(t("settings.password.saveError"));
+      setError(formErrorFrom(submitError, "settings.password.saveError", t));
     }
   }
 

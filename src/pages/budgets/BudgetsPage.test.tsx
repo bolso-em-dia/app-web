@@ -130,6 +130,62 @@ describe("BudgetsPage", () => {
     });
   });
 
+  it("shows mapped error feedback when budget save fails", async () => {
+    resetFetchMocks();
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/budgets", (input, init) =>
+      init?.method === "POST"
+        ? mockErrorResponse(
+            409,
+            JSON.stringify({
+              status: 409,
+              code: 40903,
+              error: "Conflict",
+              message: "This item was modified by another user. Reload and try again.",
+            }),
+          )
+        : mockErrorResponse(404),
+    );
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Household")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: t("budgets.new") }));
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText(t("common.name")), {
+      target: { value: "Travel budget" },
+    });
+    fireEvent.change(within(drawer).getByLabelText(t("budgets.monthlyLimit")), {
+      target: { value: "450" },
+    });
+    fireEvent.change(within(drawer).getByLabelText(t("common.type")), {
+      target: { value: "ALLOWANCE" },
+    });
+    fireEvent.change(within(drawer).getByLabelText(t("budgets.ownerMember")), {
+      target: { value: "member-1" },
+    });
+    fireEvent.click(within(drawer).getByRole("button", { name: t("budgets.create") }));
+
+    expect(await screen.findByText(t("error.concurrentModification"))).toBeInTheDocument();
+    expect(within(drawer).getByLabelText(t("common.name"))).toHaveValue("Travel budget");
+  });
+
   it("shows monthly limit in budget cards without the consumed secondary line", async () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/budgets"]}>
@@ -677,7 +733,7 @@ describe("BudgetsPage", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: t("common.archive") }));
 
     await waitFor(() => {
-      expect(screen.getByText(t("budgets.archiveError"))).toBeInTheDocument();
+      expect(screen.getByText(t("error.unexpected"))).toBeInTheDocument();
     });
   });
 

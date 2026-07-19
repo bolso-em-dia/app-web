@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useCallback, useMemo, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { CategoryOption } from "../../app/api/categories";
 import type { AccountOption } from "../../app/api/accounts";
@@ -24,6 +24,7 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import { formErrorFrom } from "../../lib/formError";
 import styles from "./FixedExpensesPage.module.scss";
 
 type FixedExpenseFormProps = {
@@ -58,16 +59,6 @@ function mapFormValuesToPayload(values: FixedExpenseFormValues): FixedExpenseTem
 }
 
 export default function FixedExpenseForm({ template, user, accountOptions, categoryOptions, onSuccess, onCancel }: FixedExpenseFormProps) {
-  const { accessToken } = useAuth();
-  const { t } = useI18n();
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { closeDialog: closeDeleteDialog, open: isDeleteDialogOpen, openDialog: openDeleteDialog } = useConfirmDialog();
-
-  const isCreating = template === null;
-  const editingId = template?.id ?? null;
-
   const initialValues = useMemo(() => {
     const defaults = createDefaultValues(user.preferences.defaultAccountId ?? "");
     if (!template) {
@@ -83,6 +74,44 @@ export default function FixedExpenseForm({ template, user, accountOptions, categ
     };
   }, [template, user.preferences.defaultAccountId]);
 
+  const formKey = `${template?.id ?? `create-${user.preferences.defaultAccountId ?? ""}`}:${JSON.stringify(initialValues)}`;
+
+  return (
+    <FixedExpenseFormContent
+      key={formKey}
+      accountOptions={accountOptions}
+      categoryOptions={categoryOptions}
+      initialValues={initialValues}
+      onCancel={onCancel}
+      onSuccess={onSuccess}
+      template={template}
+      user={user}
+    />
+  );
+}
+
+type FixedExpenseFormContentProps = FixedExpenseFormProps & {
+  initialValues: FixedExpenseFormValues;
+};
+
+function FixedExpenseFormContent({
+  template,
+  accountOptions,
+  categoryOptions,
+  onSuccess,
+  onCancel,
+  initialValues,
+}: FixedExpenseFormContentProps) {
+  const { accessToken } = useAuth();
+  const { t } = useI18n();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { closeDialog: closeDeleteDialog, open: isDeleteDialogOpen, openDialog: openDeleteDialog } = useConfirmDialog();
+
+  const isCreating = template === null;
+  const editingId = template?.id ?? null;
+
   const fixedExpenseSchema = useMemo(() => createFixedExpenseSchema(t), [t]);
 
   const form = useForm<FixedExpenseFormValues>({
@@ -90,11 +119,7 @@ export default function FixedExpenseForm({ template, user, accountOptions, categ
     defaultValues: initialValues,
   });
 
-  useEffect(() => {
-    form.reset(initialValues);
-  }, [initialValues, form]);
-
-  const formAccountId = form.watch("accountId");
+  const formAccountId = useWatch({ control: form.control, name: "accountId" });
   const selectedAccountCurrency = useMemo(
     (): Currency | undefined => accountOptions.find((account) => account.id === formAccountId)?.currency,
     [accountOptions, formAccountId],
@@ -120,7 +145,7 @@ export default function FixedExpenseForm({ template, user, accountOptions, categ
         }
       } catch (submitError) {
         console.error("Failed to save fixed transaction.", submitError);
-        setError(t("fixedTransactions.saveError"));
+        setError(formErrorFrom(submitError, "fixedTransactions.saveError", t));
       } finally {
         setIsSaving(false);
       }
@@ -147,13 +172,13 @@ export default function FixedExpenseForm({ template, user, accountOptions, categ
       onSuccess();
     } catch (deleteError) {
       console.error("Failed to delete fixed transaction.", deleteError);
-      setError(t("fixedTransactions.deleteError"));
+      setError(formErrorFrom(deleteError, "fixedTransactions.deleteError", t));
     } finally {
       setIsDeleting(false);
     }
   }, [accessToken, closeDeleteDialog, editingId, onSuccess, t]);
 
-  const selectedType = form.watch("type");
+  const selectedType = useWatch({ control: form.control, name: "type" });
 
   return (
     <>
