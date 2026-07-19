@@ -143,8 +143,15 @@ describe("UserSettingsPage", () => {
 
     mockFetchUrl("/api/me/preferences", (input, init) => {
       if (init?.method === "PUT") {
-        // Return a function that rejects when called by resolveResponse
-        return () => Promise.reject(new Error("save failed"));
+        return mockErrorResponse(
+          422,
+          JSON.stringify({
+            status: 422,
+            code: 42218,
+            error: "Unprocessable Entity",
+            message: "Locale is not supported.",
+          }),
+        );
       }
       // Handle GET request for initial load
       return mockJsonResponse({
@@ -180,7 +187,7 @@ describe("UserSettingsPage", () => {
     expect(await screen.findByText(t("settings.formTitle"))).toBeInTheDocument();
     fireEvent.click(within(screen.getByText(t("settings.formTitle")).closest("form")!).getByRole("button", { name: t("common.save") }));
 
-    expect(await screen.findByText(t("settings.saveError"))).toBeInTheDocument();
+    expect(await screen.findByText(t("error.unsupportedLocale"))).toBeInTheDocument();
   });
 
   it("renders the direct form and saves the preferences", async () => {

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useCallback, useMemo, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import {
   archiveAccount,
   createAccount,
@@ -18,6 +18,7 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import { formErrorFrom } from "../../lib/formError";
 import { buildColorOptions, getColorLabel } from "../../lib/uiOptions";
 import { useConfirmDialog } from "../../lib/useConfirmDialog";
 import { createAccountSchema, type AccountFormValues } from "../../lib/validation/accountSchema";
@@ -55,6 +56,38 @@ interface AccountFormProps {
 }
 
 export default function AccountForm({ account, user, onSuccess, onCancel }: AccountFormProps) {
+  const initialValues: AccountFormValues = !account
+    ? DEFAULT_VALUES
+    : {
+        name: account.name,
+        type: account.type,
+        currency: account.currency ?? "BRL",
+        brand: account.brand ?? "",
+        color: account.color ?? "",
+        closingDay: account.closingDay ?? undefined,
+        dueDay: account.dueDay ?? undefined,
+      };
+
+  const formKey = `${account?.id ?? "create"}:${JSON.stringify(initialValues)}`;
+
+  return (
+    <AccountFormContent
+      key={formKey}
+      account={account}
+      initialValues={initialValues}
+      onCancel={onCancel}
+      onSuccess={onSuccess}
+      user={user}
+    />
+  );
+}
+
+type AccountFormContentProps = Omit<AccountFormProps, "accountOptions"> & {
+  account: Account | null;
+  initialValues: AccountFormValues;
+};
+
+function AccountFormContent({ account, initialValues, user, onSuccess, onCancel }: AccountFormContentProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
 
@@ -68,32 +101,13 @@ export default function AccountForm({ account, user, onSuccess, onCancel }: Acco
   const isCreating = account === null;
   const editingAccountId = account?.id ?? null;
 
-  const initialValues: AccountFormValues = !account
-    ? DEFAULT_VALUES
-    : {
-        name: account.name,
-        type: account.type,
-        currency: account.currency ?? "BRL",
-        brand: account.brand ?? "",
-        color: account.color ?? "",
-        closingDay: account.closingDay ?? undefined,
-        dueDay: account.dueDay ?? undefined,
-      };
-
   const accountSchema = useMemo(() => createAccountSchema(t), [t]);
   const colorOptions = useMemo(() => buildColorOptions(t), [t]);
 
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: initialValues,
   });
-
-  const initialValuesKey = JSON.stringify(initialValues);
-  useEffect(() => {
-    form.reset(initialValues);
-    setArchivedFromMonth(account?.archivedFromMonth ?? null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialValuesKey, account?.id]);
 
   const onSubmit = useCallback(
     async (values: AccountFormValues) => {
@@ -114,7 +128,7 @@ export default function AccountForm({ account, user, onSuccess, onCancel }: Acco
         onSuccess();
       } catch (submitError) {
         console.error("Failed to save account.", submitError);
-        setError(t("accounts.saveError"));
+        setError(formErrorFrom(submitError, "accounts.saveError", t));
       } finally {
         setIsSaving(false);
       }
@@ -142,14 +156,14 @@ export default function AccountForm({ account, user, onSuccess, onCancel }: Acco
       onSuccess("archived");
     } catch (archiveError) {
       console.error("Failed to archive account.", archiveError);
-      setError(t("accounts.archiveError"));
+      setError(formErrorFrom(archiveError, "accounts.archiveError", t));
     } finally {
       setIsArchiving(false);
     }
   }, [accessToken, closeArchiveDialog, archivedFromMonth, editingAccountId, onSuccess, t]);
 
-  const accountType = form.watch("type");
-  const colorValue = form.watch("color");
+  const accountType = useWatch({ control: form.control, name: "type" });
+  const colorValue = useWatch({ control: form.control, name: "color" });
   const isCreditCard = accountType === "CREDIT_CARD";
 
   return (

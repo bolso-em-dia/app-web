@@ -71,6 +71,59 @@ describe("FamilyPage", () => {
     expect(within(alertDialog).getByText(t("confirmations.archiveMember"))).toBeInTheDocument();
   });
 
+  it("shows mapped error feedback when member save fails", async () => {
+    resetFetchMocks();
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/family-members", (input, init) =>
+      init?.method === "POST"
+        ? mockErrorResponse(
+            409,
+            JSON.stringify({
+              status: 409,
+              code: 40901,
+              error: "Conflict",
+              message: "Email is already in use.",
+            }),
+          )
+        : mockErrorResponse(404),
+    );
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/family"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <FamilyPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Admin")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: t("family.new") }));
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText(t("common.name")), {
+      target: { value: "Taylor" },
+    });
+    fireEvent.change(within(drawer).getByLabelText(t("common.email")), {
+      target: { value: "taylor@bolso-em-dia.local" },
+    });
+    fireEvent.change(within(drawer).getByLabelText(t("family.password")), {
+      target: { value: "senha12345" },
+    });
+    fireEvent.click(within(drawer).getByRole("button", { name: t("family.create") }));
+
+    expect(await screen.findByText(t("error.emailInUse"))).toBeInTheDocument();
+    expect(within(drawer).getByLabelText(t("common.email"))).toHaveValue("taylor@bolso-em-dia.local");
+  });
+
   it("cancels archive confirmation without calling the API", async () => {
     setupDefaultMocks();
 
@@ -376,7 +429,7 @@ describe("FamilyPage", () => {
     fireEvent.click(within(alertDialog).getByRole("button", { name: t("common.archive") }));
 
     await waitFor(() => {
-      expect(screen.getByText(t("family.statusError"))).toBeInTheDocument();
+      expect(screen.getByText(t("error.unexpected"))).toBeInTheDocument();
     });
   });
 

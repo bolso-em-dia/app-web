@@ -435,8 +435,101 @@ describe("CategoriesPage", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(t("categories.archiveError"))).toBeInTheDocument();
+      expect(screen.getByText(t("error.unexpected"))).toBeInTheDocument();
     });
+  });
+
+  it("shows translated message for known error code when saving a category", async () => {
+    resetFetchMocks();
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/categories", (input, init) =>
+      init?.method === "POST"
+        ? mockErrorResponse(
+            409,
+            JSON.stringify({
+              status: 409,
+              code: 40901,
+              error: "Conflict",
+              message: "Email is already in use.",
+            }),
+          )
+        : mockErrorResponse(404),
+    );
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <CategoriesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Groceries")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: t("categories.new") }));
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText(t("common.name")), {
+      target: { value: "Travel" },
+    });
+    fireEvent.click(within(drawer).getByRole("button", { name: t("categories.create") }));
+
+    expect(await screen.findByText(t("error.emailInUse"))).toBeInTheDocument();
+    expect(screen.queryByText("Email is already in use.")).not.toBeInTheDocument();
+  });
+
+  it("falls back to the status bucket message for unknown codes when saving a category", async () => {
+    resetFetchMocks();
+    setupDefaultMocks();
+
+    mockFetchUrl("/api/categories", (input, init) =>
+      init?.method === "POST"
+        ? mockErrorResponse(
+            422,
+            JSON.stringify({
+              status: 422,
+              code: 42999,
+              error: "Unprocessable Entity",
+              message: "Unknown rule violation.",
+            }),
+          )
+        : mockErrorResponse(404),
+    );
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <CategoriesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Groceries")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: t("categories.new") }));
+    const drawer = screen.getByRole("dialog");
+
+    fireEvent.change(within(drawer).getByLabelText(t("common.name")), {
+      target: { value: "Travel" },
+    });
+    fireEvent.click(within(drawer).getByRole("button", { name: t("categories.create") }));
+
+    expect(await screen.findByText(t("error.businessRuleFallback"))).toBeInTheDocument();
   });
 
   it("shows session expired feedback and preserves typed values when submitting without token", async () => {

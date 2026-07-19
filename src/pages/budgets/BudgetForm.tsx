@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useCallback, useMemo, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { CategoryOption } from "../../app/api/categories";
@@ -16,6 +16,7 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import { formErrorFrom } from "../../lib/formError";
 import { useConfirmDialog } from "../../lib/useConfirmDialog";
 import styles from "./BudgetsPage.module.scss";
 
@@ -56,19 +57,6 @@ export default function BudgetForm({
   onSuccess,
   onCancel,
 }: BudgetFormProps) {
-  const { accessToken } = useAuth();
-  const { t } = useI18n();
-  const [isSaving, setIsSaving] = useState(false);
-  const [isArchiving, setIsArchiving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { closeDialog: closeArchiveDialog, open: isArchiveDialogOpen, openDialog: openArchiveDialog } = useConfirmDialog();
-
-  const budgetSchema = useMemo(() => createBudgetSchema(t), [t]);
-  const form = useForm<BudgetFormValues>({
-    resolver: zodResolver(budgetSchema),
-    defaultValues: DEFAULT_VALUES,
-  });
-
   const initialValues = useMemo(() => {
     if (!budget) {
       return DEFAULT_VALUES;
@@ -82,13 +70,49 @@ export default function BudgetForm({
     };
   }, [budget]);
 
-  useEffect(() => {
-    if (initialValues) {
-      form.reset(initialValues);
-    } else {
-      form.reset(DEFAULT_VALUES);
-    }
-  }, [initialValues, form]);
+  const formKey = `${budget?.id ?? "create"}:${JSON.stringify(initialValues)}`;
+
+  return (
+    <BudgetFormContent
+      key={formKey}
+      allowanceBudgets={allowanceBudgets}
+      budget={budget}
+      categories={categories}
+      initialValues={initialValues}
+      members={members}
+      onCancel={onCancel}
+      onSuccess={onSuccess}
+      referenceMonth={referenceMonth}
+    />
+  );
+}
+
+type BudgetFormContentProps = BudgetFormProps & {
+  initialValues: BudgetFormValues;
+};
+
+function BudgetFormContent({
+  budget,
+  categories,
+  members,
+  allowanceBudgets,
+  referenceMonth,
+  onSuccess,
+  onCancel,
+  initialValues,
+}: BudgetFormContentProps) {
+  const { accessToken } = useAuth();
+  const { t } = useI18n();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { closeDialog: closeArchiveDialog, open: isArchiveDialogOpen, openDialog: openArchiveDialog } = useConfirmDialog();
+
+  const budgetSchema = useMemo(() => createBudgetSchema(t), [t]);
+  const form = useForm<BudgetFormValues>({
+    resolver: zodResolver(budgetSchema),
+    defaultValues: initialValues,
+  });
 
   const availableAllowanceMembers = useMemo(() => {
     const currentOwnerId = budget?.type === "ALLOWANCE" ? budget.ownerMemberId : null;
@@ -102,7 +126,7 @@ export default function BudgetForm({
   }, [allowanceBudgets, budget, members]);
 
   const isCreating = !budget;
-  const budgetType = form.watch("type");
+  const budgetType = useWatch({ control: form.control, name: "type" });
 
   const handleSubmit = useCallback(
     async (values: BudgetFormValues) => {
@@ -123,7 +147,7 @@ export default function BudgetForm({
         onSuccess();
       } catch (submitError) {
         console.error("Failed to save budget.", submitError);
-        setError(t("budgets.saveError"));
+        setError(formErrorFrom(submitError, "budgets.saveError", t));
       } finally {
         setIsSaving(false);
       }
@@ -150,7 +174,7 @@ export default function BudgetForm({
       onSuccess();
     } catch (archiveError) {
       console.error("Failed to archive budget.", archiveError);
-      setError(t("budgets.archiveError"));
+      setError(formErrorFrom(archiveError, "budgets.archiveError", t));
     } finally {
       setIsArchiving(false);
     }

@@ -9,6 +9,7 @@ import Card from "../components/ui/Card";
 import Field from "../components/ui/Field";
 import FormError from "../components/ui/FormError";
 import Input from "../components/ui/Input";
+import { formErrorFrom } from "../lib/formError";
 import { createLoginSchema, type LoginFormValues } from "../lib/validation/loginSchema";
 import styles from "./LoginPage.module.scss";
 
@@ -36,8 +37,8 @@ export default function LoginPage() {
     try {
       await login(values.email, values.password);
       navigate("/", { replace: true });
-    } catch {
-      setError(t("login.error"));
+    } catch (submitError) {
+      setError(formErrorFrom(submitError, "login.error", t));
     }
   }
 

@@ -80,10 +80,20 @@ export function mockJsonResponse<T>(data: T, status = 200): MockResponseConfig {
  * Cria uma response de erro mock.
  */
 export function mockErrorResponse(status: number, message?: string): MockResponseConfig {
+  let jsonBody: unknown = {};
+
+  if (message) {
+    try {
+      jsonBody = JSON.parse(message);
+    } catch {
+      jsonBody = {};
+    }
+  }
+
   return {
     ok: false,
     status,
-    json: async () => ({}),
+    json: async () => jsonBody,
     text: async () => message ?? String(status),
   };
 }

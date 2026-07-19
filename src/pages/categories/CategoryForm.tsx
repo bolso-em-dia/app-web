@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { archiveCategory, createCategory, updateCategory, type Category, type CategoryOption } from "../../app/api/categories";
 import { useAuth } from "../../app/auth/useAuth";
 import type { AuthUser } from "../../app/api/auth";
@@ -12,6 +12,7 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import IconSelect from "../../components/ui/IconSelect";
 import Input from "../../components/ui/Input";
+import { formErrorFrom } from "../../lib/formError";
 import { buildColorOptions, buildIconOptions } from "../../lib/uiOptions";
 import {
   createArchiveCategorySchema,
@@ -108,7 +109,7 @@ export default function CategoryForm({ category, categoryOptions, onSuccess, onC
       onSuccess();
     } catch (submitError) {
       console.error("Failed to save category.", submitError);
-      setError(t("categories.saveError"));
+      setError(formErrorFrom(submitError, "categories.saveError", t));
     } finally {
       setIsSaving(false);
     }
@@ -132,14 +133,14 @@ export default function CategoryForm({ category, categoryOptions, onSuccess, onC
       onSuccess();
     } catch (archiveError) {
       console.error("Failed to archive category.", archiveError);
-      setError(t("categories.archiveError"));
+      setError(formErrorFrom(archiveError, "categories.archiveError", t));
     } finally {
       setIsArchiving(false);
     }
   }
 
-  const iconValue = form.watch("icon");
-  const colorValue = form.watch("color");
+  const iconValue = useWatch({ control: form.control, name: "icon" });
+  const colorValue = useWatch({ control: form.control, name: "color" });
 
   return (
     <div className={styles.drawerStack}>

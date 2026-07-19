@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -17,6 +17,7 @@ import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import { formErrorFrom } from "../../lib/formError";
 import {
   createFamilyMemberSchema as buildCreateFamilyMemberSchema,
   type CreateFamilyMemberFormValues,
@@ -54,6 +55,17 @@ function buildInitialValues(member: FamilyMember | null): FamilyMemberFormValues
 }
 
 export default function FamilyMemberForm({ member, onSuccess, onCancel }: FamilyMemberFormProps) {
+  const initialValues = useMemo(() => buildInitialValues(member), [member]);
+  const formKey = `${member?.id ?? "create"}:${JSON.stringify(initialValues)}`;
+
+  return <FamilyMemberFormContent key={formKey} initialValues={initialValues} member={member} onCancel={onCancel} onSuccess={onSuccess} />;
+}
+
+type FamilyMemberFormContentProps = FamilyMemberFormProps & {
+  initialValues: FamilyMemberFormValues;
+};
+
+function FamilyMemberFormContent({ member, onSuccess, onCancel, initialValues }: FamilyMemberFormContentProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [isSaving, setIsSaving] = useState(false);
@@ -63,7 +75,6 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
   const [error, setError] = useState<string | null>(null);
 
   const isCreating = member === null;
-  const initialValues = useMemo(() => buildInitialValues(member), [member]);
 
   const createFamilyMemberSchema = useMemo(() => buildCreateFamilyMemberSchema(t), [t]);
   const updateFamilyMemberSchema = useMemo(() => createUpdateFamilyMemberSchema(t), [t]);
@@ -72,10 +83,6 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
     resolver: zodResolver(isCreating ? createFamilyMemberSchema : updateFamilyMemberSchema),
     defaultValues: initialValues,
   });
-
-  useEffect(() => {
-    form.reset(initialValues);
-  }, [initialValues, form]);
 
   async function onSubmit(values: FamilyMemberFormValues) {
     if (!accessToken) {
@@ -112,7 +119,7 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
       onSuccess();
     } catch (submitError) {
       console.error("Failed to save family member.", submitError);
-      setError(t("family.saveError"));
+      setError(formErrorFrom(submitError, "family.saveError", t));
     } finally {
       setIsSaving(false);
     }
@@ -140,7 +147,7 @@ export default function FamilyMemberForm({ member, onSuccess, onCancel }: Family
       onSuccess();
     } catch (statusError) {
       console.error("Failed to change family member status.", statusError);
-      setError(t("family.statusError"));
+      setError(formErrorFrom(statusError, "family.statusError", t));
     } finally {
       setIsArchiving(false);
     }
