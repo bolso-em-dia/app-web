@@ -246,7 +246,7 @@ describe("FilterToolbar", () => {
     expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
   });
 
-  it("repositions only the mobile search dock when the keyboard changes the visual viewport", async () => {
+  it("repositions the dock and signals keyboard-active when the keyboard opens", async () => {
     setViewportWidth(480);
     Object.defineProperty(window, "innerHeight", {
       configurable: true,
@@ -267,10 +267,11 @@ describe("FilterToolbar", () => {
 
     await waitFor(() => {
       expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 280px");
+      expect(dock).toHaveStyle("--mobile-keyboard-active: 1");
     });
   });
 
-  it("removes the bottom padding when the keyboard is open", async () => {
+  it("computes keyboard inset from baseline innerHeight when viewport resizes (Android)", async () => {
     setViewportWidth(480);
     Object.defineProperty(window, "innerHeight", {
       configurable: true,
@@ -283,15 +284,21 @@ describe("FilterToolbar", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
 
-    const dock = screen.getByRole("search");
-    // Padding fallback is active when keyboard is closed.
-    expect(dock).not.toHaveStyle("--mobile-search-padding-bottom: 0px");
-
+    // Simulate Android: innerHeight resizes with viewport
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 520,
+      writable: true,
+    });
     visualViewport.height = 520;
+    window.dispatchEvent(new Event("resize"));
     visualViewport.dispatch("resize");
 
+    const dock = screen.getByRole("search");
     await waitFor(() => {
-      expect(dock).toHaveStyle("--mobile-search-padding-bottom: 0px");
+      // Inset computed from baseline (800) - viewport.height (520) = 280
+      expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 280px");
+      expect(dock).toHaveStyle("--mobile-keyboard-active: 1");
     });
   });
 

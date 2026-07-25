@@ -3,23 +3,27 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 /**
  * Tracks the on-screen keyboard height via the Visual Viewport API.
  *
- * When enabled, listens to visualViewport resize/scroll and window resize
- * events to compute the keyboard height. Exposes the raw inset value and
- * ready-to-use CSS custom properties for positioning fixed elements above
- * the keyboard.
+ * When enabled, captures the maximum window.innerHeight as a baseline and
+ * computes the keyboard height as baseline - visualViewport.height. This
+ * works correctly on both iOS (where innerHeight stays constant) and
+ * Android (where innerHeight may resize with the keyboard).
  *
- * @param enabled - When false, cleans up listeners and resets inset to 0.
+ * @param enabled - When false, cleans up listeners and resets state.
  */
 export default function useKeyboardAvoidance(enabled: boolean) {
   const [keyboardInset, setKeyboardInset] = useState(0);
   const enabledRef = useRef(enabled);
+  const baselineInnerHeightRef = useRef(window.innerHeight);
   enabledRef.current = enabled;
 
   useEffect(() => {
     if (!enabled) {
+      baselineInnerHeightRef.current = window.innerHeight;
       setKeyboardInset(0);
       return;
     }
+
+    baselineInnerHeightRef.current = Math.max(baselineInnerHeightRef.current, window.innerHeight);
 
     function updateKeyboardInset() {
       if (!enabledRef.current) {
@@ -33,8 +37,12 @@ export default function useKeyboardAvoidance(enabled: boolean) {
         return;
       }
 
-      const nextInset = Math.max(0, window.innerHeight - (viewport.height + viewport.offsetTop));
-      setKeyboardInset(nextInset);
+      if (window.innerHeight > baselineInnerHeightRef.current) {
+        baselineInnerHeightRef.current = window.innerHeight;
+      }
+
+      const keyboardHeight = Math.max(0, baselineInnerHeightRef.current - (viewport.height + viewport.offsetTop));
+      setKeyboardInset(keyboardHeight);
     }
 
     updateKeyboardInset();
@@ -51,12 +59,14 @@ export default function useKeyboardAvoidance(enabled: boolean) {
     };
   }, [enabled]);
 
+  const keyboardActive = keyboardInset > 0;
+
   const dockStyle = useMemo<CSSProperties>(
     () => ({
       "--mobile-search-keyboard-inset": `${keyboardInset}px`,
-      ...(keyboardInset > 0 ? ({ "--mobile-search-padding-bottom": "0px" } as CSSProperties) : {}),
+      ...(keyboardActive ? ({ "--mobile-keyboard-active": "1" } as CSSProperties) : {}),
     }),
-    [keyboardInset],
+    [keyboardInset, keyboardActive],
   );
 
   return { keyboardInset, dockStyle };

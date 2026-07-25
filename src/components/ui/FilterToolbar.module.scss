@@ -60,7 +60,7 @@
   position: fixed;
   right: 0;
   bottom: max(
-    calc(var(--mobile-action-bar-height) + env(safe-area-inset-bottom, 0px)),
+    calc(var(--mobile-action-bar-height) * (1 - var(--mobile-keyboard-active, 0)) + env(safe-area-inset-bottom, 0px)),
     var(--mobile-search-keyboard-inset, 0px),
     env(keyboard-inset-height, 0px)
   );
@@ -142,6 +142,6 @@
   }
 
   .mobileSearchDock {
-    padding-bottom: calc(var(--mobile-search-padding-bottom, var(--space-3)) + env(safe-area-inset-bottom));
+    padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
   }
 }
