@@ -260,18 +260,18 @@ describe("FilterToolbar", () => {
     fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
 
     const dock = screen.getByRole("search");
-    expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 0px");
+    expect(dock).toHaveStyle("--keyboard-inset: 0px");
 
     visualViewport.height = 520;
     visualViewport.dispatch("resize");
 
     await waitFor(() => {
-      expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 280px");
-      expect(dock).toHaveStyle("--mobile-keyboard-active: 1");
+      expect(dock).toHaveStyle("--keyboard-inset: 280px");
+      expect(dock).toHaveStyle("--keyboard-active: 1");
     });
   });
 
-  it("computes keyboard inset from baseline innerHeight when viewport resizes (Android)", async () => {
+  it("keeps the inset at zero when the layout viewport resizes together with the keyboard (Android resizes-content)", async () => {
     setViewportWidth(480);
     Object.defineProperty(window, "innerHeight", {
       configurable: true,
@@ -284,7 +284,9 @@ describe("FilterToolbar", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
 
-    // Simulate Android: innerHeight resizes with viewport
+    // Simulate Android resizes-content: innerHeight shrinks together with the
+    // visual viewport. The layout viewport (anchor of position: fixed) already
+    // excludes the keyboard, so the dock must NOT apply an additional offset.
     Object.defineProperty(window, "innerHeight", {
       configurable: true,
       value: 520,
@@ -296,9 +298,8 @@ describe("FilterToolbar", () => {
 
     const dock = screen.getByRole("search");
     await waitFor(() => {
-      // Inset computed from baseline (800) - viewport.height (520) = 280
-      expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 280px");
-      expect(dock).toHaveStyle("--mobile-keyboard-active: 1");
+      expect(dock).toHaveStyle("--keyboard-inset: 0px");
+      expect(dock).not.toHaveStyle("--keyboard-active: 1");
     });
   });
 
@@ -334,7 +335,7 @@ describe("FilterToolbar", () => {
     fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole("search")).toHaveStyle("--mobile-search-keyboard-inset: 0px");
+      expect(screen.getByRole("search")).toHaveStyle("--keyboard-inset: 0px");
     });
   });
 

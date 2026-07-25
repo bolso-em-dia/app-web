@@ -1,0 +1,13 @@
+.container {
+  position: fixed;
+  right: 0;
+  left: 0;
+  bottom: max(
+    calc(var(--mobile-action-bar-height) * (1 - var(--keyboard-active, 0)) + env(safe-area-inset-bottom, 0px)),
+    var(--keyboard-inset, 0px)
+  );
+}
+
+.noActionBarSpace {
+  bottom: max(env(safe-area-inset-bottom, 0px), var(--keyboard-inset, 0px));
+}

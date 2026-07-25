@@ -5,11 +5,11 @@ import Button from "./Button";
 import clsx from "./clsx";
 import FilterChip from "./FilterChip";
 import SearchOverlay from "./SearchOverlay";
+import KeyboardAvoidingContainer from "./KeyboardAvoidingContainer";
 import styles from "./FilterToolbar.module.scss";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { FilterFields } from "../../lib/filterFields";
 import { useBreakpoint } from "../../lib/useBreakpoint";
-import useKeyboardAvoidance from "../../lib/useKeyboardAvoidance";
 
 type FilterToolbarProps = {
   fields: FilterFields;
@@ -95,7 +95,6 @@ export default function FilterToolbar({
   );
   const shouldRenderPrimaryContent = renderedVisibleFields.length > 0 || shouldRenderFilterToggle;
   const shouldRenderPrimaryRow = shouldRenderPrimaryContent || activeCount > 0;
-  const { dockStyle } = useKeyboardAvoidance(shouldUseMobileSearchDock && !!isMobileSearchOpen);
 
   return (
     <div className={styles.root}>
@@ -144,7 +143,11 @@ export default function FilterToolbar({
       {shouldUseMobileSearchDock && isMobileSearchOpen && mobileSearchEntry ? (
         <>
           {onCloseMobileSearch ? <SearchOverlay onDismiss={onCloseMobileSearch} /> : null}
-          <div className={styles.mobileSearchDock} role="search" style={dockStyle}>
+          <KeyboardAvoidingContainer
+            className={styles.mobileSearchDock}
+            enabled={shouldUseMobileSearchDock && !!isMobileSearchOpen}
+            role="search"
+          >
             <div className={styles.mobileSearchField}>
               <Fragment>{mobileSearchEntry[1].element}</Fragment>
             </div>
@@ -170,7 +173,7 @@ export default function FilterToolbar({
                 <X aria-hidden="true" className={styles.filterIcon} />
               </Button>
             ) : null}
-          </div>
+          </KeyboardAvoidingContainer>
         </>
       ) : null}
 

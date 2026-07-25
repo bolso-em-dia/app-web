@@ -3,27 +3,29 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 /**
  * Tracks the on-screen keyboard height via the Visual Viewport API.
  *
- * When enabled, captures the maximum window.innerHeight as a baseline and
- * computes the keyboard height as baseline - visualViewport.height. This
- * works correctly on both iOS (where innerHeight stays constant) and
- * Android (where innerHeight may resize with the keyboard).
+ * The inset is computed against the **current** layout viewport height
+ * (`window.innerHeight`), which is what `position: fixed` is anchored to. This
+ * avoids double-offsetting the dock on browsers that resize the layout viewport
+ * together with the keyboard (Chromium `interactive-widget=resizes-content`):
+ *
+ * - iOS Safari and Chromium `resizes-visual` (default): the layout viewport
+ *   stays at full height, so the inset equals the keyboard height.
+ * - Chromium `resizes-content`: the layout viewport shrinks together with the
+ *   visual viewport, so the inset resolves to 0 and the dock stays anchored to
+ *   the already-shrunk viewport (no double count).
  *
  * @param enabled - When false, cleans up listeners and resets state.
  */
 export default function useKeyboardAvoidance(enabled: boolean) {
   const [keyboardInset, setKeyboardInset] = useState(0);
   const enabledRef = useRef(enabled);
-  const baselineInnerHeightRef = useRef(window.innerHeight);
   enabledRef.current = enabled;
 
   useEffect(() => {
     if (!enabled) {
-      baselineInnerHeightRef.current = window.innerHeight;
       setKeyboardInset(0);
       return;
     }
-
-    baselineInnerHeightRef.current = Math.max(baselineInnerHeightRef.current, window.innerHeight);
 
     function updateKeyboardInset() {
       if (!enabledRef.current) {
@@ -37,11 +39,9 @@ export default function useKeyboardAvoidance(enabled: boolean) {
         return;
       }
 
-      if (window.innerHeight > baselineInnerHeightRef.current) {
-        baselineInnerHeightRef.current = window.innerHeight;
-      }
-
-      const keyboardHeight = Math.max(0, baselineInnerHeightRef.current - (viewport.height + viewport.offsetTop));
+      const layoutViewportHeight = window.innerHeight;
+      const visualViewportBottom = viewport.height + viewport.offsetTop;
+      const keyboardHeight = Math.max(0, layoutViewportHeight - visualViewportBottom);
       setKeyboardInset(keyboardHeight);
     }
 
@@ -63,8 +63,8 @@ export default function useKeyboardAvoidance(enabled: boolean) {
 
   const dockStyle = useMemo<CSSProperties>(
     () => ({
-      "--mobile-search-keyboard-inset": `${keyboardInset}px`,
-      ...(keyboardActive ? ({ "--mobile-keyboard-active": "1" } as CSSProperties) : {}),
+      "--keyboard-inset": `${keyboardInset}px`,
+      ...(keyboardActive ? ({ "--keyboard-active": "1" } as CSSProperties) : {}),
     }),
     [keyboardInset, keyboardActive],
   );
