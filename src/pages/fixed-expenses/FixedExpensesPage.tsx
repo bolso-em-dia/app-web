@@ -113,7 +113,7 @@ export default function FixedExpensesPage() {
         ),
       },
     }),
-    [filters.search, filters.status, patchFilters, t],
+    [filters.search, filters.status, mobileSearch.inputRef, patchFilters, t],
   );
 
   const isCreating = selectedId === null;

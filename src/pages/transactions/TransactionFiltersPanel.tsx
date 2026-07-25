@@ -190,7 +190,7 @@ export default function TransactionFiltersPanel({
         ),
       },
     }),
-    [accountOptions, categoryOptions, filters, memberOptions, patch, t],
+    [accountOptions, categoryOptions, filters, memberOptions, mobileSearchInputRef, patch, t],
   );
 
   return (

@@ -85,7 +85,7 @@ export default function CategoriesPage() {
         ),
       },
     }),
-    [filters.search, filters.status, patchFilters, t],
+    [filters.search, filters.status, mobileSearch.inputRef, patchFilters, t],
   );
 
   function handleSelect(_id: string, category: Category) {

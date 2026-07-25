@@ -168,7 +168,7 @@ export default function BudgetsPage() {
         ),
       },
     }),
-    [filters.referenceMonth, filters.search, filters.status, filters.type, patchFilters, t],
+    [filters.referenceMonth, filters.search, filters.status, filters.type, mobileSearch.inputRef, patchFilters, t],
   );
 
   const isCreating = selectedId === null;

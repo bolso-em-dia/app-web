@@ -1,7 +1,7 @@
 import { LogOut, Menu, Plus, Search, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { managementNavigation, operationalNavigation } from "../../app/navigation/navigation";
@@ -32,13 +32,10 @@ type AppShellProps = {
 export default function AppShell({ title, subtitle, actions, children, mobileActions, mobileActionBarHidden = false }: AppShellProps) {
   const { logout, user } = useAuth();
   const { t } = useI18n();
-  const location = useLocation();
   const isCompactNavigation = useBreakpoint(1024);
   const isMobileActionLayout = useBreakpoint(640);
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
   const showMobileActionBar = isMobileActionLayout && !mobileActionBarHidden;
-  const currentNavigationItem = [...operationalNavigation, ...managementNavigation].find((item) => item.path === location.pathname);
-  const CurrentPageIcon = currentNavigationItem ? getNavigationIcon(currentNavigationItem.iconId) : null;
 
   useEffect(() => {
     if (!isCompactNavigation) {
@@ -117,10 +114,16 @@ export default function AppShell({ title, subtitle, actions, children, mobileAct
       <div className={clsx(styles.page, showMobileActionBar ? styles.pageWithMobileActionBar : "")}>
         <header className={styles.header}>
           <div className={styles.headerLead}>
-            {isCompactNavigation && CurrentPageIcon && currentNavigationItem ? (
-              <span aria-label={t(currentNavigationItem.labelKey)} className={styles.pageIconBadge}>
-                <CurrentPageIcon aria-hidden="true" className={styles.pageIcon} />
-              </span>
+            {isCompactNavigation ? (
+              <Button
+                aria-label={t("navigation.aria")}
+                className={styles.menuButton}
+                onClick={() => setIsNavigationOpen(true)}
+                type="button"
+                variant="subtle"
+              >
+                <Menu aria-hidden="true" className={styles.menuIcon} />
+              </Button>
             ) : null}
 
             <div className={styles.heading}>

@@ -127,10 +127,9 @@ describe("AppShell", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByRole("button", { name: t("navigation.aria") })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t("navigation.aria") })).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: t("common.menu") })).toHaveLength(1);
     expect(screen.queryByRole("button", { name: "Novo header" })).not.toBeInTheDocument();
-    expect(screen.getByLabelText(t("navigation.dashboard"))).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Novo" }));
     fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
@@ -161,10 +160,9 @@ describe("AppShell", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByRole("button", { name: t("navigation.aria") })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t("navigation.aria") })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: t("common.menu") })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: t("common.search") })).not.toBeInTheDocument();
-    expect(screen.getByLabelText(t("navigation.dashboard"))).toBeInTheDocument();
   });
 
   it("hides the mobile action bar while a CRUD drawer is open", () => {
@@ -187,7 +185,6 @@ describe("AppShell", () => {
 
     expect(screen.queryByRole("button", { name: t("common.menu") })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: t("common.search") })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: t("navigation.aria") })).not.toBeInTheDocument();
-    expect(screen.getByLabelText(t("navigation.dashboard"))).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t("navigation.aria") })).toBeInTheDocument();
   });
 });

@@ -104,7 +104,7 @@ export default function FamilyPage() {
         ),
       },
     }),
-    [filters.search, filters.status, patchFilters, t],
+    [filters.search, filters.status, mobileSearch.inputRef, patchFilters, t],
   );
 
   return (

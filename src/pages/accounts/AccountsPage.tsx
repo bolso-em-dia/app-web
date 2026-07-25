@@ -148,7 +148,7 @@ export default function AccountsPage() {
         ),
       },
     }),
-    [filters.search, filters.status, filters.type, patchFilters, t],
+    [filters.search, filters.status, filters.type, mobileSearch.inputRef, patchFilters, t],
   );
 
   return (
