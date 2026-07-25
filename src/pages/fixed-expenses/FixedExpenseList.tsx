@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import { listCategoryOptions, type CategoryOption } from "../../app/api/categories";
 import { listFixedExpenseTemplates, type FixedExpenseTemplate } from "../../app/api/fixedExpenses";
@@ -37,31 +37,31 @@ export default function FixedExpenseList({
   const [referenceDataError, setReferenceDataError] = useState<string | null>(null);
   const queryKey = useMemo(() => JSON.stringify({ ...filters, referenceMonth, refreshKey }), [filters, referenceMonth, refreshKey]);
 
-  const loadReferenceData = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
-
-    setReferenceDataError(null);
-
-    try {
-      const [categoriesResponse, accountsResponse] = await Promise.all([
-        listCategoryOptions(referenceMonth, accessToken),
-        listAccountOptions(referenceMonth, accessToken),
-      ]);
-
-      setCategoryOptions(categoriesResponse);
-      onCategoryOptionsLoaded(categoriesResponse);
-      onAccountOptionsLoaded(accountsResponse);
-    } catch (loadError) {
-      console.error("Failed to load fixed transaction reference data.", loadError);
-      setReferenceDataError(t("fixedTransactions.error"));
-    }
-  }, [accessToken, onAccountOptionsLoaded, onCategoryOptionsLoaded, referenceMonth, t]);
-
   useEffect(() => {
-    void loadReferenceData();
-  }, [loadReferenceData, refreshKey]);
+    async function doLoad() {
+      if (!accessToken) {
+        return;
+      }
+
+      setReferenceDataError(null);
+
+      try {
+        const [categoriesResponse, accountsResponse] = await Promise.all([
+          listCategoryOptions(referenceMonth, accessToken),
+          listAccountOptions(referenceMonth, accessToken),
+        ]);
+
+        setCategoryOptions(categoriesResponse);
+        onCategoryOptionsLoaded(categoriesResponse);
+        onAccountOptionsLoaded(accountsResponse);
+      } catch (loadError) {
+        console.error("Failed to load fixed transaction reference data.", loadError);
+        setReferenceDataError(t("fixedTransactions.error"));
+      }
+    }
+
+    void doLoad();
+  }, [accessToken, onAccountOptionsLoaded, onCategoryOptionsLoaded, referenceMonth, t, refreshKey]);
 
   const {
     items: templates,

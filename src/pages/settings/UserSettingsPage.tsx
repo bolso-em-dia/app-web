@@ -1,5 +1,5 @@
 import { DollarSign, Landmark, Languages, WalletCards } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import { updateCurrentUserPreferences, type UserPreferences } from "../../app/api/userPreferences";
@@ -70,30 +70,30 @@ export default function UserSettingsPage() {
     formDefaultValues.showForeignCurrency,
   ].join("|");
 
-  const loadPageData = useCallback(async () => {
-    if (!accessToken) {
-      setError(t("common.sessionExpired"));
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const accounts = await listAccountOptions(getCurrentReferenceMonth(), accessToken);
-      setAccountOptions(accounts);
-    } catch (loadError) {
-      console.error("Failed to load user settings reference data.", loadError);
-      setError(t("settings.error"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [accessToken, t]);
-
   useEffect(() => {
-    void loadPageData();
-  }, [loadPageData]);
+    async function doLoad() {
+      if (!accessToken) {
+        setError(t("common.sessionExpired"));
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const accounts = await listAccountOptions(getCurrentReferenceMonth(), accessToken);
+        setAccountOptions(accounts);
+      } catch (loadError) {
+        console.error("Failed to load user settings reference data.", loadError);
+        setError(t("settings.error"));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    void doLoad();
+  }, [accessToken, t]);
 
   async function onSubmit(values: UserSettingsFormValues) {
     if (!accessToken) {

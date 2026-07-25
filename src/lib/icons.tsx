@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { createElement } from "react";
 import {
   ArrowRightLeft,
   BookOpen,
@@ -89,14 +90,12 @@ const navigationIconMap: Record<NavigationIconId, LucideIcon> = {
   accounts: Landmark,
 };
 
-export function getStoredIcon(value: string | null | undefined) {
-  if (!value) {
-    return null;
-  }
-
-  return storedIconMap[value as StoredIconId] ?? null;
-}
-
 export function getNavigationIcon(iconId: NavigationIconId) {
   return navigationIconMap[iconId];
+}
+
+export function renderStoredIcon(name: string | null | undefined, className?: string) {
+  const icon = name ? storedIconMap[name as StoredIconId] : null;
+  if (!icon) return null;
+  return createElement(icon, className ? { className } : undefined);
 }

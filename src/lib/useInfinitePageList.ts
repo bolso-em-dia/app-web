@@ -93,21 +93,22 @@ export function useInfinitePageList<T>({
   useEffect(() => {
     requestIdRef.current += 1;
     inFlightRef.current = false;
-    setItems([]);
-    setTotalItems(0);
-    setPage(0);
     pageSizeRef.current = initialPageSize;
-    setPageSize(initialPageSize);
-    setError(null);
-    setHasLoadedOnce(false);
-    setIsLoadingMore(false);
-    setIsInitialLoading(enabled);
 
     if (!enabled) {
       return;
     }
 
-    void executeLoad(0, true);
+    queueMicrotask(() => executeLoad(0, true));
+
+    return () => {
+      setItems([]);
+      setTotalItems(0);
+      setPage(0);
+      setError(null);
+      setHasLoadedOnce(false);
+      setIsLoadingMore(false);
+    };
   }, [enabled, executeLoad, initialPageSize, queryKey]);
 
   const hasNextPage = useMemo(() => {

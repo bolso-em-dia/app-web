@@ -1,5 +1,5 @@
 import { RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getLatestExchangeRate, refreshExchangeRate } from "../../app/api/exchangeRate";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
@@ -17,22 +17,23 @@ export default function ExchangeRateIndicator() {
   const [refreshing, setRefreshing] = useState(false);
   const showForeignCurrency = user?.preferences.showForeignCurrency ?? false;
 
-  const fetchRate = useCallback(async () => {
-    if (!accessToken || !showForeignCurrency) return;
-    try {
-      const data = await getLatestExchangeRate(accessToken);
-      setRate(data.rate);
-      setStale(data.stale);
-      setError(false);
-    } catch {
-      setError(true);
-    }
-  }, [accessToken, showForeignCurrency]);
-
   useEffect(() => {
     if (!showForeignCurrency) return;
-    void fetchRate();
-  }, [fetchRate, showForeignCurrency]);
+
+    async function doFetch() {
+      if (!accessToken || !showForeignCurrency) return;
+      try {
+        const data = await getLatestExchangeRate(accessToken);
+        setRate(data.rate);
+        setStale(data.stale);
+        setError(false);
+      } catch {
+        setError(true);
+      }
+    }
+
+    void doFetch();
+  }, [accessToken, showForeignCurrency]);
 
   async function handleRefresh() {
     if (!accessToken || !showForeignCurrency || refreshing) return;

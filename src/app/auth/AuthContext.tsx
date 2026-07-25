@@ -16,19 +16,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessTokenState(value);
   }, []);
 
-  const bootstrapSession = useCallback(async () => {
-    try {
-      const auth = await refresh();
-      setAccessToken(auth.accessToken);
-      setUser(auth.user);
-    } catch {
-      setAccessToken(null);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [setAccessToken]);
-
   const handleLogin = useCallback(
     async (email: string, password: string) => {
       const auth = await loginRequest(email, password);
@@ -80,12 +67,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
 
-    void bootstrapSession();
+    void (async () => {
+      try {
+        const auth = await refresh();
+        setAccessToken(auth.accessToken);
+        setUser(auth.user);
+      } catch {
+        setAccessToken(null);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
 
     return () => {
       configureApiClientAuth({});
     };
-  }, [bootstrapSession, setAccessToken]);
+  }, [setAccessToken]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

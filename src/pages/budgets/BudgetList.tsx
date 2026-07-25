@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listBudgets, type Budget, type BudgetType } from "../../app/api/budgets";
 import { listCategoryOptions, type CategoryOption } from "../../app/api/categories";
 import { listFamilyMembers, type FamilyMember } from "../../app/api/family";
@@ -31,39 +31,39 @@ export default function BudgetList({ filters, selectedId, onSelect, refreshKey, 
   const [referenceDataError, setReferenceDataError] = useState<string | null>(null);
   const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
 
-  const loadReferenceData = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
-
-    setReferenceDataError(null);
-
-    try {
-      const [categories, members, allowanceBudgets] = await Promise.all([
-        listCategoryOptions(filters.referenceMonth, accessToken),
-        listFamilyMembers(accessToken),
-        listBudgets(
-          {
-            referenceMonth: filters.referenceMonth,
-            page: 0,
-            size: 200,
-            status: "ACTIVE",
-            type: "ALLOWANCE",
-          },
-          accessToken,
-        ).then((response) => response.items),
-      ]);
-
-      onReferenceDataLoaded({ categories, members, allowanceBudgets });
-    } catch (loadError) {
-      console.error("Failed to load budget reference data.", loadError);
-      setReferenceDataError(t("budgets.error"));
-    }
-  }, [accessToken, filters.referenceMonth, onReferenceDataLoaded, t]);
-
   useEffect(() => {
-    void loadReferenceData();
-  }, [loadReferenceData, refreshKey]);
+    async function doLoad() {
+      if (!accessToken) {
+        return;
+      }
+
+      setReferenceDataError(null);
+
+      try {
+        const [categories, members, allowanceBudgets] = await Promise.all([
+          listCategoryOptions(filters.referenceMonth, accessToken),
+          listFamilyMembers(accessToken),
+          listBudgets(
+            {
+              referenceMonth: filters.referenceMonth,
+              page: 0,
+              size: 200,
+              status: "ACTIVE",
+              type: "ALLOWANCE",
+            },
+            accessToken,
+          ).then((response) => response.items),
+        ]);
+
+        onReferenceDataLoaded({ categories, members, allowanceBudgets });
+      } catch (loadError) {
+        console.error("Failed to load budget reference data.", loadError);
+        setReferenceDataError(t("budgets.error"));
+      }
+    }
+
+    void doLoad();
+  }, [accessToken, filters.referenceMonth, onReferenceDataLoaded, t, refreshKey]);
 
   const {
     items: budgets,

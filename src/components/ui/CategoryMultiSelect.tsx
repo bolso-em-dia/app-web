@@ -1,5 +1,5 @@
 import type { CategoryOption } from "../../app/api/categories";
-import { getStoredIcon } from "../../lib/icons";
+import { renderStoredIcon } from "../../lib/icons";
 import MultiSelect from "./MultiSelect";
 import styles from "./CategorySelect.module.scss";
 
@@ -13,12 +13,12 @@ type CategoryMultiSelectProps = {
 };
 
 function CategoryContent({ category }: { category: CategoryOption }) {
-  const Icon = getStoredIcon(category.icon);
+  const icon = renderStoredIcon(category.icon, styles.icon);
 
   return (
     <span className={styles.value}>
       <span aria-hidden="true" className={styles.lead} style={category.color ? { color: category.color } : undefined}>
-        {Icon ? <Icon className={styles.icon} /> : <span className={styles.dot} />}
+        {icon ?? <span className={styles.dot} />}
       </span>
       <span className={styles.text}>{category.name}</span>
     </span>

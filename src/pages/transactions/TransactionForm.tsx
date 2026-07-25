@@ -185,7 +185,6 @@ function TransactionFormContent({
 
     const normalizedQuery = descriptionValue.trim();
     if (normalizedQuery.length < 2) {
-      setDescriptionSuggestions([]);
       return;
     }
 
@@ -213,6 +212,8 @@ function TransactionFormContent({
       isActive = false;
     };
   }, [accessToken, descriptionValue]);
+
+  const effectiveSuggestions = descriptionValue.trim().length < 2 ? [] : descriptionSuggestions;
 
   function resetForNextCreate(values: TransactionFormValues) {
     form.reset({
@@ -317,7 +318,7 @@ function TransactionFormContent({
             {...form.register("description")}
           />
           <datalist data-testid="transaction-description-suggestions" id="transaction-description-suggestions">
-            {descriptionSuggestions.map((suggestion) => (
+            {effectiveSuggestions.map((suggestion) => (
               <option key={suggestion} value={suggestion}>
                 {suggestion}
               </option>

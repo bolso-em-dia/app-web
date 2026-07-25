@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listCategories, listCategoryOptions, type Category, type CategoryOption } from "../../app/api/categories";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
@@ -25,25 +25,25 @@ export default function CategoryList({ filters, selectedId, onSelect, refreshKey
   const [optionsError, setOptionsError] = useState<string | null>(null);
   const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
 
-  const loadOptions = useCallback(async () => {
-    if (!accessToken) {
-      return;
-    }
-
-    setOptionsError(null);
-
-    try {
-      const optionsResponse = await listCategoryOptions(getCurrentReferenceMonth(), accessToken);
-      onOptionsLoaded(optionsResponse);
-    } catch (loadError) {
-      console.error("Failed to load category options.", loadError);
-      setOptionsError(t("categories.error"));
-    }
-  }, [accessToken, onOptionsLoaded, t]);
-
   useEffect(() => {
-    void loadOptions();
-  }, [loadOptions, refreshKey]);
+    async function doLoad() {
+      if (!accessToken) {
+        return;
+      }
+
+      setOptionsError(null);
+
+      try {
+        const optionsResponse = await listCategoryOptions(getCurrentReferenceMonth(), accessToken);
+        onOptionsLoaded(optionsResponse);
+      } catch (loadError) {
+        console.error("Failed to load category options.", loadError);
+        setOptionsError(t("categories.error"));
+      }
+    }
+
+    void doLoad();
+  }, [accessToken, onOptionsLoaded, t, refreshKey]);
 
   const {
     items: categories,

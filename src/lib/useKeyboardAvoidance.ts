@@ -19,11 +19,13 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 export default function useKeyboardAvoidance(enabled: boolean) {
   const [keyboardInset, setKeyboardInset] = useState(0);
   const enabledRef = useRef(enabled);
-  enabledRef.current = enabled;
+
+  useEffect(() => {
+    enabledRef.current = enabled;
+  });
 
   useEffect(() => {
     if (!enabled) {
-      setKeyboardInset(0);
       return;
     }
 
@@ -56,6 +58,7 @@ export default function useKeyboardAvoidance(enabled: boolean) {
       window.removeEventListener("resize", updateKeyboardInset);
       viewport?.removeEventListener("resize", updateKeyboardInset);
       viewport?.removeEventListener("scroll", updateKeyboardInset);
+      setKeyboardInset(0);
     };
   }, [enabled]);
 

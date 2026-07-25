@@ -19,55 +19,61 @@ export function useCachedOptionsResource<T>(cacheKey: string | null, load: () =>
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!cacheKey) {
-      setData(undefined);
-      setIsLoading(false);
-      setError(null);
-      return;
-    }
+    if (!cacheKey) return;
 
     let active = true;
-    const currentEntry = optionsResourceCache.get(cacheKey) as CacheEntry<T> | undefined;
 
-    if (currentEntry?.data !== undefined) {
-      setData(currentEntry.data);
-      setIsLoading(false);
+    queueMicrotask(() => {
+      if (!active) return;
+
+      const currentEntry = optionsResourceCache.get(cacheKey) as CacheEntry<T> | undefined;
+
+      if (currentEntry?.data !== undefined) {
+        setData(currentEntry.data);
+        setIsLoading(false);
+        setError(null);
+        return;
+      }
+
+      setIsLoading(true);
       setError(null);
-      return;
-    }
 
-    setIsLoading(true);
-    setError(null);
+      const promise = currentEntry?.promise ?? load();
+      optionsResourceCache.set(cacheKey, { ...currentEntry, promise });
 
-    const promise = currentEntry?.promise ?? load();
-    optionsResourceCache.set(cacheKey, { ...currentEntry, promise });
+      promise
+        .then((result) => {
+          optionsResourceCache.set(cacheKey, { data: result });
 
-    promise
-      .then((result) => {
-        optionsResourceCache.set(cacheKey, { data: result });
+          if (!active) {
+            return;
+          }
 
-        if (!active) {
-          return;
-        }
+          setData(result);
+          setIsLoading(false);
+        })
+        .catch(() => {
+          optionsResourceCache.delete(cacheKey);
 
-        setData(result);
-        setIsLoading(false);
-      })
-      .catch(() => {
-        optionsResourceCache.delete(cacheKey);
+          if (!active) {
+            return;
+          }
 
-        if (!active) {
-          return;
-        }
-
-        setError("load_failed");
-        setIsLoading(false);
-      });
+          setError("load_failed");
+          setIsLoading(false);
+        });
+    });
 
     return () => {
       active = false;
     };
   }, [cacheKey, load]);
+
+  // When no cacheKey is provided, idle state is synchronous (derived from
+  // the absence of a cache key without setting state in the effect body).
+  if (!cacheKey) {
+    return { data: undefined, isLoading: false, error: null };
+  }
 
   return {
     data,

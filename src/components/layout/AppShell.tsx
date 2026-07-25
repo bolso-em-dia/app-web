@@ -49,9 +49,9 @@ export default function AppShell({
   const showMobileActionBar = isMobileActionLayout && !mobileActionBarHidden;
 
   useEffect(() => {
-    if (!isCompactNavigation) {
+    return () => {
       setIsNavigationOpen(false);
-    }
+    };
   }, [isCompactNavigation]);
 
   function renderNavigationSection(title: string | null, items: typeof operationalNavigation) {

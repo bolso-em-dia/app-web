@@ -3,7 +3,7 @@ import Card from "../../components/ui/Card";
 import MoneyAmount from "../../components/ui/MoneyAmount";
 import type { FixedExpenseTemplate } from "../../app/api/fixedExpenses";
 import type { CategoryOption } from "../../app/api/categories";
-import { getStoredIcon } from "../../lib/icons";
+import { renderStoredIcon } from "../../lib/icons";
 import { formatReferenceMonth } from "../../lib/formatters/date";
 import { formatCurrency } from "../../lib/formatters/currency";
 import styles from "./FixedExpensesPage.module.scss";
@@ -17,7 +17,7 @@ interface FixedExpenseCardProps {
 
 export default function FixedExpenseCard({ template, categoryOption, onSelect }: FixedExpenseCardProps) {
   const { t } = useI18n();
-  const CategoryIcon = getStoredIcon(categoryOption?.icon);
+  const categoryIcon = renderStoredIcon(categoryOption?.icon, styles.categoryIcon);
   const categoryColor = categoryOption?.color ?? undefined;
 
   return (
@@ -31,9 +31,9 @@ export default function FixedExpenseCard({ template, categoryOption, onSelect }:
         <div className={styles.templateHeader}>
           <div className={styles.templateMain}>
             <div className={styles.templateTitleRow}>
-              {CategoryIcon ? (
+              {categoryIcon ? (
                 <span aria-hidden="true" className={styles.categoryLead} style={categoryColor ? { color: categoryColor } : undefined}>
-                  <CategoryIcon className={styles.categoryIcon} />
+                  {categoryIcon}
                 </span>
               ) : categoryColor ? (
                 <span aria-hidden="true" className={styles.categoryLead} style={{ color: categoryColor }}>

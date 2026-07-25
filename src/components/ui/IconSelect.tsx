@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import clsx from "./clsx";
 import styles from "./IconSelect.module.scss";
-import { getStoredIcon } from "../../lib/icons";
+import { renderStoredIcon } from "../../lib/icons";
 import type { IconOption } from "../../lib/uiOptions";
 
 type RenderedIconOption = IconOption | { value: ""; label: string };
@@ -23,7 +23,7 @@ export default function IconSelect({ id, value, options, clearLabel, onChange }:
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const listboxId = useId();
   const selectedOption = useMemo(() => options.find((option) => option.value === value) ?? null, [options, value]);
-  const SelectedIcon = getStoredIcon(selectedOption?.value);
+  const selectedIcon = renderStoredIcon(selectedOption?.value, styles.icon);
 
   const renderedOptions = useMemo<RenderedIconOption[]>(() => [{ value: "", label: clearLabel }, ...options], [clearLabel, options]);
 
@@ -161,7 +161,7 @@ export default function IconSelect({ id, value, options, clearLabel, onChange }:
         type="button"
       >
         <span aria-hidden="true" className={styles.preview}>
-          {SelectedIcon ? <SelectedIcon className={styles.icon} /> : "-"}
+          {selectedIcon ?? "-"}
         </span>
         <span className={styles.triggerLabel}>{selectedOption?.label ?? clearLabel}</span>
         <span aria-hidden="true" className={styles.chevron}>
@@ -172,7 +172,7 @@ export default function IconSelect({ id, value, options, clearLabel, onChange }:
       {isOpen ? (
         <div className={styles.dropdown} id={listboxId} role="listbox">
           {renderedOptions.map((option, optionIndex) => {
-            const Icon = getStoredIcon(option.value);
+            const icon = renderStoredIcon(option.value, styles.icon);
             const selected = value === option.value;
 
             return (
@@ -193,7 +193,7 @@ export default function IconSelect({ id, value, options, clearLabel, onChange }:
                 type="button"
               >
                 <span aria-hidden="true" className={styles.preview}>
-                  {Icon ? <Icon className={styles.icon} /> : "-"}
+                  {icon ?? "-"}
                 </span>
                 <span className={styles.optionLabel}>{option.label}</span>
               </button>

@@ -48,7 +48,10 @@ describe("useInfinitePageList", () => {
       },
     );
 
+    await act(async () => {});
     rerender({ queryKey: "second" });
+
+    await act(async () => {});
 
     expect(loadPage).toHaveBeenCalledTimes(2);
 

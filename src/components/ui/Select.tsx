@@ -69,22 +69,33 @@ const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(function N
       return;
     }
 
-    const labelText = Array.from(label.childNodes)
-      .map((node) => {
-        if (node.nodeType === Node.TEXT_NODE) {
+    function updateLabel(labelElement: HTMLLabelElement) {
+      const labelText = Array.from(labelElement.childNodes)
+        .map((node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            return node.textContent ?? "";
+          }
+
+          if (node instanceof HTMLDivElement) {
+            return "";
+          }
+
           return node.textContent ?? "";
-        }
+        })
+        .join(" ")
+        .trim();
 
-        if (node instanceof HTMLDivElement) {
-          return "";
-        }
+      setDerivedLabel(labelText);
+    }
 
-        return node.textContent ?? "";
-      })
-      .join(" ")
-      .trim();
+    updateLabel(label);
 
-    setDerivedLabel(labelText);
+    const observer = new MutationObserver(() => updateLabel(label));
+    observer.observe(label, { childList: true, characterData: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+    };
   }, [id]);
 
   return (

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { getDashboard, type DashboardResponse } from "../app/api/dashboard";
 import { materializeTransactions } from "../app/api/transactions";
 import { useI18n } from "../app/i18n/I18nContext";
@@ -32,7 +32,10 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [referenceMonth, setReferenceMonth] = useState(getCurrentReferenceMonth);
-  const [considerBudgetsInBalance, setConsiderBudgetsInBalance] = useState(user?.preferences.showBalanceWithBudgets ?? false);
+  const [considerBudgetsInBalance, setConsiderBudgetsInBalance] = useReducer(
+    (_state: boolean, next: boolean) => next,
+    user?.preferences.showBalanceWithBudgets ?? false,
+  );
   const [recentTxPage, setRecentTxPage] = useState(0);
   const [catPage, setCatPage] = useState(0);
 
@@ -65,7 +68,7 @@ export default function HomePage() {
   }, [accessToken, referenceMonth, t]);
 
   useEffect(() => {
-    void loadDashboard();
+    queueMicrotask(() => loadDashboard());
   }, [loadDashboard]);
 
   const displayedBalance = considerBudgetsInBalance ? (dashboard?.summary.availableBalance ?? 0) : (dashboard?.summary.balance ?? 0);

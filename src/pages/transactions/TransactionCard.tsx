@@ -4,7 +4,7 @@ import MoneyAmount from "../../components/ui/MoneyAmount";
 import styles from "./TransactionsPage.module.scss";
 import type { Transaction } from "../../app/api/transactions";
 import type { CategoryOption } from "../../app/api/categories";
-import { getStoredIcon } from "../../lib/icons";
+import { renderStoredIcon } from "../../lib/icons";
 import { formatDay } from "../../lib/formatters/date";
 import { formatCurrency } from "../../lib/formatters/currency";
 
@@ -17,7 +17,7 @@ type TransactionCardProps = {
 
 export default function TransactionCard({ transaction, categoryOption, onSelect }: TransactionCardProps) {
   const { t } = useI18n();
-  const CategoryIcon = getStoredIcon(categoryOption?.icon);
+  const categoryIcon = renderStoredIcon(categoryOption?.icon, styles.categoryIcon);
   const categoryColor = categoryOption?.color ?? undefined;
 
   const cardContent = (
@@ -49,9 +49,9 @@ export default function TransactionCard({ transaction, categoryOption, onSelect 
 
       <div className={styles.badgeRow}>
         <span className={styles.categoryBadge}>
-          {CategoryIcon ? (
+          {categoryIcon ? (
             <span aria-hidden="true" className={styles.categoryLead} style={categoryColor ? { color: categoryColor } : undefined}>
-              <CategoryIcon className={styles.categoryIcon} />
+              {categoryIcon}
             </span>
           ) : categoryColor ? (
             <span aria-hidden="true" className={styles.categoryLead} style={{ color: categoryColor }}>
