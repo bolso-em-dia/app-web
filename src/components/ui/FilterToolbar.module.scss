@@ -4,29 +4,46 @@
 }
 
 .primaryRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  display: grid;
   gap: var(--space-4);
 }
 
 .primaryContent {
   display: grid;
-  flex: 1;
+  align-items: end;
   gap: var(--space-4);
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.primaryContentSingleField {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.primaryContentTwoFields {
+  grid-template-columns: minmax(12rem, 14rem) minmax(12rem, 1fr) auto;
+}
+
+.field {
+  min-width: 0;
 }
 
 .actions {
-  display: inline-flex;
+  display: flex;
   align-items: stretch;
-  align-self: flex-end;
   gap: var(--space-3);
-  padding-bottom: 1px;
 }
 
 .actions > * {
   min-height: 2.75rem;
+}
+
+.filterToggle {
+  min-width: 2.75rem;
+  padding-inline: 0;
+}
+
+.filterIcon {
+  width: 1rem;
+  height: 1rem;
 }
 
 .chips {
@@ -43,36 +60,45 @@
   border-top: 1px solid var(--color-border);
 }
 
+.panelInDrawer {
+  padding-top: 0;
+  border-top: 0;
+}
+
 .drawerContent {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
   gap: var(--space-4);
 }
 
-@media (width <= 60rem) {
-  .primaryRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
+.drawerActions {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: auto;
+}
 
+@media (width <= 60rem) {
   .actions {
-    width: 100%;
     justify-content: flex-start;
-    align-self: stretch;
-    padding-bottom: 0;
   }
 }
 
 @media (width <= 40rem) {
-  .primaryContent {
-    grid-template-columns: 1fr;
+  .primaryContentSingleField,
+  .primaryContentTwoFields {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .primaryContentTwoFields .field:first-child {
+    grid-column: 1 / -1;
   }
 
   .actions {
-    flex-wrap: wrap;
-    justify-content: stretch;
+    justify-content: flex-start;
   }
 
   .actions > * {
-    flex: 1;
+    width: 100%;
   }
 }

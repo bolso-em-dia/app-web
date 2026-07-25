@@ -120,6 +120,15 @@ const defaultAllowanceBudgetsResponse = {
   totalPages: 1,
 };
 
+function setViewportWidth(width: number) {
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    value: width,
+    writable: true,
+  });
+  window.dispatchEvent(new Event("resize"));
+}
+
 function setupDefaultMocks() {
   mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
   mockFetchUrl("/api/transactions?", mockJsonResponse(defaultTransactionsResponse));
@@ -147,6 +156,7 @@ describe("TransactionsPage", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    setViewportWidth(1024);
   });
 
   it("loads transactions and validates member selection for individual ownership", async () => {
@@ -1183,6 +1193,34 @@ describe("TransactionsPage", () => {
       .filter((url) => url.includes("/api/transactions?"));
 
     expect(transactionRequests.some((url) => url.includes("categoryIds=cat-1") && url.includes("categoryIds=cat-2"))).toBe(true);
+  });
+
+  it("keeps the transaction type filter hidden until the extra filters panel opens", async () => {
+    setViewportWidth(1280);
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: true,
+          }}
+        >
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
+    expect(screen.queryByLabelText(t("common.type"), { selector: "#transaction-filter-type" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
+
+    expect(screen.getByLabelText(t("common.type"), { selector: "#transaction-filter-type" })).toBeInTheDocument();
   });
 
   it("filters transactions by search term and shows an active filter chip", async () => {

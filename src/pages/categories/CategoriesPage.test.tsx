@@ -173,7 +173,7 @@ describe("CategoriesPage", () => {
     fireEvent.change(screen.getByRole("textbox", { name: t("common.search") }), {
       target: { value: "Gro" },
     });
-    fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (1)` }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
     fireEvent.change(screen.getByLabelText(t("common.status")), {
       target: { value: "ACTIVE" },
     });
@@ -190,7 +190,7 @@ describe("CategoriesPage", () => {
     });
 
     if (!screen.queryByLabelText(t("common.status"))) {
-      fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (1)` }));
+      fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
     }
 
     expect(screen.getByLabelText(t("common.status"))).toHaveValue("ACTIVE");

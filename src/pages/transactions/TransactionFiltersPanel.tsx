@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, Ref, SetStateAction } from "react";
 import type { OwnershipType, TransactionFilters, TransactionType } from "../../app/api/transactions";
 import { useI18n } from "../../app/i18n/I18nContext";
 import FilterToolbar from "../../components/ui/FilterToolbar";
@@ -16,9 +16,16 @@ import { useFilterController } from "../../lib/useFilterController";
 type TransactionFiltersPanelProps = {
   value: TransactionFilters;
   onChange: Dispatch<SetStateAction<TransactionFilters>>;
+  isMobileSearchOpen?: boolean;
+  mobileSearchInputRef?: Ref<HTMLInputElement>;
 };
 
-export default function TransactionFiltersPanel({ value, onChange }: TransactionFiltersPanelProps) {
+export default function TransactionFiltersPanel({
+  value,
+  onChange,
+  isMobileSearchOpen,
+  mobileSearchInputRef,
+}: TransactionFiltersPanelProps) {
   const { t } = useI18n();
   const controller = useFilterController(value, onChange);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -58,6 +65,7 @@ export default function TransactionFiltersPanel({ value, onChange }: Transaction
         element: (
           <FilterTextInput
             id="transaction-search"
+            inputRef={mobileSearchInputRef}
             label={t("common.search")}
             onChange={(search) => {
               patch({ search: search || undefined });
@@ -72,7 +80,7 @@ export default function TransactionFiltersPanel({ value, onChange }: Transaction
         label: t("common.type"),
         value: filters.type ?? "",
         defaultValue: "",
-        placement: "visible",
+        placement: "expanded",
         options: [
           { value: "INCOME", label: t("transactionTypes.INCOME") },
           { value: "EXPENSE", label: t("transactionTypes.EXPENSE") },
@@ -188,6 +196,7 @@ export default function TransactionFiltersPanel({ value, onChange }: Transaction
   return (
     <FilterToolbar
       fields={fields}
+      isMobileSearchOpen={isMobileSearchOpen}
       isPanelOpen={isPanelOpen}
       onClosePanel={() => setIsPanelOpen(false)}
       onResetField={(name, defaultValue) => {

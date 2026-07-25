@@ -14,6 +14,7 @@ import type { CategoryOption } from "../../app/api/categories";
 import type { FamilyMember } from "../../app/api/family";
 import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
 import type { FilterFields } from "../../lib/filterFields";
+import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import { useFiltersState } from "../../lib/useFiltersState";
 import BudgetList from "./BudgetList";
 import BudgetForm from "./BudgetForm";
@@ -42,6 +43,7 @@ export default function BudgetsPage() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const mobileSearch = useMobileSearchToggle();
   const [referenceData, setReferenceData] = useState<{
     categories: CategoryOption[];
     members: FamilyMember[];
@@ -101,6 +103,7 @@ export default function BudgetsPage() {
         element: (
           <FilterTextInput
             id="budget-search"
+            inputRef={mobileSearch.inputRef}
             label={t("common.search")}
             onChange={(search) => {
               patchFilters({ search });
@@ -173,6 +176,12 @@ export default function BudgetsPage() {
 
   return (
     <AppShell
+      mobileActionBarHidden={showDrawer}
+      mobileActions={{
+        createLabel: t("budgets.new"),
+        onCreate: handleStartCreate,
+        onSearch: mobileSearch.open,
+      }}
       title={t("budgets.title")}
       actions={
         <Button onClick={handleStartCreate} type="button">
@@ -184,6 +193,7 @@ export default function BudgetsPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {

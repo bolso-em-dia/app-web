@@ -316,7 +316,7 @@ describe("AccountsPage", () => {
     fireEvent.change(screen.getByRole("textbox", { name: t("common.search") }), {
       target: { value: "Main" },
     });
-    fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (1)` }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
     fireEvent.change(screen.getByLabelText(t("common.type"), { selector: "#account-type-filter" }), {
       target: { value: "CHECKING" },
     });
@@ -329,7 +329,7 @@ describe("AccountsPage", () => {
     });
 
     if (!screen.queryByLabelText(t("common.type"), { selector: "#account-type-filter" })) {
-      fireEvent.click(screen.getByRole("button", { name: `${t("common.filters")} (2)` }));
+      fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
     }
 
     expect(screen.getByLabelText(t("common.type"), { selector: "#account-type-filter" })).toHaveValue("CHECKING");

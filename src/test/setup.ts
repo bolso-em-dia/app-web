@@ -182,7 +182,10 @@ const defaultImpl = (...args: unknown[]) => {
     return Promise.resolve({
       ok: true,
       status: 200,
-      text: async () => "1.0.0-test",
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
+      text: async () => JSON.stringify({ version: "1.0.0-test" }),
     } as Response);
   }
 

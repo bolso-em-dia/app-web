@@ -1,30 +1,44 @@
-import { LogOut, Menu, UserRound } from "lucide-react";
+import { LogOut, Menu, Plus, Search, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { managementNavigation, operationalNavigation } from "../../app/navigation/navigation";
 import { getNavigationIcon } from "../../lib/icons";
 import { useBreakpoint } from "../../lib/useBreakpoint";
+import clsx from "../ui/clsx";
 import Button from "../ui/Button";
 import Drawer from "../ui/Drawer";
 import AppVersion from "../ui/AppVersion";
 import ExchangeRateIndicator from "../ui/ExchangeRateIndicator";
 import styles from "./AppShell.module.scss";
 
+type AppShellMobileActions = {
+  createLabel?: string;
+  onCreate?: () => void;
+  onSearch?: () => void;
+};
+
 type AppShellProps = {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
+  mobileActions?: AppShellMobileActions;
+  mobileActionBarHidden?: boolean;
 };
 
-export default function AppShell({ title, subtitle, actions, children }: AppShellProps) {
+export default function AppShell({ title, subtitle, actions, children, mobileActions, mobileActionBarHidden = false }: AppShellProps) {
   const { logout, user } = useAuth();
   const { t } = useI18n();
+  const location = useLocation();
   const isCompactNavigation = useBreakpoint(1024);
+  const isMobileActionLayout = useBreakpoint(640);
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
+  const showMobileActionBar = isMobileActionLayout && !mobileActionBarHidden;
+  const currentNavigationItem = [...operationalNavigation, ...managementNavigation].find((item) => item.path === location.pathname);
+  const CurrentPageIcon = currentNavigationItem ? getNavigationIcon(currentNavigationItem.iconId) : null;
 
   useEffect(() => {
     if (!isCompactNavigation) {
@@ -100,19 +114,13 @@ export default function AppShell({ title, subtitle, actions, children }: AppShel
         </aside>
       ) : null}
 
-      <div className={styles.page}>
+      <div className={clsx(styles.page, showMobileActionBar ? styles.pageWithMobileActionBar : "")}>
         <header className={styles.header}>
           <div className={styles.headerLead}>
-            {isCompactNavigation ? (
-              <Button
-                aria-label={t("navigation.aria")}
-                className={styles.menuButton}
-                onClick={() => setIsNavigationOpen(true)}
-                type="button"
-                variant="subtle"
-              >
-                <Menu aria-hidden="true" className={styles.menuIcon} />
-              </Button>
+            {isCompactNavigation && CurrentPageIcon && currentNavigationItem ? (
+              <span aria-label={t(currentNavigationItem.labelKey)} className={styles.pageIconBadge}>
+                <CurrentPageIcon aria-hidden="true" className={styles.pageIcon} />
+              </span>
             ) : null}
 
             <div className={styles.heading}>
@@ -120,19 +128,57 @@ export default function AppShell({ title, subtitle, actions, children }: AppShel
               {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
             </div>
           </div>
-          {actions ? <div className={styles.actions}>{actions}</div> : null}
+          {actions && !isMobileActionLayout ? <div className={styles.actions}>{actions}</div> : null}
         </header>
         <main className={styles.content}>{children}</main>
       </div>
 
       {isCompactNavigation && isNavigationOpen ? (
-        <Drawer onClose={() => setIsNavigationOpen(false)} title={t("app.brand")}>
+        <Drawer hideHeaderCloseButton onClose={() => setIsNavigationOpen(false)} title={t("app.brand")}>
           <div className={styles.mobileNavContent}>
             {renderNavigation()}
             <ExchangeRateIndicator />
             {renderAccountSection()}
+            <Button fullWidth onClick={() => setIsNavigationOpen(false)} type="button" variant="secondary">
+              {t("common.close")}
+            </Button>
           </div>
         </Drawer>
+      ) : null}
+      {showMobileActionBar ? (
+        <div className={styles.mobileActionBar}>
+          <button
+            aria-label={t("common.menu")}
+            className={styles.mobileActionButton}
+            onClick={() => setIsNavigationOpen(true)}
+            title={t("common.menu")}
+            type="button"
+          >
+            <Menu aria-hidden="true" className={styles.mobileActionIcon} />
+          </button>
+          {mobileActions?.onCreate ? (
+            <button
+              aria-label={mobileActions.createLabel ?? t("common.create")}
+              className={styles.mobileActionButton}
+              onClick={mobileActions.onCreate}
+              title={mobileActions.createLabel ?? t("common.create")}
+              type="button"
+            >
+              <Plus aria-hidden="true" className={styles.mobileActionIcon} />
+            </button>
+          ) : null}
+          {mobileActions?.onSearch ? (
+            <button
+              aria-label={t("common.search")}
+              className={styles.mobileActionButton}
+              onClick={mobileActions.onSearch}
+              title={t("common.search")}
+              type="button"
+            >
+              <Search aria-hidden="true" className={styles.mobileActionIcon} />
+            </button>
+          ) : null}
+        </div>
       ) : null}
       <AppVersion />
     </div>

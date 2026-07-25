@@ -6,7 +6,7 @@ declare global {
   }
 }
 
-function resolveApiBaseUrl() {
+export function resolveApiBaseUrl() {
   const runtimeApiBaseUrl = window.__APP_CONFIG__?.apiBaseUrl?.trim();
 
   if (runtimeApiBaseUrl) {

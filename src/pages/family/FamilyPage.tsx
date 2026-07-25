@@ -10,6 +10,7 @@ import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInpu
 import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
 import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
 import type { FilterFields } from "../../lib/filterFields";
+import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import { useFiltersState } from "../../lib/useFiltersState";
 import FamilyMemberList from "./FamilyMemberList";
 import FamilyMemberForm from "./FamilyMemberForm";
@@ -28,6 +29,7 @@ export default function FamilyPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const mobileSearch = useMobileSearchToggle();
 
   const isCreating = isDrawerOpen && !selectedMember;
 
@@ -63,6 +65,7 @@ export default function FamilyPage() {
         element: (
           <FilterTextInput
             id="family-search"
+            inputRef={mobileSearch.inputRef}
             label={t("common.search")}
             onChange={(search) => {
               patchFilters({ search });
@@ -106,6 +109,12 @@ export default function FamilyPage() {
 
   return (
     <AppShell
+      mobileActionBarHidden={isDrawerOpen}
+      mobileActions={{
+        createLabel: t("family.new"),
+        onCreate: handleStartCreate,
+        onSearch: mobileSearch.open,
+      }}
       title={t("family.title")}
       actions={
         <Button onClick={handleStartCreate} type="button">
@@ -117,6 +126,7 @@ export default function FamilyPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {

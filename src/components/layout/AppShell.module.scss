@@ -172,6 +172,10 @@
   color: var(--color-text);
 }
 
+.pageWithMobileActionBar {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -221,6 +225,22 @@
   height: 1rem;
 }
 
+.pageIconBadge {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-round);
+  background: var(--color-panel-muted);
+  color: var(--color-accent);
+}
+
+.pageIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
 .content {
   width: min(100%, var(--content-width));
   margin: 0 auto;
@@ -228,8 +248,53 @@
 }
 
 .mobileNavContent {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
   gap: var(--space-8);
+}
+
+.mobileNavContent > :last-child {
+  margin-top: auto;
+}
+
+.mobileActionBar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3) calc(var(--space-2) + env(safe-area-inset-bottom));
+  background: var(--color-panel);
+  box-shadow: var(--shadow-popover);
+}
+
+.mobileActionButton {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-round);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.mobileActionButton:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
+  outline-offset: 2px;
+}
+
+.mobileActionIcon {
+  width: 1rem;
+  height: 1rem;
 }
 
 @media (width <= 64rem) {
