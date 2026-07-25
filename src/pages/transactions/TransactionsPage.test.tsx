@@ -1304,7 +1304,8 @@ describe("TransactionsPage", () => {
       expect(searchInput).toHaveFocus();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
+    const filterButtons = screen.getAllByRole("button", { name: t("common.filters") });
+    fireEvent.click(filterButtons[filterButtons.length - 1]!);
 
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByLabelText(t("common.type"), { selector: "#transaction-filter-type" })).toBeInTheDocument();

@@ -1,5 +1,5 @@
 import { ListFilterPlus, X } from "lucide-react";
-import { Fragment, useCallback, useId, useMemo } from "react";
+import { Fragment, useCallback, useEffect, useId, useMemo, useState, type CSSProperties } from "react";
 import Drawer from "./Drawer";
 import Button from "./Button";
 import clsx from "./clsx";
@@ -49,6 +49,8 @@ export default function FilterToolbar({
     [shouldUseMobileSearchDock, visibleFields],
   );
   const expandedFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "expanded"), [fieldEntries]);
+  const shouldRenderFilterToggle = expandedFields.length > 0;
+  const [mobileKeyboardInset, setMobileKeyboardInset] = useState(0);
   const activeFilters = useMemo(
     () =>
       fieldEntries.flatMap(([name, field]) => {
@@ -90,16 +92,54 @@ export default function FilterToolbar({
         : [],
     [activeCount, activeFilters, handleResetAll, t],
   );
-  const shouldRenderPrimaryRow = renderedVisibleFields.length > 0 || activeCount > 0 || !shouldUseMobileSearchDock;
+  const shouldRenderPrimaryContent = renderedVisibleFields.length > 0 || shouldRenderFilterToggle;
+  const shouldRenderPrimaryRow = shouldRenderPrimaryContent || activeCount > 0;
+  const mobileSearchDockStyle = useMemo(
+    () => ({ "--mobile-search-keyboard-inset": `${mobileKeyboardInset}px` }) as CSSProperties,
+    [mobileKeyboardInset],
+  );
+
+  useEffect(() => {
+    if (!(shouldUseMobileSearchDock && isMobileSearchOpen)) {
+      setMobileKeyboardInset(0);
+      return;
+    }
+
+    function updateMobileKeyboardInset() {
+      const viewport = window.visualViewport;
+
+      if (!viewport) {
+        setMobileKeyboardInset(0);
+        return;
+      }
+
+      const nextInset = Math.max(0, window.innerHeight - (viewport.height + viewport.offsetTop));
+      setMobileKeyboardInset(nextInset);
+    }
+
+    updateMobileKeyboardInset();
+
+    const viewport = window.visualViewport;
+    window.addEventListener("resize", updateMobileKeyboardInset);
+    viewport?.addEventListener("resize", updateMobileKeyboardInset);
+    viewport?.addEventListener("scroll", updateMobileKeyboardInset);
+
+    return () => {
+      window.removeEventListener("resize", updateMobileKeyboardInset);
+      viewport?.removeEventListener("resize", updateMobileKeyboardInset);
+      viewport?.removeEventListener("scroll", updateMobileKeyboardInset);
+    };
+  }, [isMobileSearchOpen, shouldUseMobileSearchDock]);
 
   return (
     <div className={styles.root}>
       {shouldRenderPrimaryRow ? (
         <div className={styles.primaryRow}>
-          {renderedVisibleFields.length > 0 || !shouldUseMobileSearchDock ? (
+          {shouldRenderPrimaryContent ? (
             <div
               className={clsx(
                 styles.primaryContent,
+                renderedVisibleFields.length === 0 ? styles.primaryContentToggleOnly : "",
                 renderedVisibleFields.length === 1 ? styles.primaryContentSingleField : "",
                 renderedVisibleFields.length === 2 ? styles.primaryContentTwoFields : "",
               )}
@@ -109,7 +149,7 @@ export default function FilterToolbar({
                   <Fragment>{field.element}</Fragment>
                 </div>
               ))}
-              {!shouldUseMobileSearchDock ? (
+              {shouldRenderFilterToggle ? (
                 <Button
                   aria-controls={panelId}
                   aria-expanded={isPanelOpen}
@@ -136,7 +176,7 @@ export default function FilterToolbar({
       ) : null}
 
       {shouldUseMobileSearchDock && isMobileSearchOpen && mobileSearchEntry ? (
-        <div className={styles.mobileSearchDock}>
+        <div className={styles.mobileSearchDock} role="search" style={mobileSearchDockStyle}>
           <div className={styles.mobileSearchField}>
             <Fragment>{mobileSearchEntry[1].element}</Fragment>
           </div>

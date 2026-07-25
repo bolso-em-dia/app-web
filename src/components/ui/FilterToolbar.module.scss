@@ -18,6 +18,10 @@
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.primaryContentToggleOnly {
+  justify-content: end;
+}
+
 .primaryContentTwoFields {
   grid-template-columns: minmax(12rem, 14rem) minmax(12rem, 1fr) auto;
 }
@@ -55,7 +59,7 @@
 .mobileSearchDock {
   position: fixed;
   right: 0;
-  bottom: calc(var(--mobile-action-bar-height) + env(safe-area-inset-bottom));
+  bottom: max(calc(var(--mobile-action-bar-height) + env(safe-area-inset-bottom)), var(--mobile-search-keyboard-inset, 0px));
   left: 0;
   z-index: 25;
   display: grid;

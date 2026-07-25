@@ -232,13 +232,14 @@ describe("CategoriesPage", () => {
     fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     const searchInput = screen.getByRole("textbox", { name: t("common.search") });
-    expect(screen.getByRole("button", { name: t("common.filters") })).toBeInTheDocument();
+    const filterButtons = screen.getAllByRole("button", { name: t("common.filters") });
+    expect(filterButtons.length).toBeGreaterThan(0);
 
     await waitFor(() => {
       expect(searchInput).toHaveFocus();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
+    fireEvent.click(filterButtons[filterButtons.length - 1]!);
 
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByLabelText(t("common.status"))).toBeInTheDocument();

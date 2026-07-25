@@ -1,8 +1,17 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { useRef, useState } from "react";
+import { vi } from "vitest";
 import { t } from "../../test/i18n";
 import type { FilterFields } from "../../lib/filterFields";
 import FilterToolbar from "./FilterToolbar";
+
+type VisualViewportMock = {
+  height: number;
+  offsetTop: number;
+  addEventListener: ReturnType<typeof vi.fn>;
+  removeEventListener: ReturnType<typeof vi.fn>;
+  dispatch: (eventName: "resize" | "scroll") => void;
+};
 
 function setViewportWidth(width: number) {
   Object.defineProperty(window, "innerWidth", {
@@ -11,6 +20,34 @@ function setViewportWidth(width: number) {
     writable: true,
   });
   window.dispatchEvent(new Event("resize"));
+}
+
+function installVisualViewportMock({ height, offsetTop }: { height: number; offsetTop: number }): VisualViewportMock {
+  const listeners = new Map<string, Set<() => void>>();
+  const addEventListener = vi.fn((eventName: string, listener: () => void) => {
+    const group = listeners.get(eventName) ?? new Set<() => void>();
+    group.add(listener);
+    listeners.set(eventName, group);
+  });
+  const removeEventListener = vi.fn((eventName: string, listener: () => void) => {
+    listeners.get(eventName)?.delete(listener);
+  });
+  const viewport = {
+    height,
+    offsetTop,
+    addEventListener,
+    removeEventListener,
+    dispatch(eventName: "resize" | "scroll") {
+      listeners.get(eventName)?.forEach((listener) => listener());
+    },
+  };
+
+  Object.defineProperty(window, "visualViewport", {
+    configurable: true,
+    value: viewport,
+  });
+
+  return viewport;
 }
 
 function Harness() {
@@ -107,6 +144,13 @@ function MobileSearchHarness() {
 }
 
 describe("FilterToolbar", () => {
+  afterEach(() => {
+    Object.defineProperty(window, "visualViewport", {
+      configurable: true,
+      value: undefined,
+    });
+  });
+
   it("renders an icon-only filters button, active chips, and toggles the secondary panel on desktop", () => {
     setViewportWidth(1280);
     render(<Harness />);
@@ -166,12 +210,12 @@ describe("FilterToolbar", () => {
     render(<MobileSearchHarness />);
 
     expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: t("common.filters") })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t("common.filters") })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
 
     expect(screen.getByLabelText(t("common.search"))).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: t("common.filters") })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: t("common.filters") }).length).toBeGreaterThan(0);
     return waitFor(() => {
       expect(screen.getByLabelText(t("common.search"))).toHaveFocus();
     });
@@ -183,9 +227,10 @@ describe("FilterToolbar", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
 
-    const filtersButton = screen.getByRole("button", { name: t("common.filters") });
-    filtersButton.focus();
-    fireEvent.click(filtersButton);
+    const filtersButton = screen.getAllByRole("button", { name: t("common.filters") }).at(-1);
+    expect(filtersButton).toBeTruthy();
+    filtersButton!.focus();
+    fireEvent.click(filtersButton!);
 
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByLabelText(t("common.status"))).toBeInTheDocument();
@@ -193,12 +238,48 @@ describe("FilterToolbar", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: t("common.close") }));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: t("common.filters") })).toHaveFocus();
+      expect(filtersButton!).toHaveFocus();
     });
 
     fireEvent.click(screen.getByRole("button", { name: t("common.close") }));
 
     expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
+  });
+
+  it("repositions only the mobile search dock when the keyboard changes the visual viewport", async () => {
+    setViewportWidth(480);
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 800,
+      writable: true,
+    });
+    const visualViewport = installVisualViewportMock({ height: 800, offsetTop: 0 });
+
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+
+    const dock = screen.getByRole("search");
+    expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 0px");
+
+    visualViewport.height = 520;
+    visualViewport.dispatch("resize");
+
+    await waitFor(() => {
+      expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 280px");
+    });
+  });
+
+  it("keeps the mobile search dock stable when visualViewport is unavailable", async () => {
+    setViewportWidth(480);
+
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("search")).toHaveStyle("--mobile-search-keyboard-inset: 0px");
+    });
   });
 
   it("hides the mobile search dock when clearing all filters", async () => {

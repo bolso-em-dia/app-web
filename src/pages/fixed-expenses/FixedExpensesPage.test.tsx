@@ -8,6 +8,15 @@ import { createUser } from "../../test/fixtures";
 import FixedExpenseForm from "./FixedExpenseForm";
 import FixedExpensesPage from "./FixedExpensesPage";
 
+function setViewportWidth(width: number) {
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    value: width,
+    writable: true,
+  });
+  window.dispatchEvent(new Event("resize"));
+}
+
 const defaultTemplatesResponse = {
   items: [
     {
@@ -60,12 +69,34 @@ function setupDefaultMocks() {
 
 describe("FixedExpensesPage", () => {
   beforeEach(() => {
+    setViewportWidth(1024);
     resetFetchMocks();
     setupDefaultMocks();
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("keeps the status filter visible on mobile while the search dock stays hidden until requested", async () => {
+    setViewportWidth(480);
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: t("common.search") })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(t("common.status"))).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
+
+    expect(screen.getByRole("textbox", { name: t("common.search") })).toBeInTheDocument();
+    expect(screen.getAllByLabelText(t("common.status"))[0]).toBeInTheDocument();
   });
 
   it("loads templates and validates required form fields", async () => {

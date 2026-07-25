@@ -83,7 +83,7 @@ export default function FixedExpensesPage() {
         label: t("common.status"),
         value: filters.status,
         defaultValue: ACTIVE_STATUS_FILTER,
-        placement: "expanded",
+        placement: "visible",
         options: [
           { value: "ALL", label: t("common.all") },
           { value: "ACTIVE", label: t("common.active") },
@@ -114,6 +114,19 @@ export default function FixedExpensesPage() {
   const isDrawerOpen = drawerState.mode !== "closed";
   const selectedId = drawerState.mode === "edit" ? drawerState.id : null;
   const selectedTemplate = drawerState.mode === "edit" ? drawerState.template : null;
+  const toolbar = (
+    <FilterToolbar
+      fields={fields}
+      onCloseMobileSearch={mobileSearch.close}
+      isMobileSearchOpen={mobileSearch.isOpen}
+      isPanelOpen={isFiltersOpen}
+      onClosePanel={() => setIsFiltersOpen(false)}
+      onResetField={(name, defaultValue) => {
+        clearFilter(name as keyof FixedExpenseFilters, defaultValue as FixedExpenseFilters[keyof FixedExpenseFilters]);
+      }}
+      onTogglePanel={() => setIsFiltersOpen((current) => !current)}
+    />
+  );
 
   return (
     <AppShell
@@ -133,19 +146,7 @@ export default function FixedExpensesPage() {
       }
     >
       <section className={styles.stack}>
-        <Card className={styles.toolbarPanel}>
-          <FilterToolbar
-            fields={fields}
-            onCloseMobileSearch={mobileSearch.close}
-            isMobileSearchOpen={mobileSearch.isOpen}
-            isPanelOpen={isFiltersOpen}
-            onClosePanel={() => setIsFiltersOpen(false)}
-            onResetField={(name, defaultValue) => {
-              clearFilter(name as keyof FixedExpenseFilters, defaultValue as FixedExpenseFilters[keyof FixedExpenseFilters]);
-            }}
-            onTogglePanel={() => setIsFiltersOpen((current) => !current)}
-          />
-        </Card>
+        <Card className={styles.toolbarPanel}>{toolbar}</Card>
 
         <FixedExpenseList
           filters={filters}
