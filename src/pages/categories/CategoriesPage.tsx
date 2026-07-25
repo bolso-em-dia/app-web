@@ -11,6 +11,7 @@ import type { Category, CategoryOption } from "../../app/api/categories";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
 import type { FilterFields } from "../../lib/filterFields";
+import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import { useFiltersState } from "../../lib/useFiltersState";
 import CategoryList from "./CategoryList";
 import CategoryForm from "./CategoryForm";
@@ -32,6 +33,7 @@ export default function CategoriesPage() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
+  const mobileSearch = useMobileSearchToggle();
 
   const fields = useMemo<FilterFields>(
     () => ({
@@ -44,6 +46,7 @@ export default function CategoriesPage() {
         element: (
           <FilterTextInput
             id="category-search"
+            inputRef={mobileSearch.inputRef}
             label={t("common.search")}
             onChange={(search) => {
               patchFilters({ search });
@@ -115,6 +118,12 @@ export default function CategoriesPage() {
 
   return (
     <AppShell
+      mobileActionBarHidden={showDrawer}
+      mobileActions={{
+        createLabel: t("categories.new"),
+        onCreate: handleStartCreate,
+        onSearch: mobileSearch.open,
+      }}
       title={t("categories.title")}
       actions={
         <Button onClick={handleStartCreate} type="button">
@@ -126,6 +135,7 @@ export default function CategoriesPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {

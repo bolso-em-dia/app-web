@@ -14,6 +14,7 @@ import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
 import type { FilterFields } from "../../lib/filterFields";
+import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import { useFiltersState } from "../../lib/useFiltersState";
 import FixedExpenseList from "./FixedExpenseList";
 import FixedExpenseForm from "./FixedExpenseForm";
@@ -37,6 +38,7 @@ export default function FixedExpensesPage() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<FixedExpenseTemplate | null>(null);
+  const mobileSearch = useMobileSearchToggle();
 
   function handleSelect(_id: string, template: FixedExpenseTemplate) {
     setSelectedId(template.id);
@@ -72,6 +74,7 @@ export default function FixedExpensesPage() {
         element: (
           <FilterTextInput
             id="fixed-expense-search"
+            inputRef={mobileSearch.inputRef}
             label={t("common.search")}
             onChange={(search) => {
               patchFilters({ search });
@@ -118,6 +121,12 @@ export default function FixedExpensesPage() {
 
   return (
     <AppShell
+      mobileActionBarHidden={showDrawer}
+      mobileActions={{
+        createLabel: t("fixedTransactions.new"),
+        onCreate: handleStartCreate,
+        onSearch: mobileSearch.open,
+      }}
       title={t("fixedTransactions.title")}
       actions={
         <Button onClick={handleStartCreate} type="button">
@@ -129,6 +138,7 @@ export default function FixedExpensesPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {

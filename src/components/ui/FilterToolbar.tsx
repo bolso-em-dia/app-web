@@ -1,6 +1,8 @@
+import { ListFilterPlus } from "lucide-react";
 import { Fragment, useMemo } from "react";
 import Drawer from "./Drawer";
 import Button from "./Button";
+import clsx from "./clsx";
 import FilterChip from "./FilterChip";
 import styles from "./FilterToolbar.module.scss";
 import { useI18n } from "../../app/i18n/I18nContext";
@@ -13,13 +15,34 @@ type FilterToolbarProps = {
   onTogglePanel: () => void;
   onClosePanel: () => void;
   onResetField: (name: string, defaultValue: unknown) => void;
+  isMobileSearchOpen?: boolean;
 };
 
-export default function FilterToolbar({ fields, isPanelOpen, onTogglePanel, onClosePanel, onResetField }: FilterToolbarProps) {
+export default function FilterToolbar({
+  fields,
+  isPanelOpen,
+  onTogglePanel,
+  onClosePanel,
+  onResetField,
+  isMobileSearchOpen,
+}: FilterToolbarProps) {
   const { t } = useI18n();
   const isCompact = useBreakpoint(960);
+  const isMobileActionLayout = useBreakpoint(640);
   const fieldEntries = useMemo(() => Object.entries(fields), [fields]);
   const visibleFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "visible"), [fieldEntries]);
+  const supportsMobileSearchToggle = typeof isMobileSearchOpen === "boolean";
+  const renderedVisibleFields = useMemo(
+    () =>
+      visibleFields.filter(([name]) => {
+        if (!supportsMobileSearchToggle) {
+          return true;
+        }
+
+        return !(isMobileActionLayout && name === "search" && !isMobileSearchOpen);
+      }),
+    [isMobileActionLayout, isMobileSearchOpen, supportsMobileSearchToggle, visibleFields],
+  );
   const expandedFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "expanded"), [fieldEntries]);
   const activeFilters = useMemo(
     () =>
@@ -41,34 +64,45 @@ export default function FilterToolbar({ fields, isPanelOpen, onTogglePanel, onCl
     [fieldEntries, onResetField],
   );
   const activeCount = activeFilters.length;
-  const filtersLabel = activeCount > 0 ? `${t("common.filters")} (${activeCount})` : t("common.filters");
+  const handleResetAll = () => {
+    fieldEntries.forEach(([name, field]) => {
+      onResetField(name, field.defaultValue);
+    });
+  };
 
   return (
     <div className={styles.root}>
       <div className={styles.primaryRow}>
-        <div className={styles.primaryContent}>
-          {visibleFields.map(([name, field]) => (
-            <Fragment key={name}>{field.element}</Fragment>
+        <div
+          className={clsx(
+            styles.primaryContent,
+            renderedVisibleFields.length === 1 ? styles.primaryContentSingleField : "",
+            renderedVisibleFields.length === 2 ? styles.primaryContentTwoFields : "",
+          )}
+        >
+          {renderedVisibleFields.map(([name, field]) => (
+            <div className={styles.field} key={name}>
+              <Fragment>{field.element}</Fragment>
+            </div>
           ))}
-        </div>
-        <div className={styles.actions}>
-          <Button aria-expanded={isPanelOpen} onClick={onTogglePanel} type="button" variant="secondary">
-            {filtersLabel}
+          <Button
+            aria-expanded={isPanelOpen}
+            aria-label={t("common.filters")}
+            className={styles.filterToggle}
+            onClick={onTogglePanel}
+            type="button"
+            variant="secondary"
+          >
+            <ListFilterPlus aria-hidden="true" className={styles.filterIcon} />
           </Button>
-          {activeCount > 0 ? (
-            <Button
-              onClick={() => {
-                fieldEntries.forEach(([name, field]) => {
-                  onResetField(name, field.defaultValue);
-                });
-              }}
-              type="button"
-              variant="subtle"
-            >
+        </div>
+        {activeCount > 0 ? (
+          <div className={styles.actions}>
+            <Button onClick={handleResetAll} type="button" variant="subtle">
               {t("common.clearFilters")}
             </Button>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
 
       {activeCount > 0 ? (
@@ -88,28 +122,31 @@ export default function FilterToolbar({ fields, isPanelOpen, onTogglePanel, onCl
       ) : null}
 
       {isCompact && isPanelOpen ? (
-        <Drawer title={t("common.filters")} onClose={onClosePanel}>
+        <Drawer hideHeaderCloseButton title={t("common.filters")} onClose={onClosePanel}>
           <div className={styles.drawerContent}>
-            <div className={styles.panel}>
+            <div className={clsx(styles.panel, styles.panelInDrawer)}>
               {expandedFields.map(([name, field]) => (
                 <Fragment key={name}>{field.element}</Fragment>
               ))}
             </div>
-            {activeCount > 0 ? (
-              <Button
-                fullWidth
-                onClick={() => {
-                  fieldEntries.forEach(([name, field]) => {
-                    onResetField(name, field.defaultValue);
-                  });
-                  onClosePanel();
-                }}
-                type="button"
-                variant="subtle"
-              >
-                {t("common.clearFilters")}
+            <div className={styles.drawerActions}>
+              {activeCount > 0 ? (
+                <Button
+                  fullWidth
+                  onClick={() => {
+                    handleResetAll();
+                    onClosePanel();
+                  }}
+                  type="button"
+                  variant="subtle"
+                >
+                  {t("common.clearFilters")}
+                </Button>
+              ) : null}
+              <Button fullWidth onClick={onClosePanel} type="button" variant="secondary">
+                {t("common.close")}
               </Button>
-            ) : null}
+            </div>
           </div>
         </Drawer>
       ) : null}

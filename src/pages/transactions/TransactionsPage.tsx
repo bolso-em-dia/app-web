@@ -11,6 +11,7 @@ import { getCurrentReferenceMonth } from "../../lib/formatters/date";
 import { useAccountOptions } from "../../lib/options/useAccountOptions";
 import { useCategoryOptions } from "../../lib/options/useCategoryOptions";
 import { useFamilyMemberOptions } from "../../lib/options/useFamilyMemberOptions";
+import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import TransactionFiltersPanel from "./TransactionFiltersPanel";
 import TransactionList from "./TransactionList";
 import TransactionForm from "./TransactionForm";
@@ -27,6 +28,7 @@ export default function TransactionsPage() {
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const mobileSearch = useMobileSearchToggle();
 
   const { items: accounts, isLoading: isAccountsLoading } = useAccountOptions();
   const { items: categoryOptions, isLoading: isCategoriesLoading } = useCategoryOptions(filters.referenceMonth);
@@ -68,6 +70,12 @@ export default function TransactionsPage() {
 
   return (
     <AppShell
+      mobileActionBarHidden={drawerOpen}
+      mobileActions={{
+        createLabel: t("transactions.new"),
+        onCreate: handleStartCreate,
+        onSearch: mobileSearch.open,
+      }}
       title={t("transactions.title")}
       actions={
         <Button onClick={handleStartCreate} type="button">
@@ -77,7 +85,12 @@ export default function TransactionsPage() {
     >
       <section className={styles.stack}>
         <Card className={styles.toolbarPanel}>
-          <TransactionFiltersPanel value={filters} onChange={setFilters} />
+          <TransactionFiltersPanel
+            value={filters}
+            onChange={setFilters}
+            isMobileSearchOpen={mobileSearch.isOpen}
+            mobileSearchInputRef={mobileSearch.inputRef}
+          />
         </Card>
 
         <TransactionList

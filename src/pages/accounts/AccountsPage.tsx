@@ -11,6 +11,7 @@ import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
 import type { FilterFields } from "../../lib/filterFields";
+import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import { useFiltersState } from "../../lib/useFiltersState";
 import AccountList from "./AccountList";
 import AccountForm from "./AccountForm";
@@ -38,6 +39,7 @@ export default function AccountsPage() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const mobileSearch = useMobileSearchToggle();
 
   const handleSelect = useCallback((id: string, account: Account) => {
     setSelectedId(id);
@@ -77,6 +79,7 @@ export default function AccountsPage() {
         element: (
           <FilterTextInput
             id="account-search"
+            inputRef={mobileSearch.inputRef}
             label={t("common.search")}
             onChange={(search) => {
               patchFilters({ search });
@@ -150,6 +153,12 @@ export default function AccountsPage() {
 
   return (
     <AppShell
+      mobileActionBarHidden={showDrawer}
+      mobileActions={{
+        createLabel: t("accounts.new"),
+        onCreate: handleStartCreate,
+        onSearch: mobileSearch.open,
+      }}
       title={t("accounts.title")}
       actions={
         <Button onClick={handleStartCreate} type="button">
@@ -161,6 +170,7 @@ export default function AccountsPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
             onResetField={(name, defaultValue) => {

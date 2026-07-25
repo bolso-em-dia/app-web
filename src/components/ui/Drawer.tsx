@@ -8,9 +8,10 @@ type DrawerProps = {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  hideHeaderCloseButton?: boolean;
 };
 
-export default function Drawer({ title, onClose, children }: DrawerProps) {
+export default function Drawer({ title, onClose, children, hideHeaderCloseButton = false }: DrawerProps) {
   const { t } = useI18n();
   const panelRef = useRef<HTMLElement>(null);
   const titleId = useId();
@@ -75,9 +76,11 @@ export default function Drawer({ title, onClose, children }: DrawerProps) {
               {title}
             </h2>
           </div>
-          <Button aria-label={t("common.closeDrawer")} className={styles.closeButton} onClick={onClose} type="button" variant="subtle">
-            <X aria-hidden="true" className={styles.closeIcon} />
-          </Button>
+          {!hideHeaderCloseButton ? (
+            <Button aria-label={t("common.closeDrawer")} className={styles.closeButton} onClick={onClose} type="button" variant="subtle">
+              <X aria-hidden="true" className={styles.closeIcon} />
+            </Button>
+          ) : null}
         </header>
         <div className={styles.body}>{children}</div>
       </aside>
