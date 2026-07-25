@@ -270,6 +270,55 @@ describe("FilterToolbar", () => {
     });
   });
 
+  it("removes the bottom padding when the keyboard is open", async () => {
+    setViewportWidth(480);
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 800,
+      writable: true,
+    });
+    const visualViewport = installVisualViewportMock({ height: 800, offsetTop: 0 });
+
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+
+    const dock = screen.getByRole("search");
+    // Padding fallback is active when keyboard is closed.
+    expect(dock).not.toHaveStyle("--mobile-search-padding-bottom: 0px");
+
+    visualViewport.height = 520;
+    visualViewport.dispatch("resize");
+
+    await waitFor(() => {
+      expect(dock).toHaveStyle("--mobile-search-padding-bottom: 0px");
+    });
+  });
+
+  it("dismisses the mobile search dock when the overlay is tapped", async () => {
+    setViewportWidth(480);
+
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+    expect(screen.getByLabelText(t("common.search"))).toBeInTheDocument();
+
+    const overlay = screen.getByRole("button", { name: /fechar busca/i });
+    fireEvent.click(overlay);
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
+    });
+  });
+
+  it("does not render the overlay when the mobile search dock is not visible", () => {
+    setViewportWidth(480);
+
+    render(<MobileSearchHarness />);
+
+    expect(screen.queryByRole("button", { name: /fechar busca/i })).not.toBeInTheDocument();
+  });
+
   it("keeps the mobile search dock stable when visualViewport is unavailable", async () => {
     setViewportWidth(480);
 

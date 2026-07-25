@@ -1,13 +1,15 @@
 import { ListFilterPlus, X } from "lucide-react";
-import { Fragment, useCallback, useEffect, useId, useMemo, useState, type CSSProperties } from "react";
+import { Fragment, useCallback, useId, useMemo } from "react";
 import Drawer from "./Drawer";
 import Button from "./Button";
 import clsx from "./clsx";
 import FilterChip from "./FilterChip";
+import SearchOverlay from "./SearchOverlay";
 import styles from "./FilterToolbar.module.scss";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { FilterFields } from "../../lib/filterFields";
 import { useBreakpoint } from "../../lib/useBreakpoint";
+import useKeyboardAvoidance from "../../lib/useKeyboardAvoidance";
 
 type FilterToolbarProps = {
   fields: FilterFields;
@@ -50,7 +52,6 @@ export default function FilterToolbar({
   );
   const expandedFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "expanded"), [fieldEntries]);
   const shouldRenderFilterToggle = expandedFields.length > 0;
-  const [mobileKeyboardInset, setMobileKeyboardInset] = useState(0);
   const activeFilters = useMemo(
     () =>
       fieldEntries.flatMap(([name, field]) => {
@@ -94,42 +95,7 @@ export default function FilterToolbar({
   );
   const shouldRenderPrimaryContent = renderedVisibleFields.length > 0 || shouldRenderFilterToggle;
   const shouldRenderPrimaryRow = shouldRenderPrimaryContent || activeCount > 0;
-  const mobileSearchDockStyle = useMemo(
-    () => ({ "--mobile-search-keyboard-inset": `${mobileKeyboardInset}px` }) as CSSProperties,
-    [mobileKeyboardInset],
-  );
-
-  useEffect(() => {
-    if (!(shouldUseMobileSearchDock && isMobileSearchOpen)) {
-      setMobileKeyboardInset(0);
-      return;
-    }
-
-    function updateMobileKeyboardInset() {
-      const viewport = window.visualViewport;
-
-      if (!viewport) {
-        setMobileKeyboardInset(0);
-        return;
-      }
-
-      const nextInset = Math.max(0, window.innerHeight - (viewport.height + viewport.offsetTop));
-      setMobileKeyboardInset(nextInset);
-    }
-
-    updateMobileKeyboardInset();
-
-    const viewport = window.visualViewport;
-    window.addEventListener("resize", updateMobileKeyboardInset);
-    viewport?.addEventListener("resize", updateMobileKeyboardInset);
-    viewport?.addEventListener("scroll", updateMobileKeyboardInset);
-
-    return () => {
-      window.removeEventListener("resize", updateMobileKeyboardInset);
-      viewport?.removeEventListener("resize", updateMobileKeyboardInset);
-      viewport?.removeEventListener("scroll", updateMobileKeyboardInset);
-    };
-  }, [isMobileSearchOpen, shouldUseMobileSearchDock]);
+  const { dockStyle } = useKeyboardAvoidance(shouldUseMobileSearchDock && !!isMobileSearchOpen);
 
   return (
     <div className={styles.root}>
@@ -176,33 +142,36 @@ export default function FilterToolbar({
       ) : null}
 
       {shouldUseMobileSearchDock && isMobileSearchOpen && mobileSearchEntry ? (
-        <div className={styles.mobileSearchDock} role="search" style={mobileSearchDockStyle}>
-          <div className={styles.mobileSearchField}>
-            <Fragment>{mobileSearchEntry[1].element}</Fragment>
-          </div>
-          <Button
-            aria-controls={panelId}
-            aria-expanded={isPanelOpen}
-            aria-label={t("common.filters")}
-            className={styles.mobileSearchAction}
-            onClick={onTogglePanel}
-            type="button"
-            variant="secondary"
-          >
-            <ListFilterPlus aria-hidden="true" className={styles.filterIcon} />
-          </Button>
-          {onCloseMobileSearch ? (
+        <>
+          {onCloseMobileSearch ? <SearchOverlay onDismiss={onCloseMobileSearch} /> : null}
+          <div className={styles.mobileSearchDock} role="search" style={dockStyle}>
+            <div className={styles.mobileSearchField}>
+              <Fragment>{mobileSearchEntry[1].element}</Fragment>
+            </div>
             <Button
-              aria-label={t("common.close")}
+              aria-controls={panelId}
+              aria-expanded={isPanelOpen}
+              aria-label={t("common.filters")}
               className={styles.mobileSearchAction}
-              onClick={onCloseMobileSearch}
+              onClick={onTogglePanel}
               type="button"
               variant="secondary"
             >
-              <X aria-hidden="true" className={styles.filterIcon} />
+              <ListFilterPlus aria-hidden="true" className={styles.filterIcon} />
             </Button>
-          ) : null}
-        </div>
+            {onCloseMobileSearch ? (
+              <Button
+                aria-label={t("common.close")}
+                className={styles.mobileSearchAction}
+                onClick={onCloseMobileSearch}
+                type="button"
+                variant="secondary"
+              >
+                <X aria-hidden="true" className={styles.filterIcon} />
+              </Button>
+            ) : null}
+          </div>
+        </>
       ) : null}
 
       {!isCompact && isPanelOpen ? (

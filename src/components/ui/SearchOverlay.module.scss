@@ -1,0 +1,17 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 24;
+
+  /* Transparent — does not dim the content. */
+  background: transparent;
+
+  /* Intercept taps/clicks to prevent them from reaching page content. */
+  pointer-events: auto;
+
+  /* Override any default button/appearance styles. */
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: default;
+}
