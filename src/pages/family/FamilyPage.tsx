@@ -17,6 +17,8 @@ import FamilyMemberForm from "./FamilyMemberForm";
 import styles from "./FamilyPage.module.scss";
 
 type FamilyFilters = { search: string; status: StatusFilter };
+type DrawerState = { mode: "closed" } | { mode: "create" } | { mode: "edit"; member: FamilyMember };
+
 const DEFAULT_FILTERS: FamilyFilters = {
   search: "",
   status: ACTIVE_STATUS_FILTER,
@@ -26,32 +28,29 @@ export default function FamilyPage() {
   const { t } = useI18n();
   const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+  const [drawerState, setDrawerState] = useState<DrawerState>({ mode: "closed" });
   const [refreshKey, setRefreshKey] = useState(0);
   const mobileSearch = useMobileSearchToggle();
 
-  const isCreating = isDrawerOpen && !selectedMember;
+  const isCreating = drawerState.mode === "create";
+  const isDrawerOpen = drawerState.mode !== "closed";
+  const selectedMember = drawerState.mode === "edit" ? drawerState.member : null;
 
   function handleStartCreate() {
-    setSelectedMember(null);
-    setIsDrawerOpen(true);
+    setDrawerState({ mode: "create" });
   }
 
   function handleCloseDrawer() {
-    setIsDrawerOpen(false);
-    setSelectedMember(null);
+    setDrawerState({ mode: "closed" });
   }
 
   function handleSuccess() {
-    setIsDrawerOpen(false);
-    setSelectedMember(null);
+    setDrawerState({ mode: "closed" });
     setRefreshKey((k) => k + 1);
   }
 
   const handleSelect = useCallback((_id: string, member: FamilyMember) => {
-    setSelectedMember(member);
-    setIsDrawerOpen(true);
+    setDrawerState({ mode: "edit", member });
   }, []);
 
   const fields = useMemo<FilterFields>(
@@ -110,10 +109,12 @@ export default function FamilyPage() {
   return (
     <AppShell
       mobileActionBarHidden={isDrawerOpen}
+      mobileSearchDockVisible={mobileSearch.isOpen}
       mobileActions={{
         createLabel: t("family.new"),
         onCreate: handleStartCreate,
         onSearch: mobileSearch.open,
+        searchExpanded: mobileSearch.isOpen,
       }}
       title={t("family.title")}
       actions={
@@ -126,6 +127,7 @@ export default function FamilyPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            onCloseMobileSearch={mobileSearch.close}
             isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}

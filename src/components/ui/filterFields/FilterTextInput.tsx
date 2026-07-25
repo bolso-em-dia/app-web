@@ -9,12 +9,20 @@ type FilterTextInputProps = {
   placeholder?: string;
   onChange: (value: string) => void;
   inputRef?: Ref<HTMLInputElement>;
+  inputAriaLabel?: string;
 };
 
-export default function FilterTextInput({ id, label, value, placeholder, onChange, inputRef }: FilterTextInputProps) {
+export default function FilterTextInput({ id, label, value, placeholder, onChange, inputRef, inputAriaLabel }: FilterTextInputProps) {
   return (
     <Field htmlFor={id} label={label}>
-      <Input id={id} ref={inputRef} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} value={value} />
+      <Input
+        aria-label={inputAriaLabel ?? label}
+        id={id}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        ref={inputRef}
+        value={value}
+      />
     </Field>
   );
 }

@@ -30,10 +30,13 @@ export default function TransactionCard({ transaction, categoryOption, onSelect 
               <span className={styles.transactionMeta}>
                 {transaction.accountName} · {formatDay(transaction.transactionDate)}
                 {transaction.currency === "USD" && transaction.exchangeRate != null
-                  ? ` · ${formatCurrency(
-                      transaction.type === "EXPENSE" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
-                      "USD",
-                    )} (cot. ${formatCurrency(transaction.exchangeRate)})`
+                  ? ` · ${t("exchangeRate.reference", {
+                      amount: formatCurrency(
+                        transaction.type === "EXPENSE" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
+                        "USD",
+                      ),
+                      rate: formatCurrency(transaction.exchangeRate),
+                    })}`
                   : null}
               </span>
             </div>

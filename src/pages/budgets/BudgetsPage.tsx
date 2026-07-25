@@ -27,6 +27,8 @@ type BudgetFilters = {
   referenceMonth: string;
 };
 
+type DrawerState = { mode: "closed" } | { mode: "create" } | { mode: "edit"; id: string; budget: Budget };
+
 const initialRefMonth = getCurrentReferenceMonth();
 const DEFAULT_FILTERS: BudgetFilters = {
   search: "",
@@ -38,9 +40,7 @@ const DEFAULT_FILTERS: BudgetFilters = {
 export default function BudgetsPage() {
   const { t } = useI18n();
   const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedBudget, setSelectedBudget] = useState<Budget | null>(null);
-  const [showDrawer, setShowDrawer] = useState(false);
+  const [drawerState, setDrawerState] = useState<DrawerState>({ mode: "closed" });
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const mobileSearch = useMobileSearchToggle();
@@ -51,27 +51,19 @@ export default function BudgetsPage() {
   }>({ categories: [], members: [], allowanceBudgets: [] });
 
   function handleSelect(_id: string, budget: Budget) {
-    setSelectedId(budget.id);
-    setSelectedBudget(budget);
-    setShowDrawer(true);
+    setDrawerState({ mode: "edit", id: budget.id, budget });
   }
 
   function handleStartCreate() {
-    setSelectedId(null);
-    setSelectedBudget(null);
-    setShowDrawer(true);
+    setDrawerState({ mode: "create" });
   }
 
   function handleCloseDrawer() {
-    setSelectedId(null);
-    setSelectedBudget(null);
-    setShowDrawer(false);
+    setDrawerState({ mode: "closed" });
   }
 
   function handleSuccess() {
-    setSelectedId(null);
-    setSelectedBudget(null);
-    setShowDrawer(false);
+    setDrawerState({ mode: "closed" });
     setRefreshKey((k) => k + 1);
   }
 
@@ -171,16 +163,20 @@ export default function BudgetsPage() {
     [filters.referenceMonth, filters.search, filters.status, filters.type, mobileSearch.inputRef, patchFilters, t],
   );
 
-  const isCreating = selectedId === null;
-  const isDrawerOpen = showDrawer;
+  const isCreating = drawerState.mode === "create";
+  const isDrawerOpen = drawerState.mode !== "closed";
+  const selectedId = drawerState.mode === "edit" ? drawerState.id : null;
+  const selectedBudget = drawerState.mode === "edit" ? drawerState.budget : null;
 
   return (
     <AppShell
-      mobileActionBarHidden={showDrawer}
+      mobileActionBarHidden={isDrawerOpen}
+      mobileSearchDockVisible={mobileSearch.isOpen}
       mobileActions={{
         createLabel: t("budgets.new"),
         onCreate: handleStartCreate,
         onSearch: mobileSearch.open,
+        searchExpanded: mobileSearch.isOpen,
       }}
       title={t("budgets.title")}
       actions={
@@ -193,6 +189,7 @@ export default function BudgetsPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            onCloseMobileSearch={mobileSearch.close}
             isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}

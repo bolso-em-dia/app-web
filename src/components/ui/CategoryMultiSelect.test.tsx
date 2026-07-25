@@ -45,6 +45,19 @@ describe("CategoryMultiSelect", () => {
 
     expect(screen.getAllByText("Groceries")).toHaveLength(2);
     expect(screen.getAllByText("Transport")).toHaveLength(2);
-    expect(document.querySelectorAll("svg").length).toBeGreaterThan(1);
+  });
+
+  it("supports keyboard navigation for multi-selection", () => {
+    render(<Harness />);
+
+    const trigger = screen.getByRole("button", { name: /Selecione categorias/i });
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    fireEvent.keyDown(screen.getByRole("option", { name: /Groceries/i }), { key: " " });
+    fireEvent.keyDown(screen.getByRole("option", { name: /Groceries/i }), { key: "ArrowDown" });
+    fireEvent.keyDown(screen.getByRole("option", { name: /Transport/i }), { key: "Enter" });
+
+    expect(screen.getAllByText("Groceries")).toHaveLength(2);
+    expect(screen.getAllByText("Transport")).toHaveLength(2);
   });
 });

@@ -205,7 +205,7 @@
 }
 
 .segmentButton {
-  min-height: 2.75rem;
+  min-height: var(--control-size);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   background: var(--color-panel);

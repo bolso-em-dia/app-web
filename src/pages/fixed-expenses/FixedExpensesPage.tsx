@@ -21,6 +21,8 @@ import FixedExpenseForm from "./FixedExpenseForm";
 import styles from "./FixedExpensesPage.module.scss";
 
 type FixedExpenseFilters = { search: string; status: StatusFilter };
+type DrawerState = { mode: "closed" } | { mode: "create" } | { mode: "edit"; id: string; template: FixedExpenseTemplate };
+
 const DEFAULT_FILTERS: FixedExpenseFilters = {
   search: "",
   status: ACTIVE_STATUS_FILTER,
@@ -35,27 +37,19 @@ export default function FixedExpensesPage() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
-  const [showDrawer, setShowDrawer] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<FixedExpenseTemplate | null>(null);
+  const [drawerState, setDrawerState] = useState<DrawerState>({ mode: "closed" });
   const mobileSearch = useMobileSearchToggle();
 
   function handleSelect(_id: string, template: FixedExpenseTemplate) {
-    setSelectedId(template.id);
-    setSelectedTemplate(template);
-    setShowDrawer(true);
+    setDrawerState({ mode: "edit", id: template.id, template });
   }
 
   function handleStartCreate() {
-    setSelectedId(null);
-    setSelectedTemplate(null);
-    setShowDrawer(true);
+    setDrawerState({ mode: "create" });
   }
 
   function handleCloseDrawer() {
-    setSelectedId(null);
-    setSelectedTemplate(null);
-    setShowDrawer(false);
+    setDrawerState({ mode: "closed" });
   }
 
   function handleSuccess() {
@@ -116,16 +110,20 @@ export default function FixedExpensesPage() {
     [filters.search, filters.status, mobileSearch.inputRef, patchFilters, t],
   );
 
-  const isCreating = selectedId === null;
-  const isDrawerOpen = showDrawer;
+  const isCreating = drawerState.mode === "create";
+  const isDrawerOpen = drawerState.mode !== "closed";
+  const selectedId = drawerState.mode === "edit" ? drawerState.id : null;
+  const selectedTemplate = drawerState.mode === "edit" ? drawerState.template : null;
 
   return (
     <AppShell
-      mobileActionBarHidden={showDrawer}
+      mobileActionBarHidden={isDrawerOpen}
+      mobileSearchDockVisible={mobileSearch.isOpen}
       mobileActions={{
         createLabel: t("fixedTransactions.new"),
         onCreate: handleStartCreate,
         onSearch: mobileSearch.open,
+        searchExpanded: mobileSearch.isOpen,
       }}
       title={t("fixedTransactions.title")}
       actions={
@@ -138,6 +136,7 @@ export default function FixedExpensesPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            onCloseMobileSearch={mobileSearch.close}
             isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}

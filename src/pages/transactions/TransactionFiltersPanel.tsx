@@ -18,11 +18,13 @@ type TransactionFiltersPanelProps = {
   onChange: Dispatch<SetStateAction<TransactionFilters>>;
   isMobileSearchOpen?: boolean;
   mobileSearchInputRef?: Ref<HTMLInputElement>;
+  onCloseMobileSearch?: () => void;
 };
 
 export default function TransactionFiltersPanel({
   value,
   onChange,
+  onCloseMobileSearch,
   isMobileSearchOpen,
   mobileSearchInputRef,
 }: TransactionFiltersPanelProps) {
@@ -196,6 +198,7 @@ export default function TransactionFiltersPanel({
   return (
     <FilterToolbar
       fields={fields}
+      onCloseMobileSearch={onCloseMobileSearch}
       isMobileSearchOpen={isMobileSearchOpen}
       isPanelOpen={isPanelOpen}
       onClosePanel={() => setIsPanelOpen(false)}

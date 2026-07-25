@@ -29,4 +29,17 @@ describe("ColorSwatchSelect", () => {
     fireEvent.click(screen.getByRole("option", { name: "Sem cor" }));
     expect(screen.getByText("empty")).toBeInTheDocument();
   });
+
+  it("supports keyboard navigation and restores focus after selection", () => {
+    render(<ColorSwatchSelectHarness />);
+
+    const trigger = screen.getByRole("button", { name: "Sem cor" });
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    fireEvent.keyDown(screen.getByRole("option", { name: "Sem cor" }), { key: "ArrowDown" });
+    fireEvent.keyDown(screen.getByRole("option", { name: "Vermelho" }), { key: "Enter" });
+
+    expect(trigger).toHaveFocus();
+    expect(screen.getByText("#ef4444")).toBeInTheDocument();
+  });
 });

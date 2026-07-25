@@ -1280,6 +1280,36 @@ describe("TransactionsPage", () => {
     expect(screen.getByText("Buscar: mercado")).toBeInTheDocument();
   });
 
+  it("keeps the month visible on mobile while revealing search and filters in the bottom dock", async () => {
+    setViewportWidth(480);
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: true }}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(t("common.referenceMonth"), { selector: "#transaction-filter-month" })).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: t("common.search") })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
+
+    const searchInput = screen.getByRole("textbox", { name: t("common.search") });
+
+    await waitFor(() => {
+      expect(searchInput).toHaveFocus();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByLabelText(t("common.type"), { selector: "#transaction-filter-type" })).toBeInTheDocument();
+  });
+
   it("shows error feedback when delete fails", async () => {
     resetFetchMocks();
 

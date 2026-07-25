@@ -23,6 +23,8 @@ type AccountFilters = {
   type: "" | AccountType;
 };
 
+type DrawerState = { mode: "closed" } | { mode: "create" } | { mode: "edit"; id: string; account: Account };
+
 const DEFAULT_FILTERS: AccountFilters = {
   search: "",
   status: ACTIVE_STATUS_FILTER,
@@ -34,39 +36,34 @@ export default function AccountsPage() {
   const { t } = useI18n();
   const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  const [showDrawer, setShowDrawer] = useState(false);
+  const [drawerState, setDrawerState] = useState<DrawerState>({ mode: "closed" });
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const mobileSearch = useMobileSearchToggle();
 
   const handleSelect = useCallback((id: string, account: Account) => {
-    setSelectedId(id);
-    setSelectedAccount(account);
-    setShowDrawer(true);
+    setDrawerState({ mode: "edit", id, account });
   }, []);
 
   const handleStartCreate = useCallback(() => {
-    setSelectedId(null);
-    setSelectedAccount(null);
-    setShowDrawer(true);
+    setDrawerState({ mode: "create" });
   }, []);
 
   const handleCloseDrawer = useCallback(() => {
-    setSelectedId(null);
-    setSelectedAccount(null);
-    setShowDrawer(false);
+    setDrawerState({ mode: "closed" });
   }, []);
 
   const handleSuccess = useCallback((intent?: "archived") => {
     if (intent !== "archived") {
-      setSelectedId(null);
-      setSelectedAccount(null);
-      setShowDrawer(false);
+      setDrawerState({ mode: "closed" });
     }
     setRefreshKey((k) => k + 1);
   }, []);
+
+  const isDrawerOpen = drawerState.mode !== "closed";
+  const isCreating = drawerState.mode === "create";
+  const selectedId = drawerState.mode === "edit" ? drawerState.id : null;
+  const selectedAccount = drawerState.mode === "edit" ? drawerState.account : null;
 
   const fields = useMemo<FilterFields>(
     () => ({
@@ -153,11 +150,13 @@ export default function AccountsPage() {
 
   return (
     <AppShell
-      mobileActionBarHidden={showDrawer}
+      mobileActionBarHidden={isDrawerOpen}
+      mobileSearchDockVisible={mobileSearch.isOpen}
       mobileActions={{
         createLabel: t("accounts.new"),
         onCreate: handleStartCreate,
         onSearch: mobileSearch.open,
+        searchExpanded: mobileSearch.isOpen,
       }}
       title={t("accounts.title")}
       actions={
@@ -170,6 +169,7 @@ export default function AccountsPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            onCloseMobileSearch={mobileSearch.close}
             isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}
@@ -182,8 +182,8 @@ export default function AccountsPage() {
 
         <AccountList filters={filters} selectedId={selectedId} onSelect={handleSelect} refreshKey={refreshKey} />
 
-        {showDrawer ? (
-          <Drawer onClose={handleCloseDrawer} title={selectedId === null ? t("accounts.newTitle") : t("accounts.detailsTitle")}>
+        {isDrawerOpen ? (
+          <Drawer onClose={handleCloseDrawer} title={isCreating ? t("accounts.newTitle") : t("accounts.detailsTitle")}>
             <div className={styles.drawerStack}>
               <AccountForm
                 account={selectedAccount}

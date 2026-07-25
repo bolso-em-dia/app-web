@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getDashboard, type DashboardResponse } from "../app/api/dashboard";
 import { materializeTransactions } from "../app/api/transactions";
 import { useI18n } from "../app/i18n/I18nContext";
@@ -36,14 +36,11 @@ export default function HomePage() {
   const [recentTxPage, setRecentTxPage] = useState(0);
   const [catPage, setCatPage] = useState(0);
 
-  useEffect(() => {
-    setConsiderBudgetsInBalance(user?.preferences.showBalanceWithBudgets ?? false);
-  }, [user?.preferences.showBalanceWithBudgets]);
+  const preferredBalanceMode = user?.preferences.showBalanceWithBudgets ?? false;
 
   useEffect(() => {
-    setRecentTxPage(0);
-    setCatPage(0);
-  }, [referenceMonth]);
+    setConsiderBudgetsInBalance(preferredBalanceMode);
+  }, [preferredBalanceMode]);
 
   const loadDashboard = useCallback(async () => {
     if (!accessToken) {
@@ -91,6 +88,21 @@ export default function HomePage() {
   const catPages = Math.ceil((dashboard?.categoryBreakdown.length ?? 0) / ITEMS_PER_PAGE);
   const catSlice = (dashboard?.categoryBreakdown ?? []).slice(catPage * ITEMS_PER_PAGE, (catPage + 1) * ITEMS_PER_PAGE);
 
+  const handleReferenceMonthChange = useCallback((nextReferenceMonth: string) => {
+    setReferenceMonth(nextReferenceMonth);
+    setRecentTxPage(0);
+    setCatPage(0);
+  }, []);
+
+  const categoryBreakdown = useMemo(
+    () =>
+      catSlice.map((category) => ({
+        ...category,
+        percent: totalExpense > 0 ? ((category.amount / totalExpense) * 100).toFixed(1) : "0.0",
+      })),
+    [catSlice, totalExpense],
+  );
+
   return (
     <AppShell title={t("home.title")}>
       <section className={styles.summaryHeader}>
@@ -106,7 +118,7 @@ export default function HomePage() {
         </Card>
         <Card className={styles.summaryCard}>
           <span className={styles.summaryLabel}>{t("home.referenceMonth")}</span>
-          <MonthSelector id="dashboard-month" onChange={setReferenceMonth} value={referenceMonth} />
+          <MonthSelector id="dashboard-month" onChange={handleReferenceMonthChange} value={referenceMonth} />
         </Card>
       </section>
 
@@ -185,26 +197,22 @@ export default function HomePage() {
           <Card className={styles.panel}>
             <h2 className={styles.panelTitle}>{t("home.categoryBreakdown")}</h2>
             <ul className={styles.itemList}>
-              {catSlice.map((category) => {
-                const percent = totalExpense > 0 ? ((category.amount / totalExpense) * 100).toFixed(1) : "0.0";
-
-                return (
-                  <li key={category.categoryId} className={styles.itemRow}>
-                    <div className={styles.itemContent}>
-                      <div className={styles.categoryRow}>
-                        <strong>{category.categoryName}</strong>
-                        <span className={styles.categoryMetrics}>
-                          <MoneyAmount amount={category.amount} type="EXPENSE" />
-                          <span className={styles.categoryPercent}>{percent}%</span>
-                        </span>
-                      </div>
-                      <div aria-hidden="true" className={styles.progressTrack}>
-                        <span className={styles.progressFill} style={{ width: `${percent}%` }} />
-                      </div>
+              {categoryBreakdown.map((category) => (
+                <li key={category.categoryId} className={styles.itemRow}>
+                  <div className={styles.itemContent}>
+                    <div className={styles.categoryRow}>
+                      <strong>{category.categoryName}</strong>
+                      <span className={styles.categoryMetrics}>
+                        <MoneyAmount amount={category.amount} type="EXPENSE" />
+                        <span className={styles.categoryPercent}>{category.percent}%</span>
+                      </span>
                     </div>
-                  </li>
-                );
-              })}
+                    <div aria-hidden="true" className={styles.progressTrack}>
+                      <span className={styles.progressFill} style={{ width: `${category.percent}%` }} />
+                    </div>
+                  </div>
+                </li>
+              ))}
             </ul>
             <SimplePagination page={catPage} totalPages={catPages} onPageChange={setCatPage} />
           </Card>
@@ -222,10 +230,13 @@ export default function HomePage() {
                     <p className={styles.itemMeta}>
                       {transaction.categoryName} · {transaction.accountName} · {formatDay(transaction.transactionDate)}
                       {transaction.currency === "USD" && transaction.exchangeRate != null
-                        ? ` · ${formatCurrency(
-                            transaction.type === "EXPENSE" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
-                            "USD",
-                          )} (cot. ${formatCurrency(transaction.exchangeRate)})`
+                        ? ` · ${t("exchangeRate.reference", {
+                            amount: formatCurrency(
+                              transaction.type === "EXPENSE" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
+                              "USD",
+                            ),
+                            rate: formatCurrency(transaction.exchangeRate),
+                          })}`
                         : null}
                     </p>
                   </div>

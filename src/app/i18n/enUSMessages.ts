@@ -4,6 +4,8 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   // App
   "app.loadingSession": "Loading session",
   "app.brand": "Bolso em Dia",
+  "appVersion.web": "web {{version}}",
+  "appVersion.api": "api {{version}}",
 
   // Navigation
   "navigation.aria": "Primary navigation",
@@ -144,6 +146,8 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "exchangeRate.staleTooltip": "Exchange rate is stale. Last update may be incorrect.",
   "exchangeRate.fetchError": "Failed to fetch exchange rate. Using last known value.",
   "exchangeRate.refresh": "Refresh exchange rate",
+  "exchangeRate.display": "US$ 1 = {{rate}}",
+  "exchangeRate.reference": "{{amount}} (rate {{rate}})",
 
   // Home
   "home.title": "Dashboard",

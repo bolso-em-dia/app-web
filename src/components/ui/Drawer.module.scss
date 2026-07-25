@@ -42,7 +42,7 @@
   display: inline-grid;
   place-items: center;
   min-width: auto;
-  width: 2.75rem;
+  width: var(--control-size);
   padding: 0;
 }
 

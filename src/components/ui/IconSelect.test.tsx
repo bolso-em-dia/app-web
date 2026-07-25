@@ -29,4 +29,21 @@ describe("IconSelect", () => {
     fireEvent.click(screen.getByRole("option", { name: "Sem ícone" }));
     expect(screen.getByText("empty")).toBeInTheDocument();
   });
+
+  it("supports keyboard navigation and restores focus to the trigger", () => {
+    render(<IconSelectHarness />);
+
+    const trigger = screen.getByRole("button", { name: "Sem ícone" });
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+
+    const firstOption = screen.getByRole("option", { name: "Sem ícone" });
+    expect(firstOption).toHaveFocus();
+
+    fireEvent.keyDown(firstOption, { key: "ArrowDown" });
+    fireEvent.keyDown(screen.getByRole("option", { name: "Compras" }), { key: "Enter" });
+
+    expect(trigger).toHaveFocus();
+    expect(screen.getByText("shopping-cart")).toBeInTheDocument();
+  });
 });

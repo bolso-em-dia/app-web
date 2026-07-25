@@ -35,6 +35,15 @@ const defaultCategoriesOptions = [
   },
 ];
 
+function setViewportWidth(width: number) {
+  Object.defineProperty(window, "innerWidth", {
+    configurable: true,
+    value: width,
+    writable: true,
+  });
+  window.dispatchEvent(new Event("resize"));
+}
+
 function setupDefaultMocks() {
   mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesOptions));
   mockFetchUrl("/api/categories?", mockJsonResponse(defaultCategoryResponse));
@@ -47,6 +56,7 @@ describe("CategoriesPage", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    setViewportWidth(1024);
   });
 
   it("loads categories and validates the create form", async () => {
@@ -202,6 +212,36 @@ describe("CategoriesPage", () => {
 
     expect(categoryRequests.some((url) => url.includes("search=Gro"))).toBe(true);
     expect(categoryRequests.some((url) => url.includes("status=ACTIVE"))).toBe(true);
+  });
+
+  it("reveals the mobile search dock above the bottom bar and keeps extra filters beside it", async () => {
+    setViewportWidth(480);
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/categories"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <CategoriesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Groceries")).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: t("common.search") })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
+
+    const searchInput = screen.getByRole("textbox", { name: t("common.search") });
+    expect(screen.getByRole("button", { name: t("common.filters") })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(searchInput).toHaveFocus();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByLabelText(t("common.status"))).toBeInTheDocument();
   });
 
   it("opens archive confirmation dialog and cancels without calling the API", async () => {

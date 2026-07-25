@@ -54,9 +54,9 @@ const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(function N
   const options = extractedOptions.filter((option) => option.value !== "");
   const isControlled = value !== undefined;
   const [derivedLabel, setDerivedLabel] = useState("");
-  const [renderedValue, setRenderedValue] = useState(() => normalizeValue(value ?? defaultValue));
-  const selectRef = useRef<HTMLSelectElement | null>(null);
-  const selectedOption = options.find((option) => option.value === renderedValue) ?? null;
+  const [renderedValue, setRenderedValue] = useState(() => normalizeValue(defaultValue));
+  const currentValue = isControlled ? normalizeValue(value) : renderedValue;
+  const selectedOption = options.find((option) => option.value === currentValue) ?? null;
 
   useEffect(() => {
     if (!id) {
@@ -65,37 +65,27 @@ const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(function N
 
     const label = document.querySelector(`label[for="${id}"]`);
 
-    if (label instanceof HTMLLabelElement) {
-      const labelText = Array.from(label.childNodes)
-        .map((node) => {
-          if (node.nodeType === Node.TEXT_NODE) {
-            return node.textContent ?? "";
-          }
-
-          if (node instanceof HTMLDivElement) {
-            return "";
-          }
-
-          return node.textContent ?? "";
-        })
-        .join(" ");
-
-      setDerivedLabel(labelText?.trim() ?? "");
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (isControlled) {
-      setRenderedValue(normalizeValue(value));
+    if (!(label instanceof HTMLLabelElement)) {
       return;
     }
 
-    const nextValue = selectRef.current?.value;
+    const labelText = Array.from(label.childNodes)
+      .map((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          return node.textContent ?? "";
+        }
 
-    if (nextValue !== undefined && nextValue !== renderedValue) {
-      setRenderedValue(nextValue);
-    }
-  }, [isControlled, renderedValue, value]);
+        if (node instanceof HTMLDivElement) {
+          return "";
+        }
+
+        return node.textContent ?? "";
+      })
+      .join(" ")
+      .trim();
+
+    setDerivedLabel(labelText);
+  }, [id]);
 
   return (
     <div className={clsx(styles.richRoot, styles.nativeRoot, className)}>
@@ -124,8 +114,6 @@ const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(function N
           onChange?.(event);
         }}
         ref={(node) => {
-          selectRef.current = node;
-
           if (typeof ref === "function") {
             ref(node);
             return;

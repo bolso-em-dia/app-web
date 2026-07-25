@@ -1,5 +1,5 @@
-import { LogOut, Menu, Plus, Search, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { LogOut, Menu, Plus, Search, Settings } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 import type { ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../app/auth/useAuth";
@@ -18,6 +18,7 @@ type AppShellMobileActions = {
   createLabel?: string;
   onCreate?: () => void;
   onSearch?: () => void;
+  searchExpanded?: boolean;
 };
 
 type AppShellProps = {
@@ -27,11 +28,21 @@ type AppShellProps = {
   children: ReactNode;
   mobileActions?: AppShellMobileActions;
   mobileActionBarHidden?: boolean;
+  mobileSearchDockVisible?: boolean;
 };
 
-export default function AppShell({ title, subtitle, actions, children, mobileActions, mobileActionBarHidden = false }: AppShellProps) {
+export default function AppShell({
+  title,
+  subtitle,
+  actions,
+  children,
+  mobileActions,
+  mobileActionBarHidden = false,
+  mobileSearchDockVisible = false,
+}: AppShellProps) {
   const { logout, user } = useAuth();
   const { t } = useI18n();
+  const profileNameId = useId();
   const isCompactNavigation = useBreakpoint(1024);
   const isMobileActionLayout = useBreakpoint(640);
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
@@ -81,12 +92,12 @@ export default function AppShell({ title, subtitle, actions, children, mobileAct
     return (
       <div className={styles.profileCard}>
         <div className={styles.profileText}>
-          <strong>{user?.name}</strong>
+          <strong id={profileNameId}>{user?.name}</strong>
           <span>{user?.role ? t(user.role === "ADMIN" ? "roles.ADMIN" : "roles.USER") : null}</span>
         </div>
-        <div className={styles.profileActions}>
+        <div aria-labelledby={profileNameId} className={styles.profileActions} role="group">
           <Link aria-label={t("settings.title")} className={styles.accountAction} title={t("settings.title")} to="/settings">
-            <UserRound aria-hidden="true" className={styles.accountActionIcon} />
+            <Settings aria-hidden="true" className={styles.accountActionIcon} />
           </Link>
           <Button onClick={() => void logout()} type="button" variant="subtle">
             <LogOut aria-hidden="true" className={styles.signOutIcon} />
@@ -106,12 +117,17 @@ export default function AppShell({ title, subtitle, actions, children, mobileAct
           </div>
 
           {renderNavigation()}
-          <ExchangeRateIndicator />
           {renderAccountSection()}
         </aside>
       ) : null}
 
-      <div className={clsx(styles.page, showMobileActionBar ? styles.pageWithMobileActionBar : "")}>
+      <div
+        className={clsx(
+          styles.page,
+          showMobileActionBar ? styles.pageWithMobileActionBar : "",
+          showMobileActionBar && mobileSearchDockVisible ? styles.pageWithMobileSearchDock : "",
+        )}
+      >
         <header className={styles.header}>
           <div className={styles.headerLead}>
             {isCompactNavigation ? (
@@ -131,7 +147,12 @@ export default function AppShell({ title, subtitle, actions, children, mobileAct
               {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
             </div>
           </div>
-          {actions && !isMobileActionLayout ? <div className={styles.actions}>{actions}</div> : null}
+          {!isMobileActionLayout || user?.preferences.showForeignCurrency ? (
+            <div className={styles.actions}>
+              <ExchangeRateIndicator />
+              {!isMobileActionLayout ? actions : null}
+            </div>
+          ) : null}
         </header>
         <main className={styles.content}>{children}</main>
       </div>
@@ -140,7 +161,6 @@ export default function AppShell({ title, subtitle, actions, children, mobileAct
         <Drawer hideHeaderCloseButton onClose={() => setIsNavigationOpen(false)} title={t("app.brand")}>
           <div className={styles.mobileNavContent}>
             {renderNavigation()}
-            <ExchangeRateIndicator />
             {renderAccountSection()}
             <Button fullWidth onClick={() => setIsNavigationOpen(false)} type="button" variant="secondary">
               {t("common.close")}
@@ -172,6 +192,7 @@ export default function AppShell({ title, subtitle, actions, children, mobileAct
           ) : null}
           {mobileActions?.onSearch ? (
             <button
+              aria-expanded={mobileActions.searchExpanded}
               aria-label={t("common.search")}
               className={styles.mobileActionButton}
               onClick={mobileActions.onSearch}

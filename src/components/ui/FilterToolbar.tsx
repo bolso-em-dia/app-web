@@ -1,5 +1,5 @@
-import { ListFilterPlus } from "lucide-react";
-import { Fragment, useMemo } from "react";
+import { ListFilterPlus, X } from "lucide-react";
+import { Fragment, useCallback, useId, useMemo } from "react";
 import Drawer from "./Drawer";
 import Button from "./Button";
 import clsx from "./clsx";
@@ -16,6 +16,7 @@ type FilterToolbarProps = {
   onClosePanel: () => void;
   onResetField: (name: string, defaultValue: unknown) => void;
   isMobileSearchOpen?: boolean;
+  onCloseMobileSearch?: () => void;
 };
 
 export default function FilterToolbar({
@@ -25,23 +26,27 @@ export default function FilterToolbar({
   onClosePanel,
   onResetField,
   isMobileSearchOpen,
+  onCloseMobileSearch,
 }: FilterToolbarProps) {
   const { t } = useI18n();
+  const panelId = useId();
   const isCompact = useBreakpoint(960);
   const isMobileActionLayout = useBreakpoint(640);
   const fieldEntries = useMemo(() => Object.entries(fields), [fields]);
   const visibleFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "visible"), [fieldEntries]);
   const supportsMobileSearchToggle = typeof isMobileSearchOpen === "boolean";
+  const shouldUseMobileSearchDock = supportsMobileSearchToggle && isMobileActionLayout;
+  const mobileSearchEntry = useMemo(() => visibleFields.find(([name]) => name === "search") ?? null, [visibleFields]);
   const renderedVisibleFields = useMemo(
     () =>
       visibleFields.filter(([name]) => {
-        if (!supportsMobileSearchToggle) {
+        if (!shouldUseMobileSearchDock) {
           return true;
         }
 
-        return !(isMobileActionLayout && name === "search" && !isMobileSearchOpen);
+        return name !== "search";
       }),
-    [isMobileActionLayout, isMobileSearchOpen, supportsMobileSearchToggle, visibleFields],
+    [shouldUseMobileSearchDock, visibleFields],
   );
   const expandedFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "expanded"), [fieldEntries]);
   const activeFilters = useMemo(
@@ -64,57 +69,104 @@ export default function FilterToolbar({
     [fieldEntries, onResetField],
   );
   const activeCount = activeFilters.length;
-  const handleResetAll = () => {
+  const handleResetAll = useCallback(() => {
     fieldEntries.forEach(([name, field]) => {
       onResetField(name, field.defaultValue);
     });
-  };
+
+    onCloseMobileSearch?.();
+  }, [fieldEntries, onCloseMobileSearch, onResetField]);
+  const displayedChips = useMemo(
+    () =>
+      activeCount > 0
+        ? [
+            ...activeFilters,
+            {
+              key: "clear-all",
+              label: t("common.clearFilters"),
+              onRemove: handleResetAll,
+            },
+          ]
+        : [],
+    [activeCount, activeFilters, handleResetAll, t],
+  );
+  const shouldRenderPrimaryRow = renderedVisibleFields.length > 0 || activeCount > 0 || !shouldUseMobileSearchDock;
 
   return (
     <div className={styles.root}>
-      <div className={styles.primaryRow}>
-        <div
-          className={clsx(
-            styles.primaryContent,
-            renderedVisibleFields.length === 1 ? styles.primaryContentSingleField : "",
-            renderedVisibleFields.length === 2 ? styles.primaryContentTwoFields : "",
-          )}
-        >
-          {renderedVisibleFields.map(([name, field]) => (
-            <div className={styles.field} key={name}>
-              <Fragment>{field.element}</Fragment>
+      {shouldRenderPrimaryRow ? (
+        <div className={styles.primaryRow}>
+          {renderedVisibleFields.length > 0 || !shouldUseMobileSearchDock ? (
+            <div
+              className={clsx(
+                styles.primaryContent,
+                renderedVisibleFields.length === 1 ? styles.primaryContentSingleField : "",
+                renderedVisibleFields.length === 2 ? styles.primaryContentTwoFields : "",
+              )}
+            >
+              {renderedVisibleFields.map(([name, field]) => (
+                <div className={styles.field} key={name}>
+                  <Fragment>{field.element}</Fragment>
+                </div>
+              ))}
+              {!shouldUseMobileSearchDock ? (
+                <Button
+                  aria-controls={panelId}
+                  aria-expanded={isPanelOpen}
+                  aria-label={t("common.filters")}
+                  className={styles.filterToggle}
+                  onClick={onTogglePanel}
+                  type="button"
+                  variant="secondary"
+                >
+                  <ListFilterPlus aria-hidden="true" className={styles.filterIcon} />
+                </Button>
+              ) : null}
             </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {displayedChips.length > 0 ? (
+        <div className={styles.chips}>
+          {displayedChips.map((filter) => (
+            <FilterChip key={filter.key} label={filter.label} onRemove={filter.onRemove} />
           ))}
+        </div>
+      ) : null}
+
+      {shouldUseMobileSearchDock && isMobileSearchOpen && mobileSearchEntry ? (
+        <div className={styles.mobileSearchDock}>
+          <div className={styles.mobileSearchField}>
+            <Fragment>{mobileSearchEntry[1].element}</Fragment>
+          </div>
           <Button
+            aria-controls={panelId}
             aria-expanded={isPanelOpen}
             aria-label={t("common.filters")}
-            className={styles.filterToggle}
+            className={styles.mobileSearchAction}
             onClick={onTogglePanel}
             type="button"
             variant="secondary"
           >
             <ListFilterPlus aria-hidden="true" className={styles.filterIcon} />
           </Button>
-        </div>
-        {activeCount > 0 ? (
-          <div className={styles.actions}>
-            <Button onClick={handleResetAll} type="button" variant="subtle">
-              {t("common.clearFilters")}
+          {onCloseMobileSearch ? (
+            <Button
+              aria-label={t("common.close")}
+              className={styles.mobileSearchAction}
+              onClick={onCloseMobileSearch}
+              type="button"
+              variant="secondary"
+            >
+              <X aria-hidden="true" className={styles.filterIcon} />
             </Button>
-          </div>
-        ) : null}
-      </div>
-
-      {activeCount > 0 ? (
-        <div className={styles.chips}>
-          {activeFilters.map((filter) => (
-            <FilterChip key={filter.key} label={filter.label} onRemove={filter.onRemove} />
-          ))}
+          ) : null}
         </div>
       ) : null}
 
       {!isCompact && isPanelOpen ? (
-        <div className={styles.panel}>
+        <div className={styles.panel} id={panelId}>
           {expandedFields.map(([name, field]) => (
             <Fragment key={name}>{field.element}</Fragment>
           ))}
@@ -124,24 +176,20 @@ export default function FilterToolbar({
       {isCompact && isPanelOpen ? (
         <Drawer hideHeaderCloseButton title={t("common.filters")} onClose={onClosePanel}>
           <div className={styles.drawerContent}>
-            <div className={clsx(styles.panel, styles.panelInDrawer)}>
+            <div className={clsx(styles.panel, styles.panelInDrawer)} id={panelId}>
               {expandedFields.map(([name, field]) => (
                 <Fragment key={name}>{field.element}</Fragment>
               ))}
             </div>
             <div className={styles.drawerActions}>
               {activeCount > 0 ? (
-                <Button
-                  fullWidth
-                  onClick={() => {
+                <FilterChip
+                  label={t("common.clearFilters")}
+                  onRemove={() => {
                     handleResetAll();
                     onClosePanel();
                   }}
-                  type="button"
-                  variant="subtle"
-                >
-                  {t("common.clearFilters")}
-                </Button>
+                />
               ) : null}
               <Button fullWidth onClick={onClosePanel} type="button" variant="secondary">
                 {t("common.close")}

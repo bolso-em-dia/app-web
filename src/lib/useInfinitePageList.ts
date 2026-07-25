@@ -83,9 +83,8 @@ export function useInfinitePageList<T>({
           setIsInitialLoading(false);
           setIsLoadingMore(false);
           setHasLoadedOnce(true);
+          inFlightRef.current = false;
         }
-
-        inFlightRef.current = false;
       }
     },
     [enabled],

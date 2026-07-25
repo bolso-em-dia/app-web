@@ -17,6 +17,8 @@ import TransactionList from "./TransactionList";
 import TransactionForm from "./TransactionForm";
 import styles from "./TransactionsPage.module.scss";
 
+type DrawerState = { mode: "closed" } | { mode: "create" } | { mode: "edit"; id: string; transaction: Transaction };
+
 export default function TransactionsPage() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -24,9 +26,7 @@ export default function TransactionsPage() {
   const [filters, setFilters] = useState<TransactionFilters>({
     referenceMonth: initialReferenceMonth,
   });
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [drawerState, setDrawerState] = useState<DrawerState>({ mode: "closed" });
   const [refreshKey, setRefreshKey] = useState(0);
   const mobileSearch = useMobileSearchToggle();
 
@@ -38,43 +38,40 @@ export default function TransactionsPage() {
   });
 
   const handleSelect = useCallback((id: string, transaction: Transaction) => {
-    setSelectedTransactionId(id);
-    setSelectedTransaction(transaction);
-    setDrawerOpen(true);
+    setDrawerState({ mode: "edit", id, transaction });
   }, []);
 
   const handleStartCreate = useCallback(() => {
-    setSelectedTransactionId(null);
-    setSelectedTransaction(null);
-    setDrawerOpen(true);
+    setDrawerState({ mode: "create" });
   }, []);
 
   const handleFormSuccess = useCallback((intent?: "save-and-create-new") => {
     if (intent === "save-and-create-new") {
       return;
     }
-    setSelectedTransactionId(null);
-    setSelectedTransaction(null);
-    setDrawerOpen(false);
+    setDrawerState({ mode: "closed" });
     setRefreshKey((k) => k + 1);
   }, []);
 
   const handleCancelForm = useCallback(() => {
-    setSelectedTransactionId(null);
-    setSelectedTransaction(null);
-    setDrawerOpen(false);
+    setDrawerState({ mode: "closed" });
   }, []);
 
-  const isCreating = selectedTransactionId === null;
+  const isCreating = drawerState.mode === "create";
+  const isDrawerOpen = drawerState.mode !== "closed";
+  const selectedTransactionId = drawerState.mode === "edit" ? drawerState.id : null;
+  const selectedTransaction = drawerState.mode === "edit" ? drawerState.transaction : null;
   const isReferenceDataLoading = isAccountsLoading || isCategoriesLoading || isMembersLoading;
 
   return (
     <AppShell
-      mobileActionBarHidden={drawerOpen}
+      mobileActionBarHidden={isDrawerOpen}
+      mobileSearchDockVisible={mobileSearch.isOpen}
       mobileActions={{
         createLabel: t("transactions.new"),
         onCreate: handleStartCreate,
         onSearch: mobileSearch.open,
+        searchExpanded: mobileSearch.isOpen,
       }}
       title={t("transactions.title")}
       actions={
@@ -88,6 +85,7 @@ export default function TransactionsPage() {
           <TransactionFiltersPanel
             value={filters}
             onChange={setFilters}
+            onCloseMobileSearch={mobileSearch.close}
             isMobileSearchOpen={mobileSearch.isOpen}
             mobileSearchInputRef={mobileSearch.inputRef}
           />
@@ -101,7 +99,7 @@ export default function TransactionsPage() {
           refreshKey={refreshKey}
         />
 
-        {drawerOpen ? (
+        {isDrawerOpen ? (
           <Drawer onClose={handleCancelForm} title={isCreating ? t("transactions.newTitle") : t("transactions.detailsTitle")}>
             <div className={styles.drawerStack}>
               {isReferenceDataLoading ? (

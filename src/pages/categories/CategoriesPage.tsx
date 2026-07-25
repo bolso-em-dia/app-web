@@ -18,6 +18,8 @@ import CategoryForm from "./CategoryForm";
 import styles from "./CategoriesPage.module.scss";
 
 type CategoryFilters = { search: string; status: StatusFilter };
+type DrawerState = { mode: "closed" } | { mode: "create" } | { mode: "edit"; id: string; category: Category };
+
 const DEFAULT_FILTERS: CategoryFilters = {
   search: "",
   status: ACTIVE_STATUS_FILTER,
@@ -27,9 +29,7 @@ export default function CategoriesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [showDrawer, setShowDrawer] = useState(false);
+  const [drawerState, setDrawerState] = useState<DrawerState>({ mode: "closed" });
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
@@ -89,40 +89,36 @@ export default function CategoriesPage() {
   );
 
   function handleSelect(_id: string, category: Category) {
-    setSelectedId(category.id);
-    setSelectedCategory(category);
-    setShowDrawer(true);
+    setDrawerState({ mode: "edit", id: category.id, category });
   }
 
   function handleStartCreate() {
-    setSelectedId(null);
-    setSelectedCategory(null);
-    setShowDrawer(true);
+    setDrawerState({ mode: "create" });
   }
 
   function handleCloseDrawer() {
-    setSelectedId(null);
-    setSelectedCategory(null);
-    setShowDrawer(false);
+    setDrawerState({ mode: "closed" });
   }
 
   function handleSuccess() {
     setRefreshKey((k) => k + 1);
-    setSelectedId(null);
-    setSelectedCategory(null);
-    setShowDrawer(false);
+    setDrawerState({ mode: "closed" });
   }
 
-  const isCreating = selectedId === null;
-  const isDrawerOpen = showDrawer;
+  const isCreating = drawerState.mode === "create";
+  const isDrawerOpen = drawerState.mode !== "closed";
+  const selectedId = drawerState.mode === "edit" ? drawerState.id : null;
+  const selectedCategory = drawerState.mode === "edit" ? drawerState.category : null;
 
   return (
     <AppShell
-      mobileActionBarHidden={showDrawer}
+      mobileActionBarHidden={isDrawerOpen}
+      mobileSearchDockVisible={mobileSearch.isOpen}
       mobileActions={{
         createLabel: t("categories.new"),
         onCreate: handleStartCreate,
         onSearch: mobileSearch.open,
+        searchExpanded: mobileSearch.isOpen,
       }}
       title={t("categories.title")}
       actions={
@@ -135,6 +131,7 @@ export default function CategoriesPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            onCloseMobileSearch={mobileSearch.close}
             isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}

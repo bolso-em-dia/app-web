@@ -20,7 +20,7 @@
 .track {
   display: inline-flex;
   align-items: center;
-  width: 2.75rem;
+  width: var(--control-size);
   height: 1.5rem;
   padding: 0.125rem;
   border-radius: var(--radius-round);

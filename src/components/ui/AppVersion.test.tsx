@@ -1,6 +1,18 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
+import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import AppVersion from "./AppVersion";
+
+function renderAppVersion() {
+  return render(
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+        <AppVersion />
+      </TestAuthProvider>
+    </MemoryRouter>,
+  );
+}
 
 describe("AppVersion", () => {
   afterEach(() => {
@@ -21,13 +33,13 @@ describe("AppVersion", () => {
       text: async () => JSON.stringify({ version: "1.0.0-test" }),
     } as Response);
 
-    render(<AppVersion />);
+    renderAppVersion();
 
     await waitFor(() => {
       expect(screen.getByText(/· api 1.0.0-test/)).toBeInTheDocument();
     });
 
-    expect(fetch).toHaveBeenCalledWith("http://localhost:8081/api/version");
+    expect(fetch).toHaveBeenCalledWith("http://localhost:8081/api/version", { credentials: "include" });
   });
 
   it("ignores html responses instead of rendering them as the API version", async () => {
@@ -44,7 +56,7 @@ describe("AppVersion", () => {
       text: async () => '<!doctype html><html lang="pt-BR"></html>',
     } as Response);
 
-    render(<AppVersion />);
+    renderAppVersion();
 
     await waitFor(() => {
       expect(screen.getByText(/web /)).toBeInTheDocument();
@@ -67,7 +79,7 @@ describe("AppVersion", () => {
       text: async () => "1.0.0-test",
     } as Response);
 
-    render(<AppVersion />);
+    renderAppVersion();
 
     await waitFor(() => {
       expect(screen.getByText(/web /)).toBeInTheDocument();
@@ -90,7 +102,7 @@ describe("AppVersion", () => {
       text: async () => JSON.stringify({}),
     } as Response);
 
-    render(<AppVersion />);
+    renderAppVersion();
 
     await waitFor(() => {
       expect(screen.getByText(/web /)).toBeInTheDocument();

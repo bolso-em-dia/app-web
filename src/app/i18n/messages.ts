@@ -1,6 +1,8 @@
 export const ptBRMessages = {
   "app.brand": "Bolso em Dia",
   "app.loadingSession": "Carregando sessão",
+  "appVersion.web": "web {{version}}",
+  "appVersion.api": "api {{version}}",
   "navigation.aria": "Navegação principal",
   "navigation.management": "Gestão",
   "navigation.dashboard": "Visão geral",
@@ -177,6 +179,8 @@ export const ptBRMessages = {
   "exchangeRate.staleTooltip": "Cotação desatualizada. Última atualização pode estar incorreta.",
   "exchangeRate.fetchError": "Erro ao buscar cotação. Último valor disponível.",
   "exchangeRate.refresh": "Atualizar cotação",
+  "exchangeRate.display": "US$ 1 = {{rate}}",
+  "exchangeRate.reference": "{{amount}} (cot. {{rate}})",
   "home.title": "Visão geral",
   "home.referenceMonth": "Mês de referência",
   "home.income": "Receitas",

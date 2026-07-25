@@ -53,10 +53,10 @@ export default function FixedExpenseCard({ template, categoryOption, onSelect }:
                         day: String(template.dueDay).padStart(2, "0"),
                       })}
                   {template.currency === "USD" && template.exchangeRate != null
-                    ? ` · ${formatCurrency(
-                        template.type === "EXPENSE" ? -Math.abs(template.amount) : Math.abs(template.amount),
-                        "USD",
-                      )} (cot. ${formatCurrency(template.exchangeRate)})`
+                    ? ` · ${t("exchangeRate.reference", {
+                        amount: formatCurrency(template.type === "EXPENSE" ? -Math.abs(template.amount) : Math.abs(template.amount), "USD"),
+                        rate: formatCurrency(template.exchangeRate),
+                      })}`
                     : null}
                 </p>
               </div>

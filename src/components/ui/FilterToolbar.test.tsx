@@ -91,10 +91,15 @@ function MobileSearchHarness() {
       </button>
       <FilterToolbar
         fields={fields}
+        onCloseMobileSearch={() => setIsMobileSearchOpen(false)}
         isMobileSearchOpen={isMobileSearchOpen}
         isPanelOpen={isPanelOpen}
         onClosePanel={() => setIsPanelOpen(false)}
-        onResetField={() => undefined}
+        onResetField={(name, defaultValue) => {
+          if (name === "search") {
+            setSearch(String(defaultValue));
+          }
+        }}
         onTogglePanel={() => setIsPanelOpen((current) => !current)}
       />
     </>
@@ -107,6 +112,7 @@ describe("FilterToolbar", () => {
     render(<Harness />);
 
     expect(screen.getByText(`${t("common.search")}: Mercado`)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t("common.clearFilters") })).toBeInTheDocument();
     expect(screen.queryByLabelText(t("common.status"))).not.toBeInTheDocument();
     expect(screen.queryByText(t("common.filters"))).not.toBeInTheDocument();
 
@@ -160,12 +166,54 @@ describe("FilterToolbar", () => {
     render(<MobileSearchHarness />);
 
     expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: t("common.filters") })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
 
     expect(screen.getByLabelText(t("common.search"))).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t("common.filters") })).toBeInTheDocument();
     return waitFor(() => {
       expect(screen.getByLabelText(t("common.search"))).toHaveFocus();
+    });
+  });
+
+  it("opens extra filters from the mobile search dock and lets the user close the dock independently", async () => {
+    setViewportWidth(480);
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+
+    const filtersButton = screen.getByRole("button", { name: t("common.filters") });
+    filtersButton.focus();
+    fireEvent.click(filtersButton);
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByLabelText(t("common.status"))).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: t("common.close") }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: t("common.filters") })).toHaveFocus();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.close") }));
+
+    expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
+  });
+
+  it("hides the mobile search dock when clearing all filters", async () => {
+    setViewportWidth(480);
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+    fireEvent.change(screen.getByLabelText(t("common.search")), {
+      target: { value: "Mercado" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.clearFilters") }));
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
     });
   });
 

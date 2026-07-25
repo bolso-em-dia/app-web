@@ -56,7 +56,7 @@ export default function ExchangeRateIndicator() {
   return (
     <div className={styles.root}>
       <Tooltip content={tooltipContent}>
-        <span className={styles.value}>US$ 1 = {formatCurrency(rate)}</span>
+        <span className={styles.value}>{t("exchangeRate.display", { rate: formatCurrency(rate) })}</span>
       </Tooltip>
       <Button
         aria-label={t("exchangeRate.refresh")}
