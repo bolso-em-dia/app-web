@@ -7,6 +7,10 @@ import { I18nProvider } from "./app/i18n/I18nContext";
 import "./styles/tokens.scss";
 import "./styles/globals.scss";
 
+if ("virtualKeyboard" in navigator) {
+  navigator.virtualKeyboard.overlaysContent = true;
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
