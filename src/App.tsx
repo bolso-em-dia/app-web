@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router";
 import { useAuth } from "./app/auth/useAuth";
 import { useI18n } from "./app/i18n/I18nContext";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -14,7 +15,7 @@ import UserSettingsPage from "./pages/settings/UserSettingsPage";
 import LoginPage from "./pages/LoginPage";
 import TransactionsPage from "./pages/transactions/TransactionsPage";
 
-function ProtectedRoute({ children }: { children: JSX.Element }) {
+function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const { t } = useI18n();
   const location = useLocation();

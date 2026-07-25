@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
 import { mockErrorResponse, mockFetchUrl, resetFetchMocks } from "../test/setup";
 import { t } from "../test/i18n";
@@ -7,7 +7,7 @@ import ChangePasswordPage from "./ChangePasswordPage";
 
 function renderChangePasswordPage() {
   return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/change-password"]}>
+    <MemoryRouter initialEntries={["/change-password"]}>
       <TestAuthProvider
         user={{
           id: "1",
@@ -40,7 +40,7 @@ describe("ChangePasswordPage", () => {
 
   it("shows session expired feedback and preserves typed values when submitting without token", async () => {
     render(
-      <MemoryRouter initialEntries={["/change-password"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter initialEntries={["/change-password"]}>
         <TestAuthProvider
           authOverrides={{ accessToken: null }}
           user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}

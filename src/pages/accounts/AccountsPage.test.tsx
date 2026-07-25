@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
@@ -32,7 +32,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -71,7 +71,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -103,7 +103,7 @@ describe("AccountsPage", () => {
 
     expect(searchInput).toHaveFocus();
     expect(screen.queryByText("#2254d1")).not.toBeInTheDocument();
-    const accountButton = screen.getByRole("button", { name: /Main checking/ });
+    const accountButton = await screen.findByRole("button", { name: /Main checking/ });
     const accountSwatch = accountButton.querySelector("span[style]");
 
     expect(accountSwatch).not.toBeNull();
@@ -114,7 +114,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -225,7 +225,7 @@ describe("AccountsPage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -296,7 +296,7 @@ describe("AccountsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -356,7 +356,7 @@ describe("AccountsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -410,7 +410,7 @@ describe("AccountsPage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider user={createUser({ id: "1" })}>
           <AccountsPage />
         </TestAuthProvider>
@@ -434,7 +434,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -466,7 +466,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -498,7 +498,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -531,7 +531,7 @@ describe("AccountsPage", () => {
 
   it("shows session expired feedback and preserves typed values when submitting without token", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider authOverrides={{ accessToken: null }} user={createUser({ id: "1" })}>
           <AccountsPage />
         </TestAuthProvider>
@@ -553,7 +553,7 @@ describe("AccountsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/accounts"]}>
+      <MemoryRouter initialEntries={["/accounts"]}>
         <TestAuthProvider
           user={createUser({
             id: "1",

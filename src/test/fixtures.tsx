@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { render, type RenderOptions } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import type { AuthUser } from "../app/api/auth";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
 import { I18nProvider } from "../app/i18n/I18nContext";
@@ -87,7 +87,7 @@ function Providers({
   const resolvedUser = user === null ? null : createUser(user);
 
   return (
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={[route]}>
+    <MemoryRouter initialEntries={[route]}>
       <TestAuthProvider authOverrides={authOverrides} user={resolvedUser}>
         <I18nProvider>{children}</I18nProvider>
       </TestAuthProvider>

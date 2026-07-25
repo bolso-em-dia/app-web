@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import App from "./App";
 import { TestAuthProvider } from "./app/auth/TestAuthProvider";
 import { clearCachedOptionsResources } from "./lib/options/useCachedOptionsResource";
@@ -54,7 +54,7 @@ describe("App", () => {
     setupTransactionsRouteMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/"]}>
+      <MemoryRouter initialEntries={["/"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -74,7 +74,7 @@ describe("App", () => {
 
   it("redirects flagged users to the mandatory password change page", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",

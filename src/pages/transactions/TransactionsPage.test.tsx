@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
@@ -163,7 +163,7 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -226,7 +226,7 @@ describe("TransactionsPage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider user={createUser({ id: "1" })}>
           <TransactionsPage />
         </TestAuthProvider>
@@ -262,7 +262,7 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -362,7 +362,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -476,7 +476,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -572,7 +572,7 @@ describe("TransactionsPage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -645,7 +645,7 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -696,7 +696,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -772,7 +772,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/tx-1?", mockJsonResponse(undefined));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -879,7 +879,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -994,7 +994,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1119,7 +1119,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1158,7 +1158,7 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1200,7 +1200,7 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1251,7 +1251,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1285,7 +1285,7 @@ describe("TransactionsPage", () => {
     setupDefaultMocks();
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: true }}>
           <TransactionsPage />
         </TestAuthProvider>
@@ -1324,7 +1324,7 @@ describe("TransactionsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1441,7 +1441,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1547,7 +1547,7 @@ describe("TransactionsPage", () => {
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -1573,7 +1573,7 @@ describe("TransactionsPage", () => {
 
   it("shows session expired feedback and preserves typed values when submitting without token", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/transactions"]}>
+      <MemoryRouter initialEntries={["/transactions"]}>
         <TestAuthProvider authOverrides={{ accessToken: null }} user={createUser({ id: "1", allowanceEnabled: true })}>
           <TransactionForm
             accounts={defaultAccountsResponse.items}

@@ -166,7 +166,7 @@ export default function HomePage() {
                 const consumptionPercent = getBudgetConsumptionPercent(budget.consumedAmount, budget.monthlyLimit);
                 const rawRatio = budget.monthlyLimit > 0 ? (budget.consumedAmount / budget.monthlyLimit) * 100 : 0;
 
-                let fillClass = styles.progressFill;
+                let fillClass: string;
                 if (rawRatio > 100) {
                   fillClass = `${styles.progressFill} ${styles.progressFillDanger}`;
                 } else if (rawRatio >= 80) {

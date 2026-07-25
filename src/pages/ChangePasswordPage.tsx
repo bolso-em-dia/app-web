@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import PasswordChangeForm from "../components/PasswordChangeForm";
 import Card from "../components/ui/Card";
 import { useI18n } from "../app/i18n/I18nContext";

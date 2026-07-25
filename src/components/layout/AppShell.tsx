@@ -1,7 +1,7 @@
 import { LogOut, Menu, Plus, Search, Settings } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import type { ReactNode } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { managementNavigation, operationalNavigation } from "../../app/navigation/navigation";

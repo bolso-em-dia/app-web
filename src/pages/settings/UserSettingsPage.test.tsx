@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { t } from "../../test/i18n";
@@ -100,7 +100,7 @@ describe("UserSettingsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
+      <MemoryRouter initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -169,7 +169,7 @@ describe("UserSettingsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
+      <MemoryRouter initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -192,7 +192,7 @@ describe("UserSettingsPage", () => {
 
   it("renders the direct form and saves the preferences", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
+      <MemoryRouter initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -232,7 +232,7 @@ describe("UserSettingsPage", () => {
 
   it("saves the foreign currency preference when enabling it", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
+      <MemoryRouter initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -295,7 +295,7 @@ describe("UserSettingsPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
+      <MemoryRouter initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -331,7 +331,7 @@ describe("UserSettingsPage", () => {
 
   it("changes the current user password from settings", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
+      <MemoryRouter initialEntries={["/settings"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -368,7 +368,7 @@ describe("UserSettingsPage", () => {
 
   it("shows session expired feedback for preferences and keeps the chosen value", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/settings"]}>
+      <MemoryRouter initialEntries={["/settings"]}>
         <TestAuthProvider
           authOverrides={{ accessToken: null }}
           user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN" }}

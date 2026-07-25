@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
 import { t } from "../test/i18n";
 import ErrorBoundary from "./ErrorBoundary";

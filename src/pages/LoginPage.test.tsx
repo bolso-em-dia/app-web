@@ -1,5 +1,5 @@
 import { act, fireEvent, screen } from "@testing-library/react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router";
 import { vi } from "vitest";
 import { ApiError } from "../app/api/client";
 import { renderWithProviders } from "../test/fixtures";

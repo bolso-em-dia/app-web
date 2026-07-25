@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { t } from "../../test/i18n";
@@ -82,7 +82,7 @@ describe("FixedExpensesPage", () => {
     setViewportWidth(480);
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider user={createUser({ id: "1" })}>
           <FixedExpensesPage />
         </TestAuthProvider>
@@ -101,7 +101,7 @@ describe("FixedExpensesPage", () => {
 
   it("loads templates and validates required form fields", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -163,7 +163,7 @@ describe("FixedExpensesPage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider user={createUser({ id: "1" })}>
           <FixedExpensesPage />
         </TestAuthProvider>
@@ -247,7 +247,7 @@ describe("FixedExpensesPage", () => {
     mockFetchUrl("/api/accounts", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -284,7 +284,7 @@ describe("FixedExpensesPage", () => {
     mockFetchUrl("/api/accounts", mockJsonResponse([]));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -304,7 +304,7 @@ describe("FixedExpensesPage", () => {
 
   it("opens delete confirmation alertdialog when the delete button is clicked", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -335,7 +335,7 @@ describe("FixedExpensesPage", () => {
 
   it("cancels delete confirmation without calling the API", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -388,7 +388,7 @@ describe("FixedExpensesPage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -425,7 +425,7 @@ describe("FixedExpensesPage", () => {
 
   it("shows session expired feedback and preserves typed values when submitting without token", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider authOverrides={{ accessToken: null }} user={createUser({ id: "1" })}>
           <FixedExpenseForm
             accountOptions={defaultAccountsResponse}
@@ -501,7 +501,7 @@ describe("FixedExpensesPage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/fixed-transactions"]}>
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
         <TestAuthProvider
           user={{
             id: "1",

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { useState } from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { t } from "../../test/i18n";
@@ -10,7 +10,7 @@ function renderConfirmAction(props: Partial<React.ComponentProps<typeof ConfirmA
   const onConfirm = vi.fn();
   const onCancel = vi.fn();
   const utils = render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter>
       <TestAuthProvider
         user={{
           id: "1",
@@ -38,7 +38,7 @@ function renderConfirmAction(props: Partial<React.ComponentProps<typeof ConfirmA
 describe("ConfirmAction", () => {
   it("renders nothing when closed", () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <TestAuthProvider
           user={{
             id: "1",
@@ -141,7 +141,7 @@ describe("ConfirmAction", () => {
     }
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter>
         <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
           <Harness />
         </TestAuthProvider>

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { afterEach, vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
@@ -29,7 +29,7 @@ const userWithoutForeignCurrency = {
 
 function renderIndicator(user = userWithForeignCurrency) {
   return render(
-    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter>
       <TestAuthProvider user={user}>
         <ExchangeRateIndicator />
       </TestAuthProvider>

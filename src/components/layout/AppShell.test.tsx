@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
 import { t } from "../../test/i18n";
@@ -19,7 +19,7 @@ describe("AppShell", () => {
 
   it("renders navigation items with library icons", () => {
     const { container } = render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -70,7 +70,7 @@ describe("AppShell", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -114,7 +114,7 @@ describe("AppShell", () => {
     window.dispatchEvent(new Event("resize"));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -149,7 +149,7 @@ describe("AppShell", () => {
     window.dispatchEvent(new Event("resize"));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -207,7 +207,7 @@ describe("AppShell", () => {
     window.dispatchEvent(new Event("resize"));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider user={{ id: "1", name: "Admin User", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
           <AppShell
             title="Dashboard"
@@ -246,7 +246,7 @@ describe("AppShell", () => {
     window.dispatchEvent(new Event("resize"));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider user={{ id: "1", name: "Admin User", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
           <AppShell title="Dashboard">
             <div>content</div>
@@ -269,7 +269,7 @@ describe("AppShell", () => {
     window.dispatchEvent(new Event("resize"));
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider user={{ id: "1", name: "Admin User", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
           <AppShell title="Dashboard" mobileActionBarHidden mobileActions={{ createLabel: "Novo", onCreate: vi.fn(), onSearch: vi.fn() }}>
             <div>content</div>

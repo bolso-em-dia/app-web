@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import { useI18n } from "../app/i18n/I18nContext";
 import Button from "./ui/Button";
 import Card from "./ui/Card";

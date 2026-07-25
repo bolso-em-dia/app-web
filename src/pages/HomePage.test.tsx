@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../app/auth/TestAuthProvider";
 import { t } from "../test/i18n";
@@ -88,7 +88,7 @@ describe("HomePage", () => {
 
   it("uses the realized balance as the initial mode when the preference is disabled", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -142,7 +142,7 @@ describe("HomePage", () => {
     });
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -173,7 +173,7 @@ describe("HomePage", () => {
 
   it("renders the dashboard data and toggles the balance mode", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -212,7 +212,7 @@ describe("HomePage", () => {
 
   it("shows budget consumption as used over total without linked category text", async () => {
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -283,7 +283,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -339,7 +339,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -433,7 +433,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -505,7 +505,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -539,7 +539,7 @@ describe("HomePage", () => {
     mockFetchUrl("/api/dashboard", () => promise);
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -623,7 +623,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -663,7 +663,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -713,7 +713,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",
@@ -779,7 +779,7 @@ describe("HomePage", () => {
     );
 
     render(
-      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }} initialEntries={["/dashboard"]}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <TestAuthProvider
           user={{
             id: "1",

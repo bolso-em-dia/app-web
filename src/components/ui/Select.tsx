@@ -340,7 +340,7 @@ function RichSelect<TValue extends string>({
 
 function extractOptions(children: ReactNode): Array<SelectOption<string>> {
   return Children.toArray(children).flatMap((child) => {
-    if (!isValidElement(child) || child.type !== "option") {
+    if (!isValidElement<{ children?: ReactNode; value?: unknown }>(child) || child.type !== "option") {
       return [];
     }
 
