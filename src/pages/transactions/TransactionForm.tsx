@@ -430,7 +430,12 @@ function TransactionFormContent({
         </div>
 
         <Field error={form.formState.errors.accountId?.message} htmlFor="transaction-account" label={t("common.account")}>
-          <Select id="transaction-account" hasError={Boolean(form.formState.errors.accountId)} {...form.register("accountId")}>
+          <Select
+            id="transaction-account"
+            hasError={Boolean(form.formState.errors.accountId)}
+            value={formAccountId ?? ""}
+            {...form.register("accountId")}
+          >
             <option value="">{t("common.selectAccount")}</option>
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>

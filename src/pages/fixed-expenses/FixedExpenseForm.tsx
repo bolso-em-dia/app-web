@@ -230,7 +230,12 @@ function FixedExpenseFormContent({
         </Field>
 
         <Field error={form.formState.errors.accountId?.message} htmlFor="fixed-expense-account" label={t("common.account")}>
-          <Select hasError={Boolean(form.formState.errors.accountId)} id="fixed-expense-account" {...form.register("accountId")}>
+          <Select
+            hasError={Boolean(form.formState.errors.accountId)}
+            id="fixed-expense-account"
+            value={formAccountId ?? ""}
+            {...form.register("accountId")}
+          >
             <option value="">{t("common.selectAccount")}</option>
             {accountOptions.map((account) => (
               <option key={account.id} value={account.id}>

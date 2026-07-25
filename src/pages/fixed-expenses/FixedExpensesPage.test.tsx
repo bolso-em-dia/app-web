@@ -323,6 +323,12 @@ describe("FixedExpensesPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Rent/ }));
 
+    const drawer = screen.getByRole("dialog");
+    const accountSelect = within(drawer).getByLabelText(t("common.account"), { selector: "#fixed-expense-account" });
+    const accountRichRoot = accountSelect.parentElement!;
+    const accountRichValue = accountRichRoot.querySelector('[class*="richValue"]')!;
+    expect(accountRichValue).toHaveTextContent("Main checking");
+
     const deleteButton = await screen.findByRole("button", {
       name: t("common.delete"),
     });
@@ -519,6 +525,12 @@ describe("FixedExpensesPage", () => {
     // Open the edit drawer by clicking the template
     const templateButton = await screen.findByText("Netflix");
     fireEvent.click(templateButton.closest("button")!);
+
+    const drawer = screen.getByRole("dialog");
+    const accountSelect = within(drawer).getByLabelText(t("common.account"), { selector: "#fixed-expense-account" });
+    const accountRichRoot = accountSelect.parentElement!;
+    const accountRichValue = accountRichRoot.querySelector('[class*="richValue"]')!;
+    expect(accountRichValue).toHaveTextContent("US Account");
 
     // The amount field should show the USD value (100), not the BRL value (510)
     const amountInput = screen.getByLabelText(t("fixedTransactions.amount"));

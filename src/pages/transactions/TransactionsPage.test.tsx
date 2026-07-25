@@ -664,6 +664,12 @@ describe("TransactionsPage", () => {
 
     fireEvent.click(transactionButton);
 
+    const drawer = screen.getByRole("dialog");
+    const accountSelect = within(drawer).getByLabelText(t("common.account"), { selector: "#transaction-account" });
+    const accountRichRoot = accountSelect.parentElement!;
+    const accountRichValue = accountRichRoot.querySelector('[class*="richValue"]')!;
+    expect(accountRichValue).toHaveTextContent("Main checking");
+
     expect(screen.queryByRole("alertdialog", { name: t("transactions.deleteTitle") })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: t("common.delete") }));
@@ -1565,6 +1571,12 @@ describe("TransactionsPage", () => {
     // Open the edit drawer by clicking the transaction
     const transactionButton = await screen.findByText("Amazon");
     fireEvent.click(transactionButton.closest("button")!);
+
+    const drawer = screen.getByRole("dialog");
+    const accountSelect = within(drawer).getByLabelText(t("common.account"), { selector: "#transaction-account" });
+    const accountRichRoot = accountSelect.parentElement!;
+    const accountRichValue = accountRichRoot.querySelector('[class*="richValue"]')!;
+    expect(accountRichValue).toHaveTextContent("US Account");
 
     // The amount field should show the USD value (100), not the BRL value (510)
     const amountInput = screen.getByLabelText("Valor");
