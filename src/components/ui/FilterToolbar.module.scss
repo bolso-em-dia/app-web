@@ -59,7 +59,7 @@
 .mobileSearchDock {
   position: fixed;
   right: 0;
-  bottom: max(calc(var(--mobile-action-bar-height) + env(safe-area-inset-bottom)), var(--mobile-search-keyboard-inset, 0px));
+  bottom: calc(var(--mobile-search-keyboard-inset, var(--mobile-action-bar-height)) + env(safe-area-inset-bottom, 0px));
   left: 0;
   z-index: 25;
   display: grid;

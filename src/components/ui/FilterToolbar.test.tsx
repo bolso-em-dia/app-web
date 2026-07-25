@@ -246,7 +246,7 @@ describe("FilterToolbar", () => {
     expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
   });
 
-  it("repositions only the mobile search dock when the keyboard changes the visual viewport", async () => {
+  it("repositions only the mobile search dock when the keyboard changes the visual viewport (iOS)", async () => {
     setViewportWidth(480);
     Object.defineProperty(window, "innerHeight", {
       configurable: true,
@@ -260,13 +260,44 @@ describe("FilterToolbar", () => {
     fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
 
     const dock = screen.getByRole("search");
-    expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 0px");
+    expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 68px");
 
     visualViewport.height = 520;
     visualViewport.dispatch("resize");
 
     await waitFor(() => {
-      expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 280px");
+      expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 348px");
+    });
+  });
+
+  it("repositions the mobile search dock to the keyboard edge when innerHeight resizes with the viewport (Android)", async () => {
+    setViewportWidth(480);
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 800,
+      writable: true,
+    });
+    const visualViewport = installVisualViewportMock({ height: 800, offsetTop: 0 });
+
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+
+    const dock = screen.getByRole("search");
+    expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 68px");
+
+    // Simulate Android: keyboard opens, viewport AND innerHeight both resize
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 520,
+      writable: true,
+    });
+    visualViewport.height = 520;
+    window.dispatchEvent(new Event("resize"));
+    visualViewport.dispatch("resize");
+
+    await waitFor(() => {
+      expect(dock).toHaveStyle("--mobile-search-keyboard-inset: 0px");
     });
   });
 
@@ -278,7 +309,7 @@ describe("FilterToolbar", () => {
     fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole("search")).toHaveStyle("--mobile-search-keyboard-inset: 0px");
+      expect(screen.getByRole("search")).toHaveStyle("--mobile-search-keyboard-inset: 68px");
     });
   });
 
