@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import { getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
+import { formatDateValue, getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import { t } from "../../test/i18n";
 import { clearCachedOptionsResources } from "../../lib/options/useCachedOptionsResource";
@@ -395,7 +395,7 @@ describe("TransactionsPage", () => {
       target: { value: "90" },
     });
     fireEvent.change(within(drawer).getByLabelText(t("transactions.transactionDate")), {
-      target: { value: "2026-07-03" },
+      target: { value: "03072026" },
     });
     fireEvent.change(
       within(drawer).getByLabelText(t("common.account"), {
@@ -414,7 +414,7 @@ describe("TransactionsPage", () => {
     });
 
     expect(within(drawer).getByRole("radio", { name: "Receita" })).toHaveAttribute("aria-checked", "true");
-    expect(within(drawer).getByLabelText(t("transactions.transactionDate"))).toHaveValue("2026-07-03");
+    expect(within(drawer).getByLabelText(t("transactions.transactionDate"))).toHaveValue("03/07/2026");
     expect(
       within(drawer).getByLabelText(t("common.account"), {
         selector: "#transaction-account",
@@ -1154,7 +1154,7 @@ describe("TransactionsPage", () => {
     const dateInput = within(drawer).getByLabelText(t("transactions.transactionDate"));
 
     await waitFor(() => {
-      expect(dateInput).toHaveValue(previousReferenceMonth);
+      expect(dateInput).toHaveValue(formatDateValue(previousReferenceMonth));
     });
   });
 

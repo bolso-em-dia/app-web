@@ -7,9 +7,9 @@ describe("MonthSelector", () => {
   it("renders with the current month value", () => {
     render(<MonthSelector onChange={vi.fn()} value="2026-07-01" />);
 
-    const input = screen.getByDisplayValue("2026-07");
+    const input = screen.getByDisplayValue("07/2026");
     expect(input).toBeInTheDocument();
-    expect(input).toHaveAttribute("type", "month");
+    expect(input).toHaveAttribute("type", "text");
   });
 
   it("calls onChange with the previous month when the previous button is clicked", () => {
@@ -35,8 +35,9 @@ describe("MonthSelector", () => {
 
     render(<MonthSelector onChange={handleChange} value="2026-07-01" />);
 
-    const input = screen.getByDisplayValue("2026-07");
-    fireEvent.change(input, { target: { value: "2026-03" } });
+    const input = screen.getByDisplayValue("07/2026");
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "032026" } });
 
     expect(handleChange).toHaveBeenCalledWith("2026-03-01");
   });

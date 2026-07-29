@@ -1,5 +1,17 @@
-import { describe, it, expect, vi } from "vitest";
-import { getCurrentReferenceMonth, shiftReferenceMonth, isCurrentReferenceMonth, formatReferenceMonth, formatDay } from "./date";
+import { describe, expect, it, vi } from "vitest";
+import {
+  formatDateValue,
+  formatDay,
+  formatMonthValue,
+  formatPartialDateInput,
+  formatPartialMonthInput,
+  formatReferenceMonth,
+  getCurrentReferenceMonth,
+  isCurrentReferenceMonth,
+  parseFormattedDate,
+  parseFormattedMonth,
+  shiftReferenceMonth,
+} from "./date";
 
 describe("getCurrentReferenceMonth", () => {
   it("returns the first day of the current month", () => {
@@ -66,5 +78,41 @@ describe("formatDay", () => {
   it("formats double digit day", () => {
     const result = formatDay("2026-07-15");
     expect(result).toMatch(/15.*jul/i);
+  });
+});
+
+describe("BR text input helpers", () => {
+  it("formats ISO date values as dd/mm/yyyy", () => {
+    expect(formatDateValue("2026-07-05")).toBe("05/07/2026");
+  });
+
+  it("formats ISO month values as mm/yyyy", () => {
+    expect(formatMonthValue("2026-07-01")).toBe("07/2026");
+  });
+
+  it("builds partial BR date input masks", () => {
+    expect(formatPartialDateInput("05072026")).toBe("05/07/2026");
+    expect(formatPartialDateInput("0507")).toBe("05/07");
+  });
+
+  it("builds partial BR month input masks", () => {
+    expect(formatPartialMonthInput("072026")).toBe("07/2026");
+    expect(formatPartialMonthInput("07")).toBe("07");
+  });
+
+  it("parses valid BR date values to ISO", () => {
+    expect(parseFormattedDate("05/07/2026")).toBe("2026-07-05");
+  });
+
+  it("rejects invalid BR date values", () => {
+    expect(parseFormattedDate("31/02/2026")).toBeNull();
+  });
+
+  it("parses valid BR month values to ISO reference months", () => {
+    expect(parseFormattedMonth("07/2026")).toBe("2026-07-01");
+  });
+
+  it("rejects invalid BR month values", () => {
+    expect(parseFormattedMonth("13/2026")).toBeNull();
   });
 });

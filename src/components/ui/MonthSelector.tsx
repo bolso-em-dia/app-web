@@ -2,16 +2,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useI18n } from "../../app/i18n/I18nContext";
 import { isCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
 import Button from "./Button";
-import Input from "./Input";
+import MonthInput from "./MonthInput";
 import styles from "./MonthSelector.module.scss";
-
-function toMonthInputValue(value: string) {
-  return value.slice(0, 7);
-}
-
-function fromMonthInputValue(value: string) {
-  return `${value}-01`;
-}
 
 type MonthSelectorProps = {
   value: string;
@@ -33,12 +25,11 @@ export default function MonthSelector({ value, onChange, id }: MonthSelectorProp
       >
         <ChevronLeft aria-hidden="true" size={16} />
       </Button>
-      <Input
+      <MonthInput
         className={isCurrentReferenceMonth(value) ? undefined : styles.monthInputHighlighted}
         id={id}
-        onChange={(event) => onChange(fromMonthInputValue(event.target.value))}
-        type="month"
-        value={toMonthInputValue(value)}
+        onChange={onChange}
+        value={value}
       />
       <Button
         aria-label={t("common.nextMonth")}

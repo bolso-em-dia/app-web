@@ -22,6 +22,7 @@ import Button from "../../components/ui/Button";
 import CategorySelect from "../../components/ui/CategorySelect";
 import ConfirmAction from "../../components/ui/ConfirmAction";
 import CurrencyInput from "../../components/ui/CurrencyInput";
+import DateInput from "../../components/ui/DateInput";
 import Field from "../../components/ui/Field";
 import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
@@ -345,11 +346,19 @@ function TransactionFormContent({
         </Field>
 
         <Field error={form.formState.errors.transactionDate?.message} htmlFor="transaction-date" label={t("transactions.transactionDate")}>
-          <Input
-            id="transaction-date"
-            hasError={Boolean(form.formState.errors.transactionDate)}
-            type="date"
-            {...form.register("transactionDate")}
+          <Controller
+            control={form.control}
+            name="transactionDate"
+            render={({ field }) => (
+              <DateInput
+                id="transaction-date"
+                hasError={Boolean(form.formState.errors.transactionDate)}
+                onBlur={field.onBlur}
+                onChange={field.onChange}
+                ref={field.ref}
+                value={field.value}
+              />
+            )}
           />
         </Field>
 
