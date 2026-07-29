@@ -28,6 +28,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "common.next": "Next",
   "common.cancel": "Cancel",
   "common.close": "Close",
+  "common.closeSearch": "Close search",
   "common.create": "Create",
   "common.save": "Save",
   "common.archive": "Archive",

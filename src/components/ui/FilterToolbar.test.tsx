@@ -124,7 +124,7 @@ function MobileSearchHarness() {
         }}
         type="button"
       >
-        abrir busca
+        {t("common.search")}
       </button>
       <FilterToolbar
         fields={fields}
@@ -212,7 +212,7 @@ describe("FilterToolbar", () => {
     expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: t("common.filters") })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     expect(screen.getByLabelText(t("common.search"))).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: t("common.filters") }).length).toBeGreaterThan(0);
@@ -225,7 +225,7 @@ describe("FilterToolbar", () => {
     setViewportWidth(480);
     render(<MobileSearchHarness />);
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     const filtersButton = screen.getAllByRole("button", { name: t("common.filters") }).at(-1);
     expect(filtersButton).toBeTruthy();
@@ -257,7 +257,7 @@ describe("FilterToolbar", () => {
 
     render(<MobileSearchHarness />);
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     const dock = screen.getByRole("search");
     expect(dock).toHaveStyle("--keyboard-inset: 0px");
@@ -282,7 +282,7 @@ describe("FilterToolbar", () => {
 
     render(<MobileSearchHarness />);
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     // Simulate Android resizes-content: innerHeight shrinks together with the
     // visual viewport. The layout viewport (anchor of position: fixed) already
@@ -308,10 +308,10 @@ describe("FilterToolbar", () => {
 
     render(<MobileSearchHarness />);
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
     expect(screen.getByLabelText(t("common.search"))).toBeInTheDocument();
 
-    const overlay = screen.getByRole("button", { name: /fechar busca/i });
+    const overlay = screen.getByRole("button", { name: t("common.closeSearch") });
     fireEvent.click(overlay);
 
     await waitFor(() => {
@@ -324,7 +324,7 @@ describe("FilterToolbar", () => {
 
     render(<MobileSearchHarness />);
 
-    expect(screen.queryByRole("button", { name: /fechar busca/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: t("common.closeSearch") })).not.toBeInTheDocument();
   });
 
   it("keeps the mobile search dock stable when visualViewport is unavailable", async () => {
@@ -332,7 +332,7 @@ describe("FilterToolbar", () => {
 
     render(<MobileSearchHarness />);
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     await waitFor(() => {
       expect(screen.getByRole("search")).toHaveStyle("--keyboard-inset: 0px");
@@ -343,7 +343,7 @@ describe("FilterToolbar", () => {
     setViewportWidth(480);
     render(<MobileSearchHarness />);
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir busca/i }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
     fireEvent.change(screen.getByLabelText(t("common.search")), {
       target: { value: "Mercado" },
     });

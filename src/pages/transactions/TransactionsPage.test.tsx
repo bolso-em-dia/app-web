@@ -120,6 +120,14 @@ const defaultAllowanceBudgetsResponse = {
   totalPages: 1,
 };
 
+type VisualViewportMock = {
+  height: number;
+  offsetTop: number;
+  addEventListener: ReturnType<typeof vi.fn>;
+  removeEventListener: ReturnType<typeof vi.fn>;
+  dispatch: (eventName: "resize" | "scroll") => void;
+};
+
 function setViewportWidth(width: number) {
   Object.defineProperty(window, "innerWidth", {
     configurable: true,
@@ -127,6 +135,41 @@ function setViewportWidth(width: number) {
     writable: true,
   });
   window.dispatchEvent(new Event("resize"));
+}
+
+function installVisualViewportMock({ height, offsetTop }: { height: number; offsetTop: number }): VisualViewportMock {
+  const listeners = new Map<string, Set<() => void>>();
+  const addEventListener = vi.fn((eventName: string, listener: () => void) => {
+    const group = listeners.get(eventName) ?? new Set<() => void>();
+    group.add(listener);
+    listeners.set(eventName, group);
+  });
+  const removeEventListener = vi.fn((eventName: string, listener: () => void) => {
+    listeners.get(eventName)?.delete(listener);
+  });
+  const viewport = {
+    height,
+    offsetTop,
+    addEventListener,
+    removeEventListener,
+    dispatch(eventName: "resize" | "scroll") {
+      listeners.get(eventName)?.forEach((listener) => listener());
+    },
+  };
+
+  Object.defineProperty(window, "visualViewport", {
+    configurable: true,
+    value: viewport,
+  });
+
+  return viewport;
+}
+
+function removeVisualViewportMock() {
+  Object.defineProperty(window, "visualViewport", {
+    configurable: true,
+    value: undefined,
+  });
 }
 
 function setupDefaultMocks() {
@@ -156,6 +199,7 @@ describe("TransactionsPage", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    removeVisualViewportMock();
     setViewportWidth(1024);
   });
 
@@ -666,9 +710,7 @@ describe("TransactionsPage", () => {
 
     const drawer = screen.getByRole("dialog");
     const accountSelect = within(drawer).getByLabelText(t("common.account"), { selector: "#transaction-account" });
-    const accountRichRoot = accountSelect.parentElement!;
-    const accountRichValue = accountRichRoot.querySelector('[class*="richValue"]')!;
-    expect(accountRichValue).toHaveTextContent("Main checking");
+    expect(accountSelect).toHaveValue("account-1");
 
     expect(screen.queryByRole("alertdialog", { name: t("transactions.deleteTitle") })).not.toBeInTheDocument();
 
@@ -720,12 +762,12 @@ describe("TransactionsPage", () => {
     const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
 
     fireEvent.click(transactionButton);
-    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.delete") }));
 
     const modal = screen.getByRole("alertdialog", {
-      name: "Excluir transação",
+      name: t("transactions.deleteTitle"),
     });
-    fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
+    fireEvent.click(within(modal).getByRole("button", { name: t("common.delete") }));
 
     await waitFor(() => {
       expect(
@@ -796,14 +838,14 @@ describe("TransactionsPage", () => {
     const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
 
     fireEvent.click(transactionButton);
-    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.delete") }));
 
-    let modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
-    expect(within(modal).getByLabelText("Escopo da exclusão")).toBeInTheDocument();
-    fireEvent.change(within(modal).getByLabelText("Escopo da exclusão"), {
+    let modal = screen.getByRole("alertdialog", { name: t("transactions.deleteTitle") });
+    expect(within(modal).getByLabelText(t("transactions.deleteScope"))).toBeInTheDocument();
+    fireEvent.change(within(modal).getByLabelText(t("transactions.deleteScope")), {
       target: { value: "FUTURE" },
     });
-    fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
+    fireEvent.click(within(modal).getByRole("button", { name: t("common.delete") }));
 
     await waitFor(() => {
       expect(
@@ -814,13 +856,13 @@ describe("TransactionsPage", () => {
     });
 
     fireEvent.click(transactionButton);
-    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.delete") }));
 
-    modal = screen.getByRole("alertdialog", { name: "Excluir transação" });
-    fireEvent.change(within(modal).getByLabelText("Escopo da exclusão"), {
+    modal = screen.getByRole("alertdialog", { name: t("transactions.deleteTitle") });
+    fireEvent.change(within(modal).getByLabelText(t("transactions.deleteScope")), {
       target: { value: "ALL" },
     });
-    fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
+    fireEvent.click(within(modal).getByRole("button", { name: t("common.delete") }));
 
     await waitFor(() => {
       expect(
@@ -1283,7 +1325,7 @@ describe("TransactionsPage", () => {
       expect(requests.some((url) => url.includes("search=mercado"))).toBe(true);
     });
 
-    expect(screen.getByText("Buscar: mercado")).toBeInTheDocument();
+    expect(screen.getByText(`${t("common.search")}: mercado`)).toBeInTheDocument();
   });
 
   it("keeps the month visible on mobile while revealing search and filters in the bottom dock", async () => {
@@ -1317,6 +1359,47 @@ describe("TransactionsPage", () => {
     expect(within(dialog).getByLabelText(t("common.type"), { selector: "#transaction-filter-type" })).toBeInTheDocument();
   });
 
+  it("lifts the transactions mobile search dock with VisualViewport and closes it via the overlay", async () => {
+    setViewportWidth(480);
+    setupDefaultMocks();
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 800,
+      writable: true,
+    });
+    const visualViewport = installVisualViewportMock({ height: 800, offsetTop: 0 });
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser({ allowanceEnabled: true })}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
+
+    const dock = screen.getByRole("search");
+    expect(within(dock).getByRole("textbox", { name: t("common.search") })).toBeInTheDocument();
+    expect(dock).toHaveStyle("--keyboard-inset: 0px");
+
+    visualViewport.height = 520;
+    visualViewport.dispatch("resize");
+
+    await waitFor(() => {
+      expect(dock).toHaveStyle("--keyboard-inset: 280px");
+      expect(dock).toHaveStyle("--keyboard-active: 1");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.closeSearch") }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("search")).not.toBeInTheDocument();
+    });
+  });
+
   it("shows error feedback when delete fails", async () => {
     resetFetchMocks();
 
@@ -1348,12 +1431,12 @@ describe("TransactionsPage", () => {
     const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
 
     fireEvent.click(transactionButton);
-    fireEvent.click(screen.getByRole("button", { name: "Excluir" }));
+    fireEvent.click(screen.getByRole("button", { name: t("common.delete") }));
 
     const modal = screen.getByRole("alertdialog", {
-      name: "Excluir transação",
+      name: t("transactions.deleteTitle"),
     });
-    fireEvent.click(within(modal).getByRole("button", { name: "Excluir" }));
+    fireEvent.click(within(modal).getByRole("button", { name: t("common.delete") }));
 
     await waitFor(() => {
       expect(screen.getByText(t("error.unexpected"))).toBeInTheDocument();
@@ -1569,17 +1652,15 @@ describe("TransactionsPage", () => {
     );
 
     // Open the edit drawer by clicking the transaction
-    const transactionButton = await screen.findByText("Amazon");
-    fireEvent.click(transactionButton.closest("button")!);
+    const transactionButton = await screen.findByRole("button", { name: /Amazon/i });
+    fireEvent.click(transactionButton);
 
     const drawer = screen.getByRole("dialog");
     const accountSelect = within(drawer).getByLabelText(t("common.account"), { selector: "#transaction-account" });
-    const accountRichRoot = accountSelect.parentElement!;
-    const accountRichValue = accountRichRoot.querySelector('[class*="richValue"]')!;
-    expect(accountRichValue).toHaveTextContent("US Account");
+    expect(accountSelect).toHaveValue("account-1");
 
     // The amount field should show the USD value (100), not the BRL value (510)
-    const amountInput = screen.getByLabelText("Valor");
+    const amountInput = screen.getByLabelText(t("transactions.amount"));
     expect(amountInput).toHaveValue("$100.00");
   });
 

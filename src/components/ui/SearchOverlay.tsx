@@ -1,3 +1,4 @@
+import { useI18n } from "../../app/i18n/I18nContext";
 import styles from "./SearchOverlay.module.scss";
 
 type SearchOverlayProps = {
@@ -14,5 +15,7 @@ type SearchOverlayProps = {
  * instead of triggering unintended actions (create, navigate, select, etc.).
  */
 export default function SearchOverlay({ onDismiss }: SearchOverlayProps) {
-  return <button aria-label="Fechar busca" className={styles.overlay} onClick={onDismiss} type="button" />;
+  const { t } = useI18n();
+
+  return <button aria-label={t("common.closeSearch")} className={styles.overlay} onClick={onDismiss} type="button" />;
 }

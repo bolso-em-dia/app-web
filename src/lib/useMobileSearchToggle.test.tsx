@@ -92,4 +92,34 @@ describe("useMobileSearchToggle", () => {
     expect(focus).toHaveBeenNthCalledWith(1, { preventScroll: true });
     expect(focus).toHaveBeenNthCalledWith(2);
   });
+
+  it("blurs the focused input when closing the mobile search", () => {
+    const focus = vi.fn();
+    const blur = vi.fn();
+    const input = { focus, blur } as unknown as HTMLInputElement;
+    const { result } = renderHook(() => useMobileSearchToggle());
+
+    act(() => {
+      result.current.inputRef.current = input;
+      result.current.open();
+    });
+
+    act(() => {
+      runAnimationFrame(1);
+    });
+
+    expect(focus).toHaveBeenCalled();
+
+    Object.defineProperty(document, "activeElement", {
+      configurable: true,
+      value: input,
+    });
+
+    act(() => {
+      result.current.close();
+    });
+
+    expect(blur).toHaveBeenCalledTimes(1);
+    expect(result.current.isOpen).toBe(false);
+  });
 });

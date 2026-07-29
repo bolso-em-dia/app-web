@@ -6,6 +6,16 @@ export function useMobileSearchToggle() {
   const focusRequestRef = useRef(0);
   const frameIdRef = useRef<number | null>(null);
 
+  const blurInput = useCallback(() => {
+    const input = inputRef.current;
+
+    if (!input || document.activeElement !== input) {
+      return;
+    }
+
+    input.blur();
+  }, []);
+
   const cancelPendingFocus = useCallback(() => {
     focusRequestRef.current += 1;
 
@@ -52,8 +62,9 @@ export function useMobileSearchToggle() {
 
   const close = useCallback(() => {
     cancelPendingFocus();
+    blurInput();
     setIsOpen(false);
-  }, [cancelPendingFocus]);
+  }, [blurInput, cancelPendingFocus]);
 
   useEffect(() => {
     if (!isOpen) {

@@ -21,6 +21,7 @@ export const ptBRMessages = {
   "common.next": "Próxima",
   "common.cancel": "Cancelar",
   "common.close": "Fechar",
+  "common.closeSearch": "Fechar busca",
   "common.create": "Criar",
   "common.save": "Salvar",
   "common.archive": "Arquivar",
