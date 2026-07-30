@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useMobileSearchToggle() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const focusRequestRef = useRef(0);
   const frameIdRef = useRef<number | null>(null);
@@ -14,6 +15,7 @@ export function useMobileSearchToggle() {
     }
 
     input.blur();
+    setIsFocused(false);
   }, []);
 
   const cancelPendingFocus = useCallback(() => {
@@ -63,8 +65,17 @@ export function useMobileSearchToggle() {
   const close = useCallback(() => {
     cancelPendingFocus();
     blurInput();
+    setIsFocused(false);
     setIsOpen(false);
   }, [blurInput, cancelPendingFocus]);
+
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    setIsFocused(false);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -77,8 +88,12 @@ export function useMobileSearchToggle() {
   useEffect(() => cancelPendingFocus, [cancelPendingFocus]);
 
   return {
+    blurInput,
     close,
+    handleBlur,
+    handleFocus,
     inputRef,
+    isFocused,
     isOpen,
     open,
   };

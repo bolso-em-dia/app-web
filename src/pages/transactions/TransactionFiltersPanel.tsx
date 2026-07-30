@@ -17,7 +17,11 @@ type TransactionFiltersPanelProps = {
   value: TransactionFilters;
   onChange: Dispatch<SetStateAction<TransactionFilters>>;
   isMobileSearchOpen?: boolean;
+  isMobileSearchFocused?: boolean;
   mobileSearchInputRef?: Ref<HTMLInputElement>;
+  onDismissMobileSearchFocus?: () => void;
+  onMobileSearchBlur?: () => void;
+  onMobileSearchFocus?: () => void;
   onCloseMobileSearch?: () => void;
 };
 
@@ -26,7 +30,11 @@ export default function TransactionFiltersPanel({
   onChange,
   onCloseMobileSearch,
   isMobileSearchOpen,
+  isMobileSearchFocused,
   mobileSearchInputRef,
+  onDismissMobileSearchFocus,
+  onMobileSearchBlur,
+  onMobileSearchFocus,
 }: TransactionFiltersPanelProps) {
   const { t } = useI18n();
   const controller = useFilterController(value, onChange);
@@ -69,9 +77,11 @@ export default function TransactionFiltersPanel({
             id="transaction-search"
             inputRef={mobileSearchInputRef}
             label={t("common.search")}
+            onBlur={onMobileSearchBlur}
             onChange={(search) => {
               patch({ search: search || undefined });
             }}
+            onFocus={onMobileSearchFocus}
             placeholder={t("transactions.searchPlaceholder")}
             value={filters.search ?? ""}
           />
@@ -192,13 +202,15 @@ export default function TransactionFiltersPanel({
         ),
       },
     }),
-    [accountOptions, categoryOptions, filters, memberOptions, mobileSearchInputRef, patch, t],
+    [accountOptions, categoryOptions, filters, memberOptions, mobileSearchInputRef, onMobileSearchBlur, onMobileSearchFocus, patch, t],
   );
 
   return (
     <FilterToolbar
       fields={fields}
+      onDismissMobileSearchFocus={onDismissMobileSearchFocus}
       onCloseMobileSearch={onCloseMobileSearch}
+      isMobileSearchFocused={isMobileSearchFocused}
       isMobileSearchOpen={isMobileSearchOpen}
       isPanelOpen={isPanelOpen}
       onClosePanel={() => setIsPanelOpen(false)}

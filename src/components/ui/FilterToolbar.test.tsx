@@ -1,8 +1,9 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { vi } from "vitest";
 import { t } from "../../test/i18n";
 import type { FilterFields } from "../../lib/filterFields";
+import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import FilterToolbar from "./FilterToolbar";
 
 type VisualViewportMock = {
@@ -91,9 +92,8 @@ function Harness() {
 
 function MobileSearchHarness() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const { blurInput, close, handleBlur, handleFocus, inputRef, isFocused, isOpen, open } = useMobileSearchToggle();
 
   const fields: FilterFields = {
     search: {
@@ -102,7 +102,16 @@ function MobileSearchHarness() {
       value: search,
       defaultValue: "",
       placement: "visible",
-      element: <input aria-label={t("common.search")} ref={inputRef} value={search} onChange={(event) => setSearch(event.target.value)} />,
+      element: (
+        <input
+          aria-label={t("common.search")}
+          onBlur={handleBlur}
+          onChange={(event) => setSearch(event.target.value)}
+          onFocus={handleFocus}
+          ref={inputRef}
+          value={search}
+        />
+      ),
     },
     status: {
       kind: "select",
@@ -117,19 +126,15 @@ function MobileSearchHarness() {
 
   return (
     <>
-      <button
-        onClick={() => {
-          setIsMobileSearchOpen(true);
-          window.requestAnimationFrame(() => inputRef.current?.focus());
-        }}
-        type="button"
-      >
+      <button onClick={open} type="button">
         {t("common.search")}
       </button>
       <FilterToolbar
         fields={fields}
-        onCloseMobileSearch={() => setIsMobileSearchOpen(false)}
-        isMobileSearchOpen={isMobileSearchOpen}
+        onCloseMobileSearch={close}
+        onDismissMobileSearchFocus={blurInput}
+        isMobileSearchFocused={isFocused}
+        isMobileSearchOpen={isOpen}
         isPanelOpen={isPanelOpen}
         onClosePanel={() => setIsPanelOpen(false)}
         onResetField={(name, defaultValue) => {
@@ -246,6 +251,46 @@ describe("FilterToolbar", () => {
     expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
   });
 
+  it("renders the overlay only while the mobile search field is focused and keeps the dock open after blur", async () => {
+    setViewportWidth(480);
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
+
+    const searchInput = screen.getByLabelText(t("common.search"));
+    await waitFor(() => {
+      expect(searchInput).toHaveFocus();
+    });
+
+    const overlay = screen.getByRole("button", { name: t("common.closeSearch") });
+    fireEvent.pointerDown(overlay);
+
+    await waitFor(() => {
+      expect(screen.getByRole("search")).toBeInTheDocument();
+      expect(screen.getByLabelText(t("common.search"))).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: t("common.closeSearch") })).not.toBeInTheDocument();
+    });
+  });
+
+  it("does not render the overlay when the dock is visible without focused input", async () => {
+    setViewportWidth(480);
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
+
+    const searchInput = screen.getByLabelText(t("common.search"));
+    await waitFor(() => {
+      expect(searchInput).toHaveFocus();
+    });
+
+    fireEvent.blur(searchInput);
+
+    await waitFor(() => {
+      expect(screen.getByRole("search")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: t("common.closeSearch") })).not.toBeInTheDocument();
+    });
+  });
+
   it("repositions the dock and signals keyboard-active when the keyboard opens", async () => {
     setViewportWidth(480);
     Object.defineProperty(window, "innerHeight", {
@@ -303,7 +348,25 @@ describe("FilterToolbar", () => {
     });
   });
 
-  it("dismisses the mobile search dock when the overlay is tapped", async () => {
+  it("keeps the mobile search dock visible when the field loses focus", async () => {
+    setViewportWidth(480);
+
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
+    const searchInput = screen.getByLabelText(t("common.search"));
+
+    expect(searchInput).toBeInTheDocument();
+
+    fireEvent.blur(searchInput);
+
+    await waitFor(() => {
+      expect(screen.getByRole("search")).toBeInTheDocument();
+      expect(screen.getByLabelText(t("common.search"))).toBeInTheDocument();
+    });
+  });
+
+  it("closes the mobile search dock only through the explicit close action", async () => {
     setViewportWidth(480);
 
     render(<MobileSearchHarness />);
@@ -311,20 +374,19 @@ describe("FilterToolbar", () => {
     fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
     expect(screen.getByLabelText(t("common.search"))).toBeInTheDocument();
 
-    const overlay = screen.getByRole("button", { name: t("common.closeSearch") });
-    fireEvent.click(overlay);
+    fireEvent.click(screen.getByRole("button", { name: t("common.close") }));
 
     await waitFor(() => {
       expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
     });
   });
 
-  it("does not render the overlay when the mobile search dock is not visible", () => {
+  it("does not render the mobile search dock when it is not visible", () => {
     setViewportWidth(480);
 
     render(<MobileSearchHarness />);
 
-    expect(screen.queryByRole("button", { name: t("common.closeSearch") })).not.toBeInTheDocument();
+    expect(screen.queryByRole("search")).not.toBeInTheDocument();
   });
 
   it("keeps the mobile search dock stable when visualViewport is unavailable", async () => {

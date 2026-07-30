@@ -97,9 +97,11 @@ export default function BudgetsPage() {
             id="budget-search"
             inputRef={mobileSearch.inputRef}
             label={t("common.search")}
+            onBlur={mobileSearch.handleBlur}
             onChange={(search) => {
               patchFilters({ search });
             }}
+            onFocus={mobileSearch.handleFocus}
             placeholder={t("budgets.searchPlaceholder")}
             value={filters.search}
           />
@@ -160,7 +162,17 @@ export default function BudgetsPage() {
         ),
       },
     }),
-    [filters.referenceMonth, filters.search, filters.status, filters.type, mobileSearch.inputRef, patchFilters, t],
+    [
+      filters.referenceMonth,
+      filters.search,
+      filters.status,
+      filters.type,
+      mobileSearch.handleBlur,
+      mobileSearch.handleFocus,
+      mobileSearch.inputRef,
+      patchFilters,
+      t,
+    ],
   );
 
   const isCreating = drawerState.mode === "create";
@@ -189,7 +201,9 @@ export default function BudgetsPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            onDismissMobileSearchFocus={mobileSearch.blurInput}
             onCloseMobileSearch={mobileSearch.close}
+            isMobileSearchFocused={mobileSearch.isFocused}
             isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}

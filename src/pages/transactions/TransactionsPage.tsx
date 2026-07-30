@@ -85,7 +85,11 @@ export default function TransactionsPage() {
           <TransactionFiltersPanel
             value={filters}
             onChange={setFilters}
+            onDismissMobileSearchFocus={mobileSearch.blurInput}
             onCloseMobileSearch={mobileSearch.close}
+            onMobileSearchBlur={mobileSearch.handleBlur}
+            onMobileSearchFocus={mobileSearch.handleFocus}
+            isMobileSearchFocused={mobileSearch.isFocused}
             isMobileSearchOpen={mobileSearch.isOpen}
             mobileSearchInputRef={mobileSearch.inputRef}
           />

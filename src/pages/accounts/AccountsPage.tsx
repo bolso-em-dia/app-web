@@ -78,9 +78,11 @@ export default function AccountsPage() {
             id="account-search"
             inputRef={mobileSearch.inputRef}
             label={t("common.search")}
+            onBlur={mobileSearch.handleBlur}
             onChange={(search) => {
               patchFilters({ search });
             }}
+            onFocus={mobileSearch.handleFocus}
             placeholder={t("accounts.searchPlaceholder")}
             value={filters.search}
           />
@@ -145,7 +147,16 @@ export default function AccountsPage() {
         ),
       },
     }),
-    [filters.search, filters.status, filters.type, mobileSearch.inputRef, patchFilters, t],
+    [
+      filters.search,
+      filters.status,
+      filters.type,
+      mobileSearch.handleBlur,
+      mobileSearch.handleFocus,
+      mobileSearch.inputRef,
+      patchFilters,
+      t,
+    ],
   );
 
   return (
@@ -169,7 +180,9 @@ export default function AccountsPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            onDismissMobileSearchFocus={mobileSearch.blurInput}
             onCloseMobileSearch={mobileSearch.close}
+            isMobileSearchFocused={mobileSearch.isFocused}
             isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}

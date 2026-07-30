@@ -48,9 +48,11 @@ export default function CategoriesPage() {
             id="category-search"
             inputRef={mobileSearch.inputRef}
             label={t("common.search")}
+            onBlur={mobileSearch.handleBlur}
             onChange={(search) => {
               patchFilters({ search });
             }}
+            onFocus={mobileSearch.handleFocus}
             placeholder={t("categories.searchPlaceholder")}
             value={filters.search}
           />
@@ -85,7 +87,7 @@ export default function CategoriesPage() {
         ),
       },
     }),
-    [filters.search, filters.status, mobileSearch.inputRef, patchFilters, t],
+    [filters.search, filters.status, mobileSearch.handleBlur, mobileSearch.handleFocus, mobileSearch.inputRef, patchFilters, t],
   );
 
   function handleSelect(_id: string, category: Category) {
@@ -131,7 +133,9 @@ export default function CategoriesPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            onDismissMobileSearchFocus={mobileSearch.blurInput}
             onCloseMobileSearch={mobileSearch.close}
+            isMobileSearchFocused={mobileSearch.isFocused}
             isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}

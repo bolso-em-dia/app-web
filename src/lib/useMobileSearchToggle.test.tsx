@@ -120,6 +120,51 @@ describe("useMobileSearchToggle", () => {
     });
 
     expect(blur).toHaveBeenCalledTimes(1);
+    expect(result.current.isFocused).toBe(false);
     expect(result.current.isOpen).toBe(false);
+  });
+
+  it("tracks focus state separately from dock visibility", () => {
+    const { result } = renderHook(() => useMobileSearchToggle());
+
+    act(() => {
+      result.current.open();
+      result.current.handleFocus();
+    });
+
+    expect(result.current.isOpen).toBe(true);
+    expect(result.current.isFocused).toBe(true);
+
+    act(() => {
+      result.current.handleBlur();
+    });
+
+    expect(result.current.isOpen).toBe(true);
+    expect(result.current.isFocused).toBe(false);
+  });
+
+  it("blurs the focused input without closing the mobile search dock", () => {
+    const blur = vi.fn();
+    const input = { blur } as unknown as HTMLInputElement;
+    const { result } = renderHook(() => useMobileSearchToggle());
+
+    act(() => {
+      result.current.inputRef.current = input;
+      result.current.open();
+      result.current.handleFocus();
+    });
+
+    Object.defineProperty(document, "activeElement", {
+      configurable: true,
+      value: input,
+    });
+
+    act(() => {
+      result.current.blurInput();
+    });
+
+    expect(blur).toHaveBeenCalledTimes(1);
+    expect(result.current.isOpen).toBe(true);
+    expect(result.current.isFocused).toBe(false);
   });
 });

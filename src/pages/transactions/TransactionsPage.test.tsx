@@ -1359,7 +1359,7 @@ describe("TransactionsPage", () => {
     expect(within(dialog).getByLabelText(t("common.type"), { selector: "#transaction-filter-type" })).toBeInTheDocument();
   });
 
-  it("lifts the transactions mobile search dock with VisualViewport and closes it via the overlay", async () => {
+  it("lifts the transactions mobile search dock with VisualViewport, dismisses keyboard via overlay, and keeps content clickable after blur", async () => {
     setViewportWidth(480);
     setupDefaultMocks();
     Object.defineProperty(window, "innerHeight", {
@@ -1382,8 +1382,13 @@ describe("TransactionsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
 
     const dock = screen.getByRole("search");
-    expect(within(dock).getByRole("textbox", { name: t("common.search") })).toBeInTheDocument();
+    const searchInput = within(dock).getByRole("textbox", { name: t("common.search") });
+    expect(searchInput).toBeInTheDocument();
     expect(dock).toHaveStyle("--keyboard-inset: 0px");
+
+    await waitFor(() => {
+      expect(searchInput).toHaveFocus();
+    });
 
     visualViewport.height = 520;
     visualViewport.dispatch("resize");
@@ -1393,11 +1398,18 @@ describe("TransactionsPage", () => {
       expect(dock).toHaveStyle("--keyboard-active: 1");
     });
 
-    fireEvent.click(screen.getByRole("button", { name: t("common.closeSearch") }));
+    fireEvent.pointerDown(screen.getByRole("button", { name: t("common.closeSearch") }));
 
     await waitFor(() => {
-      expect(screen.queryByRole("search")).not.toBeInTheDocument();
+      expect(screen.getByRole("search")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: t("common.closeSearch") })).not.toBeInTheDocument();
     });
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Groceries/i }));
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
   it("shows error feedback when delete fails", async () => {

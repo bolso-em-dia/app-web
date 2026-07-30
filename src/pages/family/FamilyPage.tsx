@@ -66,9 +66,11 @@ export default function FamilyPage() {
             id="family-search"
             inputRef={mobileSearch.inputRef}
             label={t("common.search")}
+            onBlur={mobileSearch.handleBlur}
             onChange={(search) => {
               patchFilters({ search });
             }}
+            onFocus={mobileSearch.handleFocus}
             placeholder={t("family.searchPlaceholder")}
             value={filters.search}
           />
@@ -103,7 +105,7 @@ export default function FamilyPage() {
         ),
       },
     }),
-    [filters.search, filters.status, mobileSearch.inputRef, patchFilters, t],
+    [filters.search, filters.status, mobileSearch.handleBlur, mobileSearch.handleFocus, mobileSearch.inputRef, patchFilters, t],
   );
 
   return (
@@ -127,7 +129,9 @@ export default function FamilyPage() {
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
             fields={fields}
+            onDismissMobileSearchFocus={mobileSearch.blurInput}
             onCloseMobileSearch={mobileSearch.close}
+            isMobileSearchFocused={mobileSearch.isFocused}
             isMobileSearchOpen={mobileSearch.isOpen}
             isPanelOpen={isFiltersOpen}
             onClosePanel={() => setIsFiltersOpen(false)}

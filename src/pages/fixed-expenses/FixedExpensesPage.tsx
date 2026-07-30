@@ -70,9 +70,11 @@ export default function FixedExpensesPage() {
             id="fixed-expense-search"
             inputRef={mobileSearch.inputRef}
             label={t("common.search")}
+            onBlur={mobileSearch.handleBlur}
             onChange={(search) => {
               patchFilters({ search });
             }}
+            onFocus={mobileSearch.handleFocus}
             placeholder={t("fixedTransactions.searchPlaceholder")}
             value={filters.search}
           />
@@ -107,7 +109,7 @@ export default function FixedExpensesPage() {
         ),
       },
     }),
-    [filters.search, filters.status, mobileSearch.inputRef, patchFilters, t],
+    [filters.search, filters.status, mobileSearch.handleBlur, mobileSearch.handleFocus, mobileSearch.inputRef, patchFilters, t],
   );
 
   const isCreating = drawerState.mode === "create";
@@ -117,7 +119,9 @@ export default function FixedExpensesPage() {
   const toolbar = (
     <FilterToolbar
       fields={fields}
+      onDismissMobileSearchFocus={mobileSearch.blurInput}
       onCloseMobileSearch={mobileSearch.close}
+      isMobileSearchFocused={mobileSearch.isFocused}
       isMobileSearchOpen={mobileSearch.isOpen}
       isPanelOpen={isFiltersOpen}
       onClosePanel={() => setIsFiltersOpen(false)}

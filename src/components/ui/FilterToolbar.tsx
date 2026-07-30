@@ -4,7 +4,6 @@ import Drawer from "./Drawer";
 import Button from "./Button";
 import clsx from "./clsx";
 import FilterChip from "./FilterChip";
-import SearchOverlay from "./SearchOverlay";
 import KeyboardAvoidingContainer from "./KeyboardAvoidingContainer";
 import styles from "./FilterToolbar.module.scss";
 import { useI18n } from "../../app/i18n/I18nContext";
@@ -18,6 +17,8 @@ type FilterToolbarProps = {
   onClosePanel: () => void;
   onResetField: (name: string, defaultValue: unknown) => void;
   isMobileSearchOpen?: boolean;
+  isMobileSearchFocused?: boolean;
+  onDismissMobileSearchFocus?: () => void;
   onCloseMobileSearch?: () => void;
 };
 
@@ -28,6 +29,8 @@ export default function FilterToolbar({
   onClosePanel,
   onResetField,
   isMobileSearchOpen,
+  isMobileSearchFocused,
+  onDismissMobileSearchFocus,
   onCloseMobileSearch,
 }: FilterToolbarProps) {
   const { t } = useI18n();
@@ -38,6 +41,7 @@ export default function FilterToolbar({
   const visibleFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "visible"), [fieldEntries]);
   const supportsMobileSearchToggle = typeof isMobileSearchOpen === "boolean";
   const shouldUseMobileSearchDock = supportsMobileSearchToggle && isMobileActionLayout;
+  const shouldRenderMobileSearchOverlay = shouldUseMobileSearchDock && !!isMobileSearchOpen && !!isMobileSearchFocused;
   const mobileSearchEntry = useMemo(() => visibleFields.find(([name]) => name === "search") ?? null, [visibleFields]);
   const renderedVisibleFields = useMemo(
     () =>
@@ -142,7 +146,18 @@ export default function FilterToolbar({
 
       {shouldUseMobileSearchDock && isMobileSearchOpen && mobileSearchEntry ? (
         <>
-          {onCloseMobileSearch ? <SearchOverlay onDismiss={onCloseMobileSearch} /> : null}
+          {shouldRenderMobileSearchOverlay && onDismissMobileSearchFocus ? (
+            <button
+              aria-label={t("common.closeSearch")}
+              className={styles.mobileSearchOverlay}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                onDismissMobileSearchFocus();
+              }}
+              tabIndex={-1}
+              type="button"
+            />
+          ) : null}
           <KeyboardAvoidingContainer
             className={styles.mobileSearchDock}
             enabled={shouldUseMobileSearchDock && !!isMobileSearchOpen}
