@@ -1,12 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  createCalendarDays,
+  createMonthOptions,
+  formatAccessibleDateLabel,
   formatDateValue,
   formatDay,
   formatMonthValue,
   formatPartialDateInput,
   formatPartialMonthInput,
   formatReferenceMonth,
+  getCurrentIsoDate,
+  getReferenceMonthFromDate,
   getCurrentReferenceMonth,
+  getWeekdayLabels,
+  getYearFromIsoMonth,
   isCurrentReferenceMonth,
   parseFormattedDate,
   parseFormattedMonth,
@@ -18,6 +25,15 @@ describe("getCurrentReferenceMonth", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-15T10:00:00Z"));
     expect(getCurrentReferenceMonth()).toBe("2026-07-01");
+    vi.useRealTimers();
+  });
+});
+
+describe("getCurrentIsoDate", () => {
+  it("returns the current local date in ISO format", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-15T10:00:00Z"));
+    expect(getCurrentIsoDate()).toBe("2026-07-15");
     vi.useRealTimers();
   });
 });
@@ -114,5 +130,36 @@ describe("BR text input helpers", () => {
 
   it("rejects invalid BR month values", () => {
     expect(parseFormattedMonth("13/2026")).toBeNull();
+  });
+
+  it("extracts the reference month from an ISO date", () => {
+    expect(getReferenceMonthFromDate("2026-07-05")).toBe("2026-07-01");
+  });
+
+  it("formats full accessible date labels in pt-BR", () => {
+    expect(formatAccessibleDateLabel("2026-07-05")).toMatch(/05.*julho.*2026/i);
+  });
+
+  it("creates weekday labels for the picker header", () => {
+    expect(getWeekdayLabels()).toHaveLength(7);
+  });
+
+  it("creates a calendar grid aligned to full weeks", () => {
+    const days = createCalendarDays("2026-07-01");
+
+    expect(days).toHaveLength(35);
+    expect(days.some((day) => day.isoValue === "2026-07-01" && day.inCurrentMonth)).toBe(true);
+  });
+
+  it("creates month options for a given year", () => {
+    const months = createMonthOptions(2026);
+
+    expect(months).toHaveLength(12);
+    expect(months[0]?.isoValue).toBe("2026-01-01");
+    expect(months[11]?.isoValue).toBe("2026-12-01");
+  });
+
+  it("extracts the year from an ISO month value", () => {
+    expect(getYearFromIsoMonth("2026-07-01")).toBe(2026);
   });
 });

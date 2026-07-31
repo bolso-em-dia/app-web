@@ -1,6 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
-import { t } from "../../test/i18n";
 import MonthInput from "./MonthInput";
 
 describe("MonthInput", () => {
@@ -37,26 +36,32 @@ describe("MonthInput", () => {
     expect(handleChange).not.toHaveBeenLastCalledWith("");
   });
 
-  it("opens the native month picker when the calendar button is clicked", () => {
-    const showPicker = vi.fn();
-
+  it("opens the custom month picker when the input receives focus", () => {
     render(<MonthInput aria-label="month-input" onChange={vi.fn()} value="2026-07-01" />);
 
-    const nativePicker = screen.getByDisplayValue("2026-07") as HTMLInputElement & { showPicker?: () => void };
-    nativePicker.showPicker = showPicker;
+    fireEvent.focus(screen.getByRole("textbox", { name: "month-input" }));
 
-    fireEvent.click(screen.getByRole("button", { name: t("common.openMonthPicker") }));
-
-    expect(showPicker).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("emits the selected ISO month when the native picker changes", () => {
+  it("emits the selected ISO month when a month is picked", () => {
     const handleChange = vi.fn();
 
     render(<MonthInput aria-label="month-input" onChange={handleChange} value="2026-07-01" />);
 
-    fireEvent.change(screen.getByDisplayValue("2026-07"), { target: { value: "2026-09" } });
+    fireEvent.focus(screen.getByRole("textbox", { name: "month-input" }));
+    fireEvent.click(screen.getByRole("button", { name: /set/i }));
 
     expect(handleChange).toHaveBeenCalledWith("2026-09-01");
+  });
+
+  it("closes the picker when escape is pressed", () => {
+    render(<MonthInput aria-label="month-input" onChange={vi.fn()} value="2026-07-01" />);
+
+    const input = screen.getByRole("textbox", { name: "month-input" });
+    fireEvent.focus(input);
+    fireEvent.keyDown(input, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

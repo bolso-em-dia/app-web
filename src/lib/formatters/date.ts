@@ -8,6 +8,32 @@ const DAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   month: "short",
 });
 
+const FULL_DATE_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
+
+const SHORT_MONTH_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  month: "short",
+});
+
+const WEEKDAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "short",
+});
+
+export type CalendarDay = {
+  isoValue: string;
+  dayOfMonth: number;
+  inCurrentMonth: boolean;
+};
+
+export type MonthOption = {
+  isoValue: string;
+  label: string;
+  monthNumber: number;
+};
+
 function pad(value: number) {
   return String(value).padStart(2, "0");
 }
@@ -21,14 +47,45 @@ function isValidDate(year: number, month: number, day: number) {
   return parsedDate.getFullYear() === year && parsedDate.getMonth() === month - 1 && parsedDate.getDate() === day;
 }
 
+function parseIsoParts(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return { day, month, year };
+}
+
+function buildIsoDate(year: number, month: number, day: number) {
+  return `${year}-${pad(month)}-${pad(day)}`;
+}
+
+function formatLocalDate(date: Date) {
+  return buildIsoDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}
+
+function cleanShortLabel(value: string) {
+  return value.replace(".", "");
+}
+
 export function getCurrentReferenceMonth() {
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  return buildIsoDate(now.getFullYear(), now.getMonth() + 1, 1);
+}
+
+export function getCurrentIsoDate() {
+  return formatLocalDate(new Date());
 }
 
 export function shiftReferenceMonth(value: string, deltaMonths: number) {
   const [year, month] = value.split("-").map(Number);
-  return new Date(year, month - 1 + deltaMonths, 1).toISOString().slice(0, 10);
+  return formatLocalDate(new Date(year, month - 1 + deltaMonths, 1));
+}
+
+export function getReferenceMonthFromDate(value: string) {
+  const { year, month } = parseIsoParts(value);
+
+  if (!year || !month) {
+    return "";
+  }
+
+  return buildIsoDate(year, month, 1);
 }
 
 export function isCurrentReferenceMonth(value: string) {
@@ -41,6 +98,10 @@ export function formatReferenceMonth(value: string) {
 
 export function formatDay(value: string) {
   return DAY_FORMATTER.format(new Date(`${value}T00:00:00`));
+}
+
+export function formatAccessibleDateLabel(value: string) {
+  return FULL_DATE_FORMATTER.format(new Date(`${value}T00:00:00`));
 }
 
 export function formatDateValue(value: string) {
@@ -120,4 +181,59 @@ export function parseFormattedMonth(value: string) {
   }
 
   return `${year}-${pad(month)}-01`;
+}
+
+export function getWeekdayLabels() {
+  return Array.from({ length: 7 }, (_, index) => cleanShortLabel(WEEKDAY_FORMATTER.format(new Date(2026, 1, 1 + index))));
+}
+
+export function createCalendarDays(referenceMonth: string) {
+  const { month, year } = parseIsoParts(referenceMonth);
+  const firstDayWeekIndex = new Date(year, month - 1, 1).getDay();
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const daysInPreviousMonth = new Date(year, month - 1, 0).getDate();
+  const totalCells = Math.ceil((firstDayWeekIndex + daysInMonth) / 7) * 7;
+
+  return Array.from({ length: totalCells }, (_, index): CalendarDay => {
+    const dayOffset = index - firstDayWeekIndex + 1;
+
+    if (dayOffset < 1) {
+      const previousMonthDate = new Date(year, month - 2, daysInPreviousMonth + dayOffset);
+      return {
+        isoValue: buildIsoDate(previousMonthDate.getFullYear(), previousMonthDate.getMonth() + 1, previousMonthDate.getDate()),
+        dayOfMonth: previousMonthDate.getDate(),
+        inCurrentMonth: false,
+      };
+    }
+
+    if (dayOffset > daysInMonth) {
+      const nextMonthDate = new Date(year, month - 1, dayOffset);
+      return {
+        isoValue: buildIsoDate(nextMonthDate.getFullYear(), nextMonthDate.getMonth() + 1, nextMonthDate.getDate()),
+        dayOfMonth: nextMonthDate.getDate(),
+        inCurrentMonth: false,
+      };
+    }
+
+    return {
+      isoValue: buildIsoDate(year, month, dayOffset),
+      dayOfMonth: dayOffset,
+      inCurrentMonth: true,
+    };
+  });
+}
+
+export function createMonthOptions(year: number) {
+  return Array.from({ length: 12 }, (_, monthIndex): MonthOption => {
+    const date = new Date(year, monthIndex, 1);
+    return {
+      isoValue: buildIsoDate(year, monthIndex + 1, 1),
+      label: cleanShortLabel(SHORT_MONTH_FORMATTER.format(date)),
+      monthNumber: monthIndex + 1,
+    };
+  });
+}
+
+export function getYearFromIsoMonth(value: string) {
+  return parseIsoParts(value).year;
 }

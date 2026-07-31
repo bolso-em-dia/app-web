@@ -54,8 +54,6 @@ export const ptBRMessages = {
   "common.referenceMonth": "Mês de referência",
   "common.previousMonth": "Mês anterior",
   "common.nextMonth": "Próximo mês",
-  "common.openDatePicker": "Abrir calendário",
-  "common.openMonthPicker": "Abrir seletor de mês",
   "common.ownership": "Titularidade",
   "common.selectAccount": "Selecione uma conta/cartão",
   "common.selectCategory": "Selecione uma categoria",

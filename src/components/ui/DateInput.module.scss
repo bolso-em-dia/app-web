@@ -1,45 +1,87 @@
 @use "../../styles/mixins.scss" as mixins;
 
 .root {
+  position: relative;
+}
+
+.popover {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + var(--space-2));
+  left: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: var(--space-3);
+  min-width: min(18rem, 100vw - var(--space-8));
+  padding: var(--space-3);
+
+  @include mixins.select-popover;
+}
+
+.popoverHeader {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content;
   gap: var(--space-2);
   align-items: center;
 }
 
-.pickerButton {
-  @include mixins.field-shell;
+.popoverTitle {
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.navButton {
+  @include mixins.selectable-option;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: var(--control-size);
   padding-inline: 0;
-  background: var(--color-surface-muted);
-  color: var(--color-text-muted);
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.72;
-    cursor: not-allowed;
-  }
-
-  &:hover:not(:disabled) {
-    background: var(--color-panel-muted);
-    border-color: var(--color-border-strong);
-    color: var(--color-text);
-  }
 }
 
-.nativePickerInput {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
+.weekdayRow,
+.calendarGrid,
+.monthGrid {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.weekdayRow,
+.calendarGrid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.monthGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.weekdayCell {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-050);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.dayButton,
+.monthButton {
+  @include mixins.selectable-option;
+
+  justify-content: center;
+  min-height: calc(var(--control-size) - var(--space-2));
+  padding-inline: var(--space-2);
+  text-transform: capitalize;
+}
+
+.dayButtonMuted {
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+}
+
+.dayButtonSelected,
+.monthButtonSelected {
+  border-color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
 }
