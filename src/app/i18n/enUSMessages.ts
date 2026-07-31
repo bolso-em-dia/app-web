@@ -246,9 +246,9 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.description": "Description",
   "transactions.amount": "Amount",
   "transactions.transactionDate": "Transaction date",
-  "transactions.creditCardNextMonthAlert":
-    "Based on the purchase date and the card closing day, this transaction will be considered in the next month by default.",
   "transactions.creditCardNextMonthToggle": "Consider in next month",
+  "transactions.creditCardNextMonthTooltip":
+    "Purchases after the card closing day usually land in next month's bill. Checked keeps that behavior; unchecked forces this month instead.",
   "transactions.installmentToggle": "Installment",
   "transactions.installmentCount": "Number of installments",
   "transactions.moveToNextMonth": "Move to next month",

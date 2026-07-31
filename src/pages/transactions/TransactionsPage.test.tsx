@@ -744,12 +744,12 @@ describe("TransactionsPage", () => {
     );
     selectCategory(drawer, "Groceries");
 
-    expect(await within(drawer).findByText(t("transactions.creditCardNextMonthAlert"))).toBeInTheDocument();
-
     const nextMonthSwitch = within(drawer).getByRole("switch", {
       name: t("transactions.creditCardNextMonthToggle"),
     });
     expect(nextMonthSwitch).toBeChecked();
+
+    expect(within(drawer).getByRole("button", { name: t("transactions.creditCardNextMonthTooltip") })).toBeInTheDocument();
 
     fireEvent.click(nextMonthSwitch);
     fireEvent.click(within(drawer).getByRole("button", { name: t("transactions.save") }));

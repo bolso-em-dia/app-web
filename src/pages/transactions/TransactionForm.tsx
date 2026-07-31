@@ -30,6 +30,7 @@ import FormError from "../../components/ui/FormError";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Switch from "../../components/ui/Switch";
+import Tooltip from "../../components/ui/Tooltip";
 import { formErrorFrom } from "../../lib/formError";
 import { getDayOfMonthFromDate } from "../../lib/formatters/date";
 import styles from "./TransactionsPage.module.scss";
@@ -434,14 +435,16 @@ function TransactionFormContent({
         </Field>
 
         {shouldShowReferenceMonthAlert ? (
-          <div className={styles.referenceMonthAlert} role="alert">
-            <p className={styles.helperText}>{t("transactions.creditCardNextMonthAlert")}</p>
-            <Switch
-              checked={shouldApplyNextMonthRule}
-              id="transaction-reference-month-policy"
-              label={t("transactions.creditCardNextMonthToggle")}
-              onChange={(event) => setReferenceMonthPolicy(event.target.checked ? "AUTO" : "FORCE_CURRENT")}
-            />
+          <div className={styles.referenceMonthAlert}>
+            <div className={styles.referenceMonthToggleRow}>
+              <Switch
+                checked={shouldApplyNextMonthRule}
+                id="transaction-reference-month-policy"
+                label={t("transactions.creditCardNextMonthToggle")}
+                onChange={(event) => setReferenceMonthPolicy(event.target.checked ? "AUTO" : "FORCE_CURRENT")}
+              />
+              <Tooltip className={styles.referenceMonthTooltip} content={t("transactions.creditCardNextMonthTooltip")} />
+            </div>
           </div>
         ) : null}
 
