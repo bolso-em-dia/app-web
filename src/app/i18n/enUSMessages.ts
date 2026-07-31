@@ -61,6 +61,8 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "common.referenceMonth": "Reference month",
   "common.previousMonth": "Previous month",
   "common.nextMonth": "Next month",
+  "common.openDatePicker": "Open calendar",
+  "common.openMonthPicker": "Open month picker",
   "common.ownership": "Ownership",
   "common.selectAccount": "Select an account/card",
   "common.selectCategory": "Select a category",
