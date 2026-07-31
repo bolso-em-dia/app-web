@@ -276,6 +276,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.deleteScope.all": "Entire installment group",
   "transactions.deleteAction": "Delete transaction",
   "transactions.closeDeleteConfirm": "Close delete confirmation",
+  "transactions.fixed": "Fixed",
   "transactions.projected": "Projected",
   "transactions.empty": "No transactions found for the current filters.",
 

@@ -1,3 +1,4 @@
+import { Pin } from "lucide-react";
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { getDashboard, type DashboardResponse } from "../app/api/dashboard";
 import { materializeTransactions } from "../app/api/transactions";
@@ -226,10 +227,20 @@ export default function HomePage() {
               {recentTxSlice.map((transaction) => (
                 <li key={transaction.id} className={styles.itemRow}>
                   <div>
-                    <strong>
-                      {transaction.description}
-                      {transaction.projected ? <span className={styles.projectedBadge}> {t("transactions.projected")}</span> : null}
-                    </strong>
+                    <div className={styles.recentTransactionHeader}>
+                      <strong>{transaction.description}</strong>
+                      <div className={styles.recentTransactionBadges}>
+                        {transaction.sourceType === "FIXED_EXPENSE" ? (
+                          <span className={`${styles.statusBadge} ${styles.fixedBadge}`}>
+                            <Pin aria-hidden="true" className={styles.badgeIcon} />
+                            {t("transactions.fixed")}
+                          </span>
+                        ) : null}
+                        {transaction.projected ? (
+                          <span className={`${styles.statusBadge} ${styles.projectedBadge}`}>{t("transactions.projected")}</span>
+                        ) : null}
+                      </div>
+                    </div>
                     <p className={styles.itemMeta}>
                       {transaction.categoryName} · {transaction.accountName} · {formatDay(transaction.transactionDate)}
                       {transaction.currency === "USD" && transaction.exchangeRate != null

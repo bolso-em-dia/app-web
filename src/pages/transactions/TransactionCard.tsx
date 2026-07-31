@@ -1,3 +1,4 @@
+import { Pin } from "lucide-react";
 import { useI18n } from "../../app/i18n/I18nContext";
 import Card from "../../components/ui/Card";
 import MoneyAmount from "../../components/ui/MoneyAmount";
@@ -19,6 +20,7 @@ export default function TransactionCard({ transaction, categoryOption, onSelect 
   const { t } = useI18n();
   const categoryIcon = renderStoredIcon(categoryOption?.icon, styles.categoryIcon);
   const categoryColor = categoryOption?.color ?? undefined;
+  const isFixedExpense = transaction.sourceType === "FIXED_EXPENSE";
 
   const cardContent = (
     <>
@@ -64,6 +66,12 @@ export default function TransactionCard({ transaction, categoryOption, onSelect 
           {t(`transactionTypes.${transaction.type}` as const)}
         </span>
         <span className={styles.badge}>{t(`ownershipTypes.${transaction.ownershipType}` as const)}</span>
+        {isFixedExpense ? (
+          <span className={`${styles.badge} ${styles.fixedBadge}`}>
+            <Pin aria-hidden="true" className={styles.badgeIcon} />
+            {t("transactions.fixed")}
+          </span>
+        ) : null}
         {transaction.memberName ? <span className={`${styles.badge} ${styles.badgeMuted}`}>{transaction.memberName}</span> : null}
         {transaction.installmentTotal ? (
           <span className={`${styles.badge} ${styles.badgeMuted}`}>

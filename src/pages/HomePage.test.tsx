@@ -639,7 +639,137 @@ describe("HomePage", () => {
     );
 
     expect(await screen.findByText("Projected Rent")).toBeInTheDocument();
-    expect(screen.getByText("Prevista")).toBeInTheDocument();
+    expect(screen.getByText(t("transactions.fixed"))).toBeInTheDocument();
+    expect(screen.getByText(t("transactions.projected"))).toBeInTheDocument();
+  });
+
+  it("shows the fixed badge on fixed recent transactions", async () => {
+    resetFetchMocks();
+
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-07-01",
+        summary: {
+          totalIncome: 1000,
+          totalExpense: 90,
+          balance: 910,
+          availableBalance: 910,
+          reservedBudgetAmount: 0,
+        },
+        budgets: [],
+        recentTransactions: [
+          {
+            id: "fixed-1",
+            type: "EXPENSE",
+            ownershipType: "SHARED",
+            sourceType: "FIXED_EXPENSE",
+            description: "Gym",
+            amount: 90,
+            convertedAmount: 90,
+            transactionDate: "2026-07-02",
+            referenceMonth: "2026-07-01",
+            accountId: "a-1",
+            accountName: "Main",
+            categoryId: "c-1",
+            categoryName: "Health",
+            memberId: null,
+            memberName: null,
+            installmentGroupId: null,
+            installmentNumber: null,
+            installmentTotal: null,
+            projected: false,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        categoryBreakdown: [],
+      }),
+    );
+
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Gym")).toBeInTheDocument();
+    expect(screen.getByText(t("transactions.fixed"))).toBeInTheDocument();
+    expect(screen.queryByText(t("transactions.projected"))).not.toBeInTheDocument();
+  });
+
+  it("does not show the fixed badge on non-fixed recent transactions", async () => {
+    resetFetchMocks();
+
+    mockFetchUrl(
+      "/api/dashboard",
+      mockJsonResponse({
+        referenceMonth: "2026-07-01",
+        summary: {
+          totalIncome: 1000,
+          totalExpense: 120,
+          balance: 880,
+          availableBalance: 880,
+          reservedBudgetAmount: 0,
+        },
+        budgets: [],
+        recentTransactions: [
+          {
+            id: "manual-1",
+            type: "EXPENSE",
+            ownershipType: "SHARED",
+            sourceType: "MANUAL",
+            description: "Cinema",
+            amount: 120,
+            convertedAmount: 120,
+            transactionDate: "2026-07-03",
+            referenceMonth: "2026-07-01",
+            accountId: "a-1",
+            accountName: "Main",
+            categoryId: "c-1",
+            categoryName: "Leisure",
+            memberId: null,
+            memberName: null,
+            installmentGroupId: null,
+            installmentNumber: null,
+            installmentTotal: null,
+            projected: false,
+            createdAt: "2026-06-01T10:00:00Z",
+            updatedAt: "2026-06-01T10:00:00Z",
+          },
+        ],
+        categoryBreakdown: [],
+      }),
+    );
+
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <TestAuthProvider
+          user={{
+            id: "1",
+            name: "Admin",
+            email: "admin@bolso-em-dia.local",
+            role: "ADMIN",
+            allowanceEnabled: false,
+          }}
+        >
+          <HomePage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Cinema")).toBeInTheDocument();
+    expect(screen.queryByText(t("transactions.fixed"))).not.toBeInTheDocument();
   });
 
   it("shows expense with reserved budget amount when budgets are considered", async () => {

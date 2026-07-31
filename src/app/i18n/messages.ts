@@ -410,6 +410,7 @@ export const ptBRMessages = {
   "transactions.deleteError": "Não foi possível excluir a transação.",
   "transactions.new": "Nova",
   "transactions.empty": "Nenhuma transação encontrada para os filtros atuais.",
+  "transactions.fixed": "Fixo",
   "transactions.projected": "Prevista",
   "transactions.newTitle": "Nova transação",
   "transactions.detailsTitle": "Detalhes da transação",

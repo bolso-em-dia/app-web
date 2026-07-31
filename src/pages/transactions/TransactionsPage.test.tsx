@@ -1268,12 +1268,123 @@ describe("TransactionsPage", () => {
     );
 
     expect(await screen.findByText("Projected Rent")).toBeInTheDocument();
-    expect(screen.getByText("Prevista")).toBeInTheDocument();
+    expect(screen.getByText(t("transactions.fixed"))).toBeInTheDocument();
+    expect(screen.getByText(t("transactions.projected"))).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Projected Rent/i })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Projected Rent"));
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("shows the fixed badge for fixed transactions", async () => {
+    resetFetchMocks();
+
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "fixed-rent",
+            type: "EXPENSE",
+            ownershipType: "SHARED",
+            sourceType: "FIXED_EXPENSE",
+            description: "Rent",
+            amount: 1200,
+            convertedAmount: 1200,
+            transactionDate: "2026-06-05",
+            referenceMonth: "2026-06-01",
+            accountId: "account-1",
+            accountName: "Main checking",
+            categoryId: "cat-1",
+            categoryName: "Groceries",
+            memberId: null,
+            memberName: null,
+            installmentGroupId: null,
+            installmentNumber: null,
+            installmentTotal: null,
+            fixedExpenseTemplateId: "template-1",
+            projected: false,
+            createdAt: null,
+            updatedAt: null,
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser()}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const fixedTransactionButton = await screen.findByRole("button", { name: /Rent/i });
+    expect(within(fixedTransactionButton).getByText(t("transactions.fixed"))).toBeInTheDocument();
+    expect(within(fixedTransactionButton).queryByText(t("transactions.projected"))).not.toBeInTheDocument();
+  });
+
+  it("does not show the fixed badge for non-fixed transactions", async () => {
+    resetFetchMocks();
+
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        items: [
+          {
+            id: "manual-market",
+            type: "EXPENSE",
+            ownershipType: "SHARED",
+            sourceType: "MANUAL",
+            description: "Market",
+            amount: 80,
+            convertedAmount: 80,
+            transactionDate: "2026-06-06",
+            referenceMonth: "2026-06-01",
+            accountId: "account-1",
+            accountName: "Main checking",
+            categoryId: "cat-1",
+            categoryName: "Groceries",
+            memberId: null,
+            memberName: null,
+            installmentGroupId: null,
+            installmentNumber: null,
+            installmentTotal: null,
+            projected: false,
+            createdAt: null,
+            updatedAt: null,
+          },
+        ],
+        page: 0,
+        size: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser()}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const manualTransactionButton = await screen.findByRole("button", { name: /Market/i });
+    expect(within(manualTransactionButton).queryByText(t("transactions.fixed"))).not.toBeInTheDocument();
   });
 
   it("lets the user move to previous and next months and highlights non-current months", async () => {
