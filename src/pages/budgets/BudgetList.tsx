@@ -8,6 +8,7 @@ import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
+import type { SortValue } from "../../lib/sorting";
 import { useInfinitePageList } from "../../lib/useInfinitePageList";
 import BudgetCard from "./BudgetCard";
 import styles from "./BudgetsPage.module.scss";
@@ -19,17 +20,18 @@ interface BudgetListProps {
     type: BudgetType | "ALL";
     referenceMonth: string;
   };
+  sort: SortValue<"name" | "monthlyLimit" | "remainingAmount">;
   selectedId: string | null;
   onSelect: (id: string, budget: Budget) => void;
   refreshKey: number;
   onReferenceDataLoaded: (data: { categories: CategoryOption[]; members: FamilyMember[]; allowanceBudgets: Budget[] }) => void;
 }
 
-export default function BudgetList({ filters, selectedId, onSelect, refreshKey, onReferenceDataLoaded }: BudgetListProps) {
+export default function BudgetList({ filters, sort, selectedId, onSelect, refreshKey, onReferenceDataLoaded }: BudgetListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [referenceDataError, setReferenceDataError] = useState<string | null>(null);
-  const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
+  const queryKey = useMemo(() => JSON.stringify({ ...filters, ...sort, refreshKey }), [filters, refreshKey, sort]);
 
   useEffect(() => {
     async function doLoad() {
@@ -87,6 +89,8 @@ export default function BudgetList({ filters, selectedId, onSelect, refreshKey, 
           search: filters.search || undefined,
           status: filters.status,
           type: filters.type === "ALL" ? undefined : filters.type,
+          sortBy: sort.sortBy,
+          sortDir: sort.sortDir,
         },
         accessToken!,
       ),

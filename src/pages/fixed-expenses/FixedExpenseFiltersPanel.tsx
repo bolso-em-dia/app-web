@@ -1,22 +1,23 @@
 import { useMemo, useState } from "react";
 import type { Dispatch, ReactNode, Ref, SetStateAction } from "react";
-import type { OwnershipType, TransactionFilters, TransactionType } from "../../app/api/transactions";
+import type { FixedExpenseFilters } from "../../app/api/fixedExpenses";
+import type { TransactionType } from "../../app/api/transactions";
 import { useI18n } from "../../app/i18n/I18nContext";
 import FilterToolbar from "../../components/ui/FilterToolbar";
 import FilterCategoryMultiInput from "../../components/ui/filterFields/FilterCategoryMultiInput";
-import FilterMonthInput from "../../components/ui/filterFields/FilterMonthInput";
 import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInput";
 import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
+import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
 import type { FilterFields } from "../../lib/filterFields";
 import { useAccountOptions } from "../../lib/options/useAccountOptions";
 import { useCategoryOptions } from "../../lib/options/useCategoryOptions";
-import { useFamilyMemberOptions } from "../../lib/options/useFamilyMemberOptions";
 import { useFilterController } from "../../lib/useFilterController";
 
-type TransactionFiltersPanelProps = {
+type FixedExpenseFiltersPanelProps = {
   actions?: ReactNode;
-  value: TransactionFilters;
-  onChange: Dispatch<SetStateAction<TransactionFilters>>;
+  referenceMonth: string;
+  value: FixedExpenseFilters;
+  onChange: Dispatch<SetStateAction<FixedExpenseFilters>>;
   isMobileSearchOpen?: boolean;
   isMobileSearchFocused?: boolean;
   mobileSearchInputRef?: Ref<HTMLInputElement>;
@@ -26,8 +27,9 @@ type TransactionFiltersPanelProps = {
   onCloseMobileSearch?: () => void;
 };
 
-export default function TransactionFiltersPanel({
+export default function FixedExpenseFiltersPanel({
   actions,
+  referenceMonth,
   value,
   onChange,
   onCloseMobileSearch,
@@ -37,37 +39,16 @@ export default function TransactionFiltersPanel({
   onDismissMobileSearchFocus,
   onMobileSearchBlur,
   onMobileSearchFocus,
-}: TransactionFiltersPanelProps) {
+}: FixedExpenseFiltersPanelProps) {
   const { t } = useI18n();
   const controller = useFilterController(value, onChange);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const { filters, patch } = controller;
   const { options: accountOptions } = useAccountOptions();
-  const { options: categoryOptions } = useCategoryOptions(filters.referenceMonth);
-  const { options: memberOptions } = useFamilyMemberOptions({
-    allowanceOnly: true,
-    referenceMonth: filters.referenceMonth,
-  });
+  const { options: categoryOptions } = useCategoryOptions(referenceMonth);
 
   const fields = useMemo<FilterFields>(
     () => ({
-      referenceMonth: {
-        kind: "text",
-        label: t("common.referenceMonth"),
-        value: filters.referenceMonth,
-        defaultValue: filters.referenceMonth,
-        placement: "visible",
-        element: (
-          <FilterMonthInput
-            id="transaction-filter-month"
-            label={t("common.referenceMonth")}
-            onChange={(newMonth) => {
-              patch({ referenceMonth: newMonth });
-            }}
-            value={filters.referenceMonth}
-          />
-        ),
-      },
       search: {
         kind: "text",
         label: t("common.search"),
@@ -76,7 +57,7 @@ export default function TransactionFiltersPanel({
         placement: "visible",
         element: (
           <FilterTextInput
-            id="transaction-search"
+            id="fixed-expense-search"
             inputRef={mobileSearchInputRef}
             label={t("common.search")}
             onBlur={onMobileSearchBlur}
@@ -84,8 +65,36 @@ export default function TransactionFiltersPanel({
               patch({ search: search || undefined });
             }}
             onFocus={onMobileSearchFocus}
-            placeholder={t("transactions.searchPlaceholder")}
+            placeholder={t("fixedTransactions.searchPlaceholder")}
             value={filters.search ?? ""}
+          />
+        ),
+      },
+      status: {
+        kind: "select",
+        label: t("common.status"),
+        value: filters.status ?? ACTIVE_STATUS_FILTER,
+        defaultValue: ACTIVE_STATUS_FILTER,
+        placement: "visible",
+        options: [
+          { value: "ALL", label: t("common.all") },
+          { value: "ACTIVE", label: t("common.active") },
+          { value: "ARCHIVED", label: t("common.archived") },
+        ],
+        element: (
+          <FilterSelectInput<StatusFilter>
+            id="fixed-expense-status-filter"
+            label={t("common.status")}
+            onChange={(status) => {
+              patch({ status: status as StatusFilter });
+            }}
+            options={[
+              { value: "ALL", label: t("common.all") },
+              { value: "ACTIVE", label: t("common.active") },
+              { value: "ARCHIVED", label: t("common.archived") },
+            ]}
+            placeholder={t("common.all")}
+            value={filters.status ?? ACTIVE_STATUS_FILTER}
           />
         ),
       },
@@ -101,10 +110,10 @@ export default function TransactionFiltersPanel({
         ],
         element: (
           <FilterSelectInput<TransactionType>
-            id="transaction-filter-type"
+            id="fixed-expense-type-filter"
             label={t("common.type")}
-            onChange={(nextValue) => {
-              patch({ type: nextValue || undefined });
+            onChange={(type) => {
+              patch({ type: type || undefined });
             }}
             options={[
               { value: "INCOME", label: t("transactionTypes.INCOME") },
@@ -112,32 +121,6 @@ export default function TransactionFiltersPanel({
             ]}
             placeholder={t("common.allTypes")}
             value={filters.type ?? ""}
-          />
-        ),
-      },
-      ownershipType: {
-        kind: "select",
-        label: t("common.ownership"),
-        value: filters.ownershipType ?? "",
-        defaultValue: "",
-        placement: "expanded",
-        options: [
-          { value: "SHARED", label: t("ownershipTypes.SHARED") },
-          { value: "INDIVIDUAL", label: t("ownershipTypes.INDIVIDUAL") },
-        ],
-        element: (
-          <FilterSelectInput<OwnershipType>
-            id="transaction-filter-ownership"
-            label={t("common.ownership")}
-            onChange={(nextValue) => {
-              patch({ ownershipType: nextValue || undefined });
-            }}
-            options={[
-              { value: "SHARED", label: t("ownershipTypes.SHARED") },
-              { value: "INDIVIDUAL", label: t("ownershipTypes.INDIVIDUAL") },
-            ]}
-            placeholder={t("common.allOwnerships")}
-            value={filters.ownershipType ?? ""}
           />
         ),
       },
@@ -150,10 +133,10 @@ export default function TransactionFiltersPanel({
         options: accountOptions,
         element: (
           <FilterSelectInput
-            id="transaction-filter-account"
+            id="fixed-expense-account-filter"
             label={t("common.account")}
-            onChange={(nextValue) => {
-              patch({ accountId: nextValue || undefined });
+            onChange={(accountId) => {
+              patch({ accountId: accountId || undefined });
             }}
             options={accountOptions}
             placeholder={t("common.allAccounts")}
@@ -170,12 +153,10 @@ export default function TransactionFiltersPanel({
         options: categoryOptions,
         element: (
           <FilterCategoryMultiInput
-            id="transaction-filter-category"
+            id="fixed-expense-category-filter"
             label={t("common.categories")}
-            onChange={(nextValue) => {
-              patch({
-                categoryIds: nextValue.length > 0 ? nextValue : undefined,
-              });
+            onChange={(categoryIds) => {
+              patch({ categoryIds: categoryIds.length > 0 ? categoryIds : undefined });
             }}
             options={categoryOptions}
             placeholder={t("common.allCategories")}
@@ -183,28 +164,21 @@ export default function TransactionFiltersPanel({
           />
         ),
       },
-      memberId: {
-        kind: "select",
-        label: t("common.member"),
-        value: filters.memberId ?? "",
-        defaultValue: "",
-        placement: "expanded",
-        options: memberOptions,
-        element: (
-          <FilterSelectInput
-            id="transaction-filter-member"
-            label={t("common.member")}
-            onChange={(nextValue) => {
-              patch({ memberId: nextValue || undefined });
-            }}
-            options={memberOptions}
-            placeholder={t("common.allMembers")}
-            value={filters.memberId ?? ""}
-          />
-        ),
-      },
     }),
-    [accountOptions, categoryOptions, filters, memberOptions, mobileSearchInputRef, onMobileSearchBlur, onMobileSearchFocus, patch, t],
+    [
+      accountOptions,
+      categoryOptions,
+      filters.accountId,
+      filters.categoryIds,
+      filters.search,
+      filters.status,
+      filters.type,
+      mobileSearchInputRef,
+      onMobileSearchBlur,
+      onMobileSearchFocus,
+      patch,
+      t,
+    ],
   );
 
   return (
@@ -218,21 +192,16 @@ export default function TransactionFiltersPanel({
       isPanelOpen={isPanelOpen}
       onClosePanel={() => setIsPanelOpen(false)}
       onResetField={(name, defaultValue) => {
-        if (name === "referenceMonth") {
-          patch({ referenceMonth: String(defaultValue) });
-          return;
-        }
-
         if (Array.isArray(defaultValue)) {
           patch({
             [name]: defaultValue.length > 0 ? defaultValue : undefined,
-          } as Partial<TransactionFilters>);
+          } as Partial<FixedExpenseFilters>);
           return;
         }
 
         patch({
           [name]: defaultValue === "" ? undefined : defaultValue,
-        } as Partial<TransactionFilters>);
+        } as Partial<FixedExpenseFilters>);
       }}
       onTogglePanel={() => setIsPanelOpen((current) => !current)}
     />

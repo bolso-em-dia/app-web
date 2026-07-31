@@ -34,6 +34,7 @@
   display: flex;
   align-items: stretch;
   gap: var(--space-3);
+  justify-content: flex-end;
 }
 
 .actions > * {
@@ -69,7 +70,7 @@
 .mobileSearchDock {
   z-index: 25;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-3);
   min-height: var(--mobile-search-dock-height);
@@ -97,6 +98,11 @@
   min-width: var(--control-size);
   width: var(--control-size);
   padding-inline: 0;
+}
+
+.mobileSearchActions {
+  display: flex;
+  gap: var(--space-3);
 }
 
 .panel {

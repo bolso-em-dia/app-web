@@ -110,6 +110,32 @@ describe("AccountsPage", () => {
     expect(accountSwatch).toHaveStyle({ backgroundColor: "rgb(34, 84, 209)" });
   });
 
+  it("refetches accounts with explicit sort params", async () => {
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter initialEntries={["/accounts"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Main checking")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.sortWithValue", { value: t("accounts.sort.nameAsc") }) }));
+    fireEvent.click(screen.getByRole("radio", { name: t("accounts.sort.typeDesc") }));
+
+    await waitFor(() => {
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/accounts?"));
+
+      expect(requests.some((url) => url.includes("sortBy=TYPE") && url.includes("sortDir=DESC"))).toBe(true);
+    });
+  });
+
   it("opens archive confirmation and cancels without calling the API", async () => {
     setupDefaultMocks();
 

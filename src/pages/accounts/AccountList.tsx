@@ -6,6 +6,7 @@ import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
+import type { SortValue } from "../../lib/sorting";
 import { useInfinitePageList } from "../../lib/useInfinitePageList";
 import AccountCard from "./AccountCard";
 import styles from "./AccountsPage.module.scss";
@@ -16,15 +17,16 @@ interface AccountListProps {
     status: "ALL" | "ACTIVE" | "ARCHIVED";
     type: "" | AccountType;
   };
+  sort: SortValue<"name" | "type">;
   selectedId: string | null;
   onSelect: (id: string, account: Account) => void;
   refreshKey: number;
 }
 
-export default function AccountList({ filters, selectedId, onSelect, refreshKey }: AccountListProps) {
+export default function AccountList({ filters, sort, selectedId, onSelect, refreshKey }: AccountListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
-  const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
+  const queryKey = useMemo(() => JSON.stringify({ ...filters, ...sort, refreshKey }), [filters, refreshKey, sort]);
   const {
     items: accounts,
     totalItems,
@@ -46,6 +48,8 @@ export default function AccountList({ filters, selectedId, onSelect, refreshKey 
           search: filters.search,
           status: filters.status,
           type: filters.type || undefined,
+          sortBy: sort.sortBy,
+          sortDir: sort.sortDir,
         },
         accessToken!,
       ),

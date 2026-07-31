@@ -5,6 +5,20 @@ import { t } from "../../test/i18n";
 import type { FilterFields } from "../../lib/filterFields";
 import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import FilterToolbar from "./FilterToolbar";
+import SortAction from "./SortAction";
+
+function renderSortAction() {
+  return (
+    <SortAction
+      onChange={vi.fn()}
+      options={[
+        { sortBy: "name", sortDir: "asc", label: "A-Z" },
+        { sortBy: "name", sortDir: "desc", label: "Z-A" },
+      ]}
+      value={{ sortBy: "name", sortDir: "asc" }}
+    />
+  );
+}
 
 type VisualViewportMock = {
   height: number;
@@ -77,6 +91,7 @@ function Harness() {
 
   return (
     <FilterToolbar
+      actions={renderSortAction()}
       fields={fields}
       isPanelOpen={isPanelOpen}
       onClosePanel={() => setIsPanelOpen(false)}
@@ -130,6 +145,7 @@ function MobileSearchHarness() {
         {t("common.search")}
       </button>
       <FilterToolbar
+        actions={renderSortAction()}
         fields={fields}
         onCloseMobileSearch={close}
         onDismissMobileSearchFocus={blurInput}
@@ -164,6 +180,7 @@ describe("FilterToolbar", () => {
     expect(screen.getByRole("button", { name: t("common.clearFilters") })).toBeInTheDocument();
     expect(screen.queryByLabelText(t("common.status"))).not.toBeInTheDocument();
     expect(screen.queryByText(t("common.filters"))).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: t("common.sortWithValue", { value: "A-Z" }) })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
 
@@ -249,6 +266,15 @@ describe("FilterToolbar", () => {
     fireEvent.click(screen.getByRole("button", { name: t("common.close") }));
 
     expect(screen.queryByLabelText(t("common.search"))).not.toBeInTheDocument();
+  });
+
+  it("keeps the sort action available inside the mobile search dock", () => {
+    setViewportWidth(480);
+    render(<MobileSearchHarness />);
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.search") }));
+
+    expect(screen.getAllByRole("button", { name: t("common.sortWithValue", { value: "A-Z" }) }).length).toBeGreaterThan(0);
   });
 
   it("renders the overlay only while the mobile search field is focused and keeps the dock open after blur", async () => {

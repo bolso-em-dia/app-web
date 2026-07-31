@@ -65,6 +65,10 @@ function setupDefaultMocks() {
   mockFetchUrl("/api/fixed-transactions?", mockJsonResponse(defaultTemplatesResponse));
   mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
   mockFetchUrl("/api/accounts/options", mockJsonResponse(defaultAccountsResponse));
+  mockFetchUrl(
+    "/api/accounts?",
+    mockJsonResponse({ items: defaultAccountsResponse, page: 0, size: 200, totalItems: defaultAccountsResponse.length, totalPages: 1 }),
+  );
 }
 
 describe("FixedExpensesPage", () => {
@@ -141,6 +145,45 @@ describe("FixedExpensesPage", () => {
     await waitFor(() => {
       expect(screen.getByText(t("validation.requiredCategory"))).toBeInTheDocument();
       expect(screen.getByText(t("validation.requiredAccount"))).toBeInTheDocument();
+    });
+  });
+
+  it("sends the expanded fixed-transaction filters and explicit sort params", async () => {
+    render(
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Rent")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("textbox", { name: t("common.search") }), { target: { value: "Ren" } });
+    fireEvent.click(screen.getByRole("button", { name: t("common.filters") }));
+
+    fireEvent.change(screen.getByLabelText(t("common.type")), { target: { value: "EXPENSE" } });
+    fireEvent.change(screen.getByLabelText(t("common.account")), {
+      target: { value: "account-1" },
+    });
+    fireEvent.click(screen.getByLabelText(t("common.categories"), { selector: "button" }));
+    fireEvent.click(screen.getByRole("option", { name: /Housing/i }));
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.sortWithValue", { value: t("fixedTransactions.sort.nameAsc") }) }));
+    const sortDialog = screen.getByRole("dialog", { name: t("common.sort") });
+    fireEvent.click(within(sortDialog).getByRole("radio", { name: t("fixedTransactions.sort.amountDesc") }));
+
+    await waitFor(() => {
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/fixed-transactions?"));
+
+      expect(requests.some((url) => url.includes("search=Ren"))).toBe(true);
+      expect(requests.some((url) => url.includes("type=EXPENSE"))).toBe(true);
+      expect(requests.some((url) => url.includes("accountId=account-1"))).toBe(true);
+      expect(requests.some((url) => url.includes("categoryIds=cat-1"))).toBe(true);
+      expect(requests.some((url) => url.includes("sortBy=AMOUNT") && url.includes("sortDir=DESC"))).toBe(true);
     });
   });
 
@@ -504,6 +547,16 @@ describe("FixedExpensesPage", () => {
           currency: "USD",
         },
       ]),
+    );
+    mockFetchUrl(
+      "/api/accounts",
+      mockJsonResponse({
+        items: [{ id: "account-1", name: "US Account", type: "CHECKING", currency: "USD" }],
+        page: 0,
+        size: 200,
+        totalItems: 1,
+        totalPages: 1,
+      }),
     );
 
     render(

@@ -1,12 +1,19 @@
 import { useCallback, useMemo } from "react";
 import { type CategoryOption } from "../../app/api/categories";
-import { listTransactions, materializeTransactions, type Transaction, type TransactionFilters } from "../../app/api/transactions";
+import {
+  listTransactions,
+  materializeTransactions,
+  type Transaction,
+  type TransactionFilters,
+  type TransactionSortBy,
+} from "../../app/api/transactions";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
+import type { SortValue } from "../../lib/sorting";
 import { useInfinitePageList } from "../../lib/useInfinitePageList";
 import TransactionCard from "./TransactionCard";
 import styles from "./TransactionsPage.module.scss";
@@ -14,16 +21,17 @@ import styles from "./TransactionsPage.module.scss";
 interface TransactionListProps {
   categoryOptions: CategoryOption[];
   filters: TransactionFilters;
+  sort: SortValue<TransactionSortBy>;
   selectedId: string | null;
   onSelect: (id: string, transaction: Transaction) => void;
   refreshKey: number;
 }
 
-export default function TransactionList({ categoryOptions, filters, selectedId, onSelect, refreshKey }: TransactionListProps) {
+export default function TransactionList({ categoryOptions, filters, sort, selectedId, onSelect, refreshKey }: TransactionListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const { referenceMonth, search, type: typeFilter, ownershipType: ownershipFilter, accountId, categoryIds, memberId } = filters;
-  const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
+  const queryKey = useMemo(() => JSON.stringify({ ...filters, ...sort, refreshKey }), [filters, refreshKey, sort]);
 
   const loadPageData = useCallback(
     async (page: number, size: number) => {
@@ -43,6 +51,8 @@ export default function TransactionList({ categoryOptions, filters, selectedId, 
             accountId,
             categoryIds,
             memberId,
+            sortBy: sort.sortBy,
+            sortDir: sort.sortDir,
           },
           accessToken!,
         );
@@ -51,7 +61,7 @@ export default function TransactionList({ categoryOptions, filters, selectedId, 
         throw loadError;
       }
     },
-    [accessToken, accountId, categoryIds, memberId, ownershipFilter, referenceMonth, search, typeFilter],
+    [accessToken, accountId, categoryIds, memberId, ownershipFilter, referenceMonth, search, sort.sortBy, sort.sortDir, typeFilter],
   );
 
   const {

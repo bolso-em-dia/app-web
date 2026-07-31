@@ -1,4 +1,5 @@
 import { apiRequest, type PageResponse } from "./client";
+import type { SortDirection } from "../../lib/sorting";
 
 export type FamilyRole = "ADMIN" | "USER";
 
@@ -32,9 +33,14 @@ export type FamilyMemberListParams = {
   size: number;
   search?: string;
   status?: "ALL" | "ACTIVE" | "ARCHIVED";
+  sortBy?: "name" | "email";
+  sortDir?: SortDirection;
 };
 
-export function listFamilyMemberPage({ page, size, search, status = "ACTIVE" }: FamilyMemberListParams, accessToken: string) {
+export function listFamilyMemberPage(
+  { page, size, search, status = "ACTIVE", sortBy, sortDir }: FamilyMemberListParams,
+  accessToken: string,
+) {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
@@ -43,6 +49,14 @@ export function listFamilyMemberPage({ page, size, search, status = "ACTIVE" }: 
 
   if (search?.trim()) {
     query.set("search", search.trim());
+  }
+
+  if (sortBy) {
+    query.set("sortBy", sortBy.toUpperCase());
+  }
+
+  if (sortDir) {
+    query.set("sortDir", sortDir.toUpperCase());
   }
 
   return apiRequest<PageResponse<FamilyMember>>(`/api/family-members?${query.toString()}`, {

@@ -252,6 +252,41 @@ describe("TransactionsPage", () => {
     });
   });
 
+  it("requests newest-first transactions by default and refetches with the selected sort", async () => {
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser({ id: "1", allowanceEnabled: true })}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByRole("button", { name: /Groceries/i })).toBeInTheDocument();
+
+    await waitFor(() => {
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/transactions?") && !url.includes("materialize"));
+
+      expect(requests.some((url) => url.includes("sortBy=DATE") && url.includes("sortDir=DESC"))).toBe(true);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.sortWithValue", { value: t("transactions.sort.transactionDateDesc") }) }));
+    fireEvent.click(screen.getByRole("radio", { name: t("transactions.sort.amountAsc") }));
+
+    await waitFor(() => {
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/transactions?") && !url.includes("materialize"));
+
+      expect(requests.some((url) => url.includes("sortBy=AMOUNT") && url.includes("sortDir=ASC"))).toBe(true);
+    });
+  });
+
   it("shows mapped error feedback when transaction save fails", async () => {
     setupDefaultMocks();
 

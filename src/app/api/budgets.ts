@@ -1,5 +1,6 @@
 import { apiRequest, type PageResponse } from "./client";
 import type { SourceType, TransactionType } from "./transactions";
+import type { SortDirection } from "../../lib/sorting";
 
 export type BudgetType = "GLOBAL" | "ALLOWANCE";
 
@@ -64,9 +65,14 @@ export type BudgetListParams = {
   search?: string;
   status?: "ALL" | "ACTIVE" | "ARCHIVED";
   type?: BudgetType;
+  sortBy?: "name" | "monthlyLimit" | "remainingAmount";
+  sortDir?: SortDirection;
 };
 
-export function listBudgets({ referenceMonth, page, size, search, status = "ACTIVE", type }: BudgetListParams, accessToken: string) {
+export function listBudgets(
+  { referenceMonth, page, size, search, status = "ACTIVE", type, sortBy, sortDir }: BudgetListParams,
+  accessToken: string,
+) {
   const query = new URLSearchParams({
     referenceMonth,
     page: String(page),
@@ -82,10 +88,29 @@ export function listBudgets({ referenceMonth, page, size, search, status = "ACTI
     query.set("type", type);
   }
 
+  if (sortBy) {
+    query.set("sortBy", toApiBudgetSortBy(sortBy));
+  }
+
+  if (sortDir) {
+    query.set("sortDir", sortDir.toUpperCase());
+  }
+
   return apiRequest<PageResponse<Budget>>(`/api/budgets?${query.toString()}`, {
     method: "GET",
     accessToken,
   });
+}
+
+function toApiBudgetSortBy(sortBy: NonNullable<BudgetListParams["sortBy"]>) {
+  switch (sortBy) {
+    case "name":
+      return "NAME";
+    case "monthlyLimit":
+      return "MONTHLY_LIMIT";
+    case "remainingAmount":
+      return "REMAINING_AMOUNT";
+  }
 }
 
 export function createBudget(payload: BudgetPayload, accessToken: string) {

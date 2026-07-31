@@ -6,21 +6,23 @@ import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
 import { DEFAULT_PAGE_SIZE, type StatusFilter } from "../../lib/constants";
+import type { SortValue } from "../../lib/sorting";
 import { useInfinitePageList } from "../../lib/useInfinitePageList";
 import FamilyMemberCard from "./FamilyMemberCard";
 import styles from "./FamilyPage.module.scss";
 
 interface FamilyMemberListProps {
   filters: { search: string; status: StatusFilter };
+  sort: SortValue<"name" | "email">;
   selectedId: string | null;
   onSelect: (id: string, member: FamilyMember) => void;
   refreshKey: number;
 }
 
-export default function FamilyMemberList({ filters, selectedId, onSelect, refreshKey }: FamilyMemberListProps) {
+export default function FamilyMemberList({ filters, sort, selectedId, onSelect, refreshKey }: FamilyMemberListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
-  const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
+  const queryKey = useMemo(() => JSON.stringify({ ...filters, ...sort, refreshKey }), [filters, refreshKey, sort]);
   const {
     items: members,
     totalItems,
@@ -34,7 +36,18 @@ export default function FamilyMemberList({ filters, selectedId, onSelect, refres
     enabled: Boolean(accessToken),
     queryKey,
     initialPageSize: DEFAULT_PAGE_SIZE,
-    loadPage: (page, size) => listFamilyMemberPage({ page, size, search: filters.search, status: filters.status }, accessToken!),
+    loadPage: (page, size) =>
+      listFamilyMemberPage(
+        {
+          page,
+          size,
+          search: filters.search,
+          status: filters.status,
+          sortBy: sort.sortBy,
+          sortDir: sort.sortDir,
+        },
+        accessToken!,
+      ),
   });
   const listError = error ? t("family.error") : null;
 

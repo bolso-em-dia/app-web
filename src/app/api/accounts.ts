@@ -1,5 +1,6 @@
 import { apiRequest, type PageResponse } from "./client";
 import type { Currency } from "../../lib/formatters/currency";
+import type { SortDirection } from "../../lib/sorting";
 
 export type AccountType = "CHECKING" | "SAVINGS" | "CREDIT_CARD" | "INVESTMENT";
 
@@ -34,9 +35,11 @@ export type AccountListParams = {
   search?: string;
   status?: "ALL" | "ACTIVE" | "ARCHIVED";
   type?: AccountType;
+  sortBy?: "name" | "type";
+  sortDir?: SortDirection;
 };
 
-export function listAccountPage({ page, size, search, status = "ACTIVE", type }: AccountListParams, accessToken: string) {
+export function listAccountPage({ page, size, search, status = "ACTIVE", type, sortBy, sortDir }: AccountListParams, accessToken: string) {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
@@ -49,6 +52,14 @@ export function listAccountPage({ page, size, search, status = "ACTIVE", type }:
 
   if (type) {
     query.set("type", type);
+  }
+
+  if (sortBy) {
+    query.set("sortBy", sortBy.toUpperCase());
+  }
+
+  if (sortDir) {
+    query.set("sortDir", sortDir.toUpperCase());
   }
 
   return apiRequest<PageResponse<Account>>(`/api/accounts?${query.toString()}`, {

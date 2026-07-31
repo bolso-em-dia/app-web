@@ -5,6 +5,7 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
 import FilterToolbar from "../../components/ui/FilterToolbar";
+import SortAction from "../../components/ui/SortAction";
 import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInput";
 import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
 import type { Category, CategoryOption } from "../../app/api/categories";
@@ -13,6 +14,8 @@ import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
 import type { FilterFields } from "../../lib/filterFields";
 import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import { useFiltersState } from "../../lib/useFiltersState";
+import { useSortSearchParams } from "../../lib/useSortSearchParams";
+import type { SortOption } from "../../lib/sorting";
 import CategoryList from "./CategoryList";
 import CategoryForm from "./CategoryForm";
 import styles from "./CategoriesPage.module.scss";
@@ -29,11 +32,23 @@ export default function CategoriesPage() {
   const { user } = useAuth();
   const { t } = useI18n();
   const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
+  const categorySortByValues = useMemo(() => ["name"] as const, []);
+  const { value: sort, setValue: setSort } = useSortSearchParams<"name">({
+    defaultValue: { sortBy: "name", sortDir: "asc" },
+    validSortBy: categorySortByValues,
+  });
   const [drawerState, setDrawerState] = useState<DrawerState>({ mode: "closed" });
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const mobileSearch = useMobileSearchToggle();
+  const sortOptions = useMemo<SortOption<"name">[]>(
+    () => [
+      { sortBy: "name", sortDir: "asc", label: t("categories.sort.nameAsc") },
+      { sortBy: "name", sortDir: "desc", label: t("categories.sort.nameDesc") },
+    ],
+    [t],
+  );
 
   const fields = useMemo<FilterFields>(
     () => ({
@@ -132,6 +147,7 @@ export default function CategoriesPage() {
       <section className={styles.stack}>
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
+            actions={<SortAction onChange={setSort} options={sortOptions} value={sort} />}
             fields={fields}
             onDismissMobileSearchFocus={mobileSearch.blurInput}
             onCloseMobileSearch={mobileSearch.close}
@@ -148,6 +164,7 @@ export default function CategoriesPage() {
 
         <CategoryList
           filters={filters}
+          sort={sort}
           selectedId={selectedId}
           onSelect={handleSelect}
           refreshKey={refreshKey}

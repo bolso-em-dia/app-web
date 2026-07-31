@@ -1,20 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { listAccountOptions, type AccountOption } from "../../app/api/accounts";
 import { listCategoryOptions, type CategoryOption } from "../../app/api/categories";
-import { listFixedExpenseTemplates, type FixedExpenseTemplate } from "../../app/api/fixedExpenses";
+import {
+  listFixedExpenseTemplates,
+  type FixedExpenseFilters,
+  type FixedExpenseSortBy,
+  type FixedExpenseTemplate,
+} from "../../app/api/fixedExpenses";
 import { useAuth } from "../../app/auth/useAuth";
 import { useI18n } from "../../app/i18n/I18nContext";
 import Spinner from "../../components/feedback/Spinner";
 import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
-import { DEFAULT_PAGE_SIZE, type StatusFilter } from "../../lib/constants";
+import { DEFAULT_PAGE_SIZE } from "../../lib/constants";
+import type { SortValue } from "../../lib/sorting";
 import { useInfinitePageList } from "../../lib/useInfinitePageList";
 import FixedExpenseCard from "./FixedExpenseCard";
 import styles from "./FixedExpensesPage.module.scss";
 
 type FixedExpenseListProps = {
-  filters: { search: string; status: StatusFilter };
+  filters: FixedExpenseFilters;
   referenceMonth: string;
+  sort: SortValue<FixedExpenseSortBy>;
   selectedId: string | null;
   onSelect: (id: string, template: FixedExpenseTemplate) => void;
   refreshKey: number;
@@ -25,6 +32,7 @@ type FixedExpenseListProps = {
 export default function FixedExpenseList({
   filters,
   referenceMonth,
+  sort,
   selectedId,
   onSelect,
   refreshKey,
@@ -35,7 +43,10 @@ export default function FixedExpenseList({
   const { t } = useI18n();
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
   const [referenceDataError, setReferenceDataError] = useState<string | null>(null);
-  const queryKey = useMemo(() => JSON.stringify({ ...filters, referenceMonth, refreshKey }), [filters, referenceMonth, refreshKey]);
+  const queryKey = useMemo(
+    () => JSON.stringify({ ...filters, ...sort, referenceMonth, refreshKey }),
+    [filters, referenceMonth, refreshKey, sort],
+  );
 
   useEffect(() => {
     async function doLoad() {
@@ -83,6 +94,11 @@ export default function FixedExpenseList({
           size,
           search: filters.search,
           status: filters.status,
+          type: filters.type,
+          accountId: filters.accountId,
+          categoryIds: filters.categoryIds,
+          sortBy: sort.sortBy,
+          sortDir: sort.sortDir,
         },
         accessToken!,
       ),

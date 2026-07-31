@@ -139,6 +139,32 @@ describe("CategoriesPage", () => {
     expect(categoryIcon).toHaveStyle({ color: "rgb(34, 84, 209)" });
   });
 
+  it("refetches categories with explicit sort params", async () => {
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter initialEntries={["/categories"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <CategoriesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Groceries")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.sortWithValue", { value: t("categories.sort.nameAsc") }) }));
+    fireEvent.click(screen.getByRole("radio", { name: t("categories.sort.nameDesc") }));
+
+    await waitFor(() => {
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/categories?") && !url.includes("options"));
+
+      expect(requests.some((url) => url.includes("sortBy=NAME") && url.includes("sortDir=DESC"))).toBe(true);
+    });
+  });
+
   it("preserves active filters after create and refetches the list with the same query", async () => {
     resetFetchMocks();
 

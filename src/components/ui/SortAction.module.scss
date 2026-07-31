@@ -1,0 +1,25 @@
+.root {
+  min-width: var(--control-size);
+  width: var(--control-size);
+  padding-inline: 0;
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.content {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.options {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.option {
+  justify-content: flex-start;
+  text-align: left;
+}

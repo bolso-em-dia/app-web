@@ -57,6 +57,8 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "common.categories": "Categories",
   "common.member": "Member",
   "common.filters": "Filters",
+  "common.sort": "Sort",
+  "common.sortWithValue": "Sort: {{value}}",
   "common.clearFilters": "Clear filters",
   "common.referenceMonth": "Reference month",
   "common.previousMonth": "Previous month",
@@ -235,6 +237,12 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "fixedTransactions.archived": "Fixed transaction archived",
   "fixedTransactions.archiveMonth": "Archive month",
   "fixedTransactions.deleteAction": "Delete fixed transaction",
+  "fixedTransactions.sort.nameAsc": "Name A → Z",
+  "fixedTransactions.sort.nameDesc": "Name Z → A",
+  "fixedTransactions.sort.amountDesc": "Amount high → low",
+  "fixedTransactions.sort.amountAsc": "Amount low → high",
+  "fixedTransactions.sort.dueDayAsc": "Recurring day low → high",
+  "fixedTransactions.sort.dueDayDesc": "Recurring day high → low",
   // Transactions
   "transactions.title": "Transactions",
   "transactions.loading": "Loading transactions",
@@ -279,6 +287,12 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.fixed": "Fixed",
   "transactions.projected": "Projected",
   "transactions.empty": "No transactions found for the current filters.",
+  "transactions.sort.transactionDateDesc": "Newest date → oldest",
+  "transactions.sort.transactionDateAsc": "Oldest date → newest",
+  "transactions.sort.amountDesc": "Amount high → low",
+  "transactions.sort.amountAsc": "Amount low → high",
+  "transactions.sort.descriptionAsc": "Description A → Z",
+  "transactions.sort.descriptionDesc": "Description Z → A",
 
   // Budgets
   "budgets.title": "Budgets",
@@ -313,6 +327,12 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "budgets.archived": "Budget archived",
   "budgets.allowanceFor": "Allowance for {{member}}",
   "budgets.archiveMonth": "Archive month",
+  "budgets.sort.nameAsc": "Name A → Z",
+  "budgets.sort.nameDesc": "Name Z → A",
+  "budgets.sort.monthlyLimitDesc": "Limit high → low",
+  "budgets.sort.monthlyLimitAsc": "Limit low → high",
+  "budgets.sort.remainingAmountDesc": "Balance high → low",
+  "budgets.sort.remainingAmountAsc": "Balance low → high",
 
   // Categories
   "categories.title": "Categories",
@@ -414,6 +434,10 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "family.archiveMember": "Archive member",
   "family.restoreMember": "Restore member",
   "family.memberStatus": "Member status",
+  "family.sort.nameAsc": "Name A → Z",
+  "family.sort.nameDesc": "Name Z → A",
+  "family.sort.emailAsc": "Email A → Z",
+  "family.sort.emailDesc": "Email Z → A",
 
   // Account Types
   "accountTypes.CHECKING": "Checking",
@@ -460,6 +484,12 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "categories.archiveTitle": "Archive category",
   "categories.archiveSubtitle": "Stop using this category starting from a future month.",
   "categories.selectReplacement": "Select a replacement category",
+  "categories.sort.nameAsc": "Name A → Z",
+  "categories.sort.nameDesc": "Name Z → A",
+  "accounts.sort.nameAsc": "Name A → Z",
+  "accounts.sort.nameDesc": "Name Z → A",
+  "accounts.sort.typeAsc": "Type A → Z",
+  "accounts.sort.typeDesc": "Type Z → A",
   // Validation
   "validation.requiredName": "Name is required.",
   "validation.nameMax120": "Name must be at most 120 characters.",

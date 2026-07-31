@@ -124,6 +124,32 @@ describe("FamilyPage", () => {
     expect(within(drawer).getByLabelText(t("common.email"))).toHaveValue("taylor@bolso-em-dia.local");
   });
 
+  it("refetches family members with explicit sort params", async () => {
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter initialEntries={["/family"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <FamilyPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Admin")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.sortWithValue", { value: t("family.sort.nameAsc") }) }));
+    fireEvent.click(screen.getByRole("radio", { name: t("family.sort.emailDesc") }));
+
+    await waitFor(() => {
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/family-members?"));
+
+      expect(requests.some((url) => url.includes("sortBy=EMAIL") && url.includes("sortDir=DESC"))).toBe(true);
+    });
+  });
+
   it("cancels archive confirmation without calling the API", async () => {
     setupDefaultMocks();
 

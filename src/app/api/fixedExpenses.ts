@@ -1,4 +1,6 @@
 import { apiRequest, type PageResponse } from "./client";
+import type { SortDirection } from "../../lib/sorting";
+import type { TransactionType } from "./transactions";
 
 export type FixedExpenseTemplate = {
   id: string;
@@ -29,14 +31,27 @@ export type FixedExpenseTemplatePayload = {
   dueDay: number;
 };
 
-export type FixedExpenseTemplateListParams = {
-  page: number;
-  size: number;
+export type FixedExpenseFilters = {
   search?: string;
   status?: "ALL" | "ACTIVE" | "ARCHIVED";
+  type?: TransactionType;
+  accountId?: string;
+  categoryIds?: string[];
 };
 
-export function listFixedExpenseTemplates({ page, size, search, status = "ACTIVE" }: FixedExpenseTemplateListParams, accessToken: string) {
+export type FixedExpenseSortBy = "name" | "amount" | "dueDay";
+
+export type FixedExpenseTemplateListParams = FixedExpenseFilters & {
+  page: number;
+  size: number;
+  sortBy?: FixedExpenseSortBy;
+  sortDir?: SortDirection;
+};
+
+export function listFixedExpenseTemplates(
+  { page, size, search, status = "ACTIVE", type, accountId, categoryIds, sortBy, sortDir }: FixedExpenseTemplateListParams,
+  accessToken: string,
+) {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
@@ -47,10 +62,43 @@ export function listFixedExpenseTemplates({ page, size, search, status = "ACTIVE
     query.set("search", search.trim());
   }
 
+  if (type) {
+    query.set("type", type);
+  }
+
+  if (accountId) {
+    query.set("accountId", accountId);
+  }
+
+  if (categoryIds) {
+    for (const categoryId of categoryIds) {
+      query.append("categoryIds", categoryId);
+    }
+  }
+
+  if (sortBy) {
+    query.set("sortBy", toApiFixedExpenseSortBy(sortBy));
+  }
+
+  if (sortDir) {
+    query.set("sortDir", sortDir.toUpperCase());
+  }
+
   return apiRequest<PageResponse<FixedExpenseTemplate>>(`/api/fixed-transactions?${query.toString()}`, {
     method: "GET",
     accessToken,
   });
+}
+
+function toApiFixedExpenseSortBy(sortBy: FixedExpenseSortBy) {
+  switch (sortBy) {
+    case "name":
+      return "NAME";
+    case "amount":
+      return "AMOUNT";
+    case "dueDay":
+      return "DUE_DAY";
+  }
 }
 
 export function createFixedExpenseTemplate(payload: FixedExpenseTemplatePayload, accessToken: string) {

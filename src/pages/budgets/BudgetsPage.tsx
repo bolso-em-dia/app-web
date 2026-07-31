@@ -4,6 +4,7 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
 import FilterToolbar from "../../components/ui/FilterToolbar";
+import SortAction from "../../components/ui/SortAction";
 import FilterMonthInput from "../../components/ui/filterFields/FilterMonthInput";
 import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInput";
 import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
@@ -16,6 +17,8 @@ import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
 import type { FilterFields } from "../../lib/filterFields";
 import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import { useFiltersState } from "../../lib/useFiltersState";
+import { useSortSearchParams } from "../../lib/useSortSearchParams";
+import type { SortOption } from "../../lib/sorting";
 import BudgetList from "./BudgetList";
 import BudgetForm from "./BudgetForm";
 import styles from "./BudgetsPage.module.scss";
@@ -40,10 +43,26 @@ const DEFAULT_FILTERS: BudgetFilters = {
 export default function BudgetsPage() {
   const { t } = useI18n();
   const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
+  const budgetSortByValues = useMemo(() => ["name", "monthlyLimit", "remainingAmount"] as const, []);
+  const { value: sort, setValue: setSort } = useSortSearchParams<"name" | "monthlyLimit" | "remainingAmount">({
+    defaultValue: { sortBy: "name", sortDir: "asc" },
+    validSortBy: budgetSortByValues,
+  });
   const [drawerState, setDrawerState] = useState<DrawerState>({ mode: "closed" });
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const mobileSearch = useMobileSearchToggle();
+  const sortOptions = useMemo<SortOption<"name" | "monthlyLimit" | "remainingAmount">[]>(
+    () => [
+      { sortBy: "name", sortDir: "asc", label: t("budgets.sort.nameAsc") },
+      { sortBy: "name", sortDir: "desc", label: t("budgets.sort.nameDesc") },
+      { sortBy: "monthlyLimit", sortDir: "desc", label: t("budgets.sort.monthlyLimitDesc") },
+      { sortBy: "monthlyLimit", sortDir: "asc", label: t("budgets.sort.monthlyLimitAsc") },
+      { sortBy: "remainingAmount", sortDir: "desc", label: t("budgets.sort.remainingAmountDesc") },
+      { sortBy: "remainingAmount", sortDir: "asc", label: t("budgets.sort.remainingAmountAsc") },
+    ],
+    [t],
+  );
   const [referenceData, setReferenceData] = useState<{
     categories: CategoryOption[];
     members: FamilyMember[];
@@ -200,6 +219,7 @@ export default function BudgetsPage() {
       <section className={styles.stack}>
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
+            actions={<SortAction onChange={setSort} options={sortOptions} value={sort} />}
             fields={fields}
             onDismissMobileSearchFocus={mobileSearch.blurInput}
             onCloseMobileSearch={mobileSearch.close}
@@ -216,6 +236,7 @@ export default function BudgetsPage() {
 
         <BudgetList
           filters={filters}
+          sort={sort}
           selectedId={selectedId}
           onSelect={handleSelect}
           refreshKey={refreshKey}

@@ -212,6 +212,30 @@ describe("BudgetsPage", () => {
     expect(within(budgetCard!).queryByText((content) => content.includes("R$ 320,00"))).not.toBeInTheDocument();
   });
 
+  it("refetches budgets with explicit sort params", async () => {
+    render(
+      <MemoryRouter initialEntries={["/budgets"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Household")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: t("common.sortWithValue", { value: t("budgets.sort.nameAsc") }) }));
+    fireEvent.click(screen.getByRole("radio", { name: t("budgets.sort.remainingAmountDesc") }));
+
+    await waitFor(() => {
+      const requests = vi
+        .mocked(fetch)
+        .mock.calls.map(([input]) => String(input))
+        .filter((url) => url.includes("/api/budgets?"));
+
+      expect(requests.some((url) => url.includes("sortBy=REMAINING_AMOUNT") && url.includes("sortDir=DESC"))).toBe(true);
+    });
+  });
+
   it("shows session expired feedback and preserves typed values when submitting without token", async () => {
     render(
       <MemoryRouter initialEntries={["/budgets"]}>

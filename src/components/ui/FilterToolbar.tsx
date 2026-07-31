@@ -1,5 +1,5 @@
 import { ListFilterPlus, X } from "lucide-react";
-import { Fragment, useCallback, useId, useMemo } from "react";
+import { Fragment, type ReactNode, useCallback, useId, useMemo } from "react";
 import Drawer from "./Drawer";
 import Button from "./Button";
 import clsx from "./clsx";
@@ -12,6 +12,7 @@ import { useBreakpoint } from "../../lib/useBreakpoint";
 
 type FilterToolbarProps = {
   fields: FilterFields;
+  actions?: ReactNode;
   isPanelOpen: boolean;
   onTogglePanel: () => void;
   onClosePanel: () => void;
@@ -24,6 +25,7 @@ type FilterToolbarProps = {
 
 export default function FilterToolbar({
   fields,
+  actions,
   isPanelOpen,
   onTogglePanel,
   onClosePanel,
@@ -56,6 +58,7 @@ export default function FilterToolbar({
   );
   const expandedFields = useMemo(() => fieldEntries.filter(([, field]) => field.placement === "expanded"), [fieldEntries]);
   const shouldRenderFilterToggle = expandedFields.length > 0;
+  const hasActions = Boolean(actions) || shouldRenderFilterToggle;
   const activeFilters = useMemo(
     () =>
       fieldEntries.flatMap(([name, field]) => {
@@ -97,7 +100,7 @@ export default function FilterToolbar({
         : [],
     [activeCount, activeFilters, handleResetAll, t],
   );
-  const shouldRenderPrimaryContent = renderedVisibleFields.length > 0 || shouldRenderFilterToggle;
+  const shouldRenderPrimaryContent = renderedVisibleFields.length > 0 || hasActions;
   const shouldRenderPrimaryRow = shouldRenderPrimaryContent || activeCount > 0;
 
   return (
@@ -118,18 +121,23 @@ export default function FilterToolbar({
                   <Fragment>{field.element}</Fragment>
                 </div>
               ))}
-              {shouldRenderFilterToggle ? (
-                <Button
-                  aria-controls={panelId}
-                  aria-expanded={isPanelOpen}
-                  aria-label={t("common.filters")}
-                  className={styles.filterToggle}
-                  onClick={onTogglePanel}
-                  type="button"
-                  variant="secondary"
-                >
-                  <ListFilterPlus aria-hidden="true" className={styles.filterIcon} />
-                </Button>
+              {hasActions ? (
+                <div className={styles.actions}>
+                  {actions}
+                  {shouldRenderFilterToggle ? (
+                    <Button
+                      aria-controls={panelId}
+                      aria-expanded={isPanelOpen}
+                      aria-label={t("common.filters")}
+                      className={styles.filterToggle}
+                      onClick={onTogglePanel}
+                      type="button"
+                      variant="secondary"
+                    >
+                      <ListFilterPlus aria-hidden="true" className={styles.filterIcon} />
+                    </Button>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           ) : null}
@@ -166,28 +174,33 @@ export default function FilterToolbar({
             <div className={styles.mobileSearchField}>
               <Fragment>{mobileSearchEntry[1].element}</Fragment>
             </div>
-            <Button
-              aria-controls={panelId}
-              aria-expanded={isPanelOpen}
-              aria-label={t("common.filters")}
-              className={styles.mobileSearchAction}
-              onClick={onTogglePanel}
-              type="button"
-              variant="secondary"
-            >
-              <ListFilterPlus aria-hidden="true" className={styles.filterIcon} />
-            </Button>
-            {onCloseMobileSearch ? (
-              <Button
-                aria-label={t("common.close")}
-                className={styles.mobileSearchAction}
-                onClick={onCloseMobileSearch}
-                type="button"
-                variant="secondary"
-              >
-                <X aria-hidden="true" className={styles.filterIcon} />
-              </Button>
-            ) : null}
+            <div className={styles.mobileSearchActions}>
+              {actions}
+              {shouldRenderFilterToggle ? (
+                <Button
+                  aria-controls={panelId}
+                  aria-expanded={isPanelOpen}
+                  aria-label={t("common.filters")}
+                  className={styles.mobileSearchAction}
+                  onClick={onTogglePanel}
+                  type="button"
+                  variant="secondary"
+                >
+                  <ListFilterPlus aria-hidden="true" className={styles.filterIcon} />
+                </Button>
+              ) : null}
+              {onCloseMobileSearch ? (
+                <Button
+                  aria-label={t("common.close")}
+                  className={styles.mobileSearchAction}
+                  onClick={onCloseMobileSearch}
+                  type="button"
+                  variant="secondary"
+                >
+                  <X aria-hidden="true" className={styles.filterIcon} />
+                </Button>
+              ) : null}
+            </div>
           </KeyboardAvoidingContainer>
         </>
       ) : null}

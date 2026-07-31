@@ -7,23 +7,25 @@ import Card from "../../components/ui/Card";
 import PaginationBar from "../../components/ui/PaginationBar";
 import { DEFAULT_PAGE_SIZE, type StatusFilter } from "../../lib/constants";
 import { getCurrentReferenceMonth } from "../../lib/formatters/date";
+import type { SortValue } from "../../lib/sorting";
 import { useInfinitePageList } from "../../lib/useInfinitePageList";
 import CategoryCard from "./CategoryCard";
 import styles from "./CategoriesPage.module.scss";
 
 interface CategoryListProps {
   filters: { search: string; status: StatusFilter };
+  sort: SortValue<"name">;
   selectedId: string | null;
   onSelect: (id: string, category: Category) => void;
   refreshKey: number;
   onOptionsLoaded: (options: CategoryOption[]) => void;
 }
 
-export default function CategoryList({ filters, selectedId, onSelect, refreshKey, onOptionsLoaded }: CategoryListProps) {
+export default function CategoryList({ filters, sort, selectedId, onSelect, refreshKey, onOptionsLoaded }: CategoryListProps) {
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [optionsError, setOptionsError] = useState<string | null>(null);
-  const queryKey = useMemo(() => JSON.stringify({ ...filters, refreshKey }), [filters, refreshKey]);
+  const queryKey = useMemo(() => JSON.stringify({ ...filters, ...sort, refreshKey }), [filters, refreshKey, sort]);
 
   useEffect(() => {
     async function doLoad() {
@@ -65,6 +67,8 @@ export default function CategoryList({ filters, selectedId, onSelect, refreshKey
           size,
           search: filters.search,
           status: filters.status,
+          sortBy: sort.sortBy,
+          sortDir: sort.sortDir,
         },
         accessToken!,
       ),

@@ -1,4 +1,5 @@
 import { apiRequest, type PageResponse } from "./client";
+import type { SortDirection } from "../../lib/sorting";
 
 export type Category = {
   id: string;
@@ -34,9 +35,11 @@ export type CategoryListParams = {
   size: number;
   search?: string;
   status?: "ALL" | "ACTIVE" | "ARCHIVED";
+  sortBy?: "name";
+  sortDir?: SortDirection;
 };
 
-export function listCategories({ page, size, search, status = "ACTIVE" }: CategoryListParams, accessToken: string) {
+export function listCategories({ page, size, search, status = "ACTIVE", sortBy, sortDir }: CategoryListParams, accessToken: string) {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
@@ -45,6 +48,14 @@ export function listCategories({ page, size, search, status = "ACTIVE" }: Catego
 
   if (search?.trim()) {
     query.set("search", search.trim());
+  }
+
+  if (sortBy) {
+    query.set("sortBy", sortBy.toUpperCase());
+  }
+
+  if (sortDir) {
+    query.set("sortDir", sortDir.toUpperCase());
   }
 
   return apiRequest<PageResponse<Category>>(`/api/categories?${query.toString()}`, {

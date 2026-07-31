@@ -1,5 +1,6 @@
 import { apiRequest, type PageResponse } from "./client";
 import type { Currency } from "../../lib/formatters/currency";
+import type { SortDirection } from "../../lib/sorting";
 
 export type TransactionType = "INCOME" | "EXPENSE";
 export type OwnershipType = "SHARED" | "INDIVIDUAL";
@@ -65,9 +66,13 @@ export type TransactionFilters = {
   memberId?: string;
 };
 
+export type TransactionSortBy = "transactionDate" | "amount" | "description";
+
 export type TransactionListParams = TransactionFilters & {
   page: number;
   size: number;
+  sortBy?: TransactionSortBy;
+  sortDir?: SortDirection;
 };
 
 function buildQuery(filters: TransactionListParams) {
@@ -103,7 +108,26 @@ function buildQuery(filters: TransactionListParams) {
     searchParams.set("memberId", filters.memberId);
   }
 
+  if (filters.sortBy) {
+    searchParams.set("sortBy", toApiTransactionSortBy(filters.sortBy));
+  }
+
+  if (filters.sortDir) {
+    searchParams.set("sortDir", filters.sortDir.toUpperCase());
+  }
+
   return searchParams.toString();
+}
+
+function toApiTransactionSortBy(sortBy: TransactionSortBy) {
+  switch (sortBy) {
+    case "transactionDate":
+      return "DATE";
+    case "amount":
+      return "AMOUNT";
+    case "description":
+      return "DESCRIPTION";
+  }
 }
 
 export function listTransactions(filters: TransactionListParams, accessToken: string) {

@@ -6,12 +6,15 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Drawer from "../../components/ui/Drawer";
 import FilterToolbar from "../../components/ui/FilterToolbar";
+import SortAction from "../../components/ui/SortAction";
 import FilterSelectInput from "../../components/ui/filterFields/FilterSelectInput";
 import FilterTextInput from "../../components/ui/filterFields/FilterTextInput";
 import { ACTIVE_STATUS_FILTER, type StatusFilter } from "../../lib/constants";
 import type { FilterFields } from "../../lib/filterFields";
 import { useMobileSearchToggle } from "../../lib/useMobileSearchToggle";
 import { useFiltersState } from "../../lib/useFiltersState";
+import { useSortSearchParams } from "../../lib/useSortSearchParams";
+import type { SortOption } from "../../lib/sorting";
 import FamilyMemberList from "./FamilyMemberList";
 import FamilyMemberForm from "./FamilyMemberForm";
 import styles from "./FamilyPage.module.scss";
@@ -27,10 +30,24 @@ const DEFAULT_FILTERS: FamilyFilters = {
 export default function FamilyPage() {
   const { t } = useI18n();
   const { filters, patchFilters, clearFilter } = useFiltersState(DEFAULT_FILTERS);
+  const familySortByValues = useMemo(() => ["name", "email"] as const, []);
+  const { value: sort, setValue: setSort } = useSortSearchParams<"name" | "email">({
+    defaultValue: { sortBy: "name", sortDir: "asc" },
+    validSortBy: familySortByValues,
+  });
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [drawerState, setDrawerState] = useState<DrawerState>({ mode: "closed" });
   const [refreshKey, setRefreshKey] = useState(0);
   const mobileSearch = useMobileSearchToggle();
+  const sortOptions = useMemo<SortOption<"name" | "email">[]>(
+    () => [
+      { sortBy: "name", sortDir: "asc", label: t("family.sort.nameAsc") },
+      { sortBy: "name", sortDir: "desc", label: t("family.sort.nameDesc") },
+      { sortBy: "email", sortDir: "asc", label: t("family.sort.emailAsc") },
+      { sortBy: "email", sortDir: "desc", label: t("family.sort.emailDesc") },
+    ],
+    [t],
+  );
 
   const isCreating = drawerState.mode === "create";
   const isDrawerOpen = drawerState.mode !== "closed";
@@ -128,6 +145,7 @@ export default function FamilyPage() {
       <section className={styles.stack}>
         <Card className={styles.toolbarPanel}>
           <FilterToolbar
+            actions={<SortAction onChange={setSort} options={sortOptions} value={sort} />}
             fields={fields}
             onDismissMobileSearchFocus={mobileSearch.blurInput}
             onCloseMobileSearch={mobileSearch.close}
@@ -142,7 +160,13 @@ export default function FamilyPage() {
           />
         </Card>
 
-        <FamilyMemberList filters={filters} selectedId={selectedMember?.id ?? null} onSelect={handleSelect} refreshKey={refreshKey} />
+        <FamilyMemberList
+          filters={filters}
+          sort={sort}
+          selectedId={selectedMember?.id ?? null}
+          onSelect={handleSelect}
+          refreshKey={refreshKey}
+        />
 
         {isDrawerOpen ? (
           <Drawer onClose={handleCloseDrawer} title={isCreating ? t("family.newTitle") : t("family.detailsTitle")}>
