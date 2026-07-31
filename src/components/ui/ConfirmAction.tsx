@@ -9,7 +9,7 @@ type ConfirmActionProps = {
   message: string;
   confirmLabel: string;
   cancelLabel?: string;
-  variant?: "danger";
+  variant?: "primary" | "secondary" | "subtle" | "danger";
   loading?: boolean;
   children?: ReactNode;
   onConfirm: () => void;

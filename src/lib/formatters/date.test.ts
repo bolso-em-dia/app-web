@@ -8,6 +8,7 @@ import {
   formatMonthValue,
   formatPartialDateInput,
   formatPartialMonthInput,
+  moveDateToNextMonth,
   formatReferenceMonth,
   getCurrentIsoDate,
   getReferenceMonthFromDate,
@@ -53,6 +54,20 @@ describe("shiftReferenceMonth", () => {
 
   it("crosses year boundary backward", () => {
     expect(shiftReferenceMonth("2026-01-01", -1)).toBe("2025-12-01");
+  });
+});
+
+describe("moveDateToNextMonth", () => {
+  it("keeps the same day when the next month has that day", () => {
+    expect(moveDateToNextMonth("2026-07-15")).toBe("2026-08-15");
+  });
+
+  it("clamps to the last day of the next month when needed", () => {
+    expect(moveDateToNextMonth("2026-01-31")).toBe("2026-02-28");
+  });
+
+  it("handles year rollover", () => {
+    expect(moveDateToNextMonth("2026-12-31")).toBe("2027-01-31");
   });
 });
 

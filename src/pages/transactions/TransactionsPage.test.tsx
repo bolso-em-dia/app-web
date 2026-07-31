@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter } from "react-router";
 import { vi } from "vitest";
 import { TestAuthProvider } from "../../app/auth/TestAuthProvider";
-import { formatDateValue, getCurrentReferenceMonth, shiftReferenceMonth } from "../../lib/formatters/date";
+import { formatDateValue, getCurrentReferenceMonth, moveDateToNextMonth, shiftReferenceMonth } from "../../lib/formatters/date";
 import { resetFetchMocks, mockJsonResponse, mockErrorResponse, mockFetchUrl } from "../../test/setup";
 import { t } from "../../test/i18n";
 import { clearCachedOptionsResources } from "../../lib/options/useCachedOptionsResource";
@@ -768,16 +768,12 @@ describe("TransactionsPage", () => {
     expect(payload.referenceMonthPolicy).toBe("FORCE_CURRENT");
   });
 
-  it("offers a move-to-next-month action for saved manual credit-card expenses", async () => {
+  it("opens move-date confirmation for saved editable transactions and cancels without calling the API", async () => {
     resetFetchMocks();
 
-    const cardTransaction = {
+    const editableTransaction = {
       ...defaultTransactionsResponse.items[0],
-      accountId: "card-1",
-      accountName: "Nubank",
       transactionDate: "2026-07-05",
-      referenceMonth: "2026-07-01",
-      referenceMonthPolicy: "AUTO",
     };
 
     mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
@@ -785,37 +781,14 @@ describe("TransactionsPage", () => {
       "/api/transactions?",
       mockJsonResponse({
         ...defaultTransactionsResponse,
-        items: [cardTransaction],
+        items: [editableTransaction],
       }),
     );
-    mockFetchUrl(
-      "/api/accounts?",
-      mockJsonResponse({
-        ...defaultAccountsResponse,
-        items: [
-          {
-            ...defaultAccountsResponse.items[0],
-            id: "card-1",
-            name: "Nubank",
-            type: "CREDIT_CARD",
-            closingDay: 26,
-            dueDay: 10,
-          },
-        ],
-      }),
-    );
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
     mockFetchUrl("/api/budgets?", mockJsonResponse(defaultAllowanceBudgetsResponse));
     mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
     mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
     mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
-    mockFetchUrl(
-      "/api/transactions/tx-1/reference-month-policy",
-      mockJsonResponse({
-        ...cardTransaction,
-        referenceMonth: "2026-08-01",
-        referenceMonthPolicy: "FORCE_NEXT",
-      }),
-    );
 
     render(
       <MemoryRouter initialEntries={["/transactions"]}>
@@ -831,24 +804,210 @@ describe("TransactionsPage", () => {
     const drawer = screen.getByRole("dialog");
     fireEvent.click(within(drawer).getByRole("button", { name: t("transactions.moveToNextMonth") }));
 
+    const modal = screen.getByRole("alertdialog", {
+      name: t("transactions.moveDateTitle"),
+    });
+    expect(
+      within(modal).getByText(
+        t("transactions.moveDateCurrent", {
+          date: formatDateValue(editableTransaction.transactionDate),
+        }),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(modal).getByText(
+        t("transactions.moveDateNew", {
+          date: formatDateValue(moveDateToNextMonth(editableTransaction.transactionDate)),
+        }),
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(within(modal).getByRole("button", { name: t("common.cancel") }));
+
+    expect(screen.queryByRole("alertdialog", { name: t("transactions.moveDateTitle") })).not.toBeInTheDocument();
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.some(([input, init]) => String(input).endsWith("/api/transactions/tx-1/move-date") && init?.method === "PATCH"),
+    ).toBe(false);
+  });
+
+  it("moves a single installment when future installments are not selected", async () => {
+    resetFetchMocks();
+
+    const installmentTransaction = {
+      ...defaultTransactionsResponse.items[0],
+      sourceType: "INSTALLMENT",
+      installmentGroupId: "group-1",
+      installmentNumber: 2,
+      installmentTotal: 6,
+      transactionDate: "2026-07-31",
+    };
+
+    mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        ...defaultTransactionsResponse,
+        items: [installmentTransaction],
+      }),
+    );
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl("/api/budgets?", mockJsonResponse(defaultAllowanceBudgetsResponse));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
+    mockFetchUrl("/api/transactions/tx-1/move-date", mockJsonResponse(installmentTransaction));
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: /Groceries/i }));
+    fireEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: t("transactions.moveToNextMonth"),
+      }),
+    );
+
+    const modal = screen.getByRole("alertdialog", {
+      name: t("transactions.moveDateTitle"),
+    });
+    const checkbox = within(modal).getByLabelText(t("transactions.moveDateFutureToggle"));
+
+    expect(checkbox).toBeChecked();
+    expect(within(modal).getByText(t("transactions.moveDateInstallmentHint"))).toBeInTheDocument();
+
+    fireEvent.click(checkbox);
+    fireEvent.click(within(modal).getByRole("button", { name: t("transactions.moveDateAction") }));
+
     await waitFor(() => {
       expect(
         vi
           .mocked(fetch)
-          .mock.calls.some(
-            ([input, init]) => String(input).endsWith("/api/transactions/tx-1/reference-month-policy") && init?.method === "PATCH",
-          ),
+          .mock.calls.some(([input, init]) => String(input).endsWith("/api/transactions/tx-1/move-date") && init?.method === "PATCH"),
       ).toBe(true);
     });
 
     const patchCall = vi
       .mocked(fetch)
-      .mock.calls.find(
-        ([input, init]) => String(input).endsWith("/api/transactions/tx-1/reference-month-policy") && init?.method === "PATCH",
-      );
+      .mock.calls.find(([input, init]) => String(input).endsWith("/api/transactions/tx-1/move-date") && init?.method === "PATCH");
     const payload = JSON.parse(String(patchCall?.[1]?.body ?? "{}")) as Record<string, unknown>;
 
-    expect(payload).toEqual({ referenceMonthPolicy: "FORCE_NEXT" });
+    expect(payload).toEqual({
+      scope: "SINGLE",
+      expectedCurrentTransactionDate: installmentTransaction.transactionDate,
+      confirmedNewTransactionDate: moveDateToNextMonth(installmentTransaction.transactionDate),
+    });
+  });
+
+  it("moves current and future installments by default", async () => {
+    resetFetchMocks();
+
+    const installmentTransaction = {
+      ...defaultTransactionsResponse.items[0],
+      sourceType: "INSTALLMENT",
+      installmentGroupId: "group-1",
+      installmentNumber: 2,
+      installmentTotal: 6,
+      transactionDate: "2026-07-10",
+    };
+
+    mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        ...defaultTransactionsResponse,
+        items: [installmentTransaction],
+      }),
+    );
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl("/api/budgets?", mockJsonResponse(defaultAllowanceBudgetsResponse));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
+    mockFetchUrl("/api/transactions/tx-1/move-date", mockJsonResponse(installmentTransaction));
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: /Groceries/i }));
+    fireEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: t("transactions.moveToNextMonth"),
+      }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: t("transactions.moveDateAction") }));
+
+    await waitFor(() => {
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(([input, init]) => String(input).endsWith("/api/transactions/tx-1/move-date") && init?.method === "PATCH"),
+      ).toBe(true);
+    });
+
+    const patchCall = vi
+      .mocked(fetch)
+      .mock.calls.find(([input, init]) => String(input).endsWith("/api/transactions/tx-1/move-date") && init?.method === "PATCH");
+    const payload = JSON.parse(String(patchCall?.[1]?.body ?? "{}")) as Record<string, unknown>;
+
+    expect(payload).toEqual({
+      scope: "FUTURE",
+      expectedCurrentTransactionDate: installmentTransaction.transactionDate,
+      confirmedNewTransactionDate: moveDateToNextMonth(installmentTransaction.transactionDate),
+    });
+  });
+
+  it("shows feedback when moving the transaction date fails", async () => {
+    resetFetchMocks();
+
+    const editableTransaction = {
+      ...defaultTransactionsResponse.items[0],
+      transactionDate: "2026-07-05",
+    };
+
+    mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        ...defaultTransactionsResponse,
+        items: [editableTransaction],
+      }),
+    );
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl("/api/budgets?", mockJsonResponse(defaultAllowanceBudgetsResponse));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
+    mockFetchUrl("/api/transactions/tx-1/move-date", mockErrorResponse(503));
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: /Groceries/i }));
+    fireEvent.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: t("transactions.moveToNextMonth"),
+      }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: t("transactions.moveDateAction") }));
+
+    expect(await screen.findByText(t("transactions.moveError"))).toBeInTheDocument();
   });
 
   it("opens a delete confirmation modal and cancels without calling the API", async () => {

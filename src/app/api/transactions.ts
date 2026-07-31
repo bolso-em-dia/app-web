@@ -4,6 +4,7 @@ import type { Currency } from "../../lib/formatters/currency";
 export type TransactionType = "INCOME" | "EXPENSE";
 export type OwnershipType = "SHARED" | "INDIVIDUAL";
 export type DeleteScope = "SINGLE" | "FUTURE" | "ALL";
+export type MoveTransactionDateScope = "SINGLE" | "FUTURE";
 export type SourceType = "MANUAL" | "INSTALLMENT" | "FIXED_EXPENSE";
 export type ReferenceMonthPolicy = "AUTO" | "FORCE_CURRENT" | "FORCE_NEXT";
 
@@ -46,6 +47,12 @@ export type TransactionPayload = {
   memberId?: string;
   installmentCount?: number;
   referenceMonthPolicy?: ReferenceMonthPolicy;
+};
+
+export type MoveTransactionDatePayload = {
+  scope: MoveTransactionDateScope;
+  expectedCurrentTransactionDate: string;
+  confirmedNewTransactionDate: string;
 };
 
 export type TransactionFilters = {
@@ -141,11 +148,11 @@ export function updateTransaction(id: string, payload: Omit<TransactionPayload, 
   });
 }
 
-export function updateTransactionReferenceMonthPolicy(id: string, referenceMonthPolicy: ReferenceMonthPolicy, accessToken: string) {
-  return apiRequest<Transaction>(`/api/transactions/${id}/reference-month-policy`, {
+export function moveTransactionDate(id: string, payload: MoveTransactionDatePayload, accessToken: string) {
+  return apiRequest<Transaction | Transaction[]>(`/api/transactions/${id}/move-date`, {
     method: "PATCH",
     accessToken,
-    body: JSON.stringify({ referenceMonthPolicy }),
+    body: JSON.stringify(payload),
   });
 }
 

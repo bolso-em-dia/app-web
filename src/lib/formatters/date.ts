@@ -78,6 +78,21 @@ export function shiftReferenceMonth(value: string, deltaMonths: number) {
   return formatLocalDate(new Date(year, month - 1 + deltaMonths, 1));
 }
 
+export function moveDateToNextMonth(value: string) {
+  const { day, month, year } = parseIsoParts(value);
+
+  if (!year || !month || !day || !isValidDate(year, month, day)) {
+    return "";
+  }
+
+  const nextMonthStart = new Date(year, month, 1);
+  const nextYear = nextMonthStart.getFullYear();
+  const nextMonth = nextMonthStart.getMonth() + 1;
+  const daysInNextMonth = new Date(nextYear, nextMonth, 0).getDate();
+
+  return buildIsoDate(nextYear, nextMonth, Math.min(day, daysInNextMonth));
+}
+
 export function getReferenceMonthFromDate(value: string) {
   const { year, month } = parseIsoParts(value);
 

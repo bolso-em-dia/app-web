@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type BaseSyntheticEvent, useEffect, useMemo, useState } from "react";
+import { type BaseSyntheticEvent, useEffect, useId, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { Account } from "../../app/api/accounts";
@@ -9,9 +9,10 @@ import {
   createTransaction,
   deleteTransaction,
   listTransactionDescriptionSuggestions,
-  updateTransactionReferenceMonthPolicy,
+  moveTransactionDate,
   updateTransaction,
   type DeleteScope,
+  type MoveTransactionDateScope,
   type ReferenceMonthPolicy,
   type Transaction,
   type TransactionPayload,
@@ -32,7 +33,7 @@ import Select from "../../components/ui/Select";
 import Switch from "../../components/ui/Switch";
 import Tooltip from "../../components/ui/Tooltip";
 import { formErrorFrom } from "../../lib/formError";
-import { getDayOfMonthFromDate } from "../../lib/formatters/date";
+import { formatDateValue, getDayOfMonthFromDate, moveDateToNextMonth } from "../../lib/formatters/date";
 import styles from "./TransactionsPage.module.scss";
 
 interface TransactionFormProps {
@@ -132,7 +133,9 @@ export default function TransactionForm({
     [transaction, referenceMonth, user],
   );
 
-  const formKey = `${transaction?.id ?? `create-${referenceMonth}-${user.preferences?.defaultAccountId ?? ""}`}:${JSON.stringify(initialValues)}`;
+  const formKey = `${transaction?.id ?? `create-${referenceMonth}-${user.preferences?.defaultAccountId ?? ""}`}:${JSON.stringify(
+    initialValues,
+  )}`;
 
   return (
     <TransactionFormContent
@@ -166,10 +169,13 @@ function TransactionFormContent({
   const { accessToken } = useAuth();
   const { t } = useI18n();
   const [isSaving, setIsSaving] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isMoveConfirmOpen, setIsMoveConfirmOpen] = useState(false);
   const [deleteScope, setDeleteScope] = useState<DeleteScope>("SINGLE");
+  const [moveScope, setMoveScope] = useState<MoveTransactionDateScope>("SINGLE");
   const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
   const [referenceMonthPolicy, setReferenceMonthPolicy] = useState<ReferenceMonthPolicy>(resolveInitialReferenceMonthPolicy(transaction));
 
@@ -205,18 +211,16 @@ function TransactionFormContent({
   }, [isCreditCardExpense, selectedAccount?.closingDay, transactionDate]);
   const shouldShowReferenceMonthAlert = shouldWarnNextMonth;
   const shouldApplyNextMonthRule = referenceMonthPolicy !== "FORCE_CURRENT";
-  const canMoveTransactionToNextMonth = Boolean(
-    !isCreating &&
-    transaction?.sourceType === "MANUAL" &&
-    transaction?.type === "EXPENSE" &&
-    selectedAccount?.type === "CREDIT_CARD" &&
-    selectedAccount?.closingDay != null &&
-    transaction?.referenceMonthPolicy !== "FORCE_NEXT",
-  );
+  const canMoveTransactionToNextMonth = Boolean(!isCreating && !transaction?.projected && transaction?.sourceType !== "FIXED_EXPENSE");
 
   const allowanceMembers = useMemo(() => members.filter((member) => member.active), [members]);
   const canCreateIndividualTransaction = allowanceMembers.length > 0;
   const isEditingExistingIndividualTransaction = !isCreating && transaction?.ownershipType === "INDIVIDUAL";
+  const supportsGroupedDelete = Boolean(installmentGroupId);
+  const supportsGroupedMove = Boolean(installmentGroupId);
+  const currentTransactionDate = transaction?.transactionDate ?? "";
+  const nextTransactionDate = transaction ? moveDateToNextMonth(transaction.transactionDate) : "";
+  const moveFutureHintId = useId();
 
   useEffect(() => {
     if (!accessToken) {
@@ -312,7 +316,7 @@ function TransactionFormContent({
   }
 
   async function handleMoveToNextMonth() {
-    if (!transactionId) {
+    if (!transactionId || !currentTransactionDate || !nextTransactionDate) {
       return;
     }
 
@@ -321,17 +325,26 @@ function TransactionFormContent({
       return;
     }
 
-    setIsSaving(true);
+    setIsMoving(true);
     setError(null);
 
     try {
-      await updateTransactionReferenceMonthPolicy(transactionId, "FORCE_NEXT", accessToken);
+      await moveTransactionDate(
+        transactionId,
+        {
+          scope: supportsGroupedMove && moveScope === "FUTURE" ? "FUTURE" : "SINGLE",
+          expectedCurrentTransactionDate: currentTransactionDate,
+          confirmedNewTransactionDate: nextTransactionDate,
+        },
+        accessToken,
+      );
+      setIsMoveConfirmOpen(false);
       onSuccess();
     } catch (submitError) {
       console.error("Failed to move transaction to next month.", submitError);
-      setError(formErrorFrom(submitError, "transactions.saveError", t));
+      setError(formErrorFrom(submitError, "transactions.moveError", t));
     } finally {
-      setIsSaving(false);
+      setIsMoving(false);
     }
   }
 
@@ -365,6 +378,20 @@ function TransactionFormContent({
     setIsDeleteConfirmOpen(true);
   }
 
+  function handleOpenMoveConfirm() {
+    setMoveScope(supportsGroupedMove ? "FUTURE" : "SINGLE");
+    setIsMoveConfirmOpen(true);
+  }
+
+  function handleCloseMoveConfirm() {
+    if (isMoving) {
+      return;
+    }
+
+    setIsMoveConfirmOpen(false);
+    setMoveScope("SINGLE");
+  }
+
   function handleCloseDeleteConfirm() {
     if (isDeleting) {
       return;
@@ -373,8 +400,6 @@ function TransactionFormContent({
     setIsDeleteConfirmOpen(false);
     setDeleteScope("SINGLE");
   }
-
-  const supportsGroupedDelete = Boolean(installmentGroupId);
 
   return (
     <>
@@ -630,17 +655,55 @@ function TransactionFormContent({
                 {t("common.save")}
               </Button>
               {canMoveTransactionToNextMonth ? (
-                <Button disabled={isSaving || isDeleting} onClick={() => void handleMoveToNextMonth()} type="button" variant="secondary">
+                <Button disabled={isSaving || isMoving || isDeleting} onClick={handleOpenMoveConfirm} type="button" variant="secondary">
                   {t("transactions.moveToNextMonth")}
                 </Button>
               ) : null}
-              <Button disabled={isDeleting} onClick={handleOpenDeleteConfirm} type="button" variant="danger">
+              <Button disabled={isDeleting || isMoving} onClick={handleOpenDeleteConfirm} type="button" variant="danger">
                 {t("common.delete")}
               </Button>
             </>
           )}
         </div>
       </form>
+
+      <ConfirmAction
+        confirmLabel={t("transactions.moveDateAction")}
+        loading={isMoving}
+        message={t("transactions.moveDateSubtitle")}
+        onCancel={handleCloseMoveConfirm}
+        onConfirm={() => void handleMoveToNextMonth()}
+        open={isMoveConfirmOpen}
+        title={t("transactions.moveDateTitle")}
+        variant="secondary"
+      >
+        <div className={styles.confirmDetails}>
+          <div className={styles.confirmDateList}>
+            <p className={styles.confirmDateText}>{t("transactions.moveDateCurrent", { date: formatDateValue(currentTransactionDate) })}</p>
+            <p className={styles.confirmDateText}>{t("transactions.moveDateNew", { date: formatDateValue(nextTransactionDate) })}</p>
+          </div>
+          {supportsGroupedMove ? (
+            <div className={styles.confirmCheckbox}>
+              <input
+                aria-describedby={moveFutureHintId}
+                checked={moveScope === "FUTURE"}
+                disabled={isMoving}
+                id="transaction-move-future-scope"
+                onChange={(event) => setMoveScope(event.target.checked ? "FUTURE" : "SINGLE")}
+                type="checkbox"
+              />
+              <span className={styles.confirmCheckboxLabel}>
+                <label className={styles.confirmCheckboxText} htmlFor="transaction-move-future-scope">
+                  {t("transactions.moveDateFutureToggle")}
+                </label>
+                <span className={styles.confirmDateText} id={moveFutureHintId}>
+                  {t("transactions.moveDateInstallmentHint")}
+                </span>
+              </span>
+            </div>
+          ) : null}
+        </div>
+      </ConfirmAction>
 
       <ConfirmAction
         confirmLabel={t("common.delete")}
