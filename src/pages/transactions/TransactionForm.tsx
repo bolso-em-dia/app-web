@@ -9,8 +9,10 @@ import {
   createTransaction,
   deleteTransaction,
   listTransactionDescriptionSuggestions,
+  updateTransactionReferenceMonthPolicy,
   updateTransaction,
   type DeleteScope,
+  type ReferenceMonthPolicy,
   type Transaction,
   type TransactionPayload,
 } from "../../app/api/transactions";
@@ -29,6 +31,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Switch from "../../components/ui/Switch";
 import { formErrorFrom } from "../../lib/formError";
+import { getDayOfMonthFromDate } from "../../lib/formatters/date";
 import styles from "./TransactionsPage.module.scss";
 
 interface TransactionFormProps {
@@ -82,6 +85,21 @@ function mapFormValuesToUpdatePayload(values: TransactionFormValues): Omit<Trans
     categoryId: values.categoryId,
     memberId: values.ownershipType === "INDIVIDUAL" ? values.memberId : undefined,
   };
+}
+
+function resolveInitialReferenceMonthPolicy(transaction: Transaction | null): ReferenceMonthPolicy {
+  return transaction?.referenceMonthPolicy ?? "AUTO";
+}
+
+function resolveSubmittedReferenceMonthPolicy(
+  referenceMonthPolicy: ReferenceMonthPolicy,
+  shouldShowReferenceMonthAlert: boolean,
+): ReferenceMonthPolicy {
+  if (shouldShowReferenceMonthAlert || referenceMonthPolicy === "FORCE_NEXT") {
+    return referenceMonthPolicy;
+  }
+
+  return "AUTO";
 }
 
 export default function TransactionForm({
@@ -152,6 +170,7 @@ function TransactionFormContent({
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [deleteScope, setDeleteScope] = useState<DeleteScope>("SINGLE");
   const [descriptionSuggestions, setDescriptionSuggestions] = useState<string[]>([]);
+  const [referenceMonthPolicy, setReferenceMonthPolicy] = useState<ReferenceMonthPolicy>(resolveInitialReferenceMonthPolicy(transaction));
 
   const isCreating = transaction === null;
   const transactionId = transaction?.id ?? null;
@@ -169,10 +188,29 @@ function TransactionFormContent({
   const ownershipType = useWatch({ control: form.control, name: "ownershipType" });
   const isInstallment = useWatch({ control: form.control, name: "isInstallment" });
   const formAccountId = useWatch({ control: form.control, name: "accountId" });
+  const transactionDate = useWatch({ control: form.control, name: "transactionDate" });
 
   const selectedAccountCurrency = useMemo(
     (): Currency | undefined => accounts.find((account) => account.id === formAccountId)?.currency,
     [accounts, formAccountId],
+  );
+  const selectedAccount = useMemo(() => accounts.find((account) => account.id === formAccountId) ?? null, [accounts, formAccountId]);
+  const isCreditCardExpense = transactionType === "EXPENSE" && selectedAccount?.type === "CREDIT_CARD";
+  const shouldWarnNextMonth = useMemo(() => {
+    const dayOfMonth = getDayOfMonthFromDate(transactionDate);
+    return Boolean(
+      isCreditCardExpense && selectedAccount?.closingDay != null && dayOfMonth != null && dayOfMonth > selectedAccount.closingDay,
+    );
+  }, [isCreditCardExpense, selectedAccount?.closingDay, transactionDate]);
+  const shouldShowReferenceMonthAlert = shouldWarnNextMonth;
+  const shouldApplyNextMonthRule = referenceMonthPolicy !== "FORCE_CURRENT";
+  const canMoveTransactionToNextMonth = Boolean(
+    !isCreating &&
+    transaction?.sourceType === "MANUAL" &&
+    transaction?.type === "EXPENSE" &&
+    selectedAccount?.type === "CREDIT_CARD" &&
+    selectedAccount?.closingDay != null &&
+    transaction?.referenceMonthPolicy !== "FORCE_NEXT",
   );
 
   const allowanceMembers = useMemo(() => members.filter((member) => member.active), [members]);
@@ -217,6 +255,7 @@ function TransactionFormContent({
   const effectiveSuggestions = descriptionValue.trim().length < 2 ? [] : descriptionSuggestions;
 
   function resetForNextCreate(values: TransactionFormValues) {
+    setReferenceMonthPolicy("AUTO");
     form.reset({
       type: values.type,
       ownershipType: values.ownershipType,
@@ -245,8 +284,9 @@ function TransactionFormContent({
     setError(null);
 
     try {
+      const payloadPolicy = resolveSubmittedReferenceMonthPolicy(referenceMonthPolicy, shouldShowReferenceMonthAlert);
       if (isCreating) {
-        await createTransaction(mapFormValuesToCreatePayload(values), accessToken);
+        await createTransaction({ ...mapFormValuesToCreatePayload(values), referenceMonthPolicy: payloadPolicy }, accessToken);
 
         if (intent === "save-and-create-new") {
           resetForNextCreate(values);
@@ -255,11 +295,39 @@ function TransactionFormContent({
           onSuccess();
         }
       } else if (transactionId) {
-        await updateTransaction(transactionId, mapFormValuesToUpdatePayload(values), accessToken);
+        await updateTransaction(
+          transactionId,
+          { ...mapFormValuesToUpdatePayload(values), referenceMonthPolicy: payloadPolicy },
+          accessToken,
+        );
         onSuccess();
       }
     } catch (submitError) {
       console.error("Failed to save transaction.", submitError);
+      setError(formErrorFrom(submitError, "transactions.saveError", t));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleMoveToNextMonth() {
+    if (!transactionId) {
+      return;
+    }
+
+    if (!accessToken) {
+      setError(t("common.sessionExpired"));
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      await updateTransactionReferenceMonthPolicy(transactionId, "FORCE_NEXT", accessToken);
+      onSuccess();
+    } catch (submitError) {
+      console.error("Failed to move transaction to next month.", submitError);
       setError(formErrorFrom(submitError, "transactions.saveError", t));
     } finally {
       setIsSaving(false);
@@ -354,13 +422,28 @@ function TransactionFormContent({
                 id="transaction-date"
                 hasError={Boolean(form.formState.errors.transactionDate)}
                 onBlur={field.onBlur}
-                onChange={field.onChange}
+                onChange={(nextValue) => {
+                  field.onChange(nextValue);
+                  setReferenceMonthPolicy("AUTO");
+                }}
                 ref={field.ref}
                 value={field.value}
               />
             )}
           />
         </Field>
+
+        {shouldShowReferenceMonthAlert ? (
+          <div className={styles.referenceMonthAlert} role="alert">
+            <p className={styles.helperText}>{t("transactions.creditCardNextMonthAlert")}</p>
+            <Switch
+              checked={shouldApplyNextMonthRule}
+              id="transaction-reference-month-policy"
+              label={t("transactions.creditCardNextMonthToggle")}
+              onChange={(event) => setReferenceMonthPolicy(event.target.checked ? "AUTO" : "FORCE_CURRENT")}
+            />
+          </div>
+        ) : null}
 
         <Field error={form.formState.errors.type?.message} htmlFor="transaction-type-expense" label={t("common.type")}>
           <Controller
@@ -384,7 +467,10 @@ function TransactionFormContent({
                       id={`transaction-type-${typeOption.toLowerCase()}`}
                       key={typeOption}
                       onBlur={field.onBlur}
-                      onClick={() => field.onChange(typeOption)}
+                      onClick={() => {
+                        field.onChange(typeOption);
+                        setReferenceMonthPolicy("AUTO");
+                      }}
                       role="radio"
                       type="button"
                     >
@@ -439,19 +525,30 @@ function TransactionFormContent({
         </div>
 
         <Field error={form.formState.errors.accountId?.message} htmlFor="transaction-account" label={t("common.account")}>
-          <Select
-            id="transaction-account"
-            hasError={Boolean(form.formState.errors.accountId)}
-            value={formAccountId ?? ""}
-            {...form.register("accountId")}
-          >
-            <option value="">{t("common.selectAccount")}</option>
-            {accounts.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name}
-              </option>
-            ))}
-          </Select>
+          <Controller
+            control={form.control}
+            name="accountId"
+            render={({ field }) => (
+              <Select
+                id="transaction-account"
+                hasError={Boolean(form.formState.errors.accountId)}
+                onBlur={field.onBlur}
+                onChange={(event) => {
+                  field.onChange(event.target.value);
+                  setReferenceMonthPolicy("AUTO");
+                }}
+                ref={field.ref}
+                value={field.value ?? ""}
+              >
+                <option value="">{t("common.selectAccount")}</option>
+                {accounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          />
         </Field>
 
         <Field error={form.formState.errors.categoryId?.message} htmlFor="transaction-category" label={t("common.category")}>
@@ -529,6 +626,11 @@ function TransactionFormContent({
               <Button loading={isSaving} type="submit">
                 {t("common.save")}
               </Button>
+              {canMoveTransactionToNextMonth ? (
+                <Button disabled={isSaving || isDeleting} onClick={() => void handleMoveToNextMonth()} type="button" variant="secondary">
+                  {t("transactions.moveToNextMonth")}
+                </Button>
+              ) : null}
               <Button disabled={isDeleting} onClick={handleOpenDeleteConfirm} type="button" variant="danger">
                 {t("common.delete")}
               </Button>

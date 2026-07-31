@@ -88,6 +88,11 @@ export function getReferenceMonthFromDate(value: string) {
   return buildIsoDate(year, month, 1);
 }
 
+export function getDayOfMonthFromDate(value: string) {
+  const { day } = parseIsoParts(value);
+  return day || null;
+}
+
 export function isCurrentReferenceMonth(value: string) {
   return value === getCurrentReferenceMonth();
 }

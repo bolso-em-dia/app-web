@@ -246,8 +246,12 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   "transactions.description": "Description",
   "transactions.amount": "Amount",
   "transactions.transactionDate": "Transaction date",
+  "transactions.creditCardNextMonthAlert":
+    "Based on the purchase date and the card closing day, this transaction will be considered in the next month by default.",
+  "transactions.creditCardNextMonthToggle": "Consider in next month",
   "transactions.installmentToggle": "Installment",
   "transactions.installmentCount": "Number of installments",
+  "transactions.moveToNextMonth": "Move to next month",
   "transactions.noInstallmentGroup": "Single transaction",
   "transactions.deleteTitle": "Delete transaction",
   "transactions.deleteSubtitle": "Confirm deletion of the selected transaction or the remaining installments in the group.",

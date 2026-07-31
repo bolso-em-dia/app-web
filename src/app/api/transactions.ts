@@ -5,6 +5,7 @@ export type TransactionType = "INCOME" | "EXPENSE";
 export type OwnershipType = "SHARED" | "INDIVIDUAL";
 export type DeleteScope = "SINGLE" | "FUTURE" | "ALL";
 export type SourceType = "MANUAL" | "INSTALLMENT" | "FIXED_EXPENSE";
+export type ReferenceMonthPolicy = "AUTO" | "FORCE_CURRENT" | "FORCE_NEXT";
 
 export type Transaction = {
   id: string;
@@ -15,6 +16,7 @@ export type Transaction = {
   amount: number;
   transactionDate: string;
   referenceMonth: string;
+  referenceMonthPolicy?: ReferenceMonthPolicy;
   accountId: string;
   accountName: string;
   categoryId: string;
@@ -43,6 +45,7 @@ export type TransactionPayload = {
   categoryId: string;
   memberId?: string;
   installmentCount?: number;
+  referenceMonthPolicy?: ReferenceMonthPolicy;
 };
 
 export type TransactionFilters = {
@@ -135,6 +138,14 @@ export function updateTransaction(id: string, payload: Omit<TransactionPayload, 
     method: "PUT",
     accessToken,
     body: JSON.stringify(payload),
+  });
+}
+
+export function updateTransactionReferenceMonthPolicy(id: string, referenceMonthPolicy: ReferenceMonthPolicy, accessToken: string) {
+  return apiRequest<Transaction>(`/api/transactions/${id}/reference-month-policy`, {
+    method: "PATCH",
+    accessToken,
+    body: JSON.stringify({ referenceMonthPolicy }),
   });
 }
 

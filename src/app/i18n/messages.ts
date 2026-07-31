@@ -413,8 +413,12 @@ export const ptBRMessages = {
   "transactions.description": "Descrição",
   "transactions.amount": "Valor",
   "transactions.transactionDate": "Data da transação",
+  "transactions.creditCardNextMonthAlert":
+    "Pela data da compra e fechamento do cartão, este lançamento será considerado no mês seguinte por padrão.",
+  "transactions.creditCardNextMonthToggle": "Considerar no mês seguinte",
   "transactions.installmentToggle": "Parcelado",
   "transactions.installmentCount": "Quantidade de parcelas",
+  "transactions.moveToNextMonth": "Mover para o mês seguinte",
   "transactions.deleteTitle": "Excluir transação",
   "transactions.deleteSubtitle": "Confirme a exclusão da transação selecionada ou das parcelas restantes do grupo.",
   "transactions.deleteSingleSubtitle": "Confirme a exclusão da transação selecionada.",
