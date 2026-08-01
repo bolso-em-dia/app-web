@@ -70,7 +70,6 @@ export default function TransactionCard({ transaction, categoryOption, onSelect 
           {transaction.categoryName}
         </Badge>
         <Badge tone={transaction.type === "INCOME" ? "success" : "danger"}>{t(`transactionTypes.${transaction.type}` as const)}</Badge>
-        <Badge>{t(`ownershipTypes.${transaction.ownershipType}` as const)}</Badge>
         {isFixedExpense ? (
           <Badge icon={<Pin />} tone="warning">
             {t("transactions.fixed")}

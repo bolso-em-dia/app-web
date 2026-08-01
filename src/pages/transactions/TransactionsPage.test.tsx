@@ -371,6 +371,60 @@ describe("TransactionsPage", () => {
     expect(within(transactionButton).queryByText(/Groceries · Main checking/)).not.toBeInTheDocument();
   });
 
+  it("does not show the shared ownership badge for shared transactions", async () => {
+    setupDefaultMocks();
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser()}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
+
+    expect(within(transactionButton).queryByText(t("ownershipTypes.SHARED"))).not.toBeInTheDocument();
+  });
+
+  it("keeps the member owner badge for individual transactions with memberName", async () => {
+    resetFetchMocks();
+
+    mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
+    mockFetchUrl(
+      "/api/transactions?",
+      mockJsonResponse({
+        ...defaultTransactionsResponse,
+        items: [
+          {
+            ...defaultTransactionsResponse.items[0],
+            ownershipType: "INDIVIDUAL",
+            memberId: "member-1",
+            memberName: "Taylor",
+          },
+        ],
+      }),
+    );
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl("/api/budgets?", mockJsonResponse(defaultAllowanceBudgetsResponse));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser()}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
+
+    expect(within(transactionButton).getByText("Taylor")).toBeInTheDocument();
+    expect(within(transactionButton).queryByText(t("ownershipTypes.INDIVIDUAL"))).not.toBeInTheDocument();
+  });
+
   it("shows description suggestions and preserves non-varying fields on save and create new", async () => {
     resetFetchMocks();
 
