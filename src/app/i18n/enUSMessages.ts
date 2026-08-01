@@ -220,7 +220,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   // Fixed Transactions
   "fixedTransactions.title": "Fixed transactions",
   "fixedTransactions.loading": "Loading fixed transactions",
-  "fixedTransactions.error": "Unable to load fixed transactions.",
+  "fixedTransactions.error": "Unable to load fixed transactions",
   "fixedTransactions.saveError": "Unable to save the fixed transaction.",
   "fixedTransactions.archiveError": "Unable to archive the fixed transaction.",
   "fixedTransactions.deleteError": "Unable to delete the fixed transaction.",
@@ -246,7 +246,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   // Transactions
   "transactions.title": "Transactions",
   "transactions.loading": "Loading transactions",
-  "transactions.error": "Unable to load transactions.",
+  "transactions.error": "Unable to load transactions",
   "transactions.categoryRefreshError": "Unable to refresh the category list.",
   "transactions.saveError": "Unable to save the transaction.",
   "transactions.deleteError": "Unable to delete the transaction.",
@@ -297,7 +297,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   // Budgets
   "budgets.title": "Budgets",
   "budgets.loading": "Loading budgets",
-  "budgets.error": "Unable to load budgets.",
+  "budgets.error": "Unable to load budgets",
   "budgets.detailsError": "Unable to load budget details.",
   "budgets.saveError": "Unable to save the budget.",
   "budgets.archiveError": "Unable to archive the budget.",
@@ -337,7 +337,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   // Categories
   "categories.title": "Categories",
   "categories.loading": "Loading categories",
-  "categories.error": "Unable to load categories.",
+  "categories.error": "Unable to load categories",
   "categories.saveError": "Unable to save the category.",
   "categories.archiveError": "Unable to archive the category.",
   "categories.searchPlaceholder": "Search categories",
@@ -354,7 +354,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   // Accounts
   "accounts.title": "Accounts/Cards",
   "accounts.loading": "Loading accounts",
-  "accounts.error": "Unable to load accounts.",
+  "accounts.error": "Unable to load accounts",
   "accounts.saveError": "Unable to save the account.",
   "accounts.archiveError": "Unable to archive the account.",
   "accounts.searchPlaceholder": "Search accounts and cards",
@@ -420,7 +420,7 @@ export const enUSMessages: Partial<Record<MessageKey, string>> = {
   // Family
   "family.title": "Family",
   "family.loading": "Loading family members",
-  "family.error": "Unable to load family members.",
+  "family.error": "Unable to load family members",
   "family.saveError": "Unable to save the member.",
   "family.statusError": "Unable to change the member status.",
   "family.searchPlaceholder": "Search members",

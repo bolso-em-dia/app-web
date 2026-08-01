@@ -67,6 +67,22 @@ describe("AccountsPage", () => {
     });
   });
 
+  it("shows the centered list error state without rendering the empty message", async () => {
+    mockFetchUrl("/api/accounts?", mockErrorResponse(500));
+
+    render(
+      <MemoryRouter initialEntries={["/accounts"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <AccountsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(t("accounts.error"))).toBeInTheDocument();
+    expect(screen.queryByText(t("accounts.empty"))).not.toBeInTheDocument();
+    expect(screen.queryByText("Main checking")).not.toBeInTheDocument();
+  });
+
   it("keeps the search field focused during filtering and uses the configured card color visually", async () => {
     setupDefaultMocks();
 

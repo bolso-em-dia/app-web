@@ -115,27 +115,39 @@ export default function FixedExpenseList({
     );
   }
 
+  if (listError && templates.length === 0) {
+    return (
+      <section className={styles.templateGrid}>
+        <Card className={styles.emptyState}>
+          <p>{listError}</p>
+        </Card>
+      </section>
+    );
+  }
+
+  if (templates.length === 0) {
+    return (
+      <section className={styles.templateGrid}>
+        <Card className={styles.emptyState}>
+          <p>{t("fixedTransactions.empty")}</p>
+        </Card>
+      </section>
+    );
+  }
+
   return (
     <>
       <section className={styles.templateGrid}>
-        {templates.length === 0 && !listError ? (
-          <Card className={styles.loadingCard}>
-            <p>{t("fixedTransactions.empty")}</p>
-          </Card>
-        ) : (
-          templates.map((template) => (
-            <FixedExpenseCard
-              key={template.id}
-              categoryOption={categoryOptionsById.get(template.categoryId)}
-              isSelected={selectedId === template.id}
-              template={template}
-              onSelect={(id) => onSelect(id, template)}
-            />
-          ))
-        )}
+        {templates.map((template) => (
+          <FixedExpenseCard
+            key={template.id}
+            categoryOption={categoryOptionsById.get(template.categoryId)}
+            isSelected={selectedId === template.id}
+            template={template}
+            onSelect={(id) => onSelect(id, template)}
+          />
+        ))}
       </section>
-
-      {listError ? <p>{listError}</p> : null}
 
       <PaginationBar
         loaded={templates.length}

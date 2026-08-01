@@ -59,6 +59,16 @@ export default function FamilyMemberList({ filters, sort, selectedId, onSelect, 
     );
   }
 
+  if (listError && members.length === 0) {
+    return (
+      <section className={styles.memberGrid}>
+        <Card className={styles.emptyState}>
+          <p>{listError}</p>
+        </Card>
+      </section>
+    );
+  }
+
   if (members.length === 0 && !listError) {
     return (
       <section className={styles.memberGrid}>
@@ -81,8 +91,6 @@ export default function FamilyMemberList({ filters, sort, selectedId, onSelect, 
           />
         ))}
       </section>
-
-      {listError ? <p>{listError}</p> : null}
 
       <PaginationBar
         loaded={members.length}

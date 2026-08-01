@@ -106,6 +106,16 @@ export default function BudgetList({ filters, sort, selectedId, onSelect, refres
     );
   }
 
+  if (listError && budgets.length === 0) {
+    return (
+      <section className={styles.budgetGrid}>
+        <Card className={styles.emptyState}>
+          <p>{listError}</p>
+        </Card>
+      </section>
+    );
+  }
+
   if (budgets.length === 0 && !listError) {
     return (
       <section className={styles.budgetGrid}>
@@ -123,8 +133,6 @@ export default function BudgetList({ filters, sort, selectedId, onSelect, refres
           <BudgetCard key={budget.id} budget={budget} isSelected={selectedId === budget.id} onSelect={() => onSelect(budget.id, budget)} />
         ))}
       </section>
-
-      {listError ? <p>{listError}</p> : null}
 
       <PaginationBar
         loaded={budgets.length}

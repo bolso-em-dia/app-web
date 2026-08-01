@@ -95,6 +95,23 @@ describe("CategoriesPage", () => {
     });
   });
 
+  it("shows the centered list error state without rendering the empty message", async () => {
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesOptions));
+    mockFetchUrl("/api/categories?", mockErrorResponse(500));
+
+    render(
+      <MemoryRouter initialEntries={["/categories"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <CategoriesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(t("categories.error"))).toBeInTheDocument();
+    expect(screen.queryByText(t("categories.empty"))).not.toBeInTheDocument();
+    expect(screen.queryByText("Groceries")).not.toBeInTheDocument();
+  });
+
   it("keeps the search field focused during filtering and removes icon/color text from the card", async () => {
     setupDefaultMocks();
 

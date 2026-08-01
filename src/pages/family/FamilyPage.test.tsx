@@ -71,6 +71,22 @@ describe("FamilyPage", () => {
     expect(within(alertDialog).getByText(t("confirmations.archiveMember"))).toBeInTheDocument();
   });
 
+  it("shows the centered list error state without rendering the empty message", async () => {
+    mockFetchUrl("/api/family-members?", mockErrorResponse(500));
+
+    render(
+      <MemoryRouter initialEntries={["/family"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <FamilyPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(t("family.error"))).toBeInTheDocument();
+    expect(screen.queryByText(t("family.empty"))).not.toBeInTheDocument();
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument();
+  });
+
   it("shows mapped error feedback when member save fails", async () => {
     resetFetchMocks();
     setupDefaultMocks();

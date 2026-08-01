@@ -58,6 +58,12 @@
   gap: var(--space-4);
 }
 
+.emptyState {
+  padding: var(--space-6);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 .templateCard {
   padding: 0;
 }

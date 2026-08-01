@@ -92,6 +92,16 @@ export default function TransactionList({ categoryOptions, filters, sort, select
     );
   }
 
+  if (listError && transactions.length === 0) {
+    return (
+      <section className={styles.transactionGrid}>
+        <Card className={styles.emptyState}>
+          <p>{listError}</p>
+        </Card>
+      </section>
+    );
+  }
+
   if (transactions.length === 0 && hasLoadedOnce && !listError) {
     return (
       <section className={styles.transactionGrid}>
@@ -119,8 +129,6 @@ export default function TransactionList({ categoryOptions, filters, sort, select
           );
         })}
       </section>
-
-      {listError ? <p>{listError}</p> : null}
 
       <PaginationBar
         loaded={transactions.length}

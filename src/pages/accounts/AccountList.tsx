@@ -64,28 +64,33 @@ export default function AccountList({ filters, sort, selectedId, onSelect, refre
     );
   }
 
+  if (listError && accounts.length === 0) {
+    return (
+      <section className={styles.accountGrid}>
+        <Card className={styles.emptyState}>
+          <p>{listError}</p>
+        </Card>
+      </section>
+    );
+  }
+
+  if (accounts.length === 0) {
+    return (
+      <section className={styles.accountGrid}>
+        <Card className={styles.emptyState}>
+          <p>{t("accounts.empty")}</p>
+        </Card>
+      </section>
+    );
+  }
+
   return (
     <>
-      {accounts.length === 0 && !listError ? (
-        <section className={styles.accountGrid}>
-          <Card className={styles.emptyState}>
-            <p>{t("accounts.empty")}</p>
-          </Card>
-        </section>
-      ) : (
-        <section className={styles.accountGrid}>
-          {accounts.map((account) => (
-            <AccountCard
-              key={account.id}
-              account={account}
-              isSelected={selectedId === account.id}
-              onSelect={(id) => onSelect(id, account)}
-            />
-          ))}
-        </section>
-      )}
-
-      {listError ? <p>{listError}</p> : null}
+      <section className={styles.accountGrid}>
+        {accounts.map((account) => (
+          <AccountCard key={account.id} account={account} isSelected={selectedId === account.id} onSelect={(id) => onSelect(id, account)} />
+        ))}
+      </section>
 
       <PaginationBar
         loaded={accounts.length}

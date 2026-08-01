@@ -153,6 +153,28 @@ describe("FixedExpensesPage", () => {
     });
   });
 
+  it("shows the centered list error state without rendering the empty message", async () => {
+    mockFetchUrl("/api/fixed-transactions?", mockErrorResponse(500));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/accounts/options", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl(
+      "/api/accounts?",
+      mockJsonResponse({ items: defaultAccountsResponse, page: 0, size: 200, totalItems: defaultAccountsResponse.length, totalPages: 1 }),
+    );
+
+    render(
+      <MemoryRouter initialEntries={["/fixed-transactions"]}>
+        <TestAuthProvider user={createUser({ id: "1" })}>
+          <FixedExpensesPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(t("fixedTransactions.error"))).toBeInTheDocument();
+    expect(screen.queryByText(t("fixedTransactions.empty"))).not.toBeInTheDocument();
+    expect(screen.queryByText("Rent")).not.toBeInTheDocument();
+  });
+
   it("sends the expanded fixed-transaction filters and explicit sort params", async () => {
     render(
       <MemoryRouter initialEntries={["/fixed-transactions"]}>
@@ -318,7 +340,7 @@ describe("FixedExpensesPage", () => {
     expect(screen.getByText(t("common.loadedItems", { loaded: 2, total: 2 }))).toBeInTheDocument();
   });
 
-  it("shows range text when no templates exist", async () => {
+  it("shows the empty state when no templates exist", async () => {
     resetFetchMocks();
 
     mockFetchUrl(
@@ -350,7 +372,8 @@ describe("FixedExpensesPage", () => {
       </MemoryRouter>,
     );
 
-    expect(await screen.findByText(t("common.loadedItems", { loaded: 0, total: 0 }))).toBeInTheDocument();
+    expect(await screen.findByText(t("fixedTransactions.empty"))).toBeInTheDocument();
+    expect(screen.queryByText(t("common.loadedItems", { loaded: 0, total: 0 }))).not.toBeInTheDocument();
   });
 
   it("opens delete confirmation alertdialog when the delete button is clicked", async () => {

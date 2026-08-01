@@ -84,28 +84,38 @@ export default function CategoryList({ filters, sort, selectedId, onSelect, refr
     );
   }
 
+  if (listError && categories.length === 0) {
+    return (
+      <section className={styles.categoryGrid}>
+        <Card className={styles.emptyState}>
+          <p>{listError}</p>
+        </Card>
+      </section>
+    );
+  }
+
+  if (categories.length === 0) {
+    return (
+      <section className={styles.categoryGrid}>
+        <Card className={styles.emptyState}>
+          <p>{t("categories.empty")}</p>
+        </Card>
+      </section>
+    );
+  }
+
   return (
     <>
-      {categories.length === 0 && !listError ? (
-        <section className={styles.categoryGrid}>
-          <Card className={styles.emptyState}>
-            <p>{t("categories.empty")}</p>
-          </Card>
-        </section>
-      ) : (
-        <section className={styles.categoryGrid}>
-          {categories.map((category) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-              isSelected={selectedId === category.id}
-              onSelect={(id) => onSelect(id, category)}
-            />
-          ))}
-        </section>
-      )}
-
-      {listError ? <p>{listError}</p> : null}
+      <section className={styles.categoryGrid}>
+        {categories.map((category) => (
+          <CategoryCard
+            key={category.id}
+            category={category}
+            isSelected={selectedId === category.id}
+            onSelect={(id) => onSelect(id, category)}
+          />
+        ))}
+      </section>
 
       <PaginationBar
         loaded={categories.length}

@@ -130,6 +130,24 @@ describe("BudgetsPage", () => {
     });
   });
 
+  it("shows the centered list error state without rendering the empty message", async () => {
+    mockFetchUrl("/api/budgets?", mockErrorResponse(500));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+
+    render(
+      <MemoryRouter initialEntries={["/budgets"]}>
+        <TestAuthProvider user={{ id: "1", name: "Admin", email: "admin@bolso-em-dia.local", role: "ADMIN", allowanceEnabled: false }}>
+          <BudgetsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(t("budgets.error"))).toBeInTheDocument();
+    expect(screen.queryByText(t("budgets.empty"))).not.toBeInTheDocument();
+    expect(screen.queryByText("Household")).not.toBeInTheDocument();
+  });
+
   it("shows mapped error feedback when budget save fails", async () => {
     resetFetchMocks();
     setupDefaultMocks();

@@ -371,6 +371,30 @@ describe("TransactionsPage", () => {
     expect(within(transactionButton).queryByText(/Groceries · Main checking/)).not.toBeInTheDocument();
   });
 
+  it("shows the centered list error state without rendering the empty message", async () => {
+    resetFetchMocks();
+
+    mockFetchUrl("/api/transactions/materialize", mockJsonResponse(null));
+    mockFetchUrl("/api/transactions?", mockErrorResponse(500));
+    mockFetchUrl("/api/accounts?", mockJsonResponse(defaultAccountsResponse));
+    mockFetchUrl("/api/categories/options", mockJsonResponse(defaultCategoriesResponse));
+    mockFetchUrl("/api/family-members", mockJsonResponse(defaultMembersResponse));
+    mockFetchUrl("/api/budgets?", mockJsonResponse(defaultAllowanceBudgetsResponse));
+    mockFetchUrl("/api/transactions/descriptions", mockJsonResponse([]));
+
+    render(
+      <MemoryRouter initialEntries={["/transactions"]}>
+        <TestAuthProvider user={createUser()}>
+          <TransactionsPage />
+        </TestAuthProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText(t("transactions.error"))).toBeInTheDocument();
+    expect(screen.queryByText(t("transactions.empty"))).not.toBeInTheDocument();
+    expect(screen.queryByText("Groceries")).not.toBeInTheDocument();
+  });
+
   it("does not show the shared ownership badge for shared transactions", async () => {
     setupDefaultMocks();
 
