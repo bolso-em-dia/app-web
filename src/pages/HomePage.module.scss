@@ -179,33 +179,6 @@
   gap: var(--space-2);
 }
 
-.statusBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 1.5rem;
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-round);
-  font-size: var(--font-size-100);
-  font-weight: var(--font-weight-semibold);
-}
-
-.fixedBadge {
-  background: var(--color-warning-soft-alt);
-  color: var(--color-warning);
-}
-
-.projectedBadge {
-  background: var(--color-surface-muted);
-  color: var(--color-text-muted);
-}
-
-.badgeIcon {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex: 0 0 auto;
-}
-
 .list {
   list-style: disc;
   padding-left: var(--space-5);

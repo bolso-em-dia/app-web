@@ -62,36 +62,37 @@
 }
 
 .transactionTop {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
   gap: var(--space-3);
 }
 
 .transactionMain {
   min-width: 0;
-  flex: 1 1 auto;
 }
 
+.transactionSummary,
 .transactionTitleRow {
   min-width: 0;
 }
 
-.transactionLine {
+.transactionSummary {
   display: flex;
   align-items: baseline;
-  gap: var(--space-2);
+  justify-content: space-between;
+  gap: var(--space-3);
   min-width: 0;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
 }
 
 .transactionDescription {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .transactionAmount {
+  flex: 0 0 auto;
   white-space: nowrap;
 }
 
@@ -103,52 +104,14 @@
 }
 
 .transactionMeta {
-  white-space: nowrap;
+  display: block;
+  white-space: normal;
 }
 
 .badgeRow {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 1.625rem;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-round);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-size: var(--font-size-100);
-  font-weight: var(--font-weight-semibold);
-}
-
-.badgeMuted {
-  background: var(--color-surface-muted);
-  color: var(--color-text-muted);
-}
-
-.badgeIncome {
-  background: var(--color-success-soft-alt);
-  color: var(--color-success);
-}
-
-.badgeExpense {
-  background: var(--color-danger-soft-alt);
-  color: var(--color-danger);
-}
-
-.fixedBadge {
-  background: var(--color-warning-soft-alt);
-  color: var(--color-warning);
-}
-
-.badgeIcon {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex: 0 0 auto;
 }
 
 .categoryLead {
@@ -162,24 +125,7 @@
 }
 
 .categoryBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
   max-width: 100%;
-  min-height: 1.625rem;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-round);
-  background: var(--color-surface-muted);
-  color: var(--color-text);
-  font-size: var(--font-size-100);
-  font-weight: var(--font-weight-semibold);
-}
-
-.categoryBadgeText {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .categoryIcon,

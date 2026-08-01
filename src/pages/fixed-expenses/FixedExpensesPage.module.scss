@@ -133,28 +133,6 @@
   margin-inline-start: calc(var(--space-5) + var(--space-3));
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.75rem;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-round);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-size: var(--font-size-100);
-  font-weight: var(--font-weight-semibold);
-}
-
-.badgeSuccess {
-  background: var(--color-success-soft);
-  color: var(--color-success);
-}
-
-.badgeMuted {
-  background: var(--color-surface-muted);
-  color: var(--color-text-muted);
-}
-
 .categoryLead {
   display: inline-flex;
   align-items: center;

@@ -1,4 +1,5 @@
 import Card from "../../components/ui/Card";
+import Badge from "../../components/ui/Badge";
 import { renderStoredIcon } from "../../lib/icons";
 import { useI18n } from "../../app/i18n/I18nContext";
 import type { Category } from "../../app/api/categories";
@@ -33,11 +34,9 @@ export default function CategoryCard({ category, onSelect }: CategoryCardProps) 
           </div>
 
           <div className={styles.categoryBadges}>
-            <span
-              className={category.archivedFromMonth ? `${styles.badge} ${styles.badgeMuted}` : `${styles.badge} ${styles.badgeSuccess}`}
-            >
+            <Badge tone={category.archivedFromMonth ? "muted" : "success"}>
               {category.archivedFromMonth ? t("common.archived") : t("common.active")}
-            </span>
+            </Badge>
           </div>
         </div>
       </button>

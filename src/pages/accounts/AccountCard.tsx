@@ -1,5 +1,6 @@
 import type { Account } from "../../app/api/accounts";
 import { useI18n } from "../../app/i18n/I18nContext";
+import Badge from "../../components/ui/Badge";
 import Card from "../../components/ui/Card";
 import clsx from "../../components/ui/clsx";
 import { formatReferenceMonth } from "../../lib/formatters/date";
@@ -38,20 +39,20 @@ export default function AccountCard({ account, isSelected = false, onSelect }: A
 
         <div className={styles.accountBadges}>
           {account.closingDay && account.dueDay ? (
-            <span className={`${styles.badge} ${styles.badgeInfo}`}>
+            <Badge tone="info">
               {t("accounts.billingCycle", {
                 closingDay: account.closingDay,
                 dueDay: account.dueDay,
               })}
-            </span>
+            </Badge>
           ) : null}
-          <span className={account.archivedFromMonth ? `${styles.badge} ${styles.badgeMuted}` : `${styles.badge} ${styles.badgeSuccess}`}>
+          <Badge tone={account.archivedFromMonth ? "muted" : "success"}>
             {account.archivedFromMonth
               ? t("common.archivedFrom", {
                   month: formatReferenceMonth(account.archivedFromMonth),
                 })
               : t("common.active")}
-          </span>
+          </Badge>
         </div>
       </button>
     </Card>

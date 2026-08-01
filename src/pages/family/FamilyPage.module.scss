@@ -68,28 +68,6 @@
   gap: var(--space-2);
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.625rem;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-round);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-size: var(--font-size-100);
-  font-weight: var(--font-weight-semibold);
-}
-
-.badgeMuted {
-  background: var(--color-surface-muted);
-  color: var(--color-text-muted);
-}
-
-.badgeSuccess {
-  background: var(--color-success-soft);
-  color: var(--color-success);
-}
-
 .emptyState {
   color: var(--color-text-muted);
 }

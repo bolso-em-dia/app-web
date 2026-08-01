@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { getDashboard, type DashboardResponse } from "../app/api/dashboard";
 import { materializeTransactions } from "../app/api/transactions";
 import { useI18n } from "../app/i18n/I18nContext";
+import Badge from "../components/ui/Badge";
 import Card from "../components/ui/Card";
 import MoneyAmount from "../components/ui/MoneyAmount";
 import MonthSelector from "../components/ui/MonthSelector";
@@ -231,14 +232,11 @@ export default function HomePage() {
                       <strong>{transaction.description}</strong>
                       <div className={styles.recentTransactionBadges}>
                         {transaction.sourceType === "FIXED_EXPENSE" ? (
-                          <span className={`${styles.statusBadge} ${styles.fixedBadge}`}>
-                            <Pin aria-hidden="true" className={styles.badgeIcon} />
+                          <Badge icon={<Pin />} tone="warning">
                             {t("transactions.fixed")}
-                          </span>
+                          </Badge>
                         ) : null}
-                        {transaction.projected ? (
-                          <span className={`${styles.statusBadge} ${styles.projectedBadge}`}>{t("transactions.projected")}</span>
-                        ) : null}
+                        {transaction.projected ? <Badge tone="muted">{t("transactions.projected")}</Badge> : null}
                       </div>
                     </div>
                     <p className={styles.itemMeta}>

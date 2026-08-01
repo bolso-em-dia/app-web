@@ -1,4 +1,5 @@
 import { useI18n } from "../../app/i18n/I18nContext";
+import Badge from "../../components/ui/Badge";
 import Card from "../../components/ui/Card";
 import MoneyAmount from "../../components/ui/MoneyAmount";
 import type { FixedExpenseTemplate } from "../../app/api/fixedExpenses";
@@ -68,16 +69,14 @@ export default function FixedExpenseCard({ template, categoryOption, onSelect }:
         </div>
 
         <div className={styles.templateBadges}>
-          <span className={template.type === "INCOME" ? `${styles.badge} ${styles.badgeSuccess}` : styles.badge}>
-            {t(`transactionTypes.${template.type}`)}
-          </span>
-          <span className={template.archivedFromMonth ? `${styles.badge} ${styles.badgeMuted}` : `${styles.badge} ${styles.badgeSuccess}`}>
+          <Badge tone={template.type === "INCOME" ? "success" : "default"}>{t(`transactionTypes.${template.type}`)}</Badge>
+          <Badge tone={template.archivedFromMonth ? "muted" : "success"}>
             {template.archivedFromMonth
               ? t("common.archivedFrom", {
                   month: formatReferenceMonth(template.archivedFromMonth),
                 })
               : t("common.active")}
-          </span>
+          </Badge>
         </div>
       </button>
     </Card>

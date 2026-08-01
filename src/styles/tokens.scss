@@ -36,9 +36,11 @@
   --color-success-border-soft: #b8dfcf;
   --color-success-border-strong: #83c7ab;
   --color-warning: #b54708;
+  --color-warning-soft-alt: #fff4ed;
   --color-danger-soft-alt: #fdf2f1;
   --color-danger-border-soft: #efc9c5;
   --color-danger-border-strong: #e59b94;
+  --color-accent-border-soft: #bfd0fb;
   --color-focus-ring: rgba(34, 84, 209, 0.18);
   --color-overlay-strong: rgb(15 23 42 / 52%);
 
@@ -67,5 +69,19 @@
   --control-size: 2.75rem;
   --mobile-action-bar-height: 4.25rem;
   --mobile-search-dock-height: 5.5rem;
+  --badge-font-size: var(--font-size-100);
+  --badge-gap: var(--space-2);
+  --badge-min-height: 1.625rem;
+  --badge-padding-inline: var(--space-3);
+  --badge-icon-size: 0.875rem;
   font-family: var(--font-family-base);
+}
+
+@media (width <= 40rem) {
+  :root {
+    --badge-font-size: var(--font-size-050);
+    --badge-min-height: 1.5rem;
+    --badge-padding-inline: var(--space-2);
+    --badge-icon-size: 0.75rem;
+  }
 }

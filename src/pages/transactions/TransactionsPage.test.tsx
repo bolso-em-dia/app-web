@@ -19,6 +19,9 @@ const defaultTransactionsResponse = {
       sourceType: "MANUAL",
       description: "Groceries",
       amount: 125.5,
+      convertedAmount: 125.5,
+      currency: "BRL",
+      exchangeRate: null,
       transactionDate: "2026-06-10",
       referenceMonth: "2026-06-01",
       accountId: "account-1",
@@ -337,7 +340,7 @@ describe("TransactionsPage", () => {
     expect(within(drawer).getByLabelText(t("transactions.description"))).toHaveValue("Taxi");
   });
 
-  it("renders the category as a badge below the title and keeps account/date in the meta line", async () => {
+  it("renders the category as a badge and keeps account/date metadata separate from the title row", async () => {
     setupDefaultMocks();
 
     render(
@@ -357,8 +360,13 @@ describe("TransactionsPage", () => {
     );
 
     const transactionButton = await screen.findByRole("button", { name: /Groceries/i });
+    const description = within(transactionButton).getAllByText("Groceries")[0];
+    const amount = within(transactionButton).getByText("-R$ 125,50");
+    const meta = within(transactionButton).getByText(/Main checking/);
 
     expect(within(transactionButton).getAllByText("Groceries")).toHaveLength(2);
+    expect(description.parentElement).toContainElement(amount);
+    expect(meta.parentElement).not.toContainElement(description);
     expect(within(transactionButton).getByText(/Main checking/)).toBeInTheDocument();
     expect(within(transactionButton).queryByText(/Groceries · Main checking/)).not.toBeInTheDocument();
   });

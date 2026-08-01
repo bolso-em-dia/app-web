@@ -1,4 +1,5 @@
 import { useI18n } from "../../app/i18n/I18nContext";
+import Badge from "../../components/ui/Badge";
 import Card from "../../components/ui/Card";
 import { formatCurrency } from "../../lib/formatters/currency";
 import { formatReferenceMonth } from "../../lib/formatters/date";
@@ -36,14 +37,14 @@ export default function BudgetCard({ budget, onSelect }: BudgetCardProps) {
         </div>
 
         <div className={styles.badgeRow}>
-          <span className={styles.badge}>{t(`budgetTypes.${budget.type}` as const)}</span>
-          <span className={budget.archivedFromMonth ? `${styles.badge} ${styles.badgeMuted}` : `${styles.badge} ${styles.badgeSuccess}`}>
+          <Badge>{t(`budgetTypes.${budget.type}` as const)}</Badge>
+          <Badge tone={budget.archivedFromMonth ? "muted" : "success"}>
             {budget.archivedFromMonth
               ? t("budgets.archivedFrom", {
                   month: formatReferenceMonth(budget.archivedFromMonth),
                 })
               : t("common.active")}
-          </span>
+          </Badge>
         </div>
       </button>
     </Card>

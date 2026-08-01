@@ -1,5 +1,6 @@
 import { Pin } from "lucide-react";
 import { useI18n } from "../../app/i18n/I18nContext";
+import Badge from "../../components/ui/Badge";
 import Card from "../../components/ui/Card";
 import MoneyAmount from "../../components/ui/MoneyAmount";
 import styles from "./TransactionsPage.module.scss";
@@ -25,60 +26,63 @@ export default function TransactionCard({ transaction, categoryOption, onSelect 
   const cardContent = (
     <>
       <div className={styles.transactionTop}>
+        <div className={styles.transactionSummary}>
+          <strong className={styles.transactionDescription}>{transaction.description}</strong>
+          <strong className={styles.transactionAmount}>
+            <MoneyAmount amount={transaction.convertedAmount} type={transaction.type} />
+          </strong>
+        </div>
         <div className={styles.transactionMain}>
           <div className={styles.transactionTitleRow}>
-            <div className={styles.transactionLine}>
-              <strong className={styles.transactionDescription}>{transaction.description}</strong>
-              <span className={styles.transactionMeta}>
-                {transaction.accountName} · {formatDay(transaction.transactionDate)}
-                {transaction.currency === "USD" && transaction.exchangeRate != null
-                  ? ` · ${t("exchangeRate.reference", {
-                      amount: formatCurrency(
-                        transaction.type === "EXPENSE" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
-                        "USD",
-                      ),
-                      rate: formatCurrency(transaction.exchangeRate),
-                    })}`
-                  : null}
-              </span>
-            </div>
+            <span className={styles.transactionMeta}>
+              {transaction.accountName} · {formatDay(transaction.transactionDate)}
+              {transaction.currency === "USD" && transaction.exchangeRate != null
+                ? ` · ${t("exchangeRate.reference", {
+                    amount: formatCurrency(
+                      transaction.type === "EXPENSE" ? -Math.abs(transaction.amount) : Math.abs(transaction.amount),
+                      "USD",
+                    ),
+                    rate: formatCurrency(transaction.exchangeRate),
+                  })}`
+                : null}
+            </span>
           </div>
         </div>
-        <strong className={styles.transactionAmount}>
-          <MoneyAmount amount={transaction.convertedAmount} type={transaction.type} />
-        </strong>
       </div>
 
       <div className={styles.badgeRow}>
-        <span className={styles.categoryBadge}>
-          {categoryIcon ? (
-            <span aria-hidden="true" className={styles.categoryLead} style={categoryColor ? { color: categoryColor } : undefined}>
-              {categoryIcon}
-            </span>
-          ) : categoryColor ? (
-            <span aria-hidden="true" className={styles.categoryLead} style={{ color: categoryColor }}>
-              <span className={styles.categoryDot} />
-            </span>
-          ) : null}
-          <span className={styles.categoryBadgeText}>{transaction.categoryName}</span>
-        </span>
-        <span className={`${styles.badge} ${transaction.type === "INCOME" ? styles.badgeIncome : styles.badgeExpense}`}>
-          {t(`transactionTypes.${transaction.type}` as const)}
-        </span>
-        <span className={styles.badge}>{t(`ownershipTypes.${transaction.ownershipType}` as const)}</span>
+        <Badge
+          className={styles.categoryBadge}
+          icon={
+            categoryIcon ? (
+              <span aria-hidden="true" className={styles.categoryLead} style={categoryColor ? { color: categoryColor } : undefined}>
+                {categoryIcon}
+              </span>
+            ) : categoryColor ? (
+              <span aria-hidden="true" className={styles.categoryLead} style={{ color: categoryColor }}>
+                <span className={styles.categoryDot} />
+              </span>
+            ) : undefined
+          }
+          tone="info"
+          truncate
+        >
+          {transaction.categoryName}
+        </Badge>
+        <Badge tone={transaction.type === "INCOME" ? "success" : "danger"}>{t(`transactionTypes.${transaction.type}` as const)}</Badge>
+        <Badge>{t(`ownershipTypes.${transaction.ownershipType}` as const)}</Badge>
         {isFixedExpense ? (
-          <span className={`${styles.badge} ${styles.fixedBadge}`}>
-            <Pin aria-hidden="true" className={styles.badgeIcon} />
+          <Badge icon={<Pin />} tone="warning">
             {t("transactions.fixed")}
-          </span>
+          </Badge>
         ) : null}
-        {transaction.memberName ? <span className={`${styles.badge} ${styles.badgeMuted}`}>{transaction.memberName}</span> : null}
+        {transaction.memberName ? <Badge tone="muted">{transaction.memberName}</Badge> : null}
         {transaction.installmentTotal ? (
-          <span className={`${styles.badge} ${styles.badgeMuted}`}>
+          <Badge tone="muted">
             {transaction.installmentNumber}/{transaction.installmentTotal}
-          </span>
+          </Badge>
         ) : null}
-        {transaction.projected ? <span className={`${styles.badge} ${styles.badgeMuted}`}>{t("transactions.projected")}</span> : null}
+        {transaction.projected ? <Badge tone="muted">{t("transactions.projected")}</Badge> : null}
       </div>
     </>
   );

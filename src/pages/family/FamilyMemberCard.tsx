@@ -1,4 +1,5 @@
 import { useI18n } from "../../app/i18n/I18nContext";
+import Badge from "../../components/ui/Badge";
 import Card from "../../components/ui/Card";
 import styles from "./FamilyPage.module.scss";
 import type { FamilyMember } from "../../app/api/family";
@@ -25,10 +26,8 @@ export default function FamilyMemberCard({ member, onSelect }: FamilyMemberCardP
         </div>
 
         <div className={styles.memberBadges}>
-          <span className={member.active ? `${styles.badge} ${styles.badgeSuccess}` : `${styles.badge} ${styles.badgeMuted}`}>
-            {member.active ? t("common.active") : t("common.archived")}
-          </span>
-          <span className={styles.badge}>{t(member.role === "ADMIN" ? "roles.ADMIN" : "roles.USER")}</span>
+          <Badge tone={member.active ? "success" : "muted"}>{member.active ? t("common.active") : t("common.archived")}</Badge>
+          <Badge>{t(member.role === "ADMIN" ? "roles.ADMIN" : "roles.USER")}</Badge>
         </div>
       </button>
     </Card>
