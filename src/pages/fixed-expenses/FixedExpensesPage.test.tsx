@@ -121,7 +121,12 @@ describe("FixedExpensesPage", () => {
     );
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
-    expect(screen.getByText(`Housing · Main checking · ${t("fixedTransactions.dueOnDay", { day: "05" })}`)).toBeInTheDocument();
+    const rentCard = screen.getByRole("button", { name: /Rent/ });
+    expect(within(rentCard).getByText(`Main checking · ${t("fixedTransactions.dueOnDay", { day: "05" })}`)).toBeInTheDocument();
+    expect(within(rentCard).getByText("Housing")).toBeInTheDocument();
+    expect(within(rentCard).getAllByText("Housing")).toHaveLength(1);
+    expect(within(rentCard).getByText(t("transactionTypes.EXPENSE"))).toBeInTheDocument();
+    expect(within(rentCard).getByText(t("common.active"))).toBeInTheDocument();
     expect(screen.getByText(t("common.loadedItems", { loaded: 1, total: 1 }))).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: t("fixedTransactions.new") }));
@@ -307,6 +312,9 @@ describe("FixedExpensesPage", () => {
 
     expect(await screen.findByText("Rent")).toBeInTheDocument();
     expect(screen.getByText("Salary")).toBeInTheDocument();
+    const salaryCard = screen.getByRole("button", { name: /Salary/ });
+    expect(within(salaryCard).getByText("Income")).toBeInTheDocument();
+    expect(within(salaryCard).getByText(t("transactionTypes.INCOME"))).toBeInTheDocument();
     expect(screen.getByText(t("common.loadedItems", { loaded: 2, total: 2 }))).toBeInTheDocument();
   });
 
@@ -368,9 +376,8 @@ describe("FixedExpensesPage", () => {
 
     const drawer = screen.getByRole("dialog");
     const accountSelect = within(drawer).getByLabelText(t("common.account"), { selector: "#fixed-expense-account" });
-    const accountRichRoot = accountSelect.parentElement!;
-    const accountRichValue = accountRichRoot.querySelector('[class*="richValue"]')!;
-    expect(accountRichValue).toHaveTextContent("Main checking");
+    expect(accountSelect).toHaveValue("account-1");
+    expect(within(accountSelect).getByRole("option", { name: "Main checking" }).selected).toBe(true);
 
     const deleteButton = await screen.findByRole("button", {
       name: t("common.delete"),
@@ -492,7 +499,7 @@ describe("FixedExpensesPage", () => {
 
     fireEvent.change(nameInput, { target: { value: "Water bill" } });
     fireEvent.change(screen.getByLabelText(t("fixedTransactions.amount")), { target: { value: "150" } });
-    fireEvent.click(screen.getByRole("button", { name: /^Categoria$/i }));
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(`^${t("common.category")}$`, "i") }));
     fireEvent.click(screen.getByRole("option", { name: /Housing/i }));
     fireEvent.change(screen.getByLabelText(t("common.account"), { selector: "#fixed-expense-account" }), {
       target: { value: "account-1" },
@@ -576,14 +583,13 @@ describe("FixedExpensesPage", () => {
     );
 
     // Open the edit drawer by clicking the template
-    const templateButton = await screen.findByText("Netflix");
-    fireEvent.click(templateButton.closest("button")!);
+    const templateButton = await screen.findByRole("button", { name: /Netflix/i });
+    fireEvent.click(templateButton);
 
     const drawer = screen.getByRole("dialog");
     const accountSelect = within(drawer).getByLabelText(t("common.account"), { selector: "#fixed-expense-account" });
-    const accountRichRoot = accountSelect.parentElement!;
-    const accountRichValue = accountRichRoot.querySelector('[class*="richValue"]')!;
-    expect(accountRichValue).toHaveTextContent("US Account");
+    expect(accountSelect).toHaveValue("account-1");
+    expect(within(accountSelect).getByRole("option", { name: "US Account" }).selected).toBe(true);
 
     // The amount field should show the USD value (100), not the BRL value (510)
     const amountInput = screen.getByLabelText(t("fixedTransactions.amount"));

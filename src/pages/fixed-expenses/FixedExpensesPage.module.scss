@@ -80,73 +80,69 @@
   background: var(--color-panel-muted);
 }
 
-.templateHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+.templateTop {
+  display: grid;
   gap: var(--space-3);
 }
 
 .templateMain {
   min-width: 0;
-  flex: 1 1 auto;
 }
 
+.templateSummary,
 .templateTitleRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
   min-width: 0;
 }
 
-.templateLine {
+.templateSummary {
   display: flex;
   align-items: baseline;
-  gap: var(--space-2);
-  min-width: 0;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
 
 .templateName {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .templateAmount {
+  flex: 0 0 auto;
   white-space: nowrap;
 }
 
-.templateMeta,
-.templateMetaSeparator {
-  white-space: nowrap;
-}
-
-.templateMetaSeparator {
-  color: var(--color-text-muted);
+.templateMeta {
+  display: block;
+  white-space: normal;
 }
 
 .templateBadges {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-inline-start: calc(var(--space-5) + var(--space-3));
+}
+
+.categoryBadge {
+  max-width: 100%;
 }
 
 .categoryLead {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--space-5);
-  height: var(--space-5);
+  width: 1rem;
+  height: 1rem;
   flex: 0 0 auto;
   color: var(--color-text-muted);
 }
 
 .categoryIcon,
 .categoryDot {
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 1rem;
+  height: 1rem;
   flex: 0 0 auto;
 }
 
@@ -173,26 +169,12 @@
 }
 
 @media (width <= 40rem) {
-  .toolbar,
-  .templateHeader {
+  .toolbar {
     flex-direction: column;
   }
 
   .filterGroup {
     width: 100%;
     grid-template-columns: 1fr;
-  }
-
-  .templateBadges {
-    margin-inline-start: 0;
-  }
-
-  .templateLine {
-    align-items: flex-start;
-  }
-
-  .templateMeta,
-  .templateMetaSeparator {
-    white-space: normal;
   }
 }

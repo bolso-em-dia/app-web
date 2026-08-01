@@ -20,6 +20,14 @@ export default function FixedExpenseCard({ template, categoryOption, onSelect }:
   const { t } = useI18n();
   const categoryIcon = renderStoredIcon(categoryOption?.icon, styles.categoryIcon);
   const categoryColor = categoryOption?.color ?? undefined;
+  const recurringDayLabel =
+    template.type === "INCOME"
+      ? t("fixedTransactions.receivesOnDay", {
+          day: String(template.dueDay).padStart(2, "0"),
+        })
+      : t("fixedTransactions.dueOnDay", {
+          day: String(template.dueDay).padStart(2, "0"),
+        });
 
   return (
     <Card key={template.id} className={styles.templateCard}>
@@ -29,10 +37,34 @@ export default function FixedExpenseCard({ template, categoryOption, onSelect }:
         style={categoryColor ? { borderInlineStartColor: categoryColor } : undefined}
         type="button"
       >
-        <div className={styles.templateHeader}>
+        <div className={styles.templateTop}>
+          <div className={styles.templateSummary}>
+            <strong className={styles.templateName}>{template.name}</strong>
+            <strong className={styles.templateAmount}>
+              <MoneyAmount amount={template.convertedAmount ?? template.amount} type={template.type} />
+            </strong>
+          </div>
+
           <div className={styles.templateMain}>
             <div className={styles.templateTitleRow}>
-              {categoryIcon ? (
+              <span className={styles.templateMeta}>
+                {template.accountName} · {recurringDayLabel}
+                {template.currency === "USD" && template.exchangeRate != null
+                  ? ` · ${t("exchangeRate.reference", {
+                      amount: formatCurrency(template.type === "EXPENSE" ? -Math.abs(template.amount) : Math.abs(template.amount), "USD"),
+                      rate: formatCurrency(template.exchangeRate),
+                    })}`
+                  : null}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.templateBadges}>
+          <Badge
+            className={styles.categoryBadge}
+            icon={
+              categoryIcon ? (
                 <span aria-hidden="true" className={styles.categoryLead} style={categoryColor ? { color: categoryColor } : undefined}>
                   {categoryIcon}
                 </span>
@@ -40,36 +72,14 @@ export default function FixedExpenseCard({ template, categoryOption, onSelect }:
                 <span aria-hidden="true" className={styles.categoryLead} style={{ color: categoryColor }}>
                   <span className={styles.categoryDot} />
                 </span>
-              ) : null}
-              <div className={styles.templateLine}>
-                <strong className={styles.templateName}>{template.name}</strong>
-                <span className={styles.templateMetaSeparator}>·</span>
-                <p className={styles.templateMeta}>
-                  {template.categoryName} · {template.accountName} ·{" "}
-                  {template.type === "INCOME"
-                    ? t("fixedTransactions.receivesOnDay", {
-                        day: String(template.dueDay).padStart(2, "0"),
-                      })
-                    : t("fixedTransactions.dueOnDay", {
-                        day: String(template.dueDay).padStart(2, "0"),
-                      })}
-                  {template.currency === "USD" && template.exchangeRate != null
-                    ? ` · ${t("exchangeRate.reference", {
-                        amount: formatCurrency(template.type === "EXPENSE" ? -Math.abs(template.amount) : Math.abs(template.amount), "USD"),
-                        rate: formatCurrency(template.exchangeRate),
-                      })}`
-                    : null}
-                </p>
-              </div>
-            </div>
-          </div>
-          <strong className={styles.templateAmount}>
-            <MoneyAmount amount={template.convertedAmount ?? template.amount} type={template.type} />
-          </strong>
-        </div>
-
-        <div className={styles.templateBadges}>
-          <Badge tone={template.type === "INCOME" ? "success" : "default"}>{t(`transactionTypes.${template.type}`)}</Badge>
+              ) : undefined
+            }
+            tone="info"
+            truncate
+          >
+            {template.categoryName}
+          </Badge>
+          <Badge tone={template.type === "INCOME" ? "success" : "danger"}>{t(`transactionTypes.${template.type}`)}</Badge>
           <Badge tone={template.archivedFromMonth ? "muted" : "success"}>
             {template.archivedFromMonth
               ? t("common.archivedFrom", {
